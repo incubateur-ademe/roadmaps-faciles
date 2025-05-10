@@ -1,0 +1,30 @@
+import { prisma } from "@/lib/db/prisma";
+import { type Prisma, type User } from "@/prisma/client";
+
+import { type IUserRepo } from "../IUserRepo";
+
+export class UserRepoPrisma implements IUserRepo {
+  public findAll(): Promise<User[]> {
+    return prisma.user.findMany();
+  }
+
+  public findById(id: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { id } });
+  }
+
+  public findByUsername(username: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { username } });
+  }
+
+  public findByEmail(email: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { email } });
+  }
+
+  public create(data: Prisma.UserUncheckedCreateInput): Promise<User> {
+    return prisma.user.create({ data });
+  }
+
+  public async update(id: string, data: Prisma.UserUncheckedUpdateInput): Promise<User> {
+    return prisma.user.update({ where: { id }, data });
+  }
+}

@@ -1,0 +1,440 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ApiKey {
+  id                Int      @id @default(autoincrement())
+  tenantId          Int
+  userId            String
+  commonTokenPrefix String
+  randomTokenPrefix String
+  tokenDigest       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tenantId])
+  @@unique([tokenDigest])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model Board {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  order       Int
+  slug        String?
+  tenantId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant               Tenant         @relation(fields: [tenantId], references: [id])
+  posts                Post[]
+  tenantSettingForRoot TenantSetting?
+
+  @@unique([name, tenantId])
+  @@unique([slug, tenantId])
+  @@index([tenantId])
+}
+
+model Comment {
+  id           Int      @id @default(autoincrement())
+  body         String?
+  userId       String
+  postId       Int
+  parentId     Int?
+  isPostUpdate Boolean  @default(false)
+  tenantId     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id])
+  post    Post      @relation(fields: [postId], references: [id])
+  parent  Comment?  @relation("CommentParent", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentParent")
+
+  @@index([parentId])
+  @@index([postId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model Follow {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  postId    Int
+  tenantId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@index([tenantId])
+}
+
+model Invitation {
+  id          Int       @id @default(autoincrement())
+  email       String
+  tokenDigest String
+  acceptedAt  DateTime?
+  tenantId    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([email, tenantId])
+  @@index([tenantId])
+}
+
+model Like {
+  id          Int      @id @default(autoincrement())
+  userId      String?
+  anonymousId String?
+  postId      Int
+  tenantId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+  post Post  @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+  @@unique([anonymousId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@index([tenantId])
+}
+
+enum PostStatusColor {
+  grey
+  gray
+  blueFrance
+  redMarianne
+  greenTilleulVerveine
+  greenBourgeon
+  greenEmeraude
+  greenMenthe
+  greenArchipel
+  blueEcume
+  blueCumulus
+  purpleGlycine
+  pinkMacaron
+  pinkTuile
+  yellowTournesol
+  yellowMoutarde
+  orangeTerreBattue
+  brownCafeCreme
+  brownCaramel
+  brownOpera
+  beigeGrisGalet
+  info
+  success
+  warning
+  error
+}
+
+model PostStatus {
+  id            Int             @id @default(autoincrement())
+  name          String
+  color         PostStatusColor
+  order         Int
+  showInRoadmap Boolean         @default(false)
+  tenantId      Int
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id])
+  posts        Post[]
+  statusChange PostStatusChange[]
+
+  @@unique([name, tenantId])
+  @@index([tenantId])
+}
+
+enum PostApprovalStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+model Post {
+  id             Int                @id @default(autoincrement())
+  title          String
+  description    String?
+  boardId        Int
+  postStatusId   Int?
+  tenantId       Int
+  userId         String
+  slug           String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  approvalStatus PostApprovalStatus @default(APPROVED)
+
+  board      Board       @relation(fields: [boardId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+  postStatus PostStatus? @relation(fields: [postStatusId], references: [id])
+  comments   Comment[]
+  follows    Follow[]
+  likes      Like[]
+  pin        Pin?
+
+  @@unique([slug, tenantId])
+  @@index([boardId])
+  @@index([postStatusId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model Pin {
+  id     Int  @id @default(1) // Toujours 1
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int  @unique // Un seul post peut être "pinned"
+}
+
+model PostStatusChange {
+  id           Int      @id @default(autoincrement())
+  userId       String
+  postId       Int
+  postStatusId Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenantId     Int
+
+  postStatus PostStatus? @relation(fields: [postStatusId], references: [id])
+
+  @@index([postId])
+  @@index([postStatusId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+enum Locale {
+  fr
+  en
+}
+
+model Tenant {
+  id           Int            @id @default(autoincrement())
+  name         String
+  customDomain String?
+  subdomain    String
+  deletedAt    DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  locale       Locale         @default(fr)
+  apiKeys      ApiKey[]
+  boards       Board[]
+  settings     TenantSetting?
+  members      UserOnTenant[]
+  postStatus   PostStatus[]
+
+  @@unique([customDomain])
+  @@unique([subdomain])
+}
+
+enum EmailRegistrationPolicy {
+  ANYONE
+  NOONE
+  DOMAINS
+}
+
+model TenantSetting {
+  id                      Int                     @id @default(autoincrement())
+  tenantId                Int                     @unique
+  isPrivate               Boolean                 @default(false)
+  allowVoting             Boolean                 @default(true)
+  allowComments           Boolean                 @default(true)
+  allowAnonymousVoting    Boolean                 @default(true)
+  allowPostEdits          Boolean                 @default(false)
+  showRoadmapInHeader     Boolean                 @default(false)
+  collapsedBoards         Boolean                 @default(false)
+  allowAnonymousFeedback  Boolean                 @default(true)
+  showVoteCount           Boolean                 @default(true)
+  showVoteButton          Boolean                 @default(true)
+  emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
+  allowedEmailDomains     String[]
+  logoUrl                 String?
+  logoWidth               Int                     @default(0)
+  logoHeight              Int                     @default(0)
+  logoLink                String?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  customCSS               String?
+  useBrowserLocale        Boolean                 @default(false)
+  rootBoardId             Int?                    @unique
+  rootBoard               Board?                  @relation(fields: [rootBoardId], references: [id])
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([rootBoardId])
+}
+
+model TenantDefaultOAuth {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  provider  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+  OWNER
+  INHERITED
+}
+
+model User {
+  id                         String     @id @default(cuid())
+  name                       String?
+  email                      String     @unique
+  emailVerified              DateTime?
+  username                   String?    @unique
+  image                      String?
+  notificationsEnabled       Boolean    @default(true)
+  status                     UserStatus @default(ACTIVE)
+  role                       UserRole   @default(USER)
+  signInCount                Int        @default(0)
+  currentSignInAt            DateTime?
+  lastSignInAt               DateTime?
+  currentSignInIp            String?
+  lastSignInIp               String?
+  recapNotificationFrequency Int        @default(0)
+  createdAt                  DateTime   @default(now())
+  updatedAt                  DateTime   @updatedAt
+
+  posts          Post[]
+  apiKeys        ApiKey[]
+  comments       Comment[]
+  follows        Follow[]
+  likes          Like[]
+  memberships    UserOnTenant[]
+  accounts       Account[]
+  sessions       Session[]
+  // Optional for WebAuthn support
+  authenticators Authenticator[]
+}
+
+model UserOnTenant {
+  userId   String
+  tenantId Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  role     UserRole   @default(USER)
+  status   UserStatus @default(ACTIVE)
+  joinedAt DateTime   @default(now())
+
+  @@id([userId, tenantId])
+  @@index([tenantId])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model OAuth {
+  id        Int      @id @default(autoincrement())
+  provider  String
+  uid       String
+  userId    String
+  tenantId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, uid, tenantId])
+  @@index([userId])
+  @@index([tenantId])
+}
+
+model Webhook {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  url       String
+  event     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+}

@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2023"
+    ],
+    "module": "node16",
+    "target": "es2022",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node16",
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/config": [
+        "../src/config.ts"
+      ],
+      "@/dsfr": [
+        "../src/dsfr/server.ts"
+      ],
+      "@/dsfr/client": [
+        "../src/dsfr/client.ts"
+      ],
+      "@/dsfr/utils/*": [
+        "../src/dsfr/utils/*"
+      ],
+      "@/utils/*": [
+        "../src/lib/utils/*"
+      ],
+      "@/*": [
+        "../src/*"
+      ]
+    }
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  }
+}

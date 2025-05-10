@@ -1,0 +1,39 @@
+services:
+  maildev:
+    image: djfarrelly/maildev
+    command: bin/maildev --hide-extensions STARTTLS
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+    environment:
+      MAILDEV_WEB_PORT: 1080
+      MAILDEV_SMTP_PORT: 1025
+    restart: always
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PORT: 6379
+      REDIS_DATABASES: 1
+    volumes:
+      - cache:/data
+    restart: always
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: roadmaps-faciles
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  
+volumes:
+  cache:
+  pgdata:

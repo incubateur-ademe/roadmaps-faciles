@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.field-sizing-content {
+    field-sizing: content;
+}
+
+.field-sizing-fixed {
+    field-sizing: fixed;
+}
+
+/* background */
+
+/* -- custom */
+.no-bg {
+    background: none;
+}
+
+code {
+    background-color: var(--background-lifted-grey);
+    color: var(--text-label-grey);
+    padding: 0.2em 0.5em;
+    border-radius: 5px;
+    font-size: 0.95em;
+    box-shadow: inset 0 0 0 1px var(--border-default-grey);
+    filter: drop-shadow(var(--raised-shadow));
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+code:hover {
+    background-color: var(--background-lifted-grey-hover);
+    transition: background-color 0.3s ease;
+}
+
+/* === */
+
+/* === based on dsfr === */
+/* typo */
+.text-dsfr-neutral {
+    color: var(--text-default-grey);
+}
+
+.text-dsfr-success {
+    color: var(--text-default-success);
+}
+
+.text-dsfr-warning {
+    color: var(--text-default-warning);
+}
+
+.text-dsfr-error {
+    color: var(--text-default-error);
+}
+
+.text-dsfr-action-high-blue-france {
+    color: var(--text-action-high-blue-france);
+}
+
+/* background */
+.bg-dsfr-alt-grey {
+    background-color: var(--background-alt-grey);
+}
+
+/* === */
+
+svg.dsfr-svg {
+    --color: var(--artwork-major-blue-france);
+}
+
+svg.dsfr-svg-hover:hover {
+    --color: var(--artwork-major-blue-france-hover);
+}
+
+svg.dsfr-svg-active:active {
+    --color: var(--artwork-major-blue-france-active);
+}
+
+
+/* === shine === */
+.shimmer {
+    mask: linear-gradient(-60deg, #000 30%, #0003, #000 70%) right/300% 100%;
+    background-repeat: no-repeat;
+    animation: 20s ease-out infinite shimmer;
+}
+
+@keyframes shimmer {
+
+    10%,
+    100% {
+        mask-position: left
+    }
+}

@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [dev]
+
+concurrency:
+  cancel-in-progress: true
+  group: build-${{ github.ref }}
+
+jobs:
+  build:
+    name: Build and export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+          cache: "yarn"
+      - name: Install dependencies
+        run: |
+          yarn --frozen-lockfile
+      - name: Build and export
+        env:
+          NODE_ENV: production
+          ESPACE_MEMBRE_API_KEY: fakesecret
+        run: |
+          yarn build
