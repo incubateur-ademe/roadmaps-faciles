@@ -1,6 +1,6 @@
 import { DomainPageHOP } from "../DomainPage";
 
-const RoadmapPage = DomainPageHOP({ withSettings: true })(async props => {
+const RoadmapPage = DomainPageHOP({ withSettings: true })(props => {
   const tenant = props._data.tenant;
   return (
     <div>
