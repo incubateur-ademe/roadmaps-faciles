@@ -1,3 +1,5 @@
+import { inspect } from "util";
+
 import { ensureApiEnvVar, ensureNextEnvVar } from "@/utils/os";
 import { isTruthy } from "@/utils/string";
 
@@ -5,9 +7,17 @@ export const config = {
   env: ensureApiEnvVar<"dev" | "prod" | "review" | "staging">(process.env.APP_ENV, "dev"),
   _seeding: ensureApiEnvVar(process.env._SEEDING, isTruthy, false),
   maintenance: ensureApiEnvVar(process.env.MAINTENANCE_MODE, isTruthy, false),
-  host: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
+  siteUrl: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
+  hostname: ensureApiEnvVar(process.env.HOSTNAME, "localhost"),
+  port: ensureApiEnvVar(process.env.PORT, Number, 3000),
   get rootDomain() {
-    return this.host.replace(/^(https?:\/\/)?(www\.)?/, "");
+    return this.hostname.replace(/^(https?:\/\/)?(www\.)?/, "");
+  },
+  get mainHostURL() {
+    const protocol = this.hostname === "localhost" ? "http" : "https";
+    const url = new URL(`${protocol}://${this.hostname}`);
+    url.port = this.port.toString();
+    return url;
   },
   appVersion: ensureNextEnvVar(process.env.NEXT_PUBLIC_APP_VERSION, "dev"),
   appVersionCommit: ensureNextEnvVar(process.env.NEXT_PUBLIC_APP_VERSION_COMMIT, "unknown"),
@@ -77,3 +87,10 @@ export const config = {
     password: ensureApiEnvVar(process.env.REDIS_PASSWORD, ""),
   },
 } as const;
+
+if (config.env !== "prod") {
+  // log with emoji
+  console.log("🚧", "Config loaded in non prod env");
+  inspect(config, { depth: Infinity, colors: true });
+  console.log("🚧", "==========================");
+}

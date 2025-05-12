@@ -34,7 +34,7 @@ const TenantPage = async () => {
             <Link
               href={
                 tenant.customDomain ??
-                `${new URL(config.host).protocol}//${tenant.subdomain}.${new URL(config.host).host}`
+                `${config.mainHostURL.protocol}//${tenant.subdomain}.${new URL(config.mainHostURL).host}`
               }
             >
               Voir le dashboard

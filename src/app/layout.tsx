@@ -21,7 +21,7 @@ const contentId = "content";
 const footerId = "footer";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(config.host),
+  metadataBase: new URL(config.mainHostURL),
   ...sharedMetadata,
   title: {
     template: `${config.brand.name} - %s`,
