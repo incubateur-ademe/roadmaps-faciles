@@ -1,7 +1,7 @@
 import { notFound, redirect, unauthorized } from "next/navigation";
 import { type NextRequest, type NextResponse } from "next/server";
 import { type ReactElement } from "react";
-import { type z } from "zod";
+import { z } from "zod";
 
 import { type ClearObject, type EmptyObject, type Nothing } from "./types";
 
@@ -27,7 +27,7 @@ type PropValueAsObject<T, TPropName extends string, WithPartial extends boolean 
 
 type PropValueAsZod<T, TPropName extends string> = T extends z.ZodType
   ? {
-      [P in `${TPropName}Error`]?: z.core.$ZodFlattenedError<z.infer<T>>;
+      [P in `${TPropName}Error`]?: z.core.$ZodErrorTree<z.core.output<T>>;
     } & {
       [P in TPropName]: Promise<ClearObject<z.infer<T>>>;
     }
@@ -63,14 +63,18 @@ type ZodNextPage<
 > = (props: NextServerPageProps<Params, SearchParams>) => Promise<ReactElement> | ReactElement;
 
 export const withValidation =
-  <Params extends z.ZodType, SearchParams extends z.ZodType, TPage extends ZodNextPage<Params, SearchParams>>(
-    schemas: { paramsSchema?: Params; searchParamsSchema?: SearchParams },
-    options?: ValidationOptions,
-  ) =>
+  <Params extends z.ZodType, SearchParams extends z.ZodType, TPage extends ZodNextPage<Params, SearchParams>>(config: {
+    options?: ValidationOptions;
+    paramsSchema?: Params;
+    searchParamsSchema?: SearchParams;
+    wrapper?: (
+      page: (props: EmptyObject) => Promise<ReactElement> | ReactElement,
+    ) => (props: unknown) => Promise<ReactElement> | ReactElement;
+  }) =>
   (page: TPage): (() => ReactElement) =>
   // @ts-expect-error - This is a hack to make the types work
   async (props: NextServerPageProps<Params, SearchParams>) => {
-    const { paramsSchema, searchParamsSchema } = schemas;
+    const { paramsSchema, searchParamsSchema, options, wrapper } = config;
     const newProps = { ...props } as PropValueAsZod<Params, "params"> & PropValueAsZod<SearchParams, "searchParams">;
     if (paramsSchema) {
       const parseResult = await paramsSchema.safeParseAsync(await newProps.params);
@@ -83,7 +87,7 @@ export const withValidation =
           redirect(...options.redirect);
         }
 
-        newProps.paramsError = parseResult.error.flatten();
+        newProps.paramsError = z.treeifyError(parseResult.error);
       } else {
         newProps.params = Promise.resolve(parseResult.data) as never;
       }
@@ -99,12 +103,13 @@ export const withValidation =
           redirect(...options.redirect);
         }
 
-        newProps.searchParamsError = parseResult.error.flatten();
+        newProps.searchParamsError = z.treeifyError(parseResult.error);
       } else {
         newProps.searchParams = Promise.resolve(parseResult.data) as never;
       }
     }
-    return page(newProps);
+
+    return wrapper?.(wrapperProps => page({ ...wrapperProps, ...newProps })) ?? page(newProps);
   };
 
 export type NextRouteHandler<TParams extends string = string> = (

@@ -5,8 +5,11 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  provider            = "prisma-client"
+  output              = "../src/generated/client"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
+  previewFeatures     = ["typedSql", "views"]
 }
 
 datasource db {
@@ -43,9 +46,10 @@ model Board {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant               Tenant         @relation(fields: [tenantId], references: [id])
+  tenant               Tenant            @relation(fields: [tenantId], references: [id])
   posts                Post[]
   tenantSettingForRoot TenantSetting?
+  postsWithHotness     PostWithHotness[]
 
   @@unique([name, tenantId])
   @@unique([slug, tenantId])
@@ -188,19 +192,29 @@ model Post {
   updatedAt      DateTime           @updatedAt
   approvalStatus PostApprovalStatus @default(APPROVED)
 
-  board      Board       @relation(fields: [boardId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
-  postStatus PostStatus? @relation(fields: [postStatusId], references: [id])
+  board      Board            @relation(fields: [boardId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
+  postStatus PostStatus?      @relation(fields: [postStatusId], references: [id])
   comments   Comment[]
   follows    Follow[]
   likes      Like[]
   pin        Pin?
+  hotness    PostWithHotness?
 
   @@unique([slug, tenantId])
   @@index([boardId])
   @@index([postStatusId])
   @@index([tenantId])
   @@index([userId])
+}
+
+view PostWithHotness {
+  id      Int     @unique
+  hotness Decimal @default(0.0)
+  boardId Int
+  postId  Int     @unique
+  post    Post    @relation(fields: [postId], references: [id])
+  board   Board   @relation(fields: [boardId], references: [id])
 }
 
 model Pin {

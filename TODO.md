@@ -4,3 +4,6 @@
 - page /stats (nombre de tenants (Northstar), nombre d'utilisateurs, nombre de boards, nombre de cartes, nombre de commentaires, nombre de votes)
 - page /budget (?)
 - page /roadmap
+
+## TODO
+- [ ] gérer les custom domains avec l'api Scalingo

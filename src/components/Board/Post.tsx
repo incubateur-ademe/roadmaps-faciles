@@ -1,6 +1,8 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
+import { MDXRemote } from "next-mdx-remote/rsc";
 
+import { paragraphContentMDXComponents } from "@/mdx-components";
 import { type Post, type PostStatus, type Prisma, type User } from "@/prisma/client";
 
 import { LikeButton } from "./LikeButton";
@@ -44,7 +46,9 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
           <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={userId}>
             {post._count.likes}
           </LikeButton>
-          <span className="line-clamp-3">{post.description}</span>
+          <span className="line-clamp-3">
+            {post.description && <MDXRemote source={post.description} components={paragraphContentMDXComponents} />}
+          </span>
         </span>
       }
       horizontal
