@@ -5,7 +5,6 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import z from "zod";
 
-import { BoardPost } from "@/components/Board/Post";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { Container, Grid, GridCol } from "@/dsfr";
 import { prisma } from "@/lib/db/prisma";
@@ -14,15 +13,18 @@ import { getAnonymousId } from "@/utils/anonymousId";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
+import { fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
-import { defaultOrder, FilterAndSearch, ORDER_ENUM } from "./FilterAndSearch";
+import { FilterAndSearch } from "./FilterAndSearch";
+import { PostList } from "./PostList";
+import { defaultOrder, ORDER_ENUM } from "./types";
 
 export interface BoardParams {
   boardSlug: string;
 }
 
 const searchParamsSchema = z.object({
-  order: z.enum(ORDER_ENUM),
+  order: z.enum(ORDER_ENUM).default(defaultOrder),
 });
 
 const BoardPage = withValidation({
@@ -41,68 +43,20 @@ const BoardPage = withValidation({
         tenantId: _data.tenant.id,
       },
     },
+    include: {
+      _count: {
+        select: {
+          posts: true,
+        },
+      },
+    },
   });
 
   if (!board) {
     return <div>Board not found</div>;
   }
 
-  const posts =
-    order === "trending"
-      ? (
-          await prisma.postWithHotness.findMany({
-            where: {
-              boardId: board.id,
-            },
-            orderBy: {
-              hotness: "desc",
-            },
-            include: {
-              post: {
-                include: {
-                  postStatus: true,
-                  user: true,
-                  likes: true,
-                  hotness: true,
-                  _count: {
-                    select: {
-                      comments: true,
-                      follows: true,
-                      likes: true,
-                    },
-                  },
-                },
-              },
-            },
-          })
-        ).map(postWithHotness => postWithHotness.post)
-      : await prisma.post.findMany({
-          where: {
-            boardId: board.id,
-          },
-          orderBy: {
-            ...(order === "top"
-              ? {
-                  likes: {
-                    _count: "desc",
-                  },
-                }
-              : { createdAt: "desc" }),
-          },
-          include: {
-            postStatus: true,
-            user: true,
-            likes: true,
-            hotness: true,
-            _count: {
-              select: {
-                comments: true,
-                follows: true,
-                likes: true,
-              },
-            },
-          },
-        });
+  const posts = await fetchPostsForBoard(1, validatedOrder, board.id);
 
   const anonymousId = await getAnonymousId();
 
@@ -128,7 +82,9 @@ const BoardPage = withValidation({
         <GridCol base={9}>
           <Grid className={cx("sticky self-start top-[0] z-[501]", style.header)}>
             <GridCol base={8} className={style.title} pr="1w">
-              <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>{board.name}</h1>
+              <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>
+                {board.name} ({board._count.posts})
+              </h1>
               {board.description && (
                 <h2 className={cx(fr.cx("fr-text--md"), style.boardSubTiltle)}>
                   <MDXRemote source={board.description} />
@@ -140,14 +96,15 @@ const BoardPage = withValidation({
             </GridCol>
           </Grid>
           <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
-            {posts.map(post => {
-              const alreadyLiked = post.likes.some(
-                like => session?.user?.id === like.userId || like.anonymousId === anonymousId,
-              );
-              return (
-                <BoardPost key={`post_${post.id}`} post={post} alreadyLiked={alreadyLiked} userId={session?.user.id} />
-              );
-            })}
+            <PostList
+              key={`postList_${board.id}`}
+              anonymousId={anonymousId}
+              initialPosts={posts}
+              totalCount={board._count.posts}
+              userId={session?.user.id}
+              order={validatedOrder}
+              boardId={board.id}
+            />
           </ClientAnimate>
         </GridCol>
       </Grid>

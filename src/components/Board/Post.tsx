@@ -1,9 +1,8 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
-import { MDXRemote } from "next-mdx-remote/rsc";
+import ReactMarkdown from "react-markdown";
 
-import { paragraphContentMDXComponents } from "@/mdx-components";
-import { type Post, type PostStatus, type Prisma, type User } from "@/prisma/client";
+import { type Like, type Post, type PostStatus, type Prisma, type User } from "@/prisma/client";
 
 import { LikeButton } from "./LikeButton";
 import style from "./Post.module.scss";
@@ -12,16 +11,19 @@ export interface BoardPostProps {
   alreadyLiked: boolean;
   post: Post & {
     _count: Prisma.PostCountOutputType;
+    likes: Like[];
     postStatus: PostStatus | null;
     user: User;
   };
   userId?: string;
 }
 
+export type BoardPostType = BoardPostProps["post"];
+
 export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
   return (
     <Card
-      key={`post_${post.id}}`}
+      key={`post_${post.id}`}
       classes={
         {
           // title: fr.cx("fr-text--md"),
@@ -47,7 +49,11 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
             {post._count.likes}
           </LikeButton>
           <span className="line-clamp-3">
-            {post.description && <MDXRemote source={post.description} components={paragraphContentMDXComponents} />}
+            {post.description && (
+              <ReactMarkdown unwrapDisallowed disallowedElements={["p"]}>
+                {post.description}
+              </ReactMarkdown>
+            )}
           </span>
         </span>
       }
