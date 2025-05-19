@@ -1,9 +1,10 @@
-import { loadEnvConfig } from "@next/env";
-import path from "path";
 import { type PrismaConfig } from "prisma";
 
-const ROOT = path.resolve(__dirname, "..");
-loadEnvConfig(ROOT, process.env.NODE_ENV !== "production");
+if (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) {
+  console.log("🚨 Prisma config loaded in dev mode.");
+  const { loadEnvConfig } = await import("@next/env");
+  loadEnvConfig(__dirname, true);
+}
 
 process.env._SEEDING = "true";
 
