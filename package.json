@@ -78,6 +78,7 @@
     "@faker-js/faker": "^9.7.0",
     "@mdx-js/loader": "^3.1.0",
     "@next/eslint-plugin-next": "15.3.2",
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.8.2",
     "@tailwindcss/postcss": "^4.1.6",
     "@tsconfig/next": "^2.0.3",
     "@types/date-fns": "^2.6.3",
