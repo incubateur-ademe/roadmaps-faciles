@@ -66,3 +66,6 @@ templates_tmp/
 !/public/images/custom/.gitkeep
 
 certificates
+
+/src/generated/*
+!/src/generated/.gitattributes
