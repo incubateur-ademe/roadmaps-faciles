@@ -1,1 +1,1 @@
-postdeploy: npx prisma migrate deploy
+postdeploy: echo "====== PRISMA MIGRATE DEPLOY ======" && npx prisma migrate deploy && echo "====== PRISMA MIGRATE DEPLOY FINISH ======"
