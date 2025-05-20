@@ -2431,12 +2431,193 @@ export const QueryMode = {
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+export const ApiKeyOrderByRelevanceFieldEnum = {
+  userId: 'userId',
+  commonTokenPrefix: 'commonTokenPrefix',
+  randomTokenPrefix: 'randomTokenPrefix',
+  tokenDigest: 'tokenDigest'
+} as const
+
+export type ApiKeyOrderByRelevanceFieldEnum = (typeof ApiKeyOrderByRelevanceFieldEnum)[keyof typeof ApiKeyOrderByRelevanceFieldEnum]
+
+
 export const NullsOrder = {
   first: 'first',
   last: 'last'
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const BoardOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  slug: 'slug'
+} as const
+
+export type BoardOrderByRelevanceFieldEnum = (typeof BoardOrderByRelevanceFieldEnum)[keyof typeof BoardOrderByRelevanceFieldEnum]
+
+
+export const CommentOrderByRelevanceFieldEnum = {
+  body: 'body',
+  userId: 'userId'
+} as const
+
+export type CommentOrderByRelevanceFieldEnum = (typeof CommentOrderByRelevanceFieldEnum)[keyof typeof CommentOrderByRelevanceFieldEnum]
+
+
+export const FollowOrderByRelevanceFieldEnum = {
+  userId: 'userId'
+} as const
+
+export type FollowOrderByRelevanceFieldEnum = (typeof FollowOrderByRelevanceFieldEnum)[keyof typeof FollowOrderByRelevanceFieldEnum]
+
+
+export const InvitationOrderByRelevanceFieldEnum = {
+  email: 'email',
+  tokenDigest: 'tokenDigest'
+} as const
+
+export type InvitationOrderByRelevanceFieldEnum = (typeof InvitationOrderByRelevanceFieldEnum)[keyof typeof InvitationOrderByRelevanceFieldEnum]
+
+
+export const LikeOrderByRelevanceFieldEnum = {
+  userId: 'userId',
+  anonymousId: 'anonymousId'
+} as const
+
+export type LikeOrderByRelevanceFieldEnum = (typeof LikeOrderByRelevanceFieldEnum)[keyof typeof LikeOrderByRelevanceFieldEnum]
+
+
+export const PostStatusOrderByRelevanceFieldEnum = {
+  name: 'name'
+} as const
+
+export type PostStatusOrderByRelevanceFieldEnum = (typeof PostStatusOrderByRelevanceFieldEnum)[keyof typeof PostStatusOrderByRelevanceFieldEnum]
+
+
+export const PostOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description',
+  userId: 'userId',
+  slug: 'slug'
+} as const
+
+export type PostOrderByRelevanceFieldEnum = (typeof PostOrderByRelevanceFieldEnum)[keyof typeof PostOrderByRelevanceFieldEnum]
+
+
+export const PostStatusChangeOrderByRelevanceFieldEnum = {
+  userId: 'userId'
+} as const
+
+export type PostStatusChangeOrderByRelevanceFieldEnum = (typeof PostStatusChangeOrderByRelevanceFieldEnum)[keyof typeof PostStatusChangeOrderByRelevanceFieldEnum]
+
+
+export const TenantOrderByRelevanceFieldEnum = {
+  name: 'name',
+  customDomain: 'customDomain',
+  subdomain: 'subdomain'
+} as const
+
+export type TenantOrderByRelevanceFieldEnum = (typeof TenantOrderByRelevanceFieldEnum)[keyof typeof TenantOrderByRelevanceFieldEnum]
+
+
+export const TenantSettingOrderByRelevanceFieldEnum = {
+  allowedEmailDomains: 'allowedEmailDomains',
+  logoUrl: 'logoUrl',
+  logoLink: 'logoLink',
+  customCSS: 'customCSS'
+} as const
+
+export type TenantSettingOrderByRelevanceFieldEnum = (typeof TenantSettingOrderByRelevanceFieldEnum)[keyof typeof TenantSettingOrderByRelevanceFieldEnum]
+
+
+export const TenantDefaultOAuthOrderByRelevanceFieldEnum = {
+  provider: 'provider'
+} as const
+
+export type TenantDefaultOAuthOrderByRelevanceFieldEnum = (typeof TenantDefaultOAuthOrderByRelevanceFieldEnum)[keyof typeof TenantDefaultOAuthOrderByRelevanceFieldEnum]
+
+
+export const UserOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  username: 'username',
+  image: 'image',
+  currentSignInIp: 'currentSignInIp',
+  lastSignInIp: 'lastSignInIp'
+} as const
+
+export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
+
+
+export const UserOnTenantOrderByRelevanceFieldEnum = {
+  userId: 'userId'
+} as const
+
+export type UserOnTenantOrderByRelevanceFieldEnum = (typeof UserOnTenantOrderByRelevanceFieldEnum)[keyof typeof UserOnTenantOrderByRelevanceFieldEnum]
+
+
+export const AccountOrderByRelevanceFieldEnum = {
+  userId: 'userId',
+  type: 'type',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  refresh_token: 'refresh_token',
+  access_token: 'access_token',
+  token_type: 'token_type',
+  scope: 'scope',
+  id_token: 'id_token',
+  session_state: 'session_state'
+} as const
+
+export type AccountOrderByRelevanceFieldEnum = (typeof AccountOrderByRelevanceFieldEnum)[keyof typeof AccountOrderByRelevanceFieldEnum]
+
+
+export const SessionOrderByRelevanceFieldEnum = {
+  sessionToken: 'sessionToken',
+  userId: 'userId'
+} as const
+
+export type SessionOrderByRelevanceFieldEnum = (typeof SessionOrderByRelevanceFieldEnum)[keyof typeof SessionOrderByRelevanceFieldEnum]
+
+
+export const VerificationTokenOrderByRelevanceFieldEnum = {
+  identifier: 'identifier',
+  token: 'token'
+} as const
+
+export type VerificationTokenOrderByRelevanceFieldEnum = (typeof VerificationTokenOrderByRelevanceFieldEnum)[keyof typeof VerificationTokenOrderByRelevanceFieldEnum]
+
+
+export const AuthenticatorOrderByRelevanceFieldEnum = {
+  credentialID: 'credentialID',
+  userId: 'userId',
+  providerAccountId: 'providerAccountId',
+  credentialPublicKey: 'credentialPublicKey',
+  credentialDeviceType: 'credentialDeviceType',
+  transports: 'transports'
+} as const
+
+export type AuthenticatorOrderByRelevanceFieldEnum = (typeof AuthenticatorOrderByRelevanceFieldEnum)[keyof typeof AuthenticatorOrderByRelevanceFieldEnum]
+
+
+export const OAuthOrderByRelevanceFieldEnum = {
+  provider: 'provider',
+  uid: 'uid',
+  userId: 'userId'
+} as const
+
+export type OAuthOrderByRelevanceFieldEnum = (typeof OAuthOrderByRelevanceFieldEnum)[keyof typeof OAuthOrderByRelevanceFieldEnum]
+
+
+export const WebhookOrderByRelevanceFieldEnum = {
+  url: 'url',
+  event: 'event'
+} as const
+
+export type WebhookOrderByRelevanceFieldEnum = (typeof WebhookOrderByRelevanceFieldEnum)[keyof typeof WebhookOrderByRelevanceFieldEnum]
 
 
 

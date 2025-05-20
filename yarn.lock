@@ -1083,6 +1083,13 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.7.tgz#4158d3105276773d5b7695cd4834b1722e4f37a8"
   integrity sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==
 
+"@types/hast@^2.0.0":
+  version "2.3.10"
+  resolved "https://registry.yarnpkg.com/@types/hast/-/hast-2.3.10.tgz#5c9d9e0b304bbb8879b857225c5ebab2d81d7643"
+  integrity sha512-McWspRw8xx8J9HurkVBfYj0xKoE25tOFlHGdx4MJ5xORQrMGZNqJhVQWaIbm6Oyla5kYOXtDiopzKRJzEOkwJw==
+  dependencies:
+    "@types/unist" "^2"
+
 "@types/hast@^3.0.0":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@types/hast/-/hast-3.0.4.tgz#1d6b39993b82cea6ad783945b0508c25903e15aa"
@@ -1182,7 +1189,7 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-3.0.3.tgz#acaab0f919ce69cce629c2d4ed2eb4adc1b6c20c"
   integrity sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==
 
-"@types/unist@^2.0.0":
+"@types/unist@^2", "@types/unist@^2.0.0":
   version "2.0.11"
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.11.tgz#11af57b127e32487774841f7a4e54eab166d03c4"
   integrity sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==
@@ -3113,6 +3120,13 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
+hast-util-parse-selector@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/hast-util-parse-selector/-/hast-util-parse-selector-3.1.1.tgz#25ab00ae9e75cbc62cf7a901f68a247eade659e2"
+  integrity sha512-jdlwBjEexy1oGz0aJ2f4GKMaVKkA9jwjr4MjAAI22E5fM/TXVZHuS5OpONtdeIkRKqAaryQ2E9xNQxijoThSZA==
+  dependencies:
+    "@types/hast" "^2.0.0"
+
 hast-util-to-estree@^3.0.0:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/hast-util-to-estree/-/hast-util-to-estree-3.1.3.tgz#e654c1c9374645135695cc0ab9f70b8fcaf733d7"
@@ -3162,6 +3176,17 @@ hast-util-whitespace@^3.0.0:
   integrity sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==
   dependencies:
     "@types/hast" "^3.0.0"
+
+hastscript@^7.0.2:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/hastscript/-/hastscript-7.2.0.tgz#0eafb7afb153d047077fa2a833dc9b7ec604d10b"
+  integrity sha512-TtYPq24IldU8iKoJQqvZOuhi5CyCQRAbvDOX0x1eW6rsHSxa/1i2CCiptNTotGHJ3VoHRGmqiv6/D3q113ikkw==
+  dependencies:
+    "@types/hast" "^2.0.0"
+    comma-separated-tokens "^2.0.0"
+    hast-util-parse-selector "^3.0.0"
+    property-information "^6.0.0"
+    space-separated-tokens "^2.0.0"
 
 hoist-non-react-statics@^3.3.1:
   version "3.3.2"
@@ -3784,6 +3809,21 @@ math-intrinsics@^1.1.0:
   resolved "https://registry.yarnpkg.com/math-intrinsics/-/math-intrinsics-1.1.0.tgz#a0dd74be81e2aa5c2f27e65ce283605ee4e2b7f9"
   integrity sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==
 
+mdast-util-directive@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/mdast-util-directive/-/mdast-util-directive-3.1.0.tgz#f3656f4aab6ae3767d3c72cfab5e8055572ccba1"
+  integrity sha512-I3fNFt+DHmpWCYAT7quoM6lHf9wuqtI+oCOfvILnoicNIqjh5E3dEJWiXuYME2gNe8vl1iMQwyUHa7bgFmak6Q==
+  dependencies:
+    "@types/mdast" "^4.0.0"
+    "@types/unist" "^3.0.0"
+    ccount "^2.0.0"
+    devlop "^1.0.0"
+    mdast-util-from-markdown "^2.0.0"
+    mdast-util-to-markdown "^2.0.0"
+    parse-entities "^4.0.0"
+    stringify-entities "^4.0.0"
+    unist-util-visit-parents "^6.0.0"
+
 mdast-util-find-and-replace@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/mdast-util-find-and-replace/-/mdast-util-find-and-replace-3.0.2.tgz#70a3174c894e14df722abf43bc250cbae44b11df"
@@ -4023,6 +4063,19 @@ micromark-core-commonmark@^2.0.0:
     micromark-util-subtokenize "^2.0.0"
     micromark-util-symbol "^2.0.0"
     micromark-util-types "^2.0.0"
+
+micromark-extension-directive@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/micromark-extension-directive/-/micromark-extension-directive-4.0.0.tgz#af389e33fe0654c15f8466b73a0f5af598d00368"
+  integrity sha512-/C2nqVmXXmiseSSuCdItCMho7ybwwop6RrrRPk0KbOHW21JKoCldC+8rFOaundDoRBUWBnJJcxeA/Kvi34WQXg==
+  dependencies:
+    devlop "^1.0.0"
+    micromark-factory-space "^2.0.0"
+    micromark-factory-whitespace "^2.0.0"
+    micromark-util-character "^2.0.0"
+    micromark-util-symbol "^2.0.0"
+    micromark-util-types "^2.0.0"
+    parse-entities "^4.0.0"
 
 micromark-extension-frontmatter@^2.0.0:
   version "2.0.0"
@@ -4822,6 +4875,11 @@ prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+property-information@^6.0.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/property-information/-/property-information-6.5.0.tgz#6212fbb52ba757e92ef4fb9d657563b933b7ffec"
+  integrity sha512-PgTgs/BlvHxOu8QuEN7wi5A0OmXaBcHpmCSTehcs6Uuu9IkDIEo13Hy7n898RHfrQ49vKCoGeWZSaAK01nwVig==
+
 property-information@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/property-information/-/property-information-7.0.0.tgz#3508a6d6b0b8eb3ca6eb2c6623b164d2ed2ab112"
@@ -5052,6 +5110,24 @@ rehype-recma@^1.0.0:
     "@types/estree" "^1.0.0"
     "@types/hast" "^3.0.0"
     hast-util-to-estree "^3.0.0"
+
+remark-directive-rehype@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/remark-directive-rehype/-/remark-directive-rehype-0.4.2.tgz#044040455523a3281a7be7fdde304714d29021b5"
+  integrity sha512-T6e+IG+BwqU4++MK54vFb+KDFjs3a+tHeK6E0T0ctR1FSyngolfDtAEzqxHWlRzQZqGi2sB4DFXry6oqH87D/g==
+  dependencies:
+    hastscript "^7.0.2"
+    unist-util-map "^3.1.2"
+
+remark-directive@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/remark-directive/-/remark-directive-4.0.0.tgz#4e909826e05cade7f8678532f4815cd931d47e8d"
+  integrity sha512-7sxn4RfF1o3izevPV1DheyGDD6X4c9hrGpfdUpm7uC++dqrnJxIZVkk7CoKqcLm0VUMAuOol7Mno3m6g8cfMuA==
+  dependencies:
+    "@types/mdast" "^4.0.0"
+    mdast-util-directive "^3.0.0"
+    micromark-extension-directive "^4.0.0"
+    unified "^11.0.0"
 
 remark-frontmatter@^5.0.0:
   version "5.0.0"
@@ -5865,6 +5941,13 @@ unist-util-is@^6.0.0:
   integrity sha512-2qCTHimwdxLfz+YzdGfkqNlH0tLi9xjTnHddPmJwtIG9MGsdbutfTc4P+haPD7l7Cjxf/WZj+we5qfVPvvxfYw==
   dependencies:
     "@types/unist" "^3.0.0"
+
+unist-util-map@^3.1.2:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/unist-util-map/-/unist-util-map-3.1.3.tgz#5ae708cafb8400439f0a8e590a20be05223f78e1"
+  integrity sha512-4/mDauoxqZ6geK97lJ6n2kDk6JK88Vh+hWMSJqyaaP/7eqN1dDhjcjnNxKNm3YU6Sw7PVJtcFMUbnmHvYzb6Vg==
+  dependencies:
+    "@types/unist" "^2.0.0"
 
 unist-util-mdx-define@^1.0.0:
   version "1.1.2"

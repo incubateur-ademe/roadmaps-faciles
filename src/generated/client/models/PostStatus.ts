@@ -264,6 +264,7 @@ export type PostStatusOrderByWithRelationInput = {
   tenant?: Prisma.TenantOrderByWithRelationInput
   posts?: Prisma.PostOrderByRelationAggregateInput
   statusChange?: Prisma.PostStatusChangeOrderByRelationAggregateInput
+  _relevance?: Prisma.PostStatusOrderByRelevanceInput
 }
 
 export type PostStatusWhereUniqueInput = Prisma.AtLeast<{
@@ -393,6 +394,12 @@ export type PostStatusUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PostStatusOrderByRelevanceInput = {
+  fields: Prisma.PostStatusOrderByRelevanceFieldEnum | Prisma.PostStatusOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type PostStatusNameTenantIdCompoundUniqueInput = {

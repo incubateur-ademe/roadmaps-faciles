@@ -236,6 +236,7 @@ export type WebhookOrderByWithRelationInput = {
   event?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  _relevance?: Prisma.WebhookOrderByRelevanceInput
 }
 
 export type WebhookWhereUniqueInput = Prisma.AtLeast<{
@@ -334,6 +335,12 @@ export type WebhookUncheckedUpdateManyInput = {
   event?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WebhookOrderByRelevanceInput = {
+  fields: Prisma.WebhookOrderByRelevanceFieldEnum | Prisma.WebhookOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type WebhookCountOrderByAggregateInput = {

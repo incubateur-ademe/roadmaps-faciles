@@ -227,6 +227,7 @@ export type UserOnTenantOrderByWithRelationInput = {
   joinedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   tenant?: Prisma.TenantOrderByWithRelationInput
+  _relevance?: Prisma.UserOnTenantOrderByRelevanceInput
 }
 
 export type UserOnTenantWhereUniqueInput = Prisma.AtLeast<{
@@ -329,6 +330,12 @@ export type UserOnTenantListRelationFilter = {
 
 export type UserOnTenantOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type UserOnTenantOrderByRelevanceInput = {
+  fields: Prisma.UserOnTenantOrderByRelevanceFieldEnum | Prisma.UserOnTenantOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type UserOnTenantUserIdTenantIdCompoundUniqueInput = {

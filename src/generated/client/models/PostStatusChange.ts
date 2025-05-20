@@ -255,6 +255,7 @@ export type PostStatusChangeOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   postStatus?: Prisma.PostStatusOrderByWithRelationInput
+  _relevance?: Prisma.PostStatusChangeOrderByRelevanceInput
 }
 
 export type PostStatusChangeWhereUniqueInput = Prisma.AtLeast<{
@@ -373,6 +374,12 @@ export type PostStatusChangeListRelationFilter = {
 
 export type PostStatusChangeOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type PostStatusChangeOrderByRelevanceInput = {
+  fields: Prisma.PostStatusChangeOrderByRelevanceFieldEnum | Prisma.PostStatusChangeOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type PostStatusChangeCountOrderByAggregateInput = {

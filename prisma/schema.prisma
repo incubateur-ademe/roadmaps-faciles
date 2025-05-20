@@ -9,7 +9,7 @@ generator client {
   output              = "../src/generated/client"
   moduleFormat        = "cjs"
   importFileExtension = ""
-  previewFeatures     = ["typedSql", "views"]
+  previewFeatures     = ["typedSql", "views", "fullTextSearchPostgres"]
 }
 
 datasource db {
@@ -201,7 +201,14 @@ model Post {
   pin        Pin?
   hotness    PostWithHotness?
 
+  textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, COALESCE(title, ''::text) || ' ' || COALESCE(description, ''::text))"))
+
+  // @@fulltext([title, description])
+  // @@fulltext([description])
+  // @@fulltext([title])
+
   @@unique([slug, tenantId])
+  @@index([textsearchable_index_col], type: Gin)
   @@index([boardId])
   @@index([postStatusId])
   @@index([tenantId])

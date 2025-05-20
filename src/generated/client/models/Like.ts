@@ -253,6 +253,7 @@ export type LikeOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   post?: Prisma.PostOrderByWithRelationInput
+  _relevance?: Prisma.LikeOrderByRelevanceInput
 }
 
 export type LikeWhereUniqueInput = Prisma.AtLeast<{
@@ -363,6 +364,12 @@ export type LikeUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type LikeOrderByRelevanceInput = {
+  fields: Prisma.LikeOrderByRelevanceFieldEnum | Prisma.LikeOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type LikeUserIdPostIdCompoundUniqueInput = {

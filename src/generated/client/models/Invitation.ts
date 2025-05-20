@@ -245,6 +245,7 @@ export type InvitationOrderByWithRelationInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  _relevance?: Prisma.InvitationOrderByRelevanceInput
 }
 
 export type InvitationWhereUniqueInput = Prisma.AtLeast<{
@@ -354,6 +355,12 @@ export type InvitationUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type InvitationOrderByRelevanceInput = {
+  fields: Prisma.InvitationOrderByRelevanceFieldEnum | Prisma.InvitationOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type InvitationEmailTenantIdCompoundUniqueInput = {

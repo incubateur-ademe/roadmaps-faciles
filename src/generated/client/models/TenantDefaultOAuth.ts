@@ -227,6 +227,7 @@ export type TenantDefaultOAuthOrderByWithRelationInput = {
   provider?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  _relevance?: Prisma.TenantDefaultOAuthOrderByRelevanceInput
 }
 
 export type TenantDefaultOAuthWhereUniqueInput = Prisma.AtLeast<{
@@ -316,6 +317,12 @@ export type TenantDefaultOAuthUncheckedUpdateManyInput = {
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type TenantDefaultOAuthOrderByRelevanceInput = {
+  fields: Prisma.TenantDefaultOAuthOrderByRelevanceFieldEnum | Prisma.TenantDefaultOAuthOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type TenantDefaultOAuthTenantIdProviderCompoundUniqueInput = {

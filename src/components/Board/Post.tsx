@@ -1,24 +1,20 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
-import ReactMarkdown from "react-markdown";
+import { MarkdownHooks } from "react-markdown";
+import remarkDirective from "remark-directive";
+import remarkDirectiveRehype from "remark-directive-rehype";
+import remarkGfm from "remark-gfm";
 
-import { type Like, type Post, type PostStatus, type Prisma, type User } from "@/prisma/client";
+import { type EnrichedPost } from "@/app/[domain]/board/[boardSlug]/actions";
 
 import { LikeButton } from "./LikeButton";
 import style from "./Post.module.scss";
 
 export interface BoardPostProps {
   alreadyLiked: boolean;
-  post: Post & {
-    _count: Prisma.PostCountOutputType;
-    likes: Like[];
-    postStatus: PostStatus | null;
-    user: User;
-  };
+  post: EnrichedPost;
   userId?: string;
 }
-
-export type BoardPostType = BoardPostProps["post"];
 
 export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
   return (
@@ -50,9 +46,19 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
           </LikeButton>
           <span className="line-clamp-3">
             {post.description && (
-              <ReactMarkdown unwrapDisallowed disallowedElements={["p"]}>
+              <MarkdownHooks
+                remarkPlugins={[remarkGfm, remarkDirective, remarkDirectiveRehype]}
+                unwrapDisallowed
+                disallowedElements={["p"]}
+                allowElement={elt => elt.tagName !== "p"}
+                components={{
+                  ["search-mark" as "div"]: ({ children }) => {
+                    return <mark>{children}</mark>;
+                  },
+                }}
+              >
                 {post.description}
-              </ReactMarkdown>
+              </MarkdownHooks>
             )}
           </span>
         </span>

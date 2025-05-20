@@ -258,6 +258,7 @@ export type ApiKeyOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   tenant?: Prisma.TenantOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
+  _relevance?: Prisma.ApiKeyOrderByRelevanceInput
 }
 
 export type ApiKeyWhereUniqueInput = Prisma.AtLeast<{
@@ -377,6 +378,12 @@ export type ApiKeyUncheckedUpdateManyInput = {
   tokenDigest?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ApiKeyOrderByRelevanceInput = {
+  fields: Prisma.ApiKeyOrderByRelevanceFieldEnum | Prisma.ApiKeyOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type ApiKeyUserIdTenantIdCompoundUniqueInput = {

@@ -305,6 +305,7 @@ export type PostOrderByWithRelationInput = {
   likes?: Prisma.LikeOrderByRelationAggregateInput
   pin?: Prisma.PinOrderByWithRelationInput
   hotness?: Prisma.PostWithHotnessOrderByWithRelationInput
+  _relevance?: Prisma.PostOrderByRelevanceInput
 }
 
 export type PostWhereUniqueInput = Prisma.AtLeast<{
@@ -494,6 +495,12 @@ export type PostOrderByRelationAggregateInput = {
 export type PostScalarRelationFilter = {
   is?: Prisma.PostWhereInput
   isNot?: Prisma.PostWhereInput
+}
+
+export type PostOrderByRelevanceInput = {
+  fields: Prisma.PostOrderByRelevanceFieldEnum | Prisma.PostOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type PostSlugTenantIdCompoundUniqueInput = {

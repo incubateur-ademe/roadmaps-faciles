@@ -279,6 +279,7 @@ export type CommentOrderByWithRelationInput = {
   post?: Prisma.PostOrderByWithRelationInput
   parent?: Prisma.CommentOrderByWithRelationInput
   replies?: Prisma.CommentOrderByRelationAggregateInput
+  _relevance?: Prisma.CommentOrderByRelevanceInput
 }
 
 export type CommentWhereUniqueInput = Prisma.AtLeast<{
@@ -427,6 +428,12 @@ export type CommentListRelationFilter = {
 
 export type CommentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type CommentOrderByRelevanceInput = {
+  fields: Prisma.CommentOrderByRelevanceFieldEnum | Prisma.CommentOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type CommentCountOrderByAggregateInput = {

@@ -171,6 +171,7 @@ export type VerificationTokenOrderByWithRelationInput = {
   identifier?: Prisma.SortOrder
   token?: Prisma.SortOrder
   expires?: Prisma.SortOrder
+  _relevance?: Prisma.VerificationTokenOrderByRelevanceInput
 }
 
 export type VerificationTokenWhereUniqueInput = Prisma.AtLeast<{
@@ -241,6 +242,12 @@ export type VerificationTokenUncheckedUpdateManyInput = {
   identifier?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   expires?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type VerificationTokenOrderByRelevanceInput = {
+  fields: Prisma.VerificationTokenOrderByRelevanceFieldEnum | Prisma.VerificationTokenOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type VerificationTokenIdentifierTokenCompoundUniqueInput = {

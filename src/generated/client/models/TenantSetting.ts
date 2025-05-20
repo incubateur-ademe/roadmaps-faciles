@@ -401,6 +401,7 @@ export type TenantSettingOrderByWithRelationInput = {
   rootBoardId?: Prisma.SortOrderInput | Prisma.SortOrder
   rootBoard?: Prisma.BoardOrderByWithRelationInput
   tenant?: Prisma.TenantOrderByWithRelationInput
+  _relevance?: Prisma.TenantSettingOrderByRelevanceInput
 }
 
 export type TenantSettingWhereUniqueInput = Prisma.AtLeast<{
@@ -682,6 +683,12 @@ export type StringNullableListFilter<$PrismaModel = never> = {
   hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
   hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
   isEmpty?: boolean
+}
+
+export type TenantSettingOrderByRelevanceInput = {
+  fields: Prisma.TenantSettingOrderByRelevanceFieldEnum | Prisma.TenantSettingOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type TenantSettingCountOrderByAggregateInput = {

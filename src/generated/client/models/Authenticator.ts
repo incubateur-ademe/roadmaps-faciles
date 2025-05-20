@@ -252,6 +252,7 @@ export type AuthenticatorOrderByWithRelationInput = {
   credentialBackedUp?: Prisma.SortOrder
   transports?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  _relevance?: Prisma.AuthenticatorOrderByRelevanceInput
 }
 
 export type AuthenticatorWhereUniqueInput = Prisma.AtLeast<{
@@ -384,6 +385,12 @@ export type AuthenticatorListRelationFilter = {
 
 export type AuthenticatorOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type AuthenticatorOrderByRelevanceInput = {
+  fields: Prisma.AuthenticatorOrderByRelevanceFieldEnum | Prisma.AuthenticatorOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type AuthenticatorUserIdCredentialIDCompoundUniqueInput = {

@@ -25,13 +25,14 @@ export interface BoardParams {
 
 const searchParamsSchema = z.object({
   order: z.enum(ORDER_ENUM).default(defaultOrder),
+  search: z.string().optional(),
 });
 
 const BoardPage = withValidation({
   searchParamsSchema,
 })(async ({ searchParams, searchParamsError, ...rest }) => {
   const { _data, params } = rest as DomainPageCombinedProps<BoardParams>;
-  const { order } = await searchParams;
+  const { order, search } = await searchParams;
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
   const { domain, boardSlug } = await params;
@@ -56,7 +57,7 @@ const BoardPage = withValidation({
     return <div>Board not found</div>;
   }
 
-  const posts = await fetchPostsForBoard(1, validatedOrder, board.id);
+  const { posts, filteredCount } = await fetchPostsForBoard(1, validatedOrder, board.id, search);
 
   const anonymousId = await getAnonymousId();
 
@@ -83,7 +84,7 @@ const BoardPage = withValidation({
           <Grid className={cx("sticky self-start top-[0] z-[501]", style.header)}>
             <GridCol base={8} className={style.title} pr="1w">
               <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>
-                {board.name} ({board._count.posts})
+                {board.name} ({filteredCount}/{board._count.posts})
               </h1>
               {board.description && (
                 <h2 className={cx(fr.cx("fr-text--md"), style.boardSubTiltle)}>
@@ -92,7 +93,7 @@ const BoardPage = withValidation({
               )}
             </GridCol>
             <GridCol base={4} className={style.actions}>
-              <FilterAndSearch order={validatedOrder} />
+              <FilterAndSearch order={validatedOrder} search={search} />
             </GridCol>
           </Grid>
           <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
@@ -100,10 +101,11 @@ const BoardPage = withValidation({
               key={`postList_${board.id}`}
               anonymousId={anonymousId}
               initialPosts={posts}
-              totalCount={board._count.posts}
+              totalCount={Math.min(filteredCount, board._count.posts)}
               userId={session?.user.id}
               order={validatedOrder}
               boardId={board.id}
+              search={search}
             />
           </ClientAnimate>
         </GridCol>

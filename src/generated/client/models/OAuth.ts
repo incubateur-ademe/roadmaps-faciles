@@ -245,6 +245,7 @@ export type OAuthOrderByWithRelationInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  _relevance?: Prisma.OAuthOrderByRelevanceInput
 }
 
 export type OAuthWhereUniqueInput = Prisma.AtLeast<{
@@ -354,6 +355,12 @@ export type OAuthUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type OAuthOrderByRelevanceInput = {
+  fields: Prisma.OAuthOrderByRelevanceFieldEnum | Prisma.OAuthOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type OAuthProviderUidTenantIdCompoundUniqueInput = {

@@ -266,6 +266,7 @@ export type BoardOrderByWithRelationInput = {
   posts?: Prisma.PostOrderByRelationAggregateInput
   tenantSettingForRoot?: Prisma.TenantSettingOrderByWithRelationInput
   postsWithHotness?: Prisma.PostWithHotnessOrderByRelationAggregateInput
+  _relevance?: Prisma.BoardOrderByRelevanceInput
 }
 
 export type BoardWhereUniqueInput = Prisma.AtLeast<{
@@ -401,6 +402,12 @@ export type BoardUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BoardOrderByRelevanceInput = {
+  fields: Prisma.BoardOrderByRelevanceFieldEnum | Prisma.BoardOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type BoardNameTenantIdCompoundUniqueInput = {

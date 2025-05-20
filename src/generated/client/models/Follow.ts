@@ -244,6 +244,7 @@ export type FollowOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   post?: Prisma.PostOrderByWithRelationInput
+  _relevance?: Prisma.FollowOrderByRelevanceInput
 }
 
 export type FollowWhereUniqueInput = Prisma.AtLeast<{
@@ -343,6 +344,12 @@ export type FollowUncheckedUpdateManyInput = {
   tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FollowOrderByRelevanceInput = {
+  fields: Prisma.FollowOrderByRelevanceFieldEnum | Prisma.FollowOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
 }
 
 export type FollowUserIdPostIdCompoundUniqueInput = {
