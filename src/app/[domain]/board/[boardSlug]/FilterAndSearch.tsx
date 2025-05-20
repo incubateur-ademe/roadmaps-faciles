@@ -63,7 +63,7 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
         }
       />
       <div className="flex gap-[1rem] justify-between">
-        <Button title="Filtre" iconId="fr-icon-filter-line" priority="secondary" />
+        <Button disabled title="Arrive prochainement" iconId="fr-icon-filter-line" priority="secondary" />
         <SearchBar className="grow" allowEmptySearch onButtonClick={handleSearch} defaultValue={search} />
       </div>
     </>

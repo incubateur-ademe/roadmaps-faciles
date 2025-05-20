@@ -10,6 +10,7 @@ generator client {
   moduleFormat        = "cjs"
   importFileExtension = ""
   previewFeatures     = ["typedSql", "views", "fullTextSearchPostgres"]
+  binaryTargets       = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
