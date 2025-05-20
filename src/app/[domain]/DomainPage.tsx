@@ -11,18 +11,18 @@ import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomai
 type DomainRootPageOptions = {
   withSettings?: boolean;
 };
-type CombinedProps<Params extends object> = DomainProps<Params> & {
+export type DomainPageCombinedProps<Params extends object> = DomainProps<Params> & {
   _data: { settings?: TenantSetting; tenant: Tenant };
 };
 export type DomainPage<Params extends object = EmptyObject> = (
-  props: CombinedProps<Params>,
+  props: DomainPageCombinedProps<Params>,
 ) => Promise<ReactElement> | ReactElement;
 
 // This is a HOP (Higher Order Page) that wraps the page component with the tenant and settings data
 export const DomainPageHOP =
   <Params extends object>(options?: DomainRootPageOptions) =>
   (page: DomainPage<Params>) =>
-    (async (props: CombinedProps<Params>) => {
+    (async (props: DomainPageCombinedProps<Params>) => {
       const tenant = await getTenantFromDomainProps<Params>(props);
       let settings: TenantSetting | undefined;
 

@@ -1,24 +1,40 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
-import SearchBar from "@codegouvfr/react-dsfr/SearchBar";
-import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import z from "zod";
 
-import { BoardPost } from "@/components/Board/Post";
+import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { Container, Grid, GridCol } from "@/dsfr";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId";
+import { withValidation } from "@/utils/next";
 
-import { DomainPageHOP } from "../../DomainPage";
+import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
+import { fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
+import { FilterAndSearch } from "./FilterAndSearch";
+import { PostList } from "./PostList";
+import { defaultOrder, ORDER_ENUM } from "./types";
 
 export interface BoardParams {
   boardSlug: string;
 }
 
-const BoardPage = DomainPageHOP<BoardParams>({ withSettings: true })(async ({ params, _data }) => {
+const searchParamsSchema = z.object({
+  order: z.enum(ORDER_ENUM).default(defaultOrder),
+  search: z.string().optional(),
+});
+
+const BoardPage = withValidation({
+  searchParamsSchema,
+})(async ({ searchParams, searchParamsError, ...rest }) => {
+  const { _data, params } = rest as DomainPageCombinedProps<BoardParams>;
+  const { order, search } = await searchParams;
+
+  const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
   const { domain, boardSlug } = await params;
   const session = await auth();
   const board = await prisma.board.findUnique({
@@ -29,18 +45,9 @@ const BoardPage = DomainPageHOP<BoardParams>({ withSettings: true })(async ({ pa
       },
     },
     include: {
-      posts: {
-        include: {
-          postStatus: true,
-          user: true,
-          likes: true,
-          _count: {
-            select: {
-              comments: true,
-              follows: true,
-              likes: true,
-            },
-          },
+      _count: {
+        select: {
+          posts: true,
         },
       },
     },
@@ -49,6 +56,8 @@ const BoardPage = DomainPageHOP<BoardParams>({ withSettings: true })(async ({ pa
   if (!board) {
     return <div>Board not found</div>;
   }
+
+  const { posts, filteredCount } = await fetchPostsForBoard(1, validatedOrder, board.id, search);
 
   const anonymousId = await getAnonymousId();
 
@@ -73,54 +82,42 @@ const BoardPage = DomainPageHOP<BoardParams>({ withSettings: true })(async ({ pa
         </GridCol>
         <GridCol base={9}>
           <Grid className={cx("sticky self-start top-[0] z-[501]", style.header)}>
-            <GridCol base={8} className={style.title}>
+            <GridCol base={8} className={style.title} pr="1w">
               <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>{board.name}</h1>
-              <h2 className={fr.cx("fr-text--md")}>{board.description}</h2>
+              {board.description && (
+                <h2 className={cx(fr.cx("fr-text--md"), style.boardSubTiltle)}>
+                  <MDXRemote source={board.description} />
+                </h2>
+              )}
             </GridCol>
             <GridCol base={4} className={style.actions}>
-              <SegmentedControl
-                legend="Trier par"
-                hideLegend
-                small
-                className={cx(fr.cx("fr-mb-2w"), "w-full")}
-                classes={{
-                  elements: "grow justify-between",
-                }}
-                segments={[
-                  {
-                    iconId: "fr-icon-star-s-line",
-                    label: "Tendance",
-                  },
-                  {
-                    iconId: "fr-icon-arrow-right-up-line",
-                    label: "Top",
-                  },
-                  {
-                    iconId: "fr-icon-sparkling-2-line",
-                    label: "Nouveau",
-                  },
-                ]}
-              />
-              <div className="flex gap-[1rem] justify-between">
-                <Button title="Filtre" iconId="fr-icon-filter-line" priority="secondary" />
-                <SearchBar className="grow" />
-              </div>
+              <FilterAndSearch order={validatedOrder} search={search} />
+            </GridCol>
+            <GridCol base={12} className={cx(fr.cx("fr-hint-text"))}>
+              {filteredCount} résultat{filteredCount > 1 ? "s" : ""}
+              {filteredCount !== board._count.posts
+                ? ` filtré${filteredCount > 1 ? "s" : ""} sur ${board._count.posts} au total`
+                : ""}
             </GridCol>
           </Grid>
-          <div className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
-            {board.posts.map(post => {
-              const alreadyLiked = post.likes.some(
-                like => session?.user?.id === like.userId || like.anonymousId === anonymousId,
-              );
-              return (
-                <BoardPost key={`post_${post.id}`} post={post} alreadyLiked={alreadyLiked} userId={session?.user.id} />
-              );
-            })}
-          </div>
+          <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
+            <PostList
+              key={`postList_${board.id}`}
+              anonymousId={anonymousId}
+              initialPosts={posts}
+              totalCount={filteredCount}
+              userId={session?.user.id}
+              order={validatedOrder}
+              boardId={board.id}
+              search={search}
+            />
+          </ClientAnimate>
         </GridCol>
       </Grid>
     </Container>
   );
 });
 
-export default BoardPage;
+export default DomainPageHOP({
+  withSettings: true,
+})(BoardPage);

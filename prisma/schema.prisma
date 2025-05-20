@@ -5,8 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  provider            = "prisma-client"
+  output              = "../src/generated/client"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
+  previewFeatures     = ["typedSql", "views", "fullTextSearchPostgres"]
+  binaryTargets       = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -43,9 +47,10 @@ model Board {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant               Tenant         @relation(fields: [tenantId], references: [id])
+  tenant               Tenant            @relation(fields: [tenantId], references: [id])
   posts                Post[]
   tenantSettingForRoot TenantSetting?
+  postsWithHotness     PostWithHotness[]
 
   @@unique([name, tenantId])
   @@unique([slug, tenantId])
@@ -187,20 +192,39 @@ model Post {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   approvalStatus PostApprovalStatus @default(APPROVED)
+  tags           String[]
 
-  board      Board       @relation(fields: [boardId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
-  postStatus PostStatus? @relation(fields: [postStatusId], references: [id])
+  board      Board            @relation(fields: [boardId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
+  postStatus PostStatus?      @relation(fields: [postStatusId], references: [id])
   comments   Comment[]
   follows    Follow[]
   likes      Like[]
   pin        Pin?
+  hotness    PostWithHotness?
+
+  textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, (COALESCE(title, ''::text) || ' '::text || COALESCE(description, ''::text)))"))
+
+  // @@fulltext([title, description])
+  // @@fulltext([description])
+  // @@fulltext([title])
 
   @@unique([slug, tenantId])
+  @@index([textsearchable_index_col], type: Gin)
   @@index([boardId])
   @@index([postStatusId])
   @@index([tenantId])
   @@index([userId])
+  @@index([tags])
+}
+
+view PostWithHotness {
+  id      Int     @unique
+  hotness Decimal @default(0.0)
+  boardId Int
+  postId  Int     @unique
+  post    Post    @relation(fields: [postId], references: [id])
+  board   Board   @relation(fields: [boardId], references: [id])
 }
 
 model Pin {

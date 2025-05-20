@@ -51,7 +51,7 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
-  webpack: (config: Configuration, _options) => {
+  webpack: (config: Configuration) => {
     config.module?.rules?.push({
       test: /\.(woff2|webmanifest|ttf)$/,
       type: "asset/resource",

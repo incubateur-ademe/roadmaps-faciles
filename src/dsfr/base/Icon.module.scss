@@ -47,6 +47,11 @@ $align: center, left, right, space-around, space-between, space-evenly;
         margin-right: .5rem;
     }
 
+    &.fr-icon--solo::before {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
     &::after {
         content: unset;
     }
@@ -67,6 +72,11 @@ $align: center, left, right, space-around, space-between, space-evenly;
 .fr-icon--right {
     &::before {
         content: unset;
+    }
+
+    &.fr-icon--solo::after {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 
     &::after {

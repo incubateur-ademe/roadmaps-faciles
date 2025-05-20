@@ -210,7 +210,13 @@ const config = [
         },
       },
       {
-        files: ["src/pages/**/*.ts?(x)", `src/app/**/+(${nextFiles}).ts?(x)`, "next.config.ts", "eslint.config.ts"],
+        files: [
+          "src/pages/**/*.ts?(x)",
+          `src/app/**/+(${nextFiles}).ts?(x)`,
+          "next.config.ts",
+          "eslint.config.ts",
+          "prisma.config.ts",
+        ],
         rules: {
           "import/no-default-export": "off",
         },
