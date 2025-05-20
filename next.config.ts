@@ -2,13 +2,11 @@
 // @ts-check
 
 import createMDX from "@next/mdx";
-// @ts-expect-error -- no types for this package
-import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
 import { type NextConfig } from "next";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import { type Configuration, type WebpackPluginInstance } from "webpack";
+import { type Configuration } from "webpack";
 
 import packageJson from "./package.json" with { type: "json" };
 
@@ -53,15 +51,11 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
-  webpack: (config: Configuration, { isServer }) => {
+  webpack: (config: Configuration) => {
     config.module?.rules?.push({
       test: /\.(woff2|webmanifest|ttf)$/,
       type: "asset/resource",
     });
-
-    if (isServer) {
-      config.plugins = [...(config.plugins || []), new (PrismaPlugin as new () => WebpackPluginInstance)()];
-    }
 
     // if (!options.isServer) {
     //   config.plugins?.push(
