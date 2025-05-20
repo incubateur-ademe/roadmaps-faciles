@@ -83,9 +83,7 @@ const BoardPage = withValidation({
         <GridCol base={9}>
           <Grid className={cx("sticky self-start top-[0] z-[501]", style.header)}>
             <GridCol base={8} className={style.title} pr="1w">
-              <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>
-                {board.name} ({filteredCount}/{board._count.posts})
-              </h1>
+              <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>{board.name}</h1>
               {board.description && (
                 <h2 className={cx(fr.cx("fr-text--md"), style.boardSubTiltle)}>
                   <MDXRemote source={board.description} />
@@ -95,13 +93,19 @@ const BoardPage = withValidation({
             <GridCol base={4} className={style.actions}>
               <FilterAndSearch order={validatedOrder} search={search} />
             </GridCol>
+            <GridCol base={12} className={cx(fr.cx("fr-hint-text"))}>
+              {filteredCount} résultat{filteredCount > 1 ? "s" : ""}
+              {filteredCount !== board._count.posts
+                ? ` filtré${filteredCount > 1 ? "s" : ""} sur ${board._count.posts} au total`
+                : ""}
+            </GridCol>
           </Grid>
           <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
             <PostList
               key={`postList_${board.id}`}
               anonymousId={anonymousId}
               initialPosts={posts}
-              totalCount={Math.min(filteredCount, board._count.posts)}
+              totalCount={filteredCount}
               userId={session?.user.id}
               order={validatedOrder}
               boardId={board.id}

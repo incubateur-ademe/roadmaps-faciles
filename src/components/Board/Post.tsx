@@ -1,5 +1,6 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
+import Tag from "@codegouvfr/react-dsfr/Tag";
 import { MarkdownHooks } from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkDirectiveRehype from "remark-directive-rehype";
@@ -27,17 +28,33 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
       }
       title={post.title}
       titleAs="h3"
-      endDetail={<span>{post.user.name}</span>}
+      endDetail={
+        <span className="flex justify-between items-center w-full">
+          <span className="">{post.user.name}</span>
+          {post._count.comments > 0 && (
+            <Tag as="span" iconId="fr-icon-discuss-line" small>
+              <b>{post._count.comments}</b>&nbsp;commentaire{post._count.comments > 1 ? "s" : ""}
+            </Tag>
+          )}
+        </span>
+      }
       detail={
-        post.postStatus ? (
-          <Badge as="span" className={style[`fr-badge--color-${post.postStatus.color}`]}>
-            {post.postStatus.name}
-          </Badge>
-        ) : (
-          <Badge as="span" className={style["fr-badge--color-grey"]}>
-            Non classé
-          </Badge>
-        )
+        <span className="flex gap-[.5rem] items-center">
+          {post.postStatus ? (
+            <Badge as="span" className={style[`fr-badge--color-${post.postStatus.color}`]}>
+              {post.postStatus.name}
+            </Badge>
+          ) : (
+            <Badge as="span" className={style["fr-badge--color-grey"]}>
+              Non classé
+            </Badge>
+          )}
+          {post.tags?.map(tag => (
+            <Tag as="span" key={tag} small iconId="fr-icon-bookmark-line">
+              {tag}
+            </Tag>
+          ))}
+        </span>
       }
       desc={
         <span className="flex gap-[.5rem] items-center">

@@ -115,10 +115,10 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
-"@codegouvfr/react-dsfr@^1.23.3":
-  version "1.23.4"
-  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-1.23.4.tgz#a2bd7afcf6f6d2caba362a43576c07bdf155bb1c"
-  integrity sha512-DPAKstdVaUokYGMA2zmINM3Gmi3+zKG8x4okTETDRHbXqzr+G8DjslMNffwCVWW9CUHLSA/JIeyvQQFF2fxZ0A==
+"@codegouvfr/react-dsfr@^1.23.10-rc.2":
+  version "1.23.10-rc.2"
+  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-1.23.10-rc.2.tgz#a29d2d154cba63d1d03f4323e816a7631ba3625f"
+  integrity sha512-odS5jjOBR7Ihx46usxlw+DKezSVPTR1I6bj/qwzOWdIhSDvUG/sSSl+67T1QyKqKBkDGPAd94GtlBnGPggHnlQ==
   dependencies:
     tsafe "^1.8.5"
     yargs-parser "^21.1.1"
@@ -864,11 +864,6 @@
   integrity sha512-vXSxyUgX3vm1Q70QwzwkjeYfRryIvKno1SXbIqwSptKwqKzskINnDUcx85oX+ys6ooN2ATGSD0xN2UTfg6Zcow==
   dependencies:
     "@prisma/debug" "6.8.2"
-
-"@prisma/nextjs-monorepo-workaround-plugin@^6.8.2":
-  version "6.8.2"
-  resolved "https://registry.yarnpkg.com/@prisma/nextjs-monorepo-workaround-plugin/-/nextjs-monorepo-workaround-plugin-6.8.2.tgz#c772a37950cefcb587e0a91a6039279466ae4762"
-  integrity sha512-F/Iq131HGEAlEP1V/XV0yB8GQ6e1AVekjaPtVmr7X8l17X19Ll34/lDzDMFM3DSnK5suC4X8bMxnCPbEHJ/siA==
 
 "@rtsao/scc@^1.1.0":
   version "1.1.0"

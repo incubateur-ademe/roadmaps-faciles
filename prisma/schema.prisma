@@ -192,6 +192,7 @@ model Post {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   approvalStatus PostApprovalStatus @default(APPROVED)
+  tags           String[]
 
   board      Board            @relation(fields: [boardId], references: [id])
   user       User             @relation(fields: [userId], references: [id])
@@ -202,7 +203,7 @@ model Post {
   pin        Pin?
   hotness    PostWithHotness?
 
-  textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, COALESCE(title, ''::text) || ' ' || COALESCE(description, ''::text))"))
+  textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, (COALESCE(title, ''::text) || ' '::text || COALESCE(description, ''::text)))"))
 
   // @@fulltext([title, description])
   // @@fulltext([description])
@@ -214,6 +215,7 @@ model Post {
   @@index([postStatusId])
   @@index([tenantId])
   @@index([userId])
+  @@index([tags])
 }
 
 view PostWithHotness {

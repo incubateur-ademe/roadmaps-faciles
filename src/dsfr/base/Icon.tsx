@@ -85,6 +85,7 @@ export const Icon = ({
       iconPosition && styles[`fr-icon--${iconPosition}`],
       valign && styles[`fr-icon--valign-${valign}`],
       align && styles[`fr-icon--align-${align}`],
+      !text && styles["fr-icon--solo"],
       className,
     )}
     aria-hidden={text ? "false" : "true"}

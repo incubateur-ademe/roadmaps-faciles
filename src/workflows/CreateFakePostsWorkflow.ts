@@ -54,6 +54,7 @@ export class CreateFakePostsWorkflow implements IWorkflow {
           postStatusId: randomPostStatus.id,
           userId: randomUserOnTenant.userId,
           tenantId: tenant.id,
+          tags: times(faker.number.int(3), () => faker.git.branch()),
         },
       });
 
