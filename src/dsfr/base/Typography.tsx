@@ -1,18 +1,19 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { cx, type CxArg } from "@codegouvfr/react-dsfr/tools/cx";
-import { type ForwardedRef, forwardRef, type ReactNode } from "react";
+import { type ForwardedRef, forwardRef, type PropsWithChildren } from "react";
 
 import { type PropsWithoutChildren } from "@/utils/types";
 
 import { buildSpacingClasses, type SpacingProps } from "../utils/spacing";
 
 type TypoVariant = (typeof fr.typography)[number]["selector"];
-export type TypographyProps = SpacingProps & {
-  className?: CxArg;
-  text: ReactNode;
-};
+export type TypographyProps = PropsWithChildren<
+  SpacingProps & {
+    className?: CxArg;
+  }
+>;
 
-const typographyProps = <P extends Omit<TypographyProps, "text">>({
+const typographyProps = <P extends PropsWithoutChildren<TypographyProps>>({
   className,
   mt,
   mr,
@@ -81,21 +82,21 @@ const headingProps = ({ display, variant, ...rest }: Omit<HeadingProps, "as" | "
  *
  * @see https://www.systeme-de-design.gouv.fr/elements-d-interface/fondamentaux-de-l-identite-de-l-etat/typographie/#:~:text=Titres%20et%20titres%20alternatifs
  */
-export const Heading = ({ as: HtmlTag, text, ...rest }: HeadingProps) => {
+export const Heading = ({ as: HtmlTag, children, ...rest }: HeadingProps) => {
   const tagProps = headingProps(rest);
 
-  return <HtmlTag {...tagProps}>{text}</HtmlTag>;
+  return <HtmlTag {...tagProps}>{children}</HtmlTag>;
 };
 
 /**
  * Ref version of {@link Heading}
  */
-export const HeadingRef = forwardRef<HTMLHeadingElement, HeadingProps>(({ as: HtmlTag, text, ...rest }, ref) => {
+export const HeadingRef = forwardRef<HTMLHeadingElement, HeadingProps>(({ as: HtmlTag, children, ...rest }, ref) => {
   const tagProps = headingProps(rest);
 
   return (
     <HtmlTag {...tagProps} ref={ref}>
-      {text}
+      {children}
     </HtmlTag>
   );
 });
@@ -121,21 +122,21 @@ const textProps = ({ variant, ...rest }: Omit<TextProps<boolean>, "inline" | "te
 /**
  * @see https://www.systeme-de-design.gouv.fr/elements-d-interface/fondamentaux-de-l-identite-de-l-etat/typographie/#:~:text=Corps%20de%20texte
  */
-export const Text = <Inline extends boolean>({ inline, text, ...rest }: TextProps<Inline>) =>
-  inline ? <span {...textProps(rest)}>{text}</span> : <p {...textProps(rest)}>{text}</p>;
+export const Text = <Inline extends boolean>({ inline, children, ...rest }: TextProps<Inline>) =>
+  inline ? <span {...textProps(rest)}>{children}</span> : <p {...textProps(rest)}>{children}</p>;
 
 /**
  * Ref version of {@link Text}
  */
 export const TextRef = forwardRef<HTMLParagraphElement | HTMLSpanElement, TextProps<boolean>>(
-  ({ text, inline, ...rest }, ref) =>
+  ({ children, inline, ...rest }, ref) =>
     inline === true ? (
       <span {...textProps(rest)} ref={ref}>
-        {text}
+        {children}
       </span>
     ) : (
       <p {...textProps(rest)} ref={ref as ForwardedRef<HTMLParagraphElement>}>
-        {text}
+        {children}
       </p>
     ),
 );

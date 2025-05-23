@@ -20,5 +20,7 @@
     "^postcss",
     "^@codegouvfr/react-dsfr/fr/cx$",
     "^next/dist/server",
+    "^next/router",
+    "^@faker-js/faker"
   ],
 }

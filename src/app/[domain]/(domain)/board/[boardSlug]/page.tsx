@@ -19,7 +19,7 @@ import { FilterAndSearch } from "./FilterAndSearch";
 import { PostList } from "./PostList";
 import { defaultOrder, ORDER_ENUM } from "./types";
 
-export interface BoardParams {
+export interface BoardPageParams {
   boardSlug: string;
 }
 
@@ -31,7 +31,7 @@ const searchParamsSchema = z.object({
 const BoardPage = withValidation({
   searchParamsSchema,
 })(async ({ searchParams, searchParamsError, ...rest }) => {
-  const { _data, params } = rest as DomainPageCombinedProps<BoardParams>;
+  const { _data, params } = rest as DomainPageCombinedProps<BoardPageParams>;
   const { order, search } = await searchParams;
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
@@ -110,6 +110,7 @@ const BoardPage = withValidation({
               order={validatedOrder}
               boardId={board.id}
               search={search}
+              boardSlug={boardSlug}
             />
           </ClientAnimate>
         </GridCol>

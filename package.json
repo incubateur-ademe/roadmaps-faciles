@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
-    "@codegouvfr/react-dsfr": "^1.23.10-rc.2",
+    "@codegouvfr/react-dsfr": "^1.23.10",
     "@formkit/auto-animate": "^0.8.2",
     "@hookform/resolvers": "^5.0.1",
     "@incubateur-ademe/next-auth-espace-membre-provider": "^0.2.2",
