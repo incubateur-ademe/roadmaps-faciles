@@ -21,6 +21,7 @@
     "^@codegouvfr/react-dsfr/fr/cx$",
     "^next/dist/server",
     "^next/router",
-    "^@faker-js/faker"
+    "^@faker-js/faker",
+    "^@mui/[^/]+$"
   ],
 }

@@ -68,10 +68,11 @@ model Comment {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user    User      @relation(fields: [userId], references: [id])
-  post    Post      @relation(fields: [postId], references: [id])
-  parent  Comment?  @relation("CommentParent", fields: [parentId], references: [id])
-  replies Comment[] @relation("CommentParent")
+  user       User       @relation(fields: [userId], references: [id])
+  post       Post       @relation(fields: [postId], references: [id])
+  parent     Comment?   @relation("CommentParent", fields: [parentId], references: [id])
+  replies    Comment[]  @relation("CommentParent")
+  activities Activity[]
 
   @@index([parentId])
   @@index([postId])
@@ -202,6 +203,7 @@ model Post {
   likes      Like[]
   pin        Pin?
   hotness    PostWithHotness?
+  activities Activity[]
 
   textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, (COALESCE(title, ''::text) || ' '::text || COALESCE(description, ''::text)))"))
 
@@ -216,6 +218,32 @@ model Post {
   @@index([tenantId])
   @@index([userId])
   @@index([tags])
+}
+
+enum ActivityType {
+  COMMENT
+  FOLLOW
+  STATUS_CHANGE
+  LIKE
+}
+
+view Activity {
+  id             Int          @id
+  postId         Int
+  type           ActivityType
+  count          Int
+  startTime      DateTime
+  endTime        DateTime
+  commentId      Int?
+  statusChangeId Int?
+
+  post         Post              @relation(fields: [postId], references: [id])
+  comment      Comment?          @relation(fields: [commentId], references: [id])
+  statusChange PostStatusChange? @relation(fields: [statusChangeId], references: [id])
+
+  @@index([postId])
+  @@index([commentId])
+  @@index([statusChangeId])
 }
 
 view PostWithHotness {
@@ -243,6 +271,7 @@ model PostStatusChange {
   tenantId     Int
 
   postStatus PostStatus? @relation(fields: [postStatusId], references: [id])
+  activities Activity[]
 
   @@index([postId])
   @@index([postStatusId])

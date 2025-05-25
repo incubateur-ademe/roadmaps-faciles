@@ -129,3 +129,14 @@ $postStatusColor: (
         --active: var(--background-contrast-#{$dsfrColor}-active);
     }
 }
+
+.reseted-hr {
+    padding: initial;
+    margin: initial;
+    border: initial;
+    border-width: 1px;
+    border-color: var(--border-default-grey);
+    border-style: solid;
+    background: initial;
+    background-image: initial;
+}
