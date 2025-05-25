@@ -9,7 +9,6 @@
   "scripts": {
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons && yarn prisma:generate",
-    "preseed": "yarn prisma:generate",
     "dev": "next dev",
     "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r src/generated/client/*.node .next/standalone/.next/server/chunks/",
     "postbuild": "next-sitemap",
