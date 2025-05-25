@@ -46,7 +46,7 @@ export const RecapCard = ({
 }: RecapCardProps) => (
   <div className={cx(styles["fr-recap-card"], className, classes.root)}>
     <div className={cx(styles["fr-recap-card__title"], classes.title)}>
-      <Text text={title} variant={["md", "bold"]} />
+      <Text variant={["md", "bold"]}>{title}</Text>
       {editLink && (
         <Button
           className={styles["fr-recap-card__edit-link"]}
