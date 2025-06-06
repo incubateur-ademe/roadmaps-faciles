@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
+import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import { type PropsWithChildren, startTransition, useState } from "react";
 
 import { likePost } from "./actions";
@@ -8,6 +8,7 @@ import { likePost } from "./actions";
 interface LikeButtonProps {
   alreadyLiked: boolean;
   postId: number;
+  size?: ButtonProps["size"];
   tenantId: number;
   userId?: string;
 }
@@ -18,6 +19,7 @@ export const LikeButton = ({
   tenantId,
   alreadyLiked,
   children,
+  size = "large",
 }: PropsWithChildren<LikeButtonProps>) => {
   const [liked, setLiked] = useState(alreadyLiked);
 
@@ -55,7 +57,7 @@ export const LikeButton = ({
       title="Vote"
       iconId={liked ? "fr-icon-thumb-up-fill" : "fr-icon-thumb-up-line"}
       priority={liked ? "secondary" : "tertiary no outline"}
-      size="large"
+      size={size}
       onClick={handleLikeToggle}
     >
       {children}

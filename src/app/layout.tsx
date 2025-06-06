@@ -3,8 +3,10 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Display from "@codegouvfr/react-dsfr/Display/Display";
+import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { type Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import { type PropsWithChildren } from "react";
@@ -57,30 +59,34 @@ const RootLayout = ({ children }: PropsWithChildren) => {
       </head>
       <body>
         <SessionProvider refetchOnWindowFocus>
-          <DsfrProvider lang={lang}>
-            <SkeletonTheme
-              baseColor={fr.colors.decisions.background.contrast.grey.default}
-              highlightColor={fr.colors.decisions.background.contrast.grey.active}
-              borderRadius={fr.spacing("1v")}
-              duration={2}
-            >
-              {/* <ConsentBannerAndConsentManagement /> */}
-              <Display />
-              <SkipLinks
-                links={[
-                  {
-                    anchor: `#${contentId}`,
-                    label: "Contenu",
-                  },
-                  {
-                    anchor: `#${footerId}`,
-                    label: "Pied de page",
-                  },
-                ]}
-              />
-              <div className={styles.app}>{children}</div>
-            </SkeletonTheme>
-          </DsfrProvider>
+          <AppRouterCacheProvider>
+            <DsfrProvider lang={lang}>
+              <MuiDsfrThemeProvider>
+                <SkeletonTheme
+                  baseColor={fr.colors.decisions.background.contrast.grey.default}
+                  highlightColor={fr.colors.decisions.background.contrast.grey.active}
+                  borderRadius={fr.spacing("1v")}
+                  duration={2}
+                >
+                  {/* <ConsentBannerAndConsentManagement /> */}
+                  <Display />
+                  <SkipLinks
+                    links={[
+                      {
+                        anchor: `#${contentId}`,
+                        label: "Contenu",
+                      },
+                      {
+                        anchor: `#${footerId}`,
+                        label: "Pied de page",
+                      },
+                    ]}
+                  />
+                  <div className={styles.app}>{children}</div>
+                </SkeletonTheme>
+              </MuiDsfrThemeProvider>
+            </DsfrProvider>
+          </AppRouterCacheProvider>
         </SessionProvider>
       </body>
     </html>

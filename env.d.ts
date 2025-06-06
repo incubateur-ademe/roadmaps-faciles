@@ -43,6 +43,11 @@ declare namespace NodeJS {
          */
         AUTH_TRUST_HOST?: string;
         /**
+         * Dist: `lilian.sagetlethias,julien.bouquillon`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        ADMINS?: string;
+        /**
          * No dist value.  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -69,80 +74,25 @@ Française`
          */
         NEXT_PUBLIC_BRAND_MINISTRY?: string;
         /**
-         * Dist: `false`  
+         * Dist: `true`  
          * {@link [Local Env Dist](.env.development)}
          */
         NEXT_PUBLIC_BRAND_OPERATOR_ENABLE?: string;
         /**
-         * No dist value.  
+         * Dist: `/img/roadmaps-faciles.png`  
          * {@link [Local Env Dist](.env.development)}
          */
         NEXT_PUBLIC_BRAND_OPERATOR_LOGO_URL?: string;
         /**
-         * No dist value.  
+         * Dist: `Roadmaps Faciles`  
          * {@link [Local Env Dist](.env.development)}
          */
         NEXT_PUBLIC_BRAND_OPERATOR_LOGO_ALT?: string;
         /**
-         * Dist: `horizontal`  
+         * Dist: `vertical`  
          * {@link [Local Env Dist](.env.development)}
          */
         NEXT_PUBLIC_BRAND_OPERATOR_LOGO_ORIENTATION?: string;
-        /**
-         * Dist: `./templates_tmp`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_TMPDIR?: string;
-        /**
-         * Dist: `lilian.sagetlethias,julien.bouquillon`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        ADMINS?: string;
-        /**
-         * Dist: `https://github.com/incubateur-ademe/legal-site-templates-test`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_URL?: string;
-        /**
-         * No dist value.  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_GPG_PRIVATE_KEY_BASE64?: string;
-        /**
-         * No dist value.  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_GPG_PUBLIC_KEY_BASE64?: string;
-        /**
-         * Dist: `bot@email.com`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_COMMITTER_EMAIL?: string;
-        /**
-         * Dist: `Bot`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_COMMITTER_NAME?: string;
-        /**
-         * Dist: `main`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_MAIN_BRANCH?: string;
-        /**
-         * Dist: `github`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_PROVIDER?: string;
-        /**
-         * No dist value.  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_PROVIDER_USER?: string;
-        /**
-         * No dist value.  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        TEMPLATES_GIT_PROVIDER_TOKEN?: string;
         /**
          * Dist: `127.0.0.1`  
          * {@link [Local Env Dist](.env.development)}
@@ -169,7 +119,7 @@ Française`
          */
         MAILER_SMTP_SSL?: string;
         /**
-         * Dist: `Roadmaps Faciles <noreply@legal.beta.gouv.fr>`  
+         * Dist: `Roadmaps Faciles <noreply@roadmap.incubateur.net>`  
          * {@link [Local Env Dist](.env.development)}
          */
         MAILER_FROM_EMAIL?: string;
@@ -224,6 +174,71 @@ Française`
          */
         NEXT_PUBLIC_MATOMO_URL?: string;
         /**
+         * Dist: `Admin`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_ADMIN_NAME?: string;
+        /**
+         * Dist: `admin@example.com`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_ADMIN_EMAIL?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_ADMIN_IMAGE?: string;
+        /**
+         * Dist: `admin`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_ADMIN_USERNAME?: string;
+        /**
+         * Dist: `Le Site par Défaut`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_TENANT_NAME?: string;
+        /**
+         * Dist: `default`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_TENANT_SUBDOMAIN?: string;
+        /**
+         * Dist: `8`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MIN_FAKE_USERS?: string;
+        /**
+         * Dist: `16`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MAX_FAKE_USERS?: string;
+        /**
+         * Dist: `64`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MIN_FAKE_POSTS?: string;
+        /**
+         * Dist: `256`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MAX_FAKE_POSTS?: string;
+        /**
+         * Dist: `128`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MAX_FAKE_LIKES_PER_POST?: string;
+        /**
+         * Dist: `16`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MAX_FAKE_COMMENTS_PER_POST?: string;
+        /**
+         * Dist: `8`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SEED_MAX_REPLIES_PER_COMMENT?: string;
+        /**
          * No dist value.  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -273,6 +288,16 @@ Française`
          * {@link [Local Env Dist](.env.development)}
          */
         REGION_NAME?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SCALINGO_POSTGRESQL_URL?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SCALINGO_REDIS_URL?: string;
     }
 }
 declare type ProcessEnvCustomKeys = 
@@ -284,6 +309,7 @@ declare type ProcessEnvCustomKeys =
     | 'NEXT_PUBLIC_SITE_URL'
     | 'AUTH_URL'
     | 'AUTH_TRUST_HOST'
+    | 'ADMINS'
     | 'ESPACE_MEMBRE_API_KEY'
     | 'ESPACE_MEMBRE_URL'
     | 'NEXT_PUBLIC_BRAND_NAME'
@@ -293,17 +319,6 @@ declare type ProcessEnvCustomKeys =
     | 'NEXT_PUBLIC_BRAND_OPERATOR_LOGO_URL'
     | 'NEXT_PUBLIC_BRAND_OPERATOR_LOGO_ALT'
     | 'NEXT_PUBLIC_BRAND_OPERATOR_LOGO_ORIENTATION'
-    | 'TEMPLATES_TMPDIR'
-    | 'ADMINS'
-    | 'TEMPLATES_GIT_URL'
-    | 'TEMPLATES_GIT_GPG_PRIVATE_KEY_BASE64'
-    | 'TEMPLATES_GIT_GPG_PUBLIC_KEY_BASE64'
-    | 'TEMPLATES_GIT_COMMITTER_EMAIL'
-    | 'TEMPLATES_GIT_COMMITTER_NAME'
-    | 'TEMPLATES_GIT_MAIN_BRANCH'
-    | 'TEMPLATES_GIT_PROVIDER'
-    | 'TEMPLATES_GIT_PROVIDER_USER'
-    | 'TEMPLATES_GIT_PROVIDER_TOKEN'
     | 'MAILER_SMTP_HOST'
     | 'MAILER_SMTP_PORT'
     | 'MAILER_SMTP_PASSWORD'
@@ -320,6 +335,19 @@ declare type ProcessEnvCustomKeys =
     | 'REDIS_URL'
     | 'NEXT_PUBLIC_MATOMO_SITE_ID'
     | 'NEXT_PUBLIC_MATOMO_URL'
+    | 'SEED_ADMIN_NAME'
+    | 'SEED_ADMIN_EMAIL'
+    | 'SEED_ADMIN_IMAGE'
+    | 'SEED_ADMIN_USERNAME'
+    | 'SEED_TENANT_NAME'
+    | 'SEED_TENANT_SUBDOMAIN'
+    | 'SEED_MIN_FAKE_USERS'
+    | 'SEED_MAX_FAKE_USERS'
+    | 'SEED_MIN_FAKE_POSTS'
+    | 'SEED_MAX_FAKE_POSTS'
+    | 'SEED_MAX_FAKE_LIKES_PER_POST'
+    | 'SEED_MAX_FAKE_COMMENTS_PER_POST'
+    | 'SEED_MAX_REPLIES_PER_COMMENT'
     | 'NEXT_PUBLIC_APP_VERSION'
     | 'NEXT_PUBLIC_APP_VERSION_COMMIT'
     | 'HOSTNAME'
@@ -329,4 +357,6 @@ declare type ProcessEnvCustomKeys =
     | 'CONTAINER_MEMORY'
     | 'APP'
     | 'STACK'
-    | 'REGION_NAME';
+    | 'REGION_NAME'
+    | 'SCALINGO_POSTGRESQL_URL'
+    | 'SCALINGO_REDIS_URL';

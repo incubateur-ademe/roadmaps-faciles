@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import { type AvatarProps } from "@mui/material/Avatar";
 
 import styles from "./InitialsAvatar.module.scss";
 
@@ -17,7 +18,7 @@ export const InitialsAvatar = ({ name }: InitialsAvatarProps) => {
   );
 };
 
-function generateBackground(name: string) {
+export function generateBackground(name: string) {
   const bgColors = Object.values(fr.colors.decisions.background.flat).map(color => color.default);
   const fgColors = Object.values(fr.colors.decisions.background.contrast).map(color => color.default);
 
@@ -27,7 +28,19 @@ function generateBackground(name: string) {
   return [bgColors[colorIndex], fgColors[colorIndex]];
 }
 
-function getInitials(name: string) {
+export function getInitials(name: string) {
   const splited = name.split(" ");
-  return `${splited[0][0]}${splited[1][0]}`;
+  return splited[1]?.[0] ? `${splited[0][0]}${splited[1][0]}` : splited[0][0];
+}
+
+export function getMaterialAvatarProps(name: string): AvatarProps {
+  const initials = getInitials(name);
+  const background = generateBackground(name);
+  return {
+    sx: {
+      bgcolor: background[0],
+      color: background[1],
+    },
+    children: initials,
+  };
 }

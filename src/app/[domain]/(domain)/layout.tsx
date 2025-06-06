@@ -1,16 +1,22 @@
 import Header from "@codegouvfr/react-dsfr/Header";
 import MainNavigation from "@codegouvfr/react-dsfr/MainNavigation";
 import { notFound } from "next/navigation";
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, type ReactNode } from "react";
 
 import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
+import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
+import { ClientOnly } from "@/components/utils/ClientOnly";
 
-import { LoginLogoutHeaderItem, UserHeaderItem } from "../AuthHeaderItems";
-import styles from "../root.module.scss";
+import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
+import styles from "../../root.module.scss";
 import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomainParam";
 
-const DashboardLayout = async ({ children, params }: PropsWithChildren<DomainProps>) => {
+interface DashboardLayoutSlots {
+  modal: ReactNode;
+}
+
+const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<DashboardLayoutSlots & DomainProps>) => {
   const tenant = await getTenantFromDomainProps({ params });
 
   if (!tenant) {
@@ -43,6 +49,11 @@ const DashboardLayout = async ({ children, params }: PropsWithChildren<DomainPro
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}
       </ClientAnimate>
+      <ClientOnly>
+        <ClientBodyPortal>
+          <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
+        </ClientBodyPortal>
+      </ClientOnly>
     </>
   );
 };

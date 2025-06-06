@@ -15,6 +15,7 @@ const MARKER = "-------";
 export interface PostListProps {
   anonymousId: string;
   boardId: number;
+  boardSlug: string;
   initialPosts: EnrichedPost[];
   order: Order;
   search?: string;
@@ -22,7 +23,16 @@ export interface PostListProps {
   userId?: string;
 }
 
-export const PostList = ({ initialPosts, totalCount, userId, anonymousId, order, boardId, search }: PostListProps) => {
+export const PostList = ({
+  initialPosts,
+  totalCount,
+  userId,
+  anonymousId,
+  order,
+  boardId,
+  search,
+  boardSlug,
+}: PostListProps) => {
   const [posts, setPosts] = useState<EnrichedPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -68,6 +78,7 @@ export const PostList = ({ initialPosts, totalCount, userId, anonymousId, order,
             }}
             alreadyLiked={alreadyLiked}
             userId={userId}
+            boardSlug={boardSlug}
           />
         );
       })}

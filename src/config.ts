@@ -4,6 +4,22 @@ import { isTruthy } from "@/utils/string";
 export const config = {
   env: ensureApiEnvVar<"dev" | "prod" | "review" | "staging">(process.env.APP_ENV, "dev"),
   _seeding: ensureApiEnvVar(process.env._SEEDING, isTruthy, false),
+  seed: {
+    adminName: ensureApiEnvVar(process.env.SEED_ADMIN_NAME, "Admin"),
+    adminEmail: ensureApiEnvVar(process.env.SEED_ADMIN_EMAIL, "admin@example.com"),
+    // adminPassword: ensureApiEnvVar(process.env.SEED_ADMIN_PASSWORD, "password"),
+    adminImage: ensureApiEnvVar(process.env.SEED_ADMIN_IMAGE, ""),
+    adminUsername: ensureApiEnvVar(process.env.SEED_ADMIN_USERNAME, "admin"),
+    tenantName: ensureApiEnvVar(process.env.SEED_TENANT_NAME, "Le Site par Défaut"),
+    tenantSubdomain: ensureApiEnvVar(process.env.SEED_TENANT_SUBDOMAIN, "default"),
+    minFakeUsers: ensureApiEnvVar(process.env.SEED_MIN_FAKE_USERS, Number, 8),
+    maxFakeUsers: ensureApiEnvVar(process.env.SEED_MAX_FAKE_USERS, Number, 16),
+    minFakePosts: ensureApiEnvVar(process.env.SEED_MIN_FAKE_POSTS, Number, 64),
+    maxFakePosts: ensureApiEnvVar(process.env.SEED_MAX_FAKE_POSTS, Number, 256),
+    maxFakeLikesPerPost: ensureApiEnvVar(process.env.SEED_MAX_FAKE_LIKES_PER_POST, Number, 128),
+    maxFakeCommentsPerPost: ensureApiEnvVar(process.env.SEED_MAX_FAKE_COMMENTS_PER_POST, Number, 16),
+    maxRepliesPerComment: ensureApiEnvVar(process.env.SEED_MAX_REPLIES_PER_COMMENT, Number, 8),
+  },
   maintenance: ensureApiEnvVar(process.env.MAINTENANCE_MODE, isTruthy, false),
   host: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
   get rootDomain() {

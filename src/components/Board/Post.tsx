@@ -1,23 +1,27 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
 import Tag from "@codegouvfr/react-dsfr/Tag";
+import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
+import { useRouter } from "next/navigation";
 import { MarkdownHooks } from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGfm from "remark-gfm";
 
-import { type EnrichedPost } from "@/app/[domain]/board/[boardSlug]/actions";
+import { type EnrichedPost } from "@/app/[domain]/(domain)/board/[boardSlug]/actions";
 
 import { LikeButton } from "./LikeButton";
-import style from "./Post.module.scss";
 
 export interface BoardPostProps {
   alreadyLiked: boolean;
+  boardSlug: string;
   post: EnrichedPost;
   userId?: string;
 }
 
-export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
+export const BoardPost = ({ post, alreadyLiked, userId, boardSlug }: BoardPostProps) => {
+  const router = useRouter();
+  const { isDark } = useIsDark();
   return (
     <Card
       key={`post_${post.id}`}
@@ -27,12 +31,29 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
         }
       }
       title={post.title}
+      linkProps={{
+        href: "#",
+        onClick: e => {
+          e.preventDefault();
+          router.push(`/post/${post.id}`, { scroll: false });
+        },
+      }}
       titleAs="h3"
       endDetail={
         <span className="flex justify-between items-center w-full">
-          <span className="">{post.user.name}</span>
+          <span>{post.user.name}</span>
           {post._count.comments > 0 && (
-            <Tag as="span" iconId="fr-icon-discuss-line" small>
+            <Tag
+              className="cursor-pointer"
+              as="span"
+              iconId="fr-icon-discuss-line"
+              small
+              nativeSpanProps={{
+                onClick: () => {
+                  location.href = `/post/${post.id}`;
+                },
+              }}
+            >
               <b>{post._count.comments}</b>&nbsp;commentaire{post._count.comments > 1 ? "s" : ""}
             </Tag>
           )}
@@ -41,11 +62,11 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
       detail={
         <span className="flex gap-[.5rem] items-center">
           {post.postStatus ? (
-            <Badge as="span" className={style[`fr-badge--color-${post.postStatus.color}`]}>
+            <Badge as="span" className={`fr-badge--color-${post.postStatus.color}`}>
               {post.postStatus.name}
             </Badge>
           ) : (
-            <Badge as="span" className={style["fr-badge--color-grey"]}>
+            <Badge as="span" className={"fr-badge--color-grey"}>
               Non classé
             </Badge>
           )}
@@ -81,9 +102,8 @@ export const BoardPost = ({ post, alreadyLiked, userId }: BoardPostProps) => {
         </span>
       }
       horizontal
-      grey
       size="small"
-      shadow
+      shadow={isDark}
     />
   );
 };
