@@ -27,6 +27,7 @@ CREATE VIEW "public"."Activity" AS WITH ordered AS (
                 c.id AS "commentId",
                 NULL::integer AS "statusChangeId"
             FROM "Comment" c
+            WHERE c."parentId" IS NULL
             UNION ALL
             -- Changement de statut
             SELECT 'STATUS_CHANGE'::"ActivityType" AS type,

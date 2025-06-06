@@ -7,3 +7,6 @@
 
 ## TODO
 - [ ] gérer les custom domains avec l'api Scalingo
+
+## Produit
+- [ ] récupérer les insights, les commentaires, les réponses, depuis l'admin (ou en tant qu'admin)

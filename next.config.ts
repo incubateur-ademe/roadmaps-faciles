@@ -19,9 +19,11 @@ const env = {
   NEXT_PUBLIC_APP_VERSION_COMMIT: isDeployment ? process.env.SOURCE_VERSION : "dev",
 };
 
+const isDev = process.env.NODE_ENV === "development";
+
 const csp = {
   "default-src": ["'none'"],
-  "connect-src": ["'self'", "https://*.gouv.fr", process.env.NODE_ENV === "development" && "http://localhost"],
+  "connect-src": ["'self'", "https://*.gouv.fr", isDev && "http://localhost"],
   "font-src": ["'self'"],
   "media-src": ["'self'"],
   "img-src": ["'self'", "data:", "espace-membre.incubateur.net"],
@@ -30,7 +32,7 @@ const csp = {
     "'unsafe-inline'",
     process.env.NEXT_PUBLIC_MATOMO_URL,
     "'unsafe-eval'",
-    process.env.NODE_ENV === "development" && "http://localhost",
+    isDev && "http://localhost",
   ],
   "style-src": ["'self'", "'unsafe-inline'"],
   "object-src": ["'self'", "data:"],
@@ -38,7 +40,7 @@ const csp = {
   "base-uri": ["'self'", "https://*.gouv.fr"],
   "form-action": ["'self'", "https://*.gouv.fr"],
   "frame-src": ["'none'"],
-  ...(process.env.NODE_ENV !== "development" && {
+  ...(!isDev && {
     "block-all-mixed-content": [],
     "upgrade-insecure-requests": [],
   }),
@@ -72,6 +74,13 @@ const config: NextConfig = {
     serverMinification: true,
     authInterrupts: true,
     optimizePackageImports: ["@/lib/repo", "@/dsfr/client", "@/dsfr"],
+    slowModuleDetection: isDev
+      ? {
+          buildTimeThresholdMs: 1000,
+        }
+      : void 0,
+    strictNextHead: true,
+    taint: true,
   },
   serverExternalPackages: ["@prisma/client"],
   eslint: {

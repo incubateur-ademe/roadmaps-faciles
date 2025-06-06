@@ -1,3 +1,4 @@
+import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
 import { getServerService } from "@/lib/services";
 import { $Enums } from "@/prisma/client";
@@ -10,8 +11,8 @@ async function main() {
 
   const tenant = await prisma.tenant.create({
     data: {
-      name: "Default Site Name",
-      subdomain: "default",
+      name: config.seed.tenantName,
+      subdomain: config.seed.tenantSubdomain,
       customDomain: null,
     },
   });
@@ -26,27 +27,28 @@ async function main() {
   });
   console.log("🌱 TenantSetting créé : ", tenant.name);
 
-  const user = await prisma.user.create({
+  const admin = await prisma.user.create({
     data: {
-      name: "Admin",
-      email: "admin@example.com",
+      name: config.seed.adminName,
+      email: config.seed.adminEmail,
       emailVerified: new Date(),
       role: $Enums.UserRole.ADMIN,
       status: $Enums.UserStatus.ACTIVE,
-      username: "admin",
+      username: config.seed.adminUsername,
+      image: config.seed.adminImage || null,
     },
   });
-  console.log("🌱 User créé : ", user.name);
+  console.log("🌱 User créé : ", admin.name);
 
   await prisma.userOnTenant.create({
     data: {
-      userId: user.id,
+      userId: admin.id,
       tenantId: tenant.id,
       role: $Enums.UserRole.OWNER,
       status: $Enums.UserStatus.ACTIVE,
     },
   });
-  console.log("🌱 UserOnTenant créé : ", user.name);
+  console.log("🌱 UserOnTenant créé : ", admin.name);
 
   console.log("🌱 Création des entités de bienvenue...");
   await new CreateWelcomeEntitiesWorkflow().run();
@@ -57,7 +59,7 @@ async function main() {
   await new CreateFakePostsWorkflow().run();
   console.log("🌱 Posts factices créés.");
 
-  console.log("🌱 Seed terminé. Admin email: admin@example.com / password: password");
+  console.log(`🌱 Seed terminé. Admin email: ${admin.email} / password: password`);
 }
 
 main()

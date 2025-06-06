@@ -10,6 +10,7 @@ export const prisma =
     log: !isProd
       ? [
           // "query",
+          //
           "info",
           "warn",
           "error",

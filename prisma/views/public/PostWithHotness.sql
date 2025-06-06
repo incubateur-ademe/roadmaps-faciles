@@ -1,6 +1,5 @@
 SELECT
   p.id,
-  to_jsonb(p.*) AS post,
   p."boardId",
   p.id AS "postId",
   (

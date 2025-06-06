@@ -32,6 +32,7 @@ export namespace SimpleModalProps {
   export type ActionAreaButtonProps = ButtonProps & {
     /** @default false */
     canClosesModal?: boolean;
+    refresh?: boolean;
   };
 }
 
@@ -110,7 +111,7 @@ export const SimpleModal = memo(
                         inlineLayoutWhen="lg and up"
                         buttonsEquisized={buttonsEquisized}
                         buttons={
-                          [...buttons].reverse().map(({ canClosesModal, ...props }, i) => ({
+                          [...buttons].reverse().map(({ canClosesModal, refresh: _refresh, ...props }, i) => ({
                             ...props,
                             priority: (["primary", "secondary", "tertiary"] satisfies Array<ButtonProps["priority"]>)[
                               i

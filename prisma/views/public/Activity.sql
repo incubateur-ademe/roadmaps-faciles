@@ -46,6 +46,8 @@ WITH ordered AS (
         NULL :: integer AS "statusChangeId"
       FROM
         "Comment" c
+      WHERE
+        (c."parentId" IS NULL)
       UNION
       ALL
       SELECT
