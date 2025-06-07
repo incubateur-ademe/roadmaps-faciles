@@ -17,14 +17,14 @@
     "lint": "next lint",
     "export": "next export",
     "build:export": "npm run build && npm run export",
-    "run-script": "ts-node --project scripts/tsconfig.json",
+    "run-script": "tsx --tsconfig scripts/tsconfig.json",
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "seed": "prisma db seed",
     "prisma:studio": "prisma studio -b none",
     "prisma:generate": "prisma generate"
   },
   "prisma": {
-    "seed": "ts-node --project prisma/tsconfig.json -r tsconfig-paths/register --transpile-only prisma/seed.ts"
+    "seed": "tsx --tsconfig prisma/tsconfig.json prisma/seed.cts"
   },
   "resolutions": {
     "estree-walker": "2.0.2"
@@ -123,8 +123,7 @@
     "prisma": "^6.9.0",
     "sass": "^1.87.0",
     "tailwindcss": "^4.1.6",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.7.2",
     "typescript-eslint": "8.32.0",
     "webpack": "^5.99.8"
