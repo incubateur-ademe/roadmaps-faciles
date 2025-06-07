@@ -216,6 +216,9 @@ const config = [
           "next.config.ts",
           "eslint.config.ts",
           "prisma.config.ts",
+          "tailwind.config.ts",
+          "next-sitemap.config.js",
+          "postcss.config.ts",
         ],
         rules: {
           "import/no-default-export": "off",

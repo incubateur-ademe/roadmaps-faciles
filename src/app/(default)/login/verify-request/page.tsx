@@ -18,7 +18,7 @@ const VerifyRequestPage = () => (
       </>
     }
     noRedirect
-    pictogram={artworkMailSendSvgUrl}
+    pictogram={{ src: artworkMailSendSvgUrl }}
   />
 );
 

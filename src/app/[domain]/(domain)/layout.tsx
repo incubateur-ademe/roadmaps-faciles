@@ -1,5 +1,4 @@
 import Header from "@codegouvfr/react-dsfr/Header";
-import MainNavigation from "@codegouvfr/react-dsfr/MainNavigation";
 import { notFound } from "next/navigation";
 import { type PropsWithChildren, type ReactNode } from "react";
 
@@ -7,14 +6,30 @@ import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
+import { prisma } from "@/lib/db/prisma";
+import { type Tenant } from "@/lib/model/Tenant";
 
 import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
+import { DomainNavigation } from "./DomainNavigation";
 import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomainParam";
 
 interface DashboardLayoutSlots {
   modal: ReactNode;
 }
+
+const Navigation = async ({ tenant }: { tenant: Tenant }) => {
+  const boards = await prisma.board.findMany({
+    where: {
+      tenantId: tenant.id,
+    },
+    orderBy: {
+      order: "asc",
+    },
+  });
+
+  return <DomainNavigation boards={boards} />;
+};
 
 const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<DashboardLayoutSlots & DomainProps>) => {
   const tenant = await getTenantFromDomainProps({ params });
@@ -35,7 +50,7 @@ const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<Da
   return (
     <>
       <Header
-        navigation={<MainNavigation items={[{ text: "Roadmap", linkProps: { href: "/roadmap" }, isActive: true }]} />}
+        navigation={<Navigation tenant={tenant} />}
         brandTop={<Brand />}
         homeLinkProps={{
           href: "/",

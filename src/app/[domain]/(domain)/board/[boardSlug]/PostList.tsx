@@ -40,7 +40,7 @@ export const PostList = ({
   const handleLoadMore = () => {
     setIsLoading(true);
     void fetchPostsForBoard(page, order, boardId, search).then(({ posts: newPosts }) => {
-      setPosts(prevPosts => [...prevPosts, ...newPosts]);
+      setPosts(prevPosts => [...prevPosts, ...(newPosts as EnrichedPost[])]);
       setIsLoading(false);
       setPage(prevPage => ++prevPage);
     });

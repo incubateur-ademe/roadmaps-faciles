@@ -5,12 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider            = "prisma-client"
-  output              = "../src/generated/client"
-  moduleFormat        = "cjs"
-  importFileExtension = ""
-  previewFeatures     = ["typedSql", "views", "fullTextSearchPostgres"]
-  binaryTargets       = ["native", "debian-openssl-3.0.x"]
+  provider        = "prisma-client"
+  output          = "../src/generated/client"
+  previewFeatures = ["typedSql", "views", "fullTextSearchPostgres", "queryCompiler", "driverAdapters"]
 }
 
 datasource db {

@@ -4,26 +4,28 @@ import artworkCalendarSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictogram
 import artworkSearchSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/search.svg";
 import artworkPadlockSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/padlock.svg";
 import artworkTechnicalErrorSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/technical-error.svg";
-import { type StaticImageData } from "next/image";
 import { type LinkProps } from "next/link";
 import { type ReactNode } from "react";
 
 import { Box, Container, Grid, GridCol } from "@/dsfr";
 import artworkInProgressSvgUrl from "@/dsfr/artwork/pictograms/digital/in-progress.svg";
 
+type SimpleSrcImage = { src: string };
 const artworkMap = {
-  calendar: artworkCalendarSvgUrl,
+  calendar: { src: artworkCalendarSvgUrl },
   inProgress: artworkInProgressSvgUrl,
-  padlock: artworkPadlockSvgUrl,
-  technicalError: artworkTechnicalErrorSvgUrl,
-  search: artworkSearchSvgUrl,
+  padlock: { src: artworkPadlockSvgUrl },
+  technicalError: {
+    src: artworkTechnicalErrorSvgUrl,
+  },
+  search: { src: artworkSearchSvgUrl },
 };
 
 interface SystemCodeMap {
   [key: string]: {
     body: ReactNode;
     headline: string;
-    pictogram: StaticImageData | keyof typeof artworkMap;
+    pictogram: SimpleSrcImage | keyof typeof artworkMap;
     title: string;
   };
 }
@@ -118,7 +120,7 @@ namespace SystemMessageDisplayProps {
         body: ReactNode;
         code: "custom";
         headline: string;
-        pictogram?: StaticImageData | keyof typeof artworkMap;
+        pictogram?: SimpleSrcImage | keyof typeof artworkMap;
         title: string;
       }
     | {
@@ -186,8 +188,8 @@ export const SystemMessageDisplay = ({
             height="200"
             viewBox="0 0 160 200"
           >
-            <use className="fr-artwork-motif" href={`${artworkOvoidSvgUrl.src}#artwork-motif`}></use>
-            <use className="fr-artwork-background" href={`${artworkOvoidSvgUrl.src}#artwork-background`}></use>
+            <use className="fr-artwork-motif" href={`${artworkOvoidSvgUrl}#artwork-motif`}></use>
+            <use className="fr-artwork-background" href={`${artworkOvoidSvgUrl}#artwork-background`}></use>
             <g transform="translate(40, 60)">
               <use className="fr-artwork-decorative" href={`${pictogram.src}#artwork-decorative`}></use>
               <use className="fr-artwork-minor" href={`${pictogram.src}#artwork-minor`}></use>

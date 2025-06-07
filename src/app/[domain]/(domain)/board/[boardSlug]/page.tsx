@@ -14,7 +14,7 @@ import { getAnonymousId } from "@/utils/anonymousId";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
-import { fetchPostsForBoard } from "./actions";
+import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
 import { FilterAndSearch } from "./FilterAndSearch";
 import { PostList } from "./PostList";
@@ -106,7 +106,7 @@ const BoardPage = withValidation({
               <PostList
                 key={`postList_${board.id}`}
                 anonymousId={anonymousId}
-                initialPosts={posts}
+                initialPosts={posts as EnrichedPost[]}
                 totalCount={filteredCount}
                 userId={session?.user.id}
                 order={validatedOrder}
