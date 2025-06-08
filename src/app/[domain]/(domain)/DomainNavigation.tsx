@@ -1,24 +1,26 @@
 "use client";
 
 import MainNavigation, { type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useSelectedLayoutSegments } from "next/navigation";
 
-import { type Board } from "@/prisma/client";
+import { type Board, type TenantSetting } from "@/prisma/client";
 
 interface DomainNavigationProps {
   boards: Board[];
+  tenantSetting: TenantSetting;
 }
 
-export const DomainNavigation = ({ boards }: DomainNavigationProps) => {
-  const segment = useSelectedLayoutSegment("domain");
+export const DomainNavigation = ({ boards, tenantSetting }: DomainNavigationProps) => {
+  const segments = useSelectedLayoutSegments();
+  const segment = segments.join("/");
   return (
     <MainNavigation
       items={[
-        { text: "Roadmap", linkProps: { href: "/roadmap" }, isActive: !segment || segment === "roadmap" },
+        { text: "Roadmap", linkProps: { href: "/roadmap" }, isActive: segment === "roadmap" },
         ...boards.map<MainNavigationProps.Item>(board => ({
           text: board.name,
-          linkProps: { href: `/board/${board.id}` },
-          isActive: segment === `board/${board.id}`,
+          linkProps: { href: `/board/${board.slug}` },
+          isActive: segment === `board/${board.slug}` || (!segment && board.id === tenantSetting.rootBoardId),
         })),
       ]}
     />

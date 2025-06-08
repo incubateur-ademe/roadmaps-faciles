@@ -42,7 +42,7 @@ const lang = "fr";
 
 const RootLayout = ({ children }: PropsWithChildren) => {
   return (
-    <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app)}>
+    <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app, "snap-y")}>
       <head>
         <DsfrHead
           preloadFonts={[

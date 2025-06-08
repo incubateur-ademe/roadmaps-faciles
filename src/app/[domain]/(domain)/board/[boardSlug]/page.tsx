@@ -64,7 +64,7 @@ const BoardPage = withValidation({
 
   return (
     <DsfrPage>
-      <Container className={fr.cx("fr-my-2w")}>
+      <Container my="2w">
         <Grid haveGutters className={style.board}>
           <GridCol base={3} className={cx("sticky self-start top-[0]", style.sidebar)}>
             <div>
@@ -102,7 +102,7 @@ const BoardPage = withValidation({
                   : ""}
               </GridCol>
             </Grid>
-            <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
+            <ClientAnimate className={cx("flex flex-col gap-[1rem]", style.postList)}>
               <PostList
                 key={`postList_${board.id}`}
                 anonymousId={anonymousId}

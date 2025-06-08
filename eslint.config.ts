@@ -218,7 +218,7 @@ const config = [
           "prisma.config.ts",
           "tailwind.config.ts",
           "next-sitemap.config.js",
-          "postcss.config.ts",
+          "postcss.config.js",
         ],
         rules: {
           "import/no-default-export": "off",

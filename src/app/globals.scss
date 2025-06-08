@@ -1,3 +1,5 @@
+@use "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,7 +123,9 @@ $postStatusColor: (
 );
 
 @each $name, $dsfrColor in $postStatusColor {
-    .fr-badge--color-#{""+$name} {
+
+    .fr-badge.fr-badge--color-#{""+$name},
+    .fr-roadmap-column--color-#{""+$name} {
         color: var(--text-action-high-#{$dsfrColor});
         background-color: var(--background-contrast-#{$dsfrColor});
         --idle: transparent;
@@ -139,4 +143,8 @@ $postStatusColor: (
     border-style: solid;
     background: initial;
     background-image: initial;
+}
+
+.scrollbar-thin {
+    scrollbar-width: thin;
 }

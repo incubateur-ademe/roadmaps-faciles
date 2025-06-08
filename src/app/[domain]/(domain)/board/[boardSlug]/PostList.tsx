@@ -52,7 +52,7 @@ export const PostList = ({
 
   return (
     <>
-      {posts.map(post => {
+      {posts.map((post, index) => {
         const alreadyLiked = post.likes.some(like => userId === like.userId || like.anonymousId === anonymousId);
         const title = search
           ? post.title
@@ -71,6 +71,7 @@ export const PostList = ({
         return (
           <BoardPost
             key={`post_${post.id}`}
+            first={index === 0}
             post={{
               ...post,
               title: title as string,

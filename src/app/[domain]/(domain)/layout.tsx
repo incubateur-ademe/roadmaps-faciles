@@ -8,6 +8,7 @@ import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
 import { prisma } from "@/lib/db/prisma";
 import { type Tenant } from "@/lib/model/Tenant";
+import { type TenantSetting } from "@/prisma/client";
 
 import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
@@ -18,7 +19,7 @@ interface DashboardLayoutSlots {
   modal: ReactNode;
 }
 
-const Navigation = async ({ tenant }: { tenant: Tenant }) => {
+const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSetting: TenantSetting }) => {
   const boards = await prisma.board.findMany({
     where: {
       tenantId: tenant.id,
@@ -28,13 +29,17 @@ const Navigation = async ({ tenant }: { tenant: Tenant }) => {
     },
   });
 
-  return <DomainNavigation boards={boards} />;
+  return <DomainNavigation boards={boards} tenantSetting={tenantSetting} />;
 };
 
 const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<DashboardLayoutSlots & DomainProps>) => {
   const tenant = await getTenantFromDomainProps({ params });
-
-  if (!tenant) {
+  const tenantSetting = await prisma.tenantSetting.findFirst({
+    where: {
+      tenantId: tenant.id,
+    },
+  });
+  if (!tenantSetting) {
     notFound();
   }
 
@@ -50,7 +55,7 @@ const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<Da
   return (
     <>
       <Header
-        navigation={<Navigation tenant={tenant} />}
+        navigation={<Navigation tenant={tenant} tenantSetting={tenantSetting} />}
         brandTop={<Brand />}
         homeLinkProps={{
           href: "/",

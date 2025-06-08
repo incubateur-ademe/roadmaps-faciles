@@ -40,7 +40,6 @@
     ".next/types/**/*.ts",
     "tailwind.config.ts",
     "eslint.config.ts",
-    "postcss.config.ts",
   ],
   "exclude": [
     "node_modules",

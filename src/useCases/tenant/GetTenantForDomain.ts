@@ -14,6 +14,14 @@ export const GetTenantForDomainInput = z.object({
 export type GetTenantForDomainInput = z.infer<typeof GetTenantForDomainInput>;
 export type GetTenantForDomainOutput = Tenant;
 
+declare module "../AbstractCacheUseCase" {
+  namespace AbstractCachedUseCase {
+    interface CacheToUseCase {
+      GetTenantForDomain: GetTenantForDomain;
+    }
+  }
+}
+
 export class GetTenantForDomain extends AbstractCachedUseCase<GetTenantForDomainInput, GetTenantForDomainOutput> {
   public readonly cacheMasterKey = "GetTenantForDomain";
   public readonly defaultOptions = {
