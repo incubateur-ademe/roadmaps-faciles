@@ -5,6 +5,7 @@ import { type NextConfig } from "next";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import { type Configuration } from "webpack";
 
 import packageJson from "./package.json" with { type: "json" };
 
@@ -51,6 +52,14 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
+  webpack: (config: Configuration) => {
+    config.module?.rules?.push({
+      test: /\.(woff2|webmanifest|ttf)$/,
+      type: "asset/resource",
+    });
+
+    return config;
+  },
   experimental: {
     serverMinification: true,
     authInterrupts: true,
@@ -58,7 +67,7 @@ const config: NextConfig = {
     strictNextHead: true,
     taint: true,
   },
-  serverExternalPackages: ["@prisma/client"],
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "@/prisma/client"],
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -7,7 +7,10 @@
 generator client {
   provider        = "prisma-client"
   output          = "../src/generated/client"
-  previewFeatures = ["typedSql", "views", "fullTextSearchPostgres", "queryCompiler", "driverAdapters"]
+  // not usable in prod yet https://github.com/vercel/next.js/issues/80257
+  // previewFeatures = ["typedSql", "views", "fullTextSearchPostgres", "queryCompiler", "driverAdapters"]
+  previewFeatures = ["typedSql", "views", "fullTextSearchPostgres"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

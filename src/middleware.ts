@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { responseWithAnonymousId } from "@/utils/anonymousId";
+import { responseWithAnonymousId } from "@/utils/anonymousId/responseWithAnonymousId";
 
 import { config as appConfig } from "./config";
 

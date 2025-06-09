@@ -6,7 +6,7 @@ import z from "zod";
 import { likeRepo } from "@/lib/repo";
 import { LikePost, LikePostInput, type LikePostOutput } from "@/useCases/likes/LikePost";
 import { UnlikePost, type UnlikePostOutput } from "@/useCases/likes/UnlikePost";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { type ServerActionResponse } from "@/utils/next";
 
 type LikePostResponse = ServerActionResponse<LikePostOutput | UnlikePostOutput>;

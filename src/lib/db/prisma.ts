@@ -1,4 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
+import "server-only";
+
+import { type PrismaPg } from "@prisma/adapter-pg";
 
 import { config } from "@/config";
 import { PrismaClient } from "@/prisma/client";
@@ -6,16 +8,16 @@ import { PrismaClient } from "@/prisma/client";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient; prismaPg: PrismaPg };
 const isProd = config.env === "prod";
 
-const adapter =
-  globalForPrisma.prismaPg ||
-  new PrismaPg({
-    connectionString: config._dbUrl,
-  });
+// const adapter =
+//   globalForPrisma.prismaPg ||
+//   new PrismaPg({
+//     connectionString: config._dbUrl,
+//   });
 
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    adapter,
+    // adapter,
     log: !isProd
       ? [
           // "query",
@@ -29,5 +31,5 @@ export const prisma =
 
 if (!isProd) {
   globalForPrisma.prisma = prisma;
-  globalForPrisma.prismaPg = adapter;
+  // globalForPrisma.prismaPg = adapter;
 }

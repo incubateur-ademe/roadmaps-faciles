@@ -10,7 +10,7 @@ import { Heading, Text } from "@/dsfr/base/Typography";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 
 import { DomainPageHOP } from "../DomainPage";
 

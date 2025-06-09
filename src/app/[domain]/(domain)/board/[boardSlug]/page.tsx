@@ -10,7 +10,7 @@ import { Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
