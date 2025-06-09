@@ -1,6 +1,6 @@
 import artworkMailSendSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/mail-send.svg";
 
-import { SystemMessageDisplay } from "@/app/SystemMessageDisplay";
+import { normalizeArtwork, SystemMessageDisplay } from "@/app/SystemMessageDisplay";
 import { config } from "@/config";
 
 const VerifyRequestPage = () => (
@@ -18,7 +18,7 @@ const VerifyRequestPage = () => (
       </>
     }
     noRedirect
-    pictogram={{ src: artworkMailSendSvgUrl }}
+    pictogram={normalizeArtwork(artworkMailSendSvgUrl)}
   />
 );
 

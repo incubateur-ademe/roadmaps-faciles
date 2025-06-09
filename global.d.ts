@@ -4,7 +4,9 @@ interface NextFetchRequestConfig {
 }
 
 declare module "@codegouvfr/react-dsfr/dsfr/*.svg" {
-  const value: string;
+  import { type StaticImageData } from "next/image";
+
+  const value: StaticImageData | string;
   // eslint-disable-next-line import/no-default-export
   export default value;
 }

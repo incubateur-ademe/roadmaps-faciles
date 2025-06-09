@@ -11,14 +11,19 @@ import { Box, Container, Grid, GridCol } from "@/dsfr";
 import artworkInProgressSvgUrl from "@/dsfr/artwork/pictograms/digital/in-progress.svg";
 
 type SimpleSrcImage = { src: string };
+export const normalizeArtwork = (pictogram: SimpleSrcImage | string): SimpleSrcImage => {
+  if (typeof pictogram === "string") {
+    return { src: pictogram };
+  }
+  return pictogram;
+};
+
 const artworkMap = {
-  calendar: { src: artworkCalendarSvgUrl },
+  calendar: normalizeArtwork(artworkCalendarSvgUrl),
   inProgress: artworkInProgressSvgUrl,
-  padlock: { src: artworkPadlockSvgUrl },
-  technicalError: {
-    src: artworkTechnicalErrorSvgUrl,
-  },
-  search: { src: artworkSearchSvgUrl },
+  padlock: normalizeArtwork(artworkPadlockSvgUrl),
+  technicalError: normalizeArtwork(artworkTechnicalErrorSvgUrl),
+  search: normalizeArtwork(artworkSearchSvgUrl),
 };
 
 interface SystemCodeMap {
@@ -188,8 +193,11 @@ export const SystemMessageDisplay = ({
             height="200"
             viewBox="0 0 160 200"
           >
-            <use className="fr-artwork-motif" href={`${artworkOvoidSvgUrl}#artwork-motif`}></use>
-            <use className="fr-artwork-background" href={`${artworkOvoidSvgUrl}#artwork-background`}></use>
+            <use className="fr-artwork-motif" href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-motif`}></use>
+            <use
+              className="fr-artwork-background"
+              href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-background`}
+            ></use>
             <g transform="translate(40, 60)">
               <use className="fr-artwork-decorative" href={`${pictogram.src}#artwork-decorative`}></use>
               <use className="fr-artwork-minor" href={`${pictogram.src}#artwork-minor`}></use>
