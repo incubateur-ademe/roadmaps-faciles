@@ -67,7 +67,7 @@ const config: NextConfig = {
     strictNextHead: true,
     taint: true,
   },
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "@/prisma/client"],
+  serverExternalPackages: ["@prisma/client"],
   eslint: {
     ignoreDuringBuilds: true,
   },
