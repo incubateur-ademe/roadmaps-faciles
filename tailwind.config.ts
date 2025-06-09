@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import { type Config } from "tailwindcss";
+
+export default {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     fontFamily: {
@@ -14,8 +15,4 @@ module.exports = {
     },
   },
   plugins: [],
-  corePlugins: {
-    // disable preflight to avoid conflicts with dsfr
-    preflight: false,
-  },
-};
+} satisfies Config;

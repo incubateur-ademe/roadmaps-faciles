@@ -4,6 +4,7 @@ import { isTruthy } from "@/utils/string";
 export const config = {
   env: ensureApiEnvVar<"dev" | "prod" | "review" | "staging">(process.env.APP_ENV, "dev"),
   _seeding: ensureApiEnvVar(process.env._SEEDING, isTruthy, false),
+  _dbUrl: ensureApiEnvVar(process.env.DATABASE_URL, ""),
   seed: {
     adminName: ensureApiEnvVar(process.env.SEED_ADMIN_NAME, "Admin"),
     adminEmail: ensureApiEnvVar(process.env.SEED_ADMIN_EMAIL, "admin@example.com"),

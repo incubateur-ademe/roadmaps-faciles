@@ -38,10 +38,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "tailwind.config.js",
+    "tailwind.config.ts",
     "eslint.config.ts",
   ],
   "exclude": [
     "node_modules",
+    "prisma"
   ],
 }

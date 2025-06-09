@@ -2,10 +2,12 @@
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { BoardPost } from "@/components/Board/Post";
 import { Loader } from "@/components/utils/Loader";
+import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import { type Order } from "./types";
@@ -36,11 +38,13 @@ export const PostList = ({
   const [posts, setPosts] = useState<EnrichedPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const pathname = usePathname();
+  const dirtyDomainFixer = dirtySafePathname(pathname);
 
   const handleLoadMore = () => {
     setIsLoading(true);
     void fetchPostsForBoard(page, order, boardId, search).then(({ posts: newPosts }) => {
-      setPosts(prevPosts => [...prevPosts, ...newPosts]);
+      setPosts(prevPosts => [...prevPosts, ...(newPosts as EnrichedPost[])]);
       setIsLoading(false);
       setPage(prevPage => ++prevPage);
     });
@@ -52,7 +56,7 @@ export const PostList = ({
 
   return (
     <>
-      {posts.map(post => {
+      {posts.map((post, index) => {
         const alreadyLiked = post.likes.some(like => userId === like.userId || like.anonymousId === anonymousId);
         const title = search
           ? post.title
@@ -71,6 +75,7 @@ export const PostList = ({
         return (
           <BoardPost
             key={`post_${post.id}`}
+            first={index === 0}
             post={{
               ...post,
               title: title as string,
@@ -79,6 +84,7 @@ export const PostList = ({
             alreadyLiked={alreadyLiked}
             userId={userId}
             boardSlug={boardSlug}
+            dirtyDomainFixer={dirtyDomainFixer}
           />
         );
       })}

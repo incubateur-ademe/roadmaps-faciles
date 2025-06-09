@@ -10,11 +10,11 @@ import { Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
-import { fetchPostsForBoard } from "./actions";
+import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
 import { FilterAndSearch } from "./FilterAndSearch";
 import { PostList } from "./PostList";
@@ -64,7 +64,7 @@ const BoardPage = withValidation({
 
   return (
     <DsfrPage>
-      <Container className={fr.cx("fr-my-2w")}>
+      <Container my="2w">
         <Grid haveGutters className={style.board}>
           <GridCol base={3} className={cx("sticky self-start top-[0]", style.sidebar)}>
             <div>
@@ -102,11 +102,11 @@ const BoardPage = withValidation({
                   : ""}
               </GridCol>
             </Grid>
-            <ClientAnimate className={cx("flex", "flex-col", "gap-[1rem]", style.postList)}>
+            <ClientAnimate className={cx("flex flex-col gap-[1rem]", style.postList)}>
               <PostList
                 key={`postList_${board.id}`}
                 anonymousId={anonymousId}
-                initialPosts={posts}
+                initialPosts={posts as EnrichedPost[]}
                 totalCount={filteredCount}
                 userId={session?.user.id}
                 order={validatedOrder}

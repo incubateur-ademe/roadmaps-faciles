@@ -12,7 +12,7 @@ import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { type Activity, type Board } from "@/prisma/client";
-import { getAnonymousId } from "@/utils/anonymousId";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { toFrenchDate } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/require-await */
-// @ts-check
 
 import createMDX from "@next/mdx";
 import { type NextConfig } from "next";
@@ -59,26 +58,12 @@ const config: NextConfig = {
       type: "asset/resource",
     });
 
-    // if (!options.isServer) {
-    //   config.plugins?.push(
-    //     new MonacoEditorWebpackPlugin({
-    //       languages: ["markdown", "mdx"],
-    //       filename: "static/[name].worker.js",
-    //     }),
-    //   );
-    // }
-
     return config;
   },
   experimental: {
     serverMinification: true,
     authInterrupts: true,
     optimizePackageImports: ["@/lib/repo", "@/dsfr/client", "@/dsfr"],
-    slowModuleDetection: isDev
-      ? {
-          buildTimeThresholdMs: 1000,
-        }
-      : void 0,
     strictNextHead: true,
     taint: true,
   },
@@ -86,23 +71,8 @@ const config: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // sassOptions: {
-  //   silenceDeprecations: ["legacy-js-api"],
-  // },
   env,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
-  // rewrites: async () => [
-  // {
-  //   source: "/:path*",
-  //   has: [
-  //     {
-  //       type: "host",
-  //       value: "(?<subdomain>.*).localhost:3000",
-  //     },
-  //   ],
-  //   destination: "/tenant/:subdomain/:path*",
-  // },
-  // ],
   images: {
     remotePatterns: [
       {

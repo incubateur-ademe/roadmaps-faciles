@@ -2,7 +2,7 @@ import { parse as dotenvParse } from "dotenv";
 import fs from "fs";
 import path from "path";
 
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(import.meta.dirname, "..");
 const envDistFileName = ".env.development";
 const envDistPath = path.resolve(ROOT, envDistFileName);
 console.log(`[generateEnvDeclaration] Reading ${envDistPath}`);

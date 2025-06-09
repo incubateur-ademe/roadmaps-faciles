@@ -16,6 +16,11 @@ export interface CachedUseCaseOptions {
 const GLOBAL_CACHE = new Map<string, LRUCache<string, Any>>();
 const DEFAULT_KEY = "__default_key___";
 
+export namespace AbstractCachedUseCase {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface CacheToUseCase {}
+}
+
 /**
  * When extended, give cache capabilities with the stale-while-revalidate pattern.
  *
@@ -79,5 +84,12 @@ export abstract class AbstractCachedUseCase<TRequest, TResponse extends object>
       );
     }
     return GLOBAL_CACHE.get(this.cacheMasterKey) as LRUCache<string, TResponse>;
+  }
+
+  public static revalidate<K extends keyof AbstractCachedUseCase.CacheToUseCase>(key: K) {
+    const cache = GLOBAL_CACHE.get(key);
+    if (cache) {
+      cache.clear();
+    }
   }
 }

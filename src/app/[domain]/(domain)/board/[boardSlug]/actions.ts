@@ -27,7 +27,18 @@ const cleanFullTextSearch = (text: string) => {
   return cleanText.endsWith("*") ? cleanText : `${cleanText}:*`;
 };
 
-export async function fetchPostsForBoard(page: number, order: Order, boardId: number, rawSearch?: string) {
+export async function fetchPostsForBoard<
+  O extends Order,
+  R extends O extends "trending" ? Array<PostWithHotness & { post: Post }> : EnrichedPost[],
+>(
+  page: number,
+  order: O,
+  boardId: number,
+  rawSearch?: string,
+): Promise<{
+  filteredCount: number;
+  posts: R;
+}> {
   const search = rawSearch ? cleanFullTextSearch(rawSearch) : undefined;
   const searchWhere = search
     ? {
@@ -116,10 +127,9 @@ export async function fetchPostsForBoard(page: number, order: Order, boardId: nu
   ]);
 
   return {
-    posts:
-      order === "trending"
-        ? (posts as Array<PostWithHotness & { post: Post }>).map(post => post.post as EnrichedPost)
-        : (posts as EnrichedPost[]),
+    posts: (order === "trending"
+      ? (posts as Array<PostWithHotness & { post: Post }>).map(post => post.post)
+      : (posts as EnrichedPost[])) as R,
     filteredCount: count,
   };
 }

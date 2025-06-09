@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { responseWithAnonymousId } from "@/utils/anonymousId";
+import { responseWithAnonymousId } from "@/utils/anonymousId/responseWithAnonymousId";
+import { DIRTY_DOMAIN_HEADER } from "@/utils/dirtyDomain/config";
+import { getDomainPathname, pathnameDirtyCheck } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 import { config as appConfig } from "./config";
 
@@ -12,6 +14,7 @@ export function middleware(req: NextRequest) {
 
   // experimental: support for Chrome DevTools
   if (req.url.includes("/.well-known/appspecific/com.chrome.devtools.json") && appConfig.env === "dev") {
+    console.log("Serving Chrome DevTools configuration");
     return NextResponse.json({
       workspace: {
         root: import.meta.url.replace("file://", "").replace("src/middleware.ts", ""),
@@ -33,13 +36,21 @@ export function middleware(req: NextRequest) {
   //   }`;
   // }
 
+  const isDirtyDomain = pathnameDirtyCheck(url.pathname);
   const searchParams = req.nextUrl.searchParams.toString();
   // Get the pathname of the request
   const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
 
   // rewrites for app pages
   if (hostname == appConfig.rootDomain) {
-    return responseWithAnonymousId(req, NextResponse.rewrite(new URL(`${path === "/" ? "" : path}`, req.url)));
+    return responseWithAnonymousId(
+      req,
+      NextResponse.rewrite(new URL(`${path === "/" ? "" : path}`, req.url), {
+        headers: {
+          [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(url.pathname) : "false",
+        },
+      }),
+    );
   }
 
   // rewrite everything else to `/[domain] dynamic route
@@ -55,6 +66,7 @@ export const config = {
      * 3. /_static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
-    "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
+    // "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
+    "/((?!api|_next/|_static).*)",
   ],
 };

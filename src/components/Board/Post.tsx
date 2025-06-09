@@ -1,8 +1,8 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Card from "@codegouvfr/react-dsfr/Card";
 import Tag from "@codegouvfr/react-dsfr/Tag";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
-import { useRouter } from "next/navigation";
 import { MarkdownHooks } from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkDirectiveRehype from "remark-directive-rehype";
@@ -15,28 +15,21 @@ import { LikeButton } from "./LikeButton";
 export interface BoardPostProps {
   alreadyLiked: boolean;
   boardSlug: string;
+  dirtyDomainFixer: (pathname: string) => string;
+  first?: boolean;
   post: EnrichedPost;
   userId?: string;
 }
 
-export const BoardPost = ({ post, alreadyLiked, userId, boardSlug }: BoardPostProps) => {
-  const router = useRouter();
+export const BoardPost = ({ post, alreadyLiked, userId, first, dirtyDomainFixer }: BoardPostProps) => {
   const { isDark } = useIsDark();
   return (
     <Card
       key={`post_${post.id}`}
-      classes={
-        {
-          // title: fr.cx("fr-text--md"),
-        }
-      }
+      className={cx(!first && "snap-start scroll-mt-38")}
       title={post.title}
       linkProps={{
-        href: "#",
-        onClick: e => {
-          e.preventDefault();
-          router.push(`/post/${post.id}`, { scroll: false });
-        },
+        href: dirtyDomainFixer(`/post/${post.id}`),
       }}
       titleAs="h3"
       endDetail={
@@ -50,7 +43,7 @@ export const BoardPost = ({ post, alreadyLiked, userId, boardSlug }: BoardPostPr
               small
               nativeSpanProps={{
                 onClick: () => {
-                  location.href = `/post/${post.id}`;
+                  location.href = dirtyDomainFixer(`/post/${post.id}`);
                 },
               }}
             >
