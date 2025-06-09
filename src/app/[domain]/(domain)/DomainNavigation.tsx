@@ -1,9 +1,10 @@
 "use client";
 
 import MainNavigation, { type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
-import { useSelectedLayoutSegments } from "next/navigation";
+import { usePathname, useSelectedLayoutSegments } from "next/navigation";
 
 import { type Board, type TenantSetting } from "@/prisma/client";
+import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 interface DomainNavigationProps {
   boards: Board[];
@@ -13,13 +14,16 @@ interface DomainNavigationProps {
 export const DomainNavigation = ({ boards, tenantSetting }: DomainNavigationProps) => {
   const segments = useSelectedLayoutSegments();
   const segment = segments.join("/");
+  const pathname = usePathname();
+  const dirtyDomainFixer = dirtySafePathname(pathname);
+
   return (
     <MainNavigation
       items={[
-        { text: "Roadmap", linkProps: { href: "/roadmap" }, isActive: segment === "roadmap" },
+        { text: "Roadmap", linkProps: { href: dirtyDomainFixer("/roadmap") }, isActive: segment === "roadmap" },
         ...boards.map<MainNavigationProps.Item>(board => ({
           text: board.name,
-          linkProps: { href: `/board/${board.slug}` },
+          linkProps: { href: dirtyDomainFixer(`/board/${board.slug}`) },
           isActive: segment === `board/${board.slug}` || (!segment && board.id === tenantSetting.rootBoardId),
         })),
       ]}

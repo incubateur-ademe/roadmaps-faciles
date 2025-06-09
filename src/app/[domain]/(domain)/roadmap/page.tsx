@@ -11,10 +11,14 @@ import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
+import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
+import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 import { DomainPageHOP } from "../DomainPage";
 
 const RoadmapPage = DomainPageHOP({ withSettings: true })(async props => {
+  const dirtyDomain = await getDirtyDomain();
+  const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
   const tenant = props._data.tenant;
   const anonymousId = await getAnonymousId();
   const session = await auth();
@@ -97,7 +101,7 @@ const RoadmapPage = DomainPageHOP({ withSettings: true })(async props => {
                       shadow
                       titleAs="h4"
                       linkProps={{
-                        href: `/post/${post.id}`,
+                        href: dirtyDomainFixer(`/post/${post.id}`),
                       }}
                       size="small"
                       horizontal

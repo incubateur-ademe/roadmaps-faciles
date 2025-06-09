@@ -29,15 +29,17 @@ export const PostSimpleModal = (props: SimpleModalProps) => {
     };
   }, [dialogRef, handleClose]);
 
-  const getOnClickFn =
+  const getOnClickFn = useCallback(
     (props: { onClick?(e: SimpleEvent): void }, refresh?: boolean): SimpleModalProps.ActionAreaButtonProps["onClick"] =>
-    e => {
-      console.log("PostSimpleModal: button clicked", { props, refresh });
-      const ret = props?.onClick?.(e);
-      handleClose(e);
-      if (refresh) location.reload();
-      return ret;
-    };
+      e => {
+        console.log("PostSimpleModal: button clicked", { props, refresh });
+        const ret = props?.onClick?.(e);
+        handleClose(e);
+        if (refresh) location.reload();
+        return ret;
+      },
+    [handleClose],
+  );
 
   const addClosabilityToButtons = useCallback(
     (buttonsProps: SimpleModalProps["buttons"]) => {
@@ -68,7 +70,7 @@ export const PostSimpleModal = (props: SimpleModalProps) => {
         return button;
       }) as SimpleModalProps["buttons"];
     },
-    [handleClose, router],
+    [getOnClickFn],
   );
 
   return (

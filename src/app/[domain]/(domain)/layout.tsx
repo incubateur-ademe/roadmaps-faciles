@@ -9,6 +9,8 @@ import { ClientOnly } from "@/components/utils/ClientOnly";
 import { prisma } from "@/lib/db/prisma";
 import { type Tenant } from "@/lib/model/Tenant";
 import { type TenantSetting } from "@/prisma/client";
+import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
+import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
@@ -33,6 +35,8 @@ const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSet
 };
 
 const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<DashboardLayoutSlots & DomainProps>) => {
+  const dirtyDomain = await getDirtyDomain();
+  const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
   const tenant = await getTenantFromDomainProps({ params });
   const tenantSetting = await prisma.tenantSetting.findFirst({
     where: {
@@ -58,7 +62,7 @@ const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<Da
         navigation={<Navigation tenant={tenant} tenantSetting={tenantSetting} />}
         brandTop={<Brand />}
         homeLinkProps={{
-          href: "/",
+          href: dirtyDomainFixer("/"),
           title: tenant.name,
         }}
         serviceTitle={tenant.name}

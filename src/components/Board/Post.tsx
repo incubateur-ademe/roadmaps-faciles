@@ -15,12 +15,13 @@ import { LikeButton } from "./LikeButton";
 export interface BoardPostProps {
   alreadyLiked: boolean;
   boardSlug: string;
+  dirtyDomainFixer: (pathname: string) => string;
   first?: boolean;
   post: EnrichedPost;
   userId?: string;
 }
 
-export const BoardPost = ({ post, alreadyLiked, userId, first }: BoardPostProps) => {
+export const BoardPost = ({ post, alreadyLiked, userId, first, dirtyDomainFixer }: BoardPostProps) => {
   const { isDark } = useIsDark();
   return (
     <Card
@@ -28,7 +29,7 @@ export const BoardPost = ({ post, alreadyLiked, userId, first }: BoardPostProps)
       className={cx(!first && "snap-start scroll-mt-38")}
       title={post.title}
       linkProps={{
-        href: `/post/${post.id}`,
+        href: dirtyDomainFixer(`/post/${post.id}`),
       }}
       titleAs="h3"
       endDetail={
@@ -42,7 +43,7 @@ export const BoardPost = ({ post, alreadyLiked, userId, first }: BoardPostProps)
               small
               nativeSpanProps={{
                 onClick: () => {
-                  location.href = `/post/${post.id}`;
+                  location.href = dirtyDomainFixer(`/post/${post.id}`);
                 },
               }}
             >
