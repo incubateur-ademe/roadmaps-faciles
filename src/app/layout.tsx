@@ -9,7 +9,6 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { type Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
-import { type PropsWithChildren } from "react";
 import { SkeletonTheme } from "react-loading-skeleton";
 
 import { config } from "@/config";
@@ -40,7 +39,7 @@ export const metadata: Metadata = {
 
 const lang = "fr";
 
-const RootLayout = ({ children }: PropsWithChildren) => {
+const RootLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app, "snap-y")}>
       <head>

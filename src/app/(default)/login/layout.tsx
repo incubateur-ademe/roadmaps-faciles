@@ -1,9 +1,8 @@
 import { redirect, RedirectType } from "next/navigation";
-import { type PropsWithChildren } from "react";
 
 import { auth } from "@/lib/next-auth/auth";
 
-const LoginLayout = async ({ children }: PropsWithChildren) => {
+const LoginLayout = async ({ children }: LayoutProps<"/login">) => {
   const session = await auth();
 
   if (session?.user) {

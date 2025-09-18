@@ -24,7 +24,7 @@ export function generateBackground(name: string) {
 
   const initials = getInitials(name);
   // Generate a number between 0 and the number of colors based on both initials
-  const colorIndex = (initials.charCodeAt(0) + initials.charCodeAt(1)) % bgColors.length;
+  const colorIndex = (initials.charCodeAt(0) + (initials.charCodeAt(1) || initials.charCodeAt(0))) % bgColors.length;
   return [bgColors[colorIndex], fgColors[colorIndex]];
 }
 

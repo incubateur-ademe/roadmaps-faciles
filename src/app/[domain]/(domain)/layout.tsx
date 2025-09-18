@@ -1,6 +1,5 @@
 import Header from "@codegouvfr/react-dsfr/Header";
 import { notFound } from "next/navigation";
-import { type PropsWithChildren, type ReactNode } from "react";
 
 import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -15,11 +14,7 @@ import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
-import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomainParam";
-
-interface DashboardLayoutSlots {
-  modal: ReactNode;
-}
+import { getTenantFromDomainProps } from "./getTenantFromDomainParam";
 
 const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSetting: TenantSetting }) => {
   const boards = await prisma.board.findMany({
@@ -34,7 +29,7 @@ const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSet
   return <DomainNavigation boards={boards} tenantSetting={tenantSetting} />;
 };
 
-const DashboardLayout = async ({ children, modal, params }: PropsWithChildren<DashboardLayoutSlots & DomainProps>) => {
+const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
   const dirtyDomain = await getDirtyDomain();
   const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
   const tenant = await getTenantFromDomainProps({ params });

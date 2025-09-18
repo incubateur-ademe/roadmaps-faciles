@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { type PropsWithChildren } from "react";
 
 import { auth } from "@/lib/next-auth/auth";
 
-const AuthenticatedLayout = async ({ children }: PropsWithChildren) => {
+const AuthenticatedLayout = async ({ children }: LayoutProps<"/">) => {
   const session = await auth();
 
   if (!session) {

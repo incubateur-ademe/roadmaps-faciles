@@ -112,12 +112,30 @@ export const withValidation =
     return wrapper?.(wrapperProps => page({ ...wrapperProps, ...newProps })) ?? page(newProps);
   };
 
+// Agrégateur de params depuis un chemin littéral Next.js
+type PathParams<S extends string> =
+  // Catch-all obligatoire: [...param]
+  S extends `${infer Head}[...${infer P}]${infer Tail}`
+    ? PathParams<Head> & PathParams<Tail> & { [K in P]: string[] }
+    : // Catch-all optionnel: [[...param]]
+      S extends `${infer Head}[[...${infer P}]]${infer Tail}`
+      ? PathParams<Head> & PathParams<Tail> & { [K in P]?: string[] }
+      : // Param optionnel: [param?]
+        S extends `${infer Head}[${infer P}?]${infer Tail}`
+        ? PathParams<Head> & PathParams<Tail> & { [K in P]?: string }
+        : // Param simple: [param]
+          S extends `${infer Head}[${infer P}]${infer Tail}`
+          ? PathParams<Head> & PathParams<Tail> & { [K in P]: string }
+          : // Rien de dynamique dans ce morceau
+            EmptyObject;
+
+/**
+ * @deprecated Use Nextjs {@link RouteContext} when possible (enable "typed routes" in config)
+ */
 export type NextRouteHandler<TParams extends string = string> = (
   req: NextRequest,
   context: {
-    params: {
-      [T in TParams as T extends `...${infer R extends string}` ? R : T]: T extends `...${string}` ? string[] : string;
-    };
+    params: Promise<ClearObject<PathParams<TParams>>>;
   },
 ) => NextResponse | Promise<NextResponse | Response> | Response;
 

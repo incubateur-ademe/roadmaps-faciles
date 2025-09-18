@@ -9,15 +9,22 @@ import { FormFieldset } from "@/dsfr";
 import { signIn } from "@/lib/next-auth/auth";
 import { isRedirectError, type NextError } from "@/utils/next";
 
-export const LoginForm = () => {
+export interface LoginFormProps {
+  domain?: string;
+  loginWithEmail?: boolean;
+}
+
+const loginValueKey = "login";
+
+export const LoginForm = ({ loginWithEmail }: LoginFormProps) => {
   return (
     <form
       action={async data => {
         "use server";
 
         try {
-          await signIn(ESPACE_MEMBRE_PROVIDER_ID, {
-            email: data.get("username"),
+          await signIn(loginWithEmail ? "nodemailer" : ESPACE_MEMBRE_PROVIDER_ID, {
+            email: data.get(loginValueKey),
             redirectTo: "/",
           });
         } catch (error) {
@@ -33,20 +40,38 @@ export const LoginForm = () => {
       }}
     >
       <FormFieldset
-        legend={<h2>Se connecter avec son nom d'utilisateur beta gouv</h2>}
+        legend={
+          <h2>
+            {loginWithEmail
+              ? "Se connecter avec son adresse mail"
+              : "Se connecter avec son nom d'utilisateur beta gouv"}
+          </h2>
+        }
         elements={[
-          <Input
-            key="username"
-            label="Identifiant"
-            nativeInputProps={{
-              type: "text",
-              required: true,
-              name: "username",
-              pattern: "^[A-Za-z.]+$",
-              title:
-                "Votre identifiant doit être composé de lettres et de points. Il ne s'agit pas de votre adresse email Beta.",
-            }}
-          />,
+          loginWithEmail ? (
+            <Input
+              key="email"
+              label="Email"
+              nativeInputProps={{
+                type: "email",
+                required: true,
+                name: loginValueKey,
+              }}
+            />
+          ) : (
+            <Input
+              key="username"
+              label="Identifiant"
+              nativeInputProps={{
+                type: "text",
+                required: true,
+                name: loginValueKey,
+                pattern: "^[A-Za-z.]+$",
+                title:
+                  "Votre identifiant doit être composé de lettres et de points. Il ne s'agit pas de votre adresse email Beta.",
+              }}
+            />
+          ),
           <FormFieldset
             key="submit"
             legend={null}

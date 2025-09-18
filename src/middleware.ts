@@ -68,5 +68,7 @@ export const config = {
      */
     // "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
     "/((?!api|_next/|_static).*)",
+    // include api/auth for next-auth
+    "/api/auth/:path*",
   ],
 };

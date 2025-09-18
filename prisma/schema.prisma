@@ -6,7 +6,7 @@
 
 generator client {
   provider        = "prisma-client"
-  output          = "../src/generated/client"
+  output          = "../src/generated/prisma"
   // not usable in prod yet https://github.com/vercel/next.js/issues/80257
   // previewFeatures = ["typedSql", "views", "fullTextSearchPostgres", "queryCompiler", "driverAdapters"]
   previewFeatures = ["typedSql", "views", "fullTextSearchPostgres"]
@@ -205,7 +205,7 @@ model Post {
   hotness    PostWithHotness?
   activities Activity[]
 
-  textsearchable_index_col Unsupported("tsvector")? @default(dbgenerated("to_tsvector('french'::regconfig, (COALESCE(title, ''::text) || ' '::text || COALESCE(description, ''::text)))"))
+  textsearchable_index_col Unsupported("tsvector GENERATED ALWAYS AS (to_tsvector('french'::regconfig, COALESCE(title, ''::text) || ' ' || COALESCE(description, ''::text))) STORED;")?
 
   // @@fulltext([title, description])
   // @@fulltext([description])
@@ -228,7 +228,7 @@ enum ActivityType {
 }
 
 view Activity {
-  id             Int          @id
+  id             Int          @unique
   postId         Int
   type           ActivityType
   count          Int
@@ -240,10 +240,6 @@ view Activity {
   post         Post              @relation(fields: [postId], references: [id])
   comment      Comment?          @relation(fields: [commentId], references: [id])
   statusChange PostStatusChange? @relation(fields: [statusChangeId], references: [id])
-
-  @@index([postId])
-  @@index([commentId])
-  @@index([statusChangeId])
 }
 
 view PostWithHotness {
@@ -384,6 +380,7 @@ model User {
   recapNotificationFrequency Int        @default(0)
   createdAt                  DateTime   @default(now())
   updatedAt                  DateTime   @updatedAt
+  isBetaGouvMember           Boolean    @default(false)
 
   posts          Post[]
   apiKeys        ApiKey[]

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-const Home = () => (
+const Home = (_: PageProps<"/">) => (
   <DsfrPage>
     <Box as="section" pb="4w" pt="9w" className={cx(styles.hero)}>
       <Container>
