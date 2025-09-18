@@ -2,9 +2,6 @@
 
 import createMDX from "@next/mdx";
 import { type NextConfig } from "next";
-import remarkFrontmatter from "remark-frontmatter";
-import remarkGfm from "remark-gfm";
-import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { type Configuration } from "webpack";
 
 import packageJson from "./package.json" with { type: "json" };
@@ -64,7 +61,6 @@ const config: NextConfig = {
     serverMinification: true,
     authInterrupts: true,
     optimizePackageImports: ["@/lib/repo", "@/dsfr/client", "@/dsfr"],
-    strictNextHead: true,
     taint: true,
   },
   serverExternalPackages: ["@prisma/client"],
@@ -135,7 +131,7 @@ const config: NextConfig = {
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: [remarkFrontmatter, remarkGfm, [remarkMdxFrontmatter, { name: "metadata" }]],
+    remarkPlugins: ["remark-frontmatter", "remark-gfm", ["remark-mdx-frontmatter", { name: "metadata" }]],
   },
 });
 

@@ -10,3 +10,9 @@
 
 ## Produit
 - [ ] récupérer les insights, les commentaires, les réponses, depuis l'admin (ou en tant qu'admin)
+
+## Login
+- [x] ne sont autorisés au root login que les utilisateurs beta gouv
+- [x] tenant login avec un utilisateur existant => ajout d'un nouveau UserOnTenant
+- [x] tenant login avec un utilisateur inexistant mais betagouv => ajout utilisateur avec "isBetaGouvMember = true" + UserOnTenant
+- [x] tenant login avec un utilisateur inexistant et non betagouv => ajout utilisateur normal + UserOnTenant

@@ -25,17 +25,15 @@ export const UserHeaderItem = () => {
               className="rounded-full"
             />
           ) : (
-            <InitialsAvatar name={session.data.user.name || "Anon User"} />
+            <InitialsAvatar name={session.data.user.name || session.data.user.email.toLocaleUpperCase()} />
           )}
           <HeaderQuickAccessItem
             key="hqai-authenticated-user"
             quickAccessItem={{
               iconId: session.data.user.isAdmin ? "fr-icon-admin-fill" : "fr-icon-account-fill",
-              text: `${session.data.user.name}`,
-              buttonProps: {
-                onClick(e) {
-                  e.preventDefault();
-                },
+              text: `${session.data.user.name || session.data.user.email}`,
+              linkProps: {
+                href: "/profile",
               },
             }}
           />

@@ -44,7 +44,17 @@ const config = [
       "plugin:prettier/recommended",
     ],
     plugins: ["prettier", "unused-imports", "simple-import-sort", "lodash"],
-    ignorePatterns: ["!**/.*.js?(x)", "node_modules", "src/generated"],
+    ignorePatterns: [
+      "!**/.*.js?(x)",
+      "node_modules",
+      "src/generated",
+      "next-env.d.ts",
+      ".next",
+      "out",
+      "dist",
+      "coverage",
+      "public",
+    ],
     settings: {
       "import/resolver": {
         typescript: {}, // this loads <rootdir>/tsconfig.json to eslint

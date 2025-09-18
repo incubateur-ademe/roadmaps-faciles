@@ -173,13 +173,13 @@ export type PartialKeys<T> = {
 export type RequiredKeys<T> = Exclude<keyof T, PartialKeys<T>>;
 /** Can also "convert" `interface` into `type` */
 export type Objectize<T> = { [K in keyof T]: Objectize<T[K]> };
-export type UnwrapObectize<T> =
+export type UnwrapObjectize<T> =
   T extends Objectize<infer R>
     ? {
         [K in keyof R]: R[K];
       }
     : T;
-export type ClearObject<T> = UnwrapObectize<Objectize<T>>;
+export type ClearObject<T> = UnwrapObjectize<Objectize<T>>;
 
 export type InvertPartial<T> = Objectize<
   {

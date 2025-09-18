@@ -9,5 +9,7 @@ if (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) {
 process.env._SEEDING = "true";
 
 export default {
-  earlyAccess: true,
+  migrations: {
+    seed: "yarn run tsx --tsconfig prisma/tsconfig.json prisma/seed.cts",
+  },
 } satisfies PrismaConfig;

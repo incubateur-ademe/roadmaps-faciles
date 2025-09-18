@@ -36,7 +36,7 @@ const BoardPage = withValidation({
   const { order, search } = await searchParams;
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
-  const { domain, boardSlug } = await params;
+  const { boardSlug } = await params;
   const session = await auth();
   const board = await prisma.board.findUnique({
     where: {

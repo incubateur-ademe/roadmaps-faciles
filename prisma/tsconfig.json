@@ -14,7 +14,7 @@
         "../src/lib/utils/*"
       ],
       "@/prisma/*": [
-        "../src/generated/*"
+        "../src/generated/prisma/*"
       ],
       "@/*": [
         "../src/*"
