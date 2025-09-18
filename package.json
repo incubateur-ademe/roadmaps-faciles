@@ -14,7 +14,7 @@
     "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
-    "lint": "next lint",
+    "lint": "next typegen && eslint",
     "export": "next export",
     "build:export": "npm run build && npm run export",
     "run-script": "tsx --tsconfig scripts/tsconfig.json",
