@@ -10,7 +10,6 @@ import { type Tenant } from "@/lib/model/Tenant";
 import { type TenantSetting } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
-import { type Any } from "@/utils/types";
 
 import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
@@ -78,4 +77,4 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
   );
 };
 
-export default DashboardLayout as Any; // workaround for LayoutConfig issue
+export default DashboardLayout;
