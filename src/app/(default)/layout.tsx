@@ -1,5 +1,3 @@
-import { type PropsWithChildren } from "react";
-
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
 
@@ -8,7 +6,7 @@ import { SystemMessageDisplay } from "../SystemMessageDisplay";
 import { DefaultFooter } from "./DefaultFooter";
 import { DefaultHeader } from "./DefaultHeader";
 
-const DefaultLayout = ({ children }: PropsWithChildren) => {
+const DefaultLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <>
       <DefaultHeader />

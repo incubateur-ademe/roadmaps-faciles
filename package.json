@@ -11,7 +11,7 @@
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons && yarn prisma:generate",
     "dev": "next dev --turbopack",
-    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r src/generated/client/*.node .next/standalone/node_modules/.prisma/client",
+    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",

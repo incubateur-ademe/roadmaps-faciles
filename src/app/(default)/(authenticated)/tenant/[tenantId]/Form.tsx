@@ -45,7 +45,7 @@ export const Form = ({ tenant }: FormProps) => {
     register,
     reset,
     watch,
-  } = useForm<FormType>({
+  } = useForm({
     mode: "onChange",
     resolver: standardSchemaResolver(formSchema),
     defaultValues: {

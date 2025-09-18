@@ -5,7 +5,7 @@ import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import style from "./login.module.scss";
 import { LoginForm } from "./LoginForm";
 
-const LoginPage = () => (
+const LoginPage = (_: PageProps<"/login">) => (
   <DsfrPage>
     <Container ptmd="14v" mbmd="14v" fluid>
       <Grid haveGutters align="center">
