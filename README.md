@@ -1,11 +1,11 @@
 # Roadmaps Faciles
 
-<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="150" style="float: left" />
+<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="150" align="left" />
 
 Créer et exposer la Roadmap de sa Startup d'État n'a jamais été aussi facile.
 Grâce à **Roadmaps Faciles**, regroupez facilement les avis et retours des usagers pour orienter efficacement la feuille de route de votre produit et améliorer votre **impact**.
 
-<span style="clear: both;">Le projet accueille des contributions de développeur·euse·s bénévoles — merci 💚</span>
+Le projet accueille des contributions de développeur·euse·s bénévoles — merci 💚
 
 ## 🧱 Stack & décisions clés
 
