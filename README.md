@@ -1,11 +1,13 @@
 # Roadmaps Faciles
 
-<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="150" align="left" />
+<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="100" align="left" />
 
 Créer et exposer la Roadmap de sa Startup d'État n'a jamais été aussi facile.
 Grâce à **Roadmaps Faciles**, regroupez facilement les avis et retours des usagers pour orienter efficacement la feuille de route de votre produit et améliorer votre **impact**.
 
 Le projet accueille des contributions de développeur·euse·s bénévoles — merci 💚
+
+---
 
 ## 🧱 Stack & décisions clés
 
@@ -23,10 +25,10 @@ Ces choix sont détaillés dans les ADR (Architecture Decision Records) / `docs/
 
 ## 🚀 Démarrer
 
-### Prérequis
-
-- Node.js ≥ 22 (recommandé : activer Corepack) (cf. `.nvmrc`)  
-- PostgreSQL ≥ 15 (local ou conteneur via docker-compose)  
+> [!NOTE] 
+> **Prérequis**
+> - Node.js ≥ 22 (recommandé : activer Corepack) (cf. `.nvmrc`)  
+> - PostgreSQL ≥ 15 (local ou conteneur via docker-compose)  
 
 ### Installation
 
