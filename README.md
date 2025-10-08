@@ -1,11 +1,11 @@
 # Roadmaps Faciles
 
-<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="100" align="left" />
+<img src="./public/img/roadmaps-faciles.png" alt="Roadmaps Faciles" width="120" align="left" />
 
 Créer et exposer la Roadmap de sa Startup d'État n'a jamais été aussi facile.
 Grâce à **Roadmaps Faciles**, regroupez facilement les avis et retours des usagers pour orienter efficacement la feuille de route de votre produit et améliorer votre **impact**.
 
-Le projet accueille des contributions de développeur·euse·s bénévoles — merci 💚
+Le projet accueille des contributions de développeur·euse·s bénévoles — merci 💚 ([Règle des 10%](https://doc.incubateur.net/communaute/solliciter-et-contribuer-a-la-communaute/la-regle-des-10-communaute))
 
 ---
 
