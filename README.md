@@ -43,8 +43,10 @@ yarn install
 
 ### docker-compose (optionnel)
 
+Uniquement pour PostgreSQL et Maildev.
+
 ```bash
-# Démarrer PostgreSQL (port 5432)
+# Démarrer PostgreSQL et Maildev
 docker-compose up -d
 ```
 
@@ -72,13 +74,24 @@ yarn seed
 
 ---
 
+### Sous-domaine local (après seed)
+
+Le seed crée un tenant local avec le sous-domaine `default`.  
+Pour y accéder en local, ajouter dans `/etc/hosts` :
+
+```
+127.0.0.1	default.localhost:3000
+```
+
+---
+
 ### Lancer en dev
 
 ```bash
 yarn dev
 ```
 
-L’application est servie sur **http://localhost:3000**
+L’application est servie sur **http://localhost:3000** pour le site principal, et **http://default.localhost:3000** pour le tenant `default`.
 
 ---
 
