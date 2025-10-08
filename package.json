@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "predev": "react-dsfr update-icons",
-    "prebuild": "react-dsfr update-icons && yarn prisma:generate",
+    "prebuild": "react-dsfr update-icons && yarn prisma generate",
     "dev": "next dev --turbopack",
     "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client",
     "postbuild": "next-sitemap",
@@ -21,7 +21,7 @@
     "generateEnvDeclaration": "yarn run-script scripts/generateEnvDeclaration.ts",
     "seed": "prisma db seed",
     "prisma:studio": "prisma studio -b none",
-    "prisma:generate": "prisma generate"
+    "prisma:reset": "prisma migrate reset --skip-seed --skip-generate"
   },
   "resolutions": {
     "estree-walker": "2.0.2"

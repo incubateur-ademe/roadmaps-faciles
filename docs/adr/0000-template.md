@@ -1,0 +1,14 @@
+# ADR 0000 — <Titre court>
+- **Date**: YYYY-MM-DD
+- **Statut**: Proposed | Accepted | Superseded by ADR-xxxx | Deprecated
+- **Contexte**
+  - Quel problème ? Pourquoi maintenant ?
+- **Décision**
+  - La décision prise, claire et actionnable.
+- **Options envisagées**
+  - Option A — avantages / inconvénients
+  - Option B — ...
+- **Conséquences**
+  - Effets positifs, coûts, risques, migrations.
+- **Liens**
+  - Issues, PRs, docs, références.
