@@ -1,83 +1,209 @@
 import "server-only";
 
+import { forbidden } from "next/navigation";
 import { type Session } from "next-auth";
 
+import { type UserRole, type UserStatus } from "@/prisma/enums";
+
 import { auth } from "../next-auth/auth";
+import { userOnTenantRepo, userRepo } from "../repo";
+import { getServerService } from "../services";
 import { UnexpectedSessionError } from "./error";
+import { type RequireAtLeastOne, type RequireOnlyOne } from "./types";
+
+/* ------------------------------------------------------
+ * TYPES
+ * ----------------------------------------------------*/
+
+type RoleCheck = RequireOnlyOne<{ min: UserRole; only: UserRole }>;
+type StatusCheck = RequireOnlyOne<{ min: UserStatus; only: UserStatus }>;
+
+type AccessCheck = RequireAtLeastOne<{
+  role: RoleCheck;
+  status: StatusCheck;
+}>;
 
 type AssertParam<T> = T | { check: T; message?: string };
+
 type AssertSessionParams = {
-  admin?: AssertParam<boolean>;
-  // groupMember?: AssertParam<Group>;
-  // groupOwner?: AssertParam<Group>;
   message?: string;
-  startupMember?: AssertParam<string>;
+  rootUser?: AssertParam<AccessCheck>;
+  tenantUser?: AssertParam<AccessCheck>;
+  useForbidden?: boolean;
 };
+
+/* ------------------------------------------------------
+ * CONSTANTES ET HELPERS
+ * ----------------------------------------------------*/
 
 const defaultMessage = "Session non trouvée.";
 
+const ROLE_WEIGHT: Record<UserRole, number> = {
+  INHERITED: 0,
+  USER: 1,
+  MODERATOR: 2,
+  ADMIN: 3,
+  OWNER: 4,
+};
+
+const STATUS_WEIGHT: Record<UserStatus, number> = {
+  DELETED: 0,
+  BLOCKED: 1,
+  ACTIVE: 2,
+};
+
+function isAssertObj<T>(val: AssertParam<T> | undefined): val is { check: T; message?: string } {
+  return typeof val === "object" && val !== null && "check" in val;
+}
+
+function fail(useForbidden: boolean, message: string): never {
+  if (useForbidden) forbidden();
+  throw new UnexpectedSessionError(message);
+}
+
+function roleOk(actual: UserRole, expected: RoleCheck): boolean {
+  if (expected.only && expected.min) {
+    throw new Error("RoleCheck ne peut pas contenir à la fois 'min' et 'only'");
+  }
+  return expected.only ? actual === expected.only : ROLE_WEIGHT[actual] >= ROLE_WEIGHT[expected.min];
+}
+
+function statusOk(actual: UserStatus, expected: StatusCheck): boolean {
+  if (expected.only && expected.min) {
+    throw new Error("StatusCheck ne peut pas contenir à la fois 'min' et 'only'");
+  }
+  return expected.only ? actual === expected.only : STATUS_WEIGHT[actual] >= STATUS_WEIGHT[expected.min];
+}
+
+/* ------------------------------------------------------
+ * LOGIQUE D’AUTORISATION
+ * ----------------------------------------------------*/
+
+async function resolveInheritedRole(role: UserRole, userUuid: string, sessionRole?: UserRole): Promise<UserRole> {
+  if (role !== "INHERITED") return role;
+  if (sessionRole && sessionRole !== "INHERITED") return sessionRole;
+
+  const user = await userRepo.findById(userUuid);
+  if (!user) {
+    throw new UnexpectedSessionError("Utilisateur introuvable pour rôle hérité.");
+  }
+
+  return user.role;
+}
+
+function checkRootUser(session: Session, check: AccessCheck, useForbidden: boolean, message: string) {
+  const rootRole = session.user.role;
+  const rootStatus = session.user.status;
+
+  if (check.role && !roleOk(rootRole, check.role)) {
+    fail(useForbidden, message);
+  }
+
+  if (check.status && !statusOk(rootStatus, check.status)) {
+    fail(useForbidden, message);
+  }
+}
+
+async function checkTenantUser(session: Session, check: AccessCheck, useForbidden: boolean, message: string) {
+  const current = await getServerService("current");
+  const userOnTenant = await userOnTenantRepo.findMembership(session.user.uuid, current.tenant.id);
+
+  if (!userOnTenant) {
+    fail(useForbidden, message);
+  }
+
+  const effectiveRole = await resolveInheritedRole(userOnTenant.role, session.user.uuid, session.user.role);
+  const effectiveStatus = userOnTenant.status;
+
+  if (check.role && !roleOk(effectiveRole, check.role)) {
+    fail(useForbidden, message);
+  }
+
+  if (check.status && !statusOk(effectiveStatus, check.status)) {
+    fail(useForbidden, message);
+  }
+}
+
+/* ------------------------------------------------------
+ * FONCTION PRINCIPALE
+ * ----------------------------------------------------*/
+
 /**
- * Assert that the current session is present and that the user is either owner of the document or admin.
+ * Vérifie la validité et les autorisations de la session courante.
+ *
+ * ## Hiérarchie d’autorité
+ *   rootUser > tenantUser
+ *
+ * ## Usage
+ * Permet de restreindre l’accès selon :
+ * - le rôle et/ou le statut global du user (`rootUser`)
+ * - le rôle et/ou le statut au sein du tenant courant (`tenantUser`)
+ *
+ * Exemple :
+ * ```ts
+ * await assertSession({
+ *   rootUser: { check: { role: { only: "ADMIN" } } },
+ * });
+ *
+ * await assertSession({
+ *   tenantUser: {
+ *     check: {
+ *       role: { min: "MODERATOR" },
+ *       status: { only: "ACTIVE" },
+ *     },
+ *     message: "Accès réservé aux membres actifs du tenant.",
+ *   },
+ * });
+ * ```
+ *
+ * ## Comportement
+ * - Retourne la `Session` si les conditions sont remplies.
+ * - Lève `UnexpectedSessionError` ou exécute `forbidden()` selon `useForbidden`.
+ * - Résout automatiquement les rôles `INHERITED` à partir du rôle racine.
  */
-export const assertServerSession = async ({
-  admin,
+export const assertSession = async ({
+  rootUser,
+  tenantUser,
   message = defaultMessage,
-  // groupOwner,
-  // groupMember,
-  startupMember,
+  useForbidden = false,
 }: AssertSessionParams = {}): Promise<Session> => {
   const session = await auth();
   if (!session?.user) {
-    throw new UnexpectedSessionError(message);
+    fail(useForbidden, message);
   }
 
-  // const espaceMembreService = await getServerService("espaceMembre");
+  // Extraction et normalisation des paramètres
+  let rootUserToCheck: AccessCheck | null = null;
+  let rootUserMessage = message;
+  if (rootUser) {
+    if (isAssertObj(rootUser)) {
+      rootUserToCheck = rootUser.check;
+      rootUserMessage = rootUser.message ?? message;
+    } else {
+      rootUserToCheck = rootUser;
+    }
+  }
 
-  // const shouldCheckStaff = typeof admin === "boolean" ? admin : admin?.check;
-  // const shouldCheckGroupOwner = groupOwner && "check" in groupOwner ? groupOwner?.check : groupOwner;
-  // const shouldCheckGroupMember = groupMember && "check" in groupMember ? groupMember?.check : groupMember;
-  // const shouldCheckStartupMember = typeof startupMember === "string" ? startupMember : startupMember?.check;
+  let tenantUserToCheck: AccessCheck | null = null;
+  let tenantUserMessage = message;
+  if (tenantUser) {
+    if (isAssertObj(tenantUser)) {
+      tenantUserToCheck = tenantUser.check;
+      tenantUserMessage = tenantUser.message ?? message;
+    } else {
+      tenantUserToCheck = tenantUser;
+    }
+  }
 
-  // const member = await espaceMembreService.getMemberByUsername(session.user.username);
-  // const { isOwner: isGroupOwner } = shouldCheckGroupOwner
-  //   ? await espaceMembreService.getMemberMembership(member, groupOwner as Group)
-  //   : { isOwner: false };
-  // const { isMember: isGroupMember } = shouldCheckGroupMember
-  //   ? await espaceMembreService.getMemberMembership(member, groupMember as Group)
-  //   : { isMember: false };
-  // const isStartupMember = shouldCheckStartupMember
-  //   ? groupRuleValidations.startup(member, shouldCheckStartupMember)
-  //   : false;
+  // ----- PRIORITÉ : rootUser > tenantUser
+  if (rootUserToCheck) {
+    checkRootUser(session, rootUserToCheck, useForbidden, rootUserMessage);
+    return session; // rootUser valid => skip tenant check
+  }
 
-  // if (shouldCheckGroupOwner && shouldCheckStaff) {
-  //   if (!(isGroupOwner || session.user.isAdmin)) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckGroupOwner) {
-  //   if (!isGroupOwner) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckGroupMember && shouldCheckStaff) {
-  //   if (!(isGroupMember || session.user.isAdmin)) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckGroupMember) {
-  //   if (!isGroupMember) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckStartupMember && shouldCheckStaff) {
-  //   if (!(isStartupMember || session.user.isAdmin)) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckStartupMember) {
-  //   if (!isStartupMember) {
-  //     forbidden();
-  //   }
-  // } else if (shouldCheckStaff) {
-  //   if (!session.user.isAdmin) {
-  //     forbidden();
-  //   }
-  // }
+  if (tenantUserToCheck) {
+    await checkTenantUser(session, tenantUserToCheck, useForbidden, tenantUserMessage);
+  }
 
   return session;
 };

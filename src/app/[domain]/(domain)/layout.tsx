@@ -7,6 +7,7 @@ import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
 import { prisma } from "@/lib/db/prisma";
 import { type Tenant } from "@/lib/model/Tenant";
+import { getServerService } from "@/lib/services";
 import { type TenantSetting } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
@@ -41,6 +42,9 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
   if (!tenantSetting) {
     notFound();
   }
+
+  const current = await getServerService("current");
+  current.tenant = tenant;
 
   // Optional: Redirect to custom domain if it exists when on subdomain
   // if (

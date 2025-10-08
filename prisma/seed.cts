@@ -20,11 +20,12 @@ async function main() {
   const current = await getServerService("current");
   current.tenant = tenant;
 
-  await prisma.tenantSetting.create({
+  const setting = await prisma.tenantSetting.create({
     data: {
       tenantId: tenant.id,
     },
   });
+  current.setting = setting;
   console.log("🌱 TenantSetting créé : ", tenant.name);
 
   const admin = await prisma.user.create({
