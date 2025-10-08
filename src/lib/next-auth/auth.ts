@@ -7,21 +7,30 @@ import { type AdapterUser } from "next-auth/adapters";
 import Nodemailer from "next-auth/providers/nodemailer";
 
 import { config } from "@/config";
+import { type UserRole, type UserStatus } from "@/prisma/enums";
 import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 
 import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingRepo, userOnTenantRepo, userRepo } from "../repo";
 
+type CustomUser = AdapterUser & {
+  isAdmin?: boolean;
+  isBetaGouvMember: boolean;
+  role: UserRole;
+  status: UserStatus;
+  uuid: string;
+};
+
 declare module "next-auth" {
   interface Session {
-    user: AdapterUser & { isAdmin?: boolean; uuid: string };
+    user: CustomUser;
   }
 }
 
 declare module "@auth/core/jwt" {
   interface JWT {
-    user: AdapterUser & { isAdmin?: boolean; uuid: string };
+    user: CustomUser;
   }
 }
 
@@ -126,7 +135,8 @@ export const {
           }
 
           if (params.user.email?.endsWith("@beta.gouv.fr") || params.user.email?.endsWith("@ext.beta.gouv.fr")) {
-            // check if user is found in espace membre
+            // check if user is found in espace membre, if not, block connection
+            // if found but account not found in db, create it with isBetaGouvMember = true
             try {
               const betaUser = await espaceMembreProvider.client.member.getByUsername(possibleUsername);
               if (!betaUser.isActive) {
@@ -141,6 +151,8 @@ export const {
                   username: betaUser.username,
                   image: betaUser.avatar,
                   isBetaGouvMember: true,
+                  role: "USER",
+                  status: "ACTIVE",
                 });
               } else {
                 let userInTenant = await userOnTenantRepo.findMembership(dbUser.id, tenant.id);
@@ -148,14 +160,15 @@ export const {
                   userInTenant = await userOnTenantRepo.create({
                     userId: dbUser.id,
                     tenantId: tenant.id,
-                    role: "USER",
+                    role: "INHERITED",
                     status: "ACTIVE",
                   });
                 }
 
-                if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
-                  return false;
-                }
+                // should be checked on layouts
+                // if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
+                //   return false;
+                // }
                 params.user = dbUser;
               }
             } catch (error: unknown) {
@@ -191,6 +204,8 @@ export const {
               isAdmin: dbUser.username ? config.admins.includes(dbUser.username) : false,
               uuid: dbUser.id,
               isBetaGouvMember: dbUser.isBetaGouvMember,
+              role: dbUser.role,
+              status: dbUser.status,
             },
           };
           token.sub = dbUser.username || dbUser.id;
