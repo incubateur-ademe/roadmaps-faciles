@@ -67,7 +67,7 @@ export const config = {
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
     // "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
-    "/((?!api|_next/|_static).*)",
+    "/((?!api|_next/|_static|img/).*)",
     // include api/auth for next-auth
     "/api/auth/:path*",
   ],

@@ -148,3 +148,125 @@ $postStatusColor: (
 .scrollbar-thin {
     scrollbar-width: thin;
 }
+
+
+/* ==============================
+   Menu utilisateur DSFR étendu
+   ============================== */
+.fr-user-menu {
+    --rows: 8;
+    position: relative;
+    text-align: initial;
+    margin-top: -1rem !important;
+
+    /* --- Bouton principal --- */
+    &__btn {
+        margin-bottom: 0 !important;
+
+        &[aria-expanded="true"] &-label:after {
+            transform: rotate(-180deg);
+        }
+
+        /* Icône droite (chevron) */
+        &-label:after {
+            transition: transform 0.3s;
+        }
+
+        &[aria-expanded="true"] {
+            color: var(--text-active-blue-france);
+            background-color: var(--background-open-blue-france) !important;
+            --idle: transparent;
+            --hover: var(--background-open-blue-france-hover);
+            --active: var(--background-open-blue-france-active);
+        }
+    }
+
+    /* --- Réinitialisations DSFR inutiles --- */
+    .fr-nav__item:before {
+        content: none;
+    }
+
+    .fr-menu__list {
+        background-color: var(--background-alt-grey);
+    }
+
+    /* --- En-tête utilisateur --- */
+    &__header {
+        padding: 1rem 1.25rem;
+    }
+
+    &__name {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    &__email {
+        color: var(--text-mention-grey);
+    }
+
+    /* --- Liens du menu --- */
+    .fr-nav__link {
+        transition: background-color 0.2s ease, color 0.2s ease;
+        justify-content: start;
+
+        &>.fr-icon {
+            margin-right: 0.5rem;
+        }
+
+        &:hover,
+        &:focus {
+            background-color: var(--background-alt-grey-hover);
+            color: var(--text-action-high-blue-france);
+        }
+    }
+
+
+    /* --- Bouton de déconnexion --- */
+    &__logout {
+        display: flex;
+        justify-content: center;
+
+        &>button.fr-btn,
+        &>a.fr-btn {
+            flex: 1 !important;
+            margin: 1rem !important;
+            justify-content: center !important;
+        }
+    }
+
+    /* --- Responsive desktop --- */
+    @media (width >=62em) {
+        .fr-user-menu {
+            &__btn {
+                &-label:after {
+                    margin-left: 0.25rem;
+                    margin-right: -0.25rem;
+                }
+            }
+
+            /* --- Menu déroulant --- */
+            &__menu {
+                padding: 0 !important;
+                left: .25rem !important;
+                margin: 0 !important;
+            }
+        }
+
+        .fr-menu__list {
+            grid-template-rows: repeat(var(--rows), auto);
+            grid-auto-flow: column;
+            display: grid;
+        }
+    }
+
+    /* --- Accessibilité : réduit les animations --- */
+    @media (prefers-reduced-motion: reduce) {
+        .fr-user-menu {
+
+            &__btn-label:after,
+            &__menu {
+                transition: none;
+            }
+        }
+    }
+}

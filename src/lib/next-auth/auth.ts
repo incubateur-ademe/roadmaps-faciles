@@ -15,8 +15,8 @@ import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingRepo, userOnTenantRepo, userRepo } from "../repo";
 
 type CustomUser = AdapterUser & {
-  isAdmin?: boolean;
   isBetaGouvMember: boolean;
+  isSuperAdmin?: boolean;
   role: UserRole;
   status: UserStatus;
   uuid: string;
@@ -201,7 +201,7 @@ export const {
               emailVerified: now,
               username: dbUser.username!,
               image: dbUser.image,
-              isAdmin: dbUser.username ? config.admins.includes(dbUser.username) : false,
+              isSuperAdmin: dbUser.username ? config.admins.includes(dbUser.username) : false,
               uuid: dbUser.id,
               isBetaGouvMember: dbUser.isBetaGouvMember,
               role: dbUser.role,

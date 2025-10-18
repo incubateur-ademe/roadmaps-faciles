@@ -4,7 +4,7 @@ import Header from "@codegouvfr/react-dsfr/Header";
 import { Brand } from "@/components/Brand";
 import { config } from "@/config";
 
-import { LoginLogoutHeaderItem, UserHeaderItem } from "../AuthHeaderItems";
+import { UserHeaderItem } from "../AuthHeaderItems";
 import { Navigation } from "./Navigation";
 
 export const DefaultHeader = () => (
@@ -34,10 +34,6 @@ export const DefaultHeader = () => (
     classes={{
       operator: "shimmer",
     }}
-    quickAccessItems={
-      config.maintenance
-        ? []
-        : [<UserHeaderItem key="hqai-user" />, <LoginLogoutHeaderItem key="hqai-loginlogout" />].filter(Boolean)
-    }
+    quickAccessItems={config.maintenance ? [] : [<UserHeaderItem key="hqai-user" />].filter(Boolean)}
   />
 );
