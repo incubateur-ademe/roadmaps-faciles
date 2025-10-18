@@ -3,12 +3,12 @@ import "server-only";
 import { forbidden } from "next/navigation";
 import { type Session } from "next-auth";
 
-import { type UserRole, type UserStatus } from "@/prisma/enums";
+import { UserRole, type UserStatus } from "@/prisma/enums";
 
 import { auth } from "../next-auth/auth";
 import { userOnTenantRepo, userRepo } from "../repo";
 import { getServerService } from "../services";
-import { UnexpectedSessionError } from "./error";
+import { JsonifiedError, UnexpectedSessionError } from "./error";
 import { type RequireAtLeastOne, type RequireOnlyOne } from "./types";
 
 /* ------------------------------------------------------
@@ -58,7 +58,9 @@ function isAssertObj<T>(val: AssertParam<T> | undefined): val is { check: T; mes
 
 function fail(useForbidden: boolean, message: string): never {
   if (useForbidden) forbidden();
-  throw new UnexpectedSessionError(message);
+  const error = new JsonifiedError(new UnexpectedSessionError(message));
+  console.log("SERVER ERROR", error);
+  throw error;
 }
 
 function roleOk(actual: UserRole, expected: RoleCheck): boolean {
@@ -156,10 +158,13 @@ async function checkTenantUser(session: Session, check: AccessCheck, useForbidde
  * });
  * ```
  *
- * ## Comportement
- * - Retourne la `Session` si les conditions sont remplies.
- * - Lève `UnexpectedSessionError` ou exécute `forbidden()` selon `useForbidden`.
- * - Résout automatiquement les rôles `INHERITED` à partir du rôle racine.
+ * @param params - Paramètres de vérification.
+ * @param params.rootUser - Vérifications à appliquer au user global.
+ * @param params.tenantUser - Vérifications à appliquer au user dans le tenant courant.
+ * @param params.message - Message d’erreur par défaut en cas d’échec. Par défaut : `"Session non trouvée."`
+ * @param params.useForbidden - Si `true`, exécute `forbidden()` en cas d’échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `false`.
+ * @returns La `Session` si les vérifications sont passées.
+ * @throws `UnexpectedSessionError` ou exécute `forbidden()` si les vérifications échouent.
  */
 export const assertSession = async ({
   rootUser,
@@ -170,6 +175,10 @@ export const assertSession = async ({
   const session = await auth();
   if (!session?.user) {
     fail(useForbidden, message);
+  }
+
+  if (session?.user.isSuperAdmin) {
+    return session; // super-admin, bypass all checks
   }
 
   // Extraction et normalisation des paramètres
@@ -207,3 +216,13 @@ export const assertSession = async ({
 
   return session;
 };
+
+/**
+ * Spécialisation d’`assertSession` pour vérifier que l’utilisateur courant est admin du tenant.
+ *
+ * @param useForbidden - Si `true`, exécute `forbidden()` en cas d’échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `true`.
+ * @returns La `Session` si l’utilisateur est admin du tenant.
+ * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l’utilisateur n’est pas admin du tenant.
+ */
+export const assertTenantAdmin = async (useForbidden = true): Promise<Session> =>
+  assertSession({ tenantUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });

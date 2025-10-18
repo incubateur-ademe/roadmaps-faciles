@@ -41,7 +41,7 @@ export const Navigation = () => {
           isActive: segment === "startup",
         },
         ...(((status === "authenticated" &&
-          session.user.isAdmin && [
+          session.user.isSuperAdmin && [
             {
               text: "Admin",
               linkProps: {

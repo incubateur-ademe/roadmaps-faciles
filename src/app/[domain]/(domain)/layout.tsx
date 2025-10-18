@@ -12,7 +12,7 @@ import { type TenantSetting } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
-import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
+import { UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
 import { getTenantFromDomainProps } from "./getTenantFromDomainParam";
@@ -65,9 +65,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
           title: tenant.name,
         }}
         serviceTitle={tenant.name}
-        quickAccessItems={[<UserHeaderItem key="hqai-user" />, <LoginLogoutHeaderItem key="hqai-loginlogout" />].filter(
-          Boolean,
-        )}
+        quickAccessItems={[<UserHeaderItem key="hqai-user" />].filter(Boolean)}
       />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}

@@ -1,10 +1,7 @@
-import { getServerService } from "@/lib/services";
+import { redirect } from "next/navigation";
 
-const TenantAdminPage = async () => {
-  const current = await getServerService("current");
-
-  console.log("TenantAdminPage", { current });
-  return <div>Tenant Admin Page</div>;
+const TenantAdminPage = () => {
+  redirect("/admin/general");
 };
 
 export default TenantAdminPage;
