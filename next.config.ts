@@ -62,11 +62,11 @@ const config: NextConfig = {
     authInterrupts: true,
     optimizePackageImports: ["@/lib/repo", "@/dsfr/client", "@/dsfr"],
     taint: true,
+    turbopackFileSystemCacheForDev: true,
   },
+  cacheComponents: true,
+  reactCompiler: true,
   serverExternalPackages: ["@prisma/client"],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   env,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   images: {
