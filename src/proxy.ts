@@ -6,7 +6,7 @@ import { getDomainPathname, pathnameDirtyCheck } from "@/utils/dirtyDomain/pathn
 
 import { config as appConfig } from "./config";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const url = req.nextUrl;
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
