@@ -13,7 +13,7 @@ import z from "zod";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
 import { FormFieldset } from "@/dsfr";
-import { type Tenant } from "@/lib/model/Tenant";
+import { type TenantWithSettings } from "@/lib/model/Tenant";
 import { LOCALE_LABELS } from "@/utils/i18n";
 import { localeSchema, subdomainSchema } from "@/utils/zod-schema";
 
@@ -21,7 +21,7 @@ import { saveTenant } from "./actions";
 import style from "./TenantMain.module.scss";
 
 interface FormProps {
-  tenant: Tenant;
+  tenant: TenantWithSettings;
 }
 
 const formSchema = z.object({
@@ -50,10 +50,10 @@ export const Form = ({ tenant }: FormProps) => {
     resolver: standardSchemaResolver(formSchema),
     defaultValues: {
       tenantId: tenant.id,
-      tenantName: tenant.name,
-      tenantSubdomain: tenant.subdomain,
-      tenantCustomDomain: tenant.customDomain ?? "",
-      locale: tenant.locale,
+      tenantName: tenant.settings.name,
+      tenantSubdomain: tenant.settings.subdomain,
+      tenantCustomDomain: tenant.settings.customDomain ?? "",
+      locale: tenant.settings.locale,
     },
   });
 
@@ -63,6 +63,8 @@ export const Form = ({ tenant }: FormProps) => {
     const response = await saveTenant({
       tenant: {
         id: data.tenantId,
+      },
+      setting: {
         name: data.tenantName,
         subdomain: data.tenantSubdomain,
         customDomain: data.tenantCustomDomain,
@@ -76,10 +78,10 @@ export const Form = ({ tenant }: FormProps) => {
       setSuccess(true);
       reset({
         tenantId: response.data.id,
-        tenantName: response.data.name,
-        tenantSubdomain: response.data.subdomain,
-        tenantCustomDomain: response.data.customDomain ?? "",
-        locale: response.data.locale,
+        tenantName: response.data.settings.name,
+        tenantSubdomain: response.data.settings.subdomain,
+        tenantCustomDomain: response.data.settings.customDomain ?? "",
+        locale: response.data.settings.locale,
       });
       setTimeout(() => {
         setSuccess(false);

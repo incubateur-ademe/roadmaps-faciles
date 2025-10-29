@@ -4,14 +4,15 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 
 import { Tenant } from "@/lib/model/Tenant";
+import { TenantSettings } from "@/lib/model/TenantSettings";
 import { tenantRepo } from "@/lib/repo";
 import { SaveTenant, type SaveTenantOutput } from "@/useCases/tenant/SaveTenant";
 import { type ServerActionResponse } from "@/utils/next";
 
 type SaveTenantResponse = ServerActionResponse<SaveTenantOutput>;
-type SaveTenantProps = { tenant: Partial<Tenant> };
+type SaveTenantProps = { setting: Partial<TenantSettings>; tenant: Partial<Tenant> };
 
-export const saveTenant = async ({ tenant }: SaveTenantProps): Promise<SaveTenantResponse> => {
+export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<SaveTenantResponse> => {
   // TODO check if the user is allowed to update the tenant
 
   const tenantValidated = Tenant.omit({
@@ -27,9 +28,26 @@ export const saveTenant = async ({ tenant }: SaveTenantProps): Promise<SaveTenan
     };
   }
 
+  const settingValidated = TenantSettings.pick({
+    name: true,
+    subdomain: true,
+    customDomain: true,
+    locale: true,
+  }).safeParse(setting);
+
+  if (!settingValidated.success) {
+    return {
+      ok: false,
+      error: z.prettifyError(settingValidated.error),
+    };
+  }
+
   try {
     const useCase = new SaveTenant(tenantRepo);
-    const tenant = await useCase.execute(tenantValidated.data);
+    const tenant = await useCase.execute({
+      id: tenantValidated.data.id,
+      setting: settingValidated.data,
+    });
 
     revalidatePath(`/tenant/${tenant.id}`);
     return {

@@ -14,7 +14,7 @@ const TenantLoginPage = DomainPageHOP({ withSettings: true })(props => {
             <Container pxmd="0" py="10v" mymd="14v" className={style.login}>
               <Grid haveGutters align="center">
                 <GridCol md={9} lg={8}>
-                  <h1>Connexion espace : {props._data.tenant.name}</h1>
+                  <h1>Connexion espace : {props._data.settings?.name}</h1>
                   <Box>
                     <LoginForm loginWithEmail />
                   </Box>

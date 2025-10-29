@@ -124,7 +124,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
     });
 
     // Set first board as root page
-    await prisma.tenantSetting.update({
+    await prisma.tenantSettings.update({
       where: {
         tenantId: tenant.id,
       },

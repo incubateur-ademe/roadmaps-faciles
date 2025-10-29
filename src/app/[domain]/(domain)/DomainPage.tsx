@@ -2,8 +2,8 @@ import { type ReactElement } from "react";
 import { type EmptyObject } from "react-hook-form";
 
 import { type Tenant } from "@/lib/model/Tenant";
-import { type TenantSetting } from "@/lib/model/TenantSetting";
-import { tenantSettingRepo } from "@/lib/repo";
+import { type TenantSettings } from "@/lib/model/TenantSettings";
+import { tenantSettingsRepo } from "@/lib/repo";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
@@ -14,7 +14,7 @@ type DomainRootPageOptions = {
   withSettings?: boolean;
 };
 export type DomainPageCombinedProps<Params extends object> = DomainProps<Params> & {
-  _data: { dirtyDomainFixer: (pathname: string) => string; domain: string; settings?: TenantSetting; tenant: Tenant };
+  _data: { dirtyDomainFixer: (pathname: string) => string; domain: string; settings?: TenantSettings; tenant: Tenant };
 };
 export type DomainPage<Params extends object = EmptyObject> = (
   props: DomainPageCombinedProps<Params>,
@@ -26,10 +26,10 @@ export const DomainPageHOP =
   (page: DomainPage<Params>) =>
     (async (props: DomainPageCombinedProps<Params>) => {
       const tenant = await getTenantFromDomainProps<Params>(props);
-      let settings: TenantSetting | undefined;
+      let settings: TenantSettings | undefined;
 
       if (options?.withSettings) {
-        const useCase = new GetTenantSettings(tenantSettingRepo);
+        const useCase = new GetTenantSettings(tenantSettingsRepo);
         settings = await useCase.execute({
           tenantId: tenant.id,
         });

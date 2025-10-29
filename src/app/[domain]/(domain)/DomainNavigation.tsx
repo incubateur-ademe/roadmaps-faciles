@@ -3,15 +3,15 @@
 import MainNavigation, { type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { usePathname, useSelectedLayoutSegments } from "next/navigation";
 
-import { type Board, type TenantSetting } from "@/prisma/client";
+import { type Board, type TenantSettings } from "@/prisma/client";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 interface DomainNavigationProps {
   boards: Board[];
-  tenantSetting: TenantSetting;
+  tenantSettings: TenantSettings;
 }
 
-export const DomainNavigation = ({ boards, tenantSetting }: DomainNavigationProps) => {
+export const DomainNavigation = ({ boards, tenantSettings }: DomainNavigationProps) => {
   const segments = useSelectedLayoutSegments();
   const segment = segments.join("/");
   const pathname = usePathname();
@@ -24,7 +24,7 @@ export const DomainNavigation = ({ boards, tenantSetting }: DomainNavigationProp
         ...boards.map<MainNavigationProps.Item>(board => ({
           text: board.name,
           linkProps: { href: dirtyDomainFixer(`/board/${board.slug}`) },
-          isActive: segment === `board/${board.slug}` || (!segment && board.id === tenantSetting.rootBoardId),
+          isActive: segment === `board/${board.slug}` || (!segment && board.id === tenantSettings.rootBoardId),
         })),
       ]}
     />

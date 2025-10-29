@@ -49,7 +49,7 @@ model Board {
 
   tenant               Tenant            @relation(fields: [tenantId], references: [id])
   posts                Post[]
-  tenantSettingForRoot TenantSetting?
+  tenantSettingForRoot TenantSettings?
   postsWithHotness     PostWithHotness[]
 
   @@unique([name, tenantId])
@@ -281,22 +281,15 @@ enum Locale {
 }
 
 model Tenant {
-  id           Int            @id @default(autoincrement())
-  name         String
-  customDomain String?
-  subdomain    String
-  deletedAt    DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  locale       Locale         @default(fr)
-  apiKeys      ApiKey[]
-  boards       Board[]
-  settings     TenantSetting?
-  members      UserOnTenant[]
-  postStatus   PostStatus[]
-
-  @@unique([customDomain])
-  @@unique([subdomain])
+  id         Int             @id @default(autoincrement())
+  deletedAt  DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  apiKeys    ApiKey[]
+  boards     Board[]
+  settings   TenantSettings?
+  members    UserOnTenant[]
+  postStatus PostStatus[]
 }
 
 enum EmailRegistrationPolicy {
@@ -305,9 +298,14 @@ enum EmailRegistrationPolicy {
   DOMAINS
 }
 
-model TenantSetting {
+model TenantSettings {
   id                      Int                     @id @default(autoincrement())
   tenantId                Int                     @unique
+  name                    String
+  customDomain            String?
+  subdomain               String
+  locale                  Locale                  @default(fr)
+  useBrowserLocale        Boolean                 @default(false)
   isPrivate               Boolean                 @default(false)
   allowVoting             Boolean                 @default(true)
   allowComments           Boolean                 @default(true)
@@ -320,19 +318,19 @@ model TenantSetting {
   showVoteButton          Boolean                 @default(true)
   emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
   allowedEmailDomains     String[]
-  logoUrl                 String?
-  logoWidth               Int                     @default(0)
-  logoHeight              Int                     @default(0)
-  logoLink                String?
+  // logoUrl                 String?
+  // logoWidth               Int                     @default(0)
+  // logoHeight              Int                     @default(0)
+  // logoLink                String?
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
-  customCSS               String?
-  useBrowserLocale        Boolean                 @default(false)
   rootBoardId             Int?                    @unique
-  rootBoard               Board?                  @relation(fields: [rootBoardId], references: [id])
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  rootBoard Board? @relation(fields: [rootBoardId], references: [id])
+  tenant    Tenant @relation(fields: [tenantId], references: [id])
 
+  @@unique([customDomain])
+  @@unique([subdomain])
   @@index([tenantId])
   @@index([rootBoardId])
 }

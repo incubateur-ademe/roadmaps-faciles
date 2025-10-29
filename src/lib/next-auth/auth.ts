@@ -12,7 +12,7 @@ import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 
 import { prisma } from "../db/prisma";
-import { tenantRepo, tenantSettingRepo, userOnTenantRepo, userRepo } from "../repo";
+import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
 
 type CustomUser = AdapterUser & {
   isBetaGouvMember: boolean;
@@ -73,10 +73,10 @@ export const {
 
   const domain = protocol && host && `${protocol}://${host}` === config.host ? null : host || null;
   const getTenantForDomain = new GetTenantForDomain(tenantRepo);
-  const getTenantSettings = new GetTenantSettings(tenantSettingRepo);
+  const getTenantSettings = new GetTenantSettings(tenantSettingsRepo);
 
   const tenant = domain ? await getTenantForDomain.execute({ domain }) : null;
-  const tenantSetting = tenant ? await getTenantSettings.execute({ tenantId: tenant.id }) : null;
+  const tenantSettings = tenant ? await getTenantSettings.execute({ tenantId: tenant.id }) : null;
 
   if (!url) {
     console.error("Invalid request url");
@@ -115,8 +115,8 @@ export const {
       },
       async signIn(params) {
         if (params.account?.provider === "nodemailer" && params.email?.verificationRequest) {
-          // should not missing email or tenantSetting here
-          if (!params.user.email || !tenantSetting || !tenant) {
+          // should not missing email or tenantSettings here
+          if (!params.user.email || !tenantSettings || !tenant) {
             return false;
           }
           const [possibleUsername, emailDomain] = params.user.email.split("@");
@@ -126,9 +126,9 @@ export const {
           }
 
           const isAllowedDomain =
-            tenantSetting.allowedEmailDomains.includes(emailDomain) ||
-            tenantSetting.allowedEmailDomains.includes("*") ||
-            tenantSetting.allowedEmailDomains.length === 0;
+            tenantSettings.allowedEmailDomains.includes(emailDomain) ||
+            tenantSettings.allowedEmailDomains.includes("*") ||
+            tenantSettings.allowedEmailDomains.length === 0;
 
           if (!isAllowedDomain) {
             return false;

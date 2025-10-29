@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Follow, type Follow as FollowModel } from "@/lib/model/Follow";
 import { type IFollowRepo } from "@/lib/repo/IFollowRepo";
 
-import { type UseCase } from "../types";
+import { type UseCase } from "../../types";
 
 export const FollowPostInput = z.object({
   postId: z.number(),

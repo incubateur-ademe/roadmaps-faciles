@@ -24,16 +24,16 @@ const TenantMainPage = async ({ params }: Props) => {
   }
 
   const useCase = new GetTenantWithSettings(tenantRepo);
-  const { tenant, tenantSetting } = await useCase.execute({ id });
+  const { tenant, tenantSettings: settings } = await useCase.execute({ id });
 
-  if (!tenant || !tenantSetting) {
+  if (!tenant || !settings) {
     notFound();
   }
 
   return (
     <DsfrPage>
       <CenteredContainer py="4w" className={style.indentity}>
-        <Form tenant={tenant} />
+        <Form tenant={{ ...tenant, settings }} />
       </CenteredContainer>
     </DsfrPage>
   );
