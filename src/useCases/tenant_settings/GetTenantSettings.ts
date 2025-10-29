@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { TenantSetting } from "@/lib/model/TenantSetting";
-import { type ITenantSettingRepo } from "@/lib/repo/ITenantSettingRepo";
+import { TenantSettings } from "@/lib/model/TenantSettings";
+import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 
 import { type UseCase } from "../types";
 
@@ -10,18 +10,18 @@ export const GetTenantSettingsInput = z.object({
 });
 export type GetTenantSettingsInput = z.infer<typeof GetTenantSettingsInput>;
 
-export const GetTenantSettingsOutput = TenantSetting;
+export const GetTenantSettingsOutput = TenantSettings;
 export type GetTenantSettingsOutput = z.infer<typeof GetTenantSettingsOutput>;
 
 export class GetTenantSettings implements UseCase<GetTenantSettingsInput, GetTenantSettingsOutput> {
-  constructor(private readonly tenantSettingRepo: ITenantSettingRepo) {}
+  constructor(private readonly tenantSettingsRepo: ITenantSettingsRepo) {}
 
   public async execute(input: GetTenantSettingsInput): Promise<GetTenantSettingsOutput> {
-    const tenantSettings = await this.tenantSettingRepo.findByTenantId(input.tenantId);
+    const tenantSettings = await this.tenantSettingsRepo.findByTenantId(input.tenantId);
     if (!tenantSettings) {
       throw new Error(`Tenant settings from associated tenant (${input.tenantId}) not found`);
     }
 
-    return TenantSetting.parse(tenantSettings);
+    return TenantSettings.parse(tenantSettings);
   }
 }

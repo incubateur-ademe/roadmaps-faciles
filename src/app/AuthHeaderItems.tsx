@@ -17,7 +17,7 @@ import { Icon } from "@/dsfr";
 
 export const UserHeaderItem = () => {
   const session = useSession();
-  const currentPage = useSelectedLayoutSegments().reverse()[0];
+  const segments = useSelectedLayoutSegments();
 
   switch (session.status) {
     case "authenticated":
@@ -54,13 +54,13 @@ export const UserHeaderItem = () => {
               label: "Mon profil utilisateur",
               iconId: "fr-icon-user-line",
               linkProps: { href: "/profile" },
-              isCurrent: currentPage === "profile",
+              isCurrent: segments.includes("profile"),
             },
             {
-              label: "Paramètres du tenant",
+              label: "Admin du tenant",
               iconId: "fr-icon-settings-5-line",
-              linkProps: { href: "/settings" },
-              isCurrent: currentPage === "settings",
+              linkProps: { href: "/admin" },
+              isCurrent: segments.includes("admin"),
             },
           ]}
         />

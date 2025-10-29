@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { Tenant, type Tenant as TenantModel } from "@/lib/model/Tenant";
+import { TenantWithSettings } from "@/lib/model/Tenant";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 
 import { type UseCase } from "../types";
@@ -10,13 +10,13 @@ export const ListTenantsForUserInput = z.object({
 });
 
 export type ListTenantsForUserInput = z.infer<typeof ListTenantsForUserInput>;
-export type ListTenantsForUserOutput = TenantModel[];
+export type ListTenantsForUserOutput = TenantWithSettings[];
 
 export class ListTenantsForUser implements UseCase<ListTenantsForUserInput, ListTenantsForUserOutput> {
   constructor(private readonly tenantRepo: ITenantRepo) {}
 
   public async execute(input: ListTenantsForUserInput): Promise<ListTenantsForUserOutput> {
     const results = await this.tenantRepo.findAllForUser(input.userId);
-    return results.map(t => Tenant.parse(t));
+    return results.map(t => TenantWithSettings.parse(t));
   }
 }

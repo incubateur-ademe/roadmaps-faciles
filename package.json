@@ -24,7 +24,8 @@
     "prisma:reset": "prisma migrate reset --skip-seed --skip-generate"
   },
   "resolutions": {
-    "estree-walker": "2.0.2"
+    "estree-walker": "2.0.2",
+    "@auth/core": "^0.41.1"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
@@ -51,7 +52,7 @@
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.2",
     "next": "^15.3.2",
-    "next-auth": "^5.0.0-beta.29",
+    "next-auth": "^5.0.0-beta.30",
     "next-mdx-remote": "^5.0.0",
     "next-mdx-remote-client": "^2.1.2",
     "next-sitemap": "^4.2.3",

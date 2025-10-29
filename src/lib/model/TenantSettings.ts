@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { localeSchema } from "@/utils/zod-schema";
+
 export const EMAIL_REGISTRATION_POLICY = {
   ANYONE: "ANYONE",
   NOONE: "NOONE",
@@ -8,9 +10,14 @@ export const EMAIL_REGISTRATION_POLICY = {
 
 export const emailRegistrationPolicyEnum = z.enum(EMAIL_REGISTRATION_POLICY);
 
-export const TenantSetting = z.object({
+export const TenantSettings = z.object({
   id: z.number(),
   tenantId: z.number(),
+  name: z.string(),
+  subdomain: z.string(),
+  customDomain: z.string().nullable(),
+  locale: localeSchema,
+  useBrowserLocale: z.boolean().default(false),
   isPrivate: z.boolean(),
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
@@ -23,15 +30,13 @@ export const TenantSetting = z.object({
   showVoteButton: z.boolean(),
   emailRegistrationPolicy: emailRegistrationPolicyEnum,
   allowedEmailDomains: z.string().array(),
-  logoUrl: z.url().nullable(),
-  logoWidth: z.number(),
-  logoHeight: z.number(),
-  logoLink: z.url().nullable(),
+  // logoUrl: z.url().nullable(),
+  // logoWidth: z.number(),
+  // logoHeight: z.number(),
+  // logoLink: z.url().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
-  customCSS: z.string().nullable(),
-  useBrowserLocale: z.boolean(),
   rootBoardId: z.number().nullable(),
 });
 
-export type TenantSetting = z.infer<typeof TenantSetting>;
+export type TenantSettings = z.infer<typeof TenantSettings>;

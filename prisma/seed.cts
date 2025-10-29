@@ -10,23 +10,22 @@ async function main() {
   console.log("🌱 Seed en cours...");
 
   const tenant = await prisma.tenant.create({
+    data: {},
+  });
+  console.log("🌱 Tenant créé : ", tenant.id);
+  const current = await getServerService("current");
+  current.tenant = tenant;
+
+  const settings = await prisma.tenantSettings.create({
     data: {
+      tenantId: tenant.id,
       name: config.seed.tenantName,
       subdomain: config.seed.tenantSubdomain,
       customDomain: null,
     },
   });
-  console.log("🌱 Tenant créé : ", tenant.name);
-  const current = await getServerService("current");
-  current.tenant = tenant;
-
-  const setting = await prisma.tenantSetting.create({
-    data: {
-      tenantId: tenant.id,
-    },
-  });
-  current.setting = setting;
-  console.log("🌱 TenantSetting créé : ", tenant.name);
+  // current.settings = setting; // Not needed currently
+  console.log("🌱 TenantSettings créé : ", settings.name);
 
   const admin = await prisma.user.create({
     data: {

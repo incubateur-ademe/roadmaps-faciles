@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { type IFollowRepo } from "@/lib/repo/IFollowRepo";
 
-import { type UseCase } from "../types";
+import { type UseCase } from "../../types";
 
 export const UnfollowPostInput = z.object({
   postId: z.number(),
