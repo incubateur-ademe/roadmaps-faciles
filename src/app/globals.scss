@@ -270,3 +270,50 @@ $postStatusColor: (
         }
     }
 }
+
+/* ----- */
+
+/* Prisma Sudio */
+:root .ps {
+    --background: var(--background-default-grey);
+    --foreground: var(--text-default-grey);
+    --primary: var(--background-action-high-blue-france);
+    --primary-foreground: var(--text-inverted-blue-france);
+    --secondary: var(--background-lifted-grey);
+    --secondary-foreground: var(--text-action-high-blue-france);
+    --popover: var(--background-lifted-grey);
+    --popover-foreground: var(--text-default-grey);
+    --border: var(--border-default-grey);
+    --input: var(--border-action-high-blue-france);
+    --ring: 35.5 91.7% 32.9%;
+    --card: var(--background-alt-grey);
+    --card-foreground: var(--text-default-grey);
+    --muted: var(--background-disabled-grey);
+    --muted-foreground: var(--text-label-grey);
+    --accent: var(--background-action-high-blue-france);
+    --accent-foreground: var(--text-inverted-blue-france);
+    --destructive: var(--background-flat-error);
+    --destructive-foreground: var(--text-error);
+    --color-green-500: var(--background-flat-success);
+    --font-sans: 'Marianne', sans-serif;
+    --text-lg: 1rem;
+    --text-sm: 0.875rem;
+}
+
+.ps .data-\[active\=true\]\:text-foreground[data-active="true"] {
+    background-color: var(--background-action-high-blue-france) !important;
+    color: var(--text-inverted-blue-france) !important;
+}
+
+.ps .data-\[active\=true\]\:text-foreground[data-active="true"]:hover {
+    color: var(--text-blue-france) !important;
+    color: var(--text-inverted-blue-france) !important;
+}
+
+.ps button[class~="hover:text-accent-foreground"]:hover {
+    color: var(--text-blue-france) !important;
+}
+
+.ps tr {
+    --muted: var(--background-alt-grey) !important;
+}

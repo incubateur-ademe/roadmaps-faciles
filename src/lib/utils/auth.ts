@@ -226,3 +226,13 @@ export const assertSession = async ({
  */
 export const assertTenantAdmin = async (useForbidden = true): Promise<Session> =>
   assertSession({ tenantUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });
+
+/**
+ * Spécialisation d’`assertSession` pour vérifier que l’utilisateur courant est admin global.
+ *
+ * @param useForbidden - Si `true`, exécute `forbidden()` en cas d’échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `true`.
+ * @returns La `Session` si l’utilisateur est admin global.
+ * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l’utilisateur n’est pas admin global.
+ */
+export const assertAdmin = async (useForbidden = true): Promise<Session> =>
+  assertSession({ rootUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });
