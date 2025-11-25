@@ -2,7 +2,6 @@
 
 import createMDX from "@next/mdx";
 import { type NextConfig } from "next";
-import { type Configuration } from "webpack";
 
 import packageJson from "./package.json" with { type: "json" };
 
@@ -49,14 +48,7 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
-  webpack: (config: Configuration) => {
-    config.module?.rules?.push({
-      test: /\.(woff2|webmanifest|ttf)$/,
-      type: "asset/resource",
-    });
-
-    return config;
-  },
+  allowedDevOrigins: ["*.localhost:3000"],
   experimental: {
     serverMinification: true,
     authInterrupts: true,

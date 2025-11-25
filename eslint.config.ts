@@ -1,5 +1,6 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import nextConfig from "eslint-config-next/core-web-vitals";
 
 const nextFiles = [
   "page",
@@ -21,6 +22,7 @@ const nextFiles = [
   "robots",
   "global-error",
   "middleware",
+  "proxy",
 ].join("|");
 
 const compat = new FlatCompat({
@@ -30,12 +32,12 @@ const compat = new FlatCompat({
 });
 
 const config = [
+  ...nextConfig,
   ...compat.config({
     root: true,
     reportUnusedDisableDirectives: true,
     extends: [
       "eslint:recommended",
-      "next/core-web-vitals",
       // default rules for import
       "plugin:import/recommended",
       // include prettier config which avoid conflict
