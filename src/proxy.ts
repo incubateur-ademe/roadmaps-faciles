@@ -17,7 +17,7 @@ export function proxy(req: NextRequest) {
     console.log("Serving Chrome DevTools configuration");
     return NextResponse.json({
       workspace: {
-        root: import.meta.url.replace("file://", "").replace("src/middleware.ts", ""),
+        root: import.meta.url.replace("file://", "").replace("src/proxy.ts", ""),
         uuid: crypto.randomUUID(),
       },
       deployment: {
