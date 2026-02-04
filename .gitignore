@@ -69,3 +69,7 @@ certificates
 
 /src/generated/*
 !/src/generated/.gitattributes
+
+# claude local files
+/.claude.local/
+/.claude/**/*.local.json

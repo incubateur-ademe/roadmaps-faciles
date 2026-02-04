@@ -1,0 +1,25 @@
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - "@prisma/engines"
+  - "@prisma/client"
+  - esbuild
+  - prisma
+  - sharp
+  - unrs-resolver
+  - next
+  - bcrypt
+  - protobufjs
+  - tailwindcss
+
+overrides:
+  "@auth/core": "$@auth/core"
+
+ignoreDepScripts: true
+childConcurrency: 10
+engineStrict: true
+autoInstallPeers: false
+dedupePeerDependents: true
+peerDependencyRules:
+  allowedVersions:
+    react: "19"
+    "react-dom": "19"
