@@ -30,7 +30,7 @@ interface SystemCodeMap {
   [key: string]: {
     body: ReactNode;
     headline: string;
-    pictogram: SimpleSrcImage | keyof typeof artworkMap;
+    pictogram: keyof typeof artworkMap | SimpleSrcImage;
     title: string;
   };
 }
@@ -125,7 +125,7 @@ namespace SystemMessageDisplayProps {
         body: ReactNode;
         code: "custom";
         headline: string;
-        pictogram?: SimpleSrcImage | keyof typeof artworkMap;
+        pictogram?: keyof typeof artworkMap | SimpleSrcImage;
         title: string;
       }
     | {

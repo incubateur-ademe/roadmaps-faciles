@@ -1,6 +1,12 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import nextConfig from "eslint-config-next/core-web-vitals";
+import prettierConfig from "eslint-config-prettier";
+// @ts-expect-error — pas de types publiés pour ce plugin
+import lodashPlugin from "eslint-plugin-lodash";
+import perfectionist from "eslint-plugin-perfectionist";
+import prettierPlugin from "eslint-plugin-prettier";
+import unusedImportsPlugin from "eslint-plugin-unused-imports";
+import tseslint from "typescript-eslint";
 
 const nextFiles = [
   "page",
@@ -25,47 +31,54 @@ const nextFiles = [
   "proxy",
 ].join("|");
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-
 const config = [
-  ...nextConfig,
-  ...compat.config({
-    root: true,
-    reportUnusedDisableDirectives: true,
-    extends: [
-      "eslint:recommended",
-      // default rules for import
-      "plugin:import/recommended",
-      // include prettier config which avoid conflict
-      "prettier",
-      // disable conflicting rules with plugin (not config!)
-      "plugin:prettier/recommended",
-    ],
-    plugins: ["prettier", "unused-imports", "simple-import-sort", "lodash"],
-    ignorePatterns: [
-      "!**/.*.js?(x)",
-      "node_modules",
-      "src/generated",
+  // ─── Ignores globaux ──────────────────────────────────────────────────────
+  {
+    ignores: [
+      "node_modules/**",
+      "src/generated/**",
       "next-env.d.ts",
-      ".next",
-      "out",
-      "dist",
-      "coverage",
-      "public",
+      ".next/**",
+      "out/**",
+      "dist/**",
+      "coverage/**",
+      "public/**",
     ],
-    settings: {
-      "import/resolver": {
-        typescript: {}, // this loads <rootdir>/tsconfig.json to eslint
-      },
+  },
+
+  // ─── Base ─────────────────────────────────────────────────────────────────
+  js.configs.recommended,
+  ...nextConfig, // react, react-hooks, import, jsx-a11y, @next/next, @typescript-eslint (parser sur *.ts)
+
+  // ─── @typescript-eslint / recommended-type-checked (TS uniquement) ────────
+  // [0] skippé : base + parser — déjà fourni par nextConfig[1]
+  tseslint.configs.recommendedTypeChecked[1], // règles scoped à *.ts / *.tsx par le package
+  { ...tseslint.configs.recommendedTypeChecked[2], files: ["**/*.ts", "**/*.tsx"] }, // règles sans scope → on en scope
+
+  // ─── Prettier : désactive les règles de formatting en conflit ─────────────
+  prettierConfig,
+
+  // ─── Plugins supplémentaires + règles principales ────────────────────────
+  {
+    plugins: {
+      prettier: prettierPlugin,
+      "unused-imports": unusedImportsPlugin,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      lodash: lodashPlugin,
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
     },
     rules: {
+      // import/recommended — pas inclus par nextConfig, on les pose manuellement
+      "import/no-unresolved": ["error", { commonjs: true }],
+      "import/named": "error",
+      "import/namespace": "error",
+      "import/default": "error",
+
       "@next/next/no-html-link-for-pages": ["error", ["src/app", "src/pages"]],
-      "react-hooks/rules-of-hooks": "error", // Vérifie les règles des Hooks
-      "react-hooks/exhaustive-deps": "warn", // Vérifie les tableaux de dépendances
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       "react/no-unescaped-entities": [
         "error",
         {
@@ -118,8 +131,6 @@ const config = [
           argsIgnorePattern: "^_",
         },
       ],
-      "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error",
       "import/order": "off",
       "import/no-default-export": "error",
       "import/no-extraneous-dependencies": "off",
@@ -136,7 +147,6 @@ const config = [
           "prefer-inline": true,
         },
       ],
-      "sort-import": "off",
       "lodash/import-scope": ["error", "member"],
       "prettier/prettier": [
         "error",
@@ -150,101 +160,126 @@ const config = [
         },
       ],
     },
-    overrides: [
-      {
-        files: ["**/*.ts?(x)"],
-        extends: ["plugin:@typescript-eslint/recommended-type-checked"],
-        parserOptions: {
-          project: "./tsconfig.json",
-          tsconfigRootDir: import.meta.dirname,
-        },
-        plugins: ["@typescript-eslint", "typescript-sort-keys"],
-        rules: {
-          "import/named": "off",
-          "@typescript-eslint/adjacent-overload-signatures": "error",
-          "@typescript-eslint/array-type": [
-            "error",
-            {
-              default: "array-simple",
-            },
-          ],
-          "no-restricted-imports": "off",
-          "@typescript-eslint/no-restricted-imports": [
-            "error",
-            {
-              paths: [
-                {
-                  name: "react",
-                  importNames: ["default"],
-                  message: 'Import "React" par défaut déjà géré par Next.',
-                  allowTypeImports: true,
-                },
-              ],
-            },
-          ],
-          "@typescript-eslint/ban-ts-comment": "error",
-          "@typescript-eslint/no-unused-vars": "off",
-          "typescript-sort-keys/interface": "error",
-          "typescript-sort-keys/string-enum": "error",
-          "@typescript-eslint/no-namespace": "off",
-          "@typescript-eslint/explicit-member-accessibility": [
-            "error",
-            {
-              accessibility: "explicit",
-              overrides: {
-                accessors: "no-public",
-                constructors: "no-public",
-              },
-            },
-          ],
-          "@typescript-eslint/member-delimiter-style": [
-            "off",
-            {
-              multiline: {
-                delimiter: "none",
-                requireLast: true,
-              },
-              singleline: {
-                delimiter: "semi",
-                requireLast: false,
-              },
-            },
-          ],
-          "@typescript-eslint/consistent-type-imports": [
-            "error",
-            {
-              prefer: "type-imports",
-              fixStyle: "inline-type-imports",
-              disallowTypeAnnotations: false,
-            },
-          ],
-          "@typescript-eslint/sort-type-constituents": "warn",
-        },
+  },
+
+  // ─── TypeScript ───────────────────────────────────────────────────────────
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
       },
-      {
-        files: [
-          "src/pages/**/*.ts?(x)",
-          `src/app/**/+(${nextFiles}).ts?(x)`,
-          "next.config.ts",
-          "eslint.config.ts",
-          "prisma.config.ts",
-          "tailwind.config.ts",
-          "next-sitemap.config.js",
-          "postcss.config.js",
-        ],
-        rules: {
-          "import/no-default-export": "off",
+    },
+    rules: {
+      "import/named": "off",
+      "@typescript-eslint/adjacent-overload-signatures": "error",
+      "@typescript-eslint/array-type": [
+        "error",
+        {
+          default: "array-simple",
         },
-      },
-      {
-        files: ["scripts/**/*.ts"],
-        parserOptions: {
-          project: "./scripts/tsconfig.json",
-          tsconfigRootDir: import.meta.dirname,
+      ],
+      "no-restricted-imports": "off",
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["default"],
+              message: 'Import "React" par défaut déjà géré par Next.',
+              allowTypeImports: true,
+            },
+          ],
         },
-      },
+      ],
+      "@typescript-eslint/ban-ts-comment": "error",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-namespace": "off",
+      "@typescript-eslint/explicit-member-accessibility": [
+        "error",
+        {
+          accessibility: "explicit",
+          overrides: {
+            accessors: "no-public",
+            constructors: "no-public",
+          },
+        },
+      ],
+      "@typescript-eslint/member-delimiter-style": [
+        "off",
+        {
+          multiline: {
+            delimiter: "none",
+            requireLast: true,
+          },
+          singleline: {
+            delimiter: "semi",
+            requireLast: false,
+          },
+        },
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+          disallowTypeAnnotations: false,
+        },
+      ],
+    },
+  },
+
+  // ─── Fichiers Next.js / configs — default export autorisé ────────────────
+  {
+    files: [
+      "src/pages/**/*.ts",
+      "src/pages/**/*.tsx",
+      `src/app/**/+(${nextFiles}).ts`,
+      `src/app/**/+(${nextFiles}).tsx`,
+      "next.config.ts",
+      "eslint.config.ts",
+      "prisma.config.ts",
+      "tailwind.config.ts",
+      "next-sitemap.config.js",
+      "postcss.config.js",
     ],
-  }),
+    rules: {
+      "import/no-default-export": "off",
+    },
+  },
+
+  // ─── Scripts — tsconfig séparé ────────────────────────────────────────────
+  {
+    files: ["scripts/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: "./scripts/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+
+  // ─── Perfectionist ────────────────────────────────────────────────────────
+  {
+    plugins: {
+      perfectionist,
+    },
+    rules: {
+      "perfectionist/sort-imports": "error",
+      "perfectionist/sort-exports": "error",
+    },
+  },
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      "perfectionist/sort-interfaces": "error",
+      "perfectionist/sort-enums": "error",
+      "perfectionist/sort-union-types": "warn",
+      "perfectionist/sort-intersection-types": "warn",
+    },
+  },
 ];
 
 export default config;

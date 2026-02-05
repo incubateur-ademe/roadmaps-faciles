@@ -35,7 +35,7 @@ const formSchema = z.object({
 type FormType = z.infer<typeof formSchema>;
 
 export const Form = ({ tenant }: FormProps) => {
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
 

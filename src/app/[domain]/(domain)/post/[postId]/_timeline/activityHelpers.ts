@@ -2,40 +2,40 @@ import { type Activity, type Comment, type PostStatus, type PostStatusChange, ty
 import { type ClearObject } from "@/utils/types";
 
 export type CommentActivity = ClearObject<
-  Activity & {
-    comment: Comment & {
+  {
+    comment: {
       _count: {
         replies: number;
       };
       replies: [
-        firstComment?: Comment & {
+        firstComment?: {
           user: User;
-        },
+        } & Comment,
       ];
       user: User;
-    };
+    } & Comment;
     commentId: number;
     statusChangeId: null;
     type: "COMMENT";
-  }
+  } & Activity
 >;
 
 export type StatusChangeActivity = ClearObject<
-  Activity & {
+  {
     commentId: null;
-    statusChange: PostStatusChange & {
+    statusChange: {
       postStatus: PostStatus;
-    };
+    } & PostStatusChange;
     type: "STATUS_CHANGE";
-  }
+  } & Activity
 >;
 
 export type AggregateActivity = ClearObject<
-  Activity & {
+  {
     commentId: null;
     statusChangeId: null;
     type: "COMMENT_COUNT" | "FOLLOW" | "LIKE";
-  }
+  } & Activity
 >;
 
 export type EnrichedActivity = AggregateActivity | CommentActivity | StatusChangeActivity;

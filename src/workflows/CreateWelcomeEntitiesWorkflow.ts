@@ -47,7 +47,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
-    const inProgressPostStatus = await prisma.postStatus.create({
+    const _inProgressPostStatus = await prisma.postStatus.create({
       data: {
         name: "En cours",
         color: "purpleGlycine",
@@ -56,7 +56,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
-    const completedPostStatus = await prisma.postStatus.create({
+    const _completedPostStatus = await prisma.postStatus.create({
       data: {
         name: "Complété",
         color: "greenMenthe",
@@ -65,7 +65,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
-    const rejectedPostStatus = await prisma.postStatus.create({
+    const _rejectedPostStatus = await prisma.postStatus.create({
       data: {
         name: "Rejetté",
         color: "error",
@@ -98,11 +98,12 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
 
     await prisma.pin.create({
       data: {
+        boardId: featureBoard.id,
         postId: post1.id,
       },
     });
 
-    const post2 = await prisma.post.create({
+    const _post2 = await prisma.post.create({
       data: {
         title: "Il y a plusieurs tableaux",
         description:

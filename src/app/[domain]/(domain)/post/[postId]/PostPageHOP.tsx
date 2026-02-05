@@ -2,8 +2,8 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
-import { notFound } from "next/navigation";
 import { type User } from "next-auth";
+import { notFound } from "next/navigation";
 import { type ReactElement } from "react";
 import { MarkdownAsync } from "react-markdown";
 
@@ -98,8 +98,8 @@ export interface PostPageComponentProps {
   alreadyLiked: boolean;
   anonymousId: string;
   isModal?: boolean;
-  post: EnrichedPost & { activities: Activity[]; board: Board };
-  user?: User | null;
+  post: { activities: Activity[]; board: Board } & EnrichedPost;
+  user?: null | User;
 }
 
 export const PostPageComponent = (props: PostPageComponentProps) => {

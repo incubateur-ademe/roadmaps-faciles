@@ -8,9 +8,9 @@ import { buildSpacingClasses, type SpacingProps } from "../utils/spacing";
 
 type TypoVariant = (typeof fr.typography)[number]["selector"];
 export type TypographyProps = PropsWithChildren<
-  SpacingProps & {
+  {
     className?: CxArg;
-  }
+  } & SpacingProps
 >;
 
 const typographyProps = <P extends PropsWithoutChildren<TypographyProps>>({
@@ -36,11 +36,11 @@ const typographyProps = <P extends PropsWithoutChildren<TypographyProps>>({
 type HeadingVariant = `h${1 | 2 | 3 | 4 | 5 | 6}`;
 type HeadingDisplay = "lg" | "md" | "sm" | "xl" | "xs";
 type HeadingAttributes = PropsWithoutChildren<React.HTMLAttributes<HTMLHeadingElement>>;
-export type HeadingProps = (HeadingAttributes &
-  TypographyProps & {
-    /** The html tag */
-    as: HeadingVariant;
-  }) &
+export type HeadingProps = ({
+  /** The html tag */
+  as: HeadingVariant;
+} & HeadingAttributes &
+  TypographyProps) &
   (
     | {
         /**
@@ -106,11 +106,11 @@ type TextVariant = TypoVariant extends infer R ? (R extends `.fr-text--${infer T
 type TextAttributes<Inline extends boolean> = Inline extends true
   ? React.HTMLAttributes<HTMLSpanElement>
   : React.HTMLAttributes<HTMLParagraphElement>;
-export type TextProps<Inline extends boolean> = TextAttributes<Inline> &
-  TypographyProps & {
-    inline?: Inline;
-    variant?: TextVariant | TextVariant[];
-  };
+export type TextProps<Inline extends boolean> = {
+  inline?: Inline;
+  variant?: TextVariant | TextVariant[];
+} & TextAttributes<Inline> &
+  TypographyProps;
 
 const textProps = ({ variant, ...rest }: Omit<TextProps<boolean>, "inline" | "text">) => {
   const tagProps = typographyProps(rest);

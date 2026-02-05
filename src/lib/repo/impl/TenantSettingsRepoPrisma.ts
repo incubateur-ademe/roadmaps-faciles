@@ -8,11 +8,11 @@ export class TenantSettingRepoPrisma implements ITenantSettingsRepo {
     return prisma.tenantSettings.findMany();
   }
 
-  public findById(id: number): Promise<TenantSettings | null> {
+  public findById(id: number): Promise<null | TenantSettings> {
     return prisma.tenantSettings.findUnique({ where: { id } });
   }
 
-  public findByTenantId(tenantId: number): Promise<TenantSettings | null> {
+  public findByTenantId(tenantId: number): Promise<null | TenantSettings> {
     return prisma.tenantSettings.findFirst({ where: { tenantId } });
   }
 

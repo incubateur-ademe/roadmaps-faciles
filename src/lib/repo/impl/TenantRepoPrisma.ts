@@ -8,7 +8,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     return prisma.tenant.findMany();
   }
 
-  public async findById(id: number): Promise<Tenant | null> {
+  public async findById(id: number): Promise<null | Tenant> {
     const ret = await prisma.tenant.findUnique({
       where: { id },
     });
@@ -16,7 +16,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     return ret;
   }
 
-  public async findByIdWithSettings(id: number): Promise<(Tenant & { settings: TenantSettings | null }) | null> {
+  public async findByIdWithSettings(id: number): Promise<({ settings: null | TenantSettings } & Tenant) | null> {
     const ret = await prisma.tenant.findUnique({
       where: { id },
       include: {
@@ -27,7 +27,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     return ret;
   }
 
-  public findBySubdomain(subdomain: string): Promise<Tenant | null> {
+  public findBySubdomain(subdomain: string): Promise<null | Tenant> {
     return prisma.tenant.findFirst({
       where: {
         settings: {
@@ -37,7 +37,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     });
   }
 
-  public findByCustomDomain(customDomain: string): Promise<Tenant | null> {
+  public findByCustomDomain(customDomain: string): Promise<null | Tenant> {
     return prisma.tenant.findFirst({
       where: {
         settings: {
@@ -81,4 +81,4 @@ export class TenantRepoPrisma implements ITenantRepo {
     }) as Promise<R>;
   }
 }
-type TenantWithSettings = Tenant & { settings: TenantSettings | null };
+type TenantWithSettings = { settings: null | TenantSettings } & Tenant;

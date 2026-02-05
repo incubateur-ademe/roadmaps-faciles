@@ -5,12 +5,12 @@ import { forwardRef, type PropsWithChildren } from "react";
 import { buildSpacingClasses, type ResponsiveSpacingProps, type SpacingProps } from "../utils/spacing";
 
 export type BoxProps = PropsWithChildren<
-  React.HTMLAttributes<HTMLDivElement> &
+  {
+    as?: "article" | "aside" | "div" | "footer" | "header" | "main" | "p" | "section" | "span";
+    className?: CxArg;
+  } & React.HTMLAttributes<HTMLDivElement> &
     ResponsiveSpacingProps &
-    SpacingProps & {
-      as?: "article" | "aside" | "div" | "footer" | "header" | "main" | "p" | "section" | "span";
-      className?: CxArg;
-    }
+    SpacingProps
 >;
 
 const boxProps = ({

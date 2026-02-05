@@ -20,7 +20,7 @@ export type FormFieldsetProps = {
 export type FormFieldsetElementProps = {
   children: ReactNode;
   className?: CxArg;
-  inline?: boolean | "grow";
+  inline?: "grow" | boolean;
   type?: "number" | "postal" | "year";
 };
 

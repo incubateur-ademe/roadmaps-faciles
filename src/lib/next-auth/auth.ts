@@ -1,26 +1,26 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { EspaceMembreProvider } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
-import { headers } from "next/headers";
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Nodemailer from "next-auth/providers/nodemailer";
+import { headers } from "next/headers";
 
 import { config } from "@/config";
 import { type UserRole, type UserStatus } from "@/prisma/enums";
-import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
+import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 
 import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
 
-type CustomUser = AdapterUser & {
+type CustomUser = {
   isBetaGouvMember: boolean;
   isSuperAdmin?: boolean;
   role: UserRole;
   status: UserStatus;
   uuid: string;
-};
+} & AdapterUser;
 
 declare module "next-auth" {
   interface Session {

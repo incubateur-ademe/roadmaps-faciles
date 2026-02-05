@@ -1,7 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 
 interface GlobalErrorProps {
-  error: Error & { digest?: string };
+  error: { digest?: string } & Error;
   reset: () => void;
 }
 

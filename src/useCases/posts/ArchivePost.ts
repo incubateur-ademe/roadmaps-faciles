@@ -17,7 +17,7 @@ export type ArchivePostOutput = PostModel;
 export class ArchivePost implements UseCase<ArchivePostInput, ArchivePostOutput> {
   constructor(private readonly postRepo: IPostRepo) {}
 
-  public execute(input: ArchivePostInput): Promise<ArchivePostOutput> {
+  public execute(_input: ArchivePostInput): Promise<ArchivePostOutput> {
     return notImplemented();
   }
 }

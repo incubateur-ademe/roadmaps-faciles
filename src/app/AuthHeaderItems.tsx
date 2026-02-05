@@ -4,10 +4,10 @@ import { fr, type FrIconClassName } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { cx, type CxArg } from "@codegouvfr/react-dsfr/tools/cx";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link, { type LinkProps } from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
 import { type ReactNode, useId, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 
@@ -132,7 +132,7 @@ export function UserMenuHeaderItem({
   logoutHref = "/logout",
 }: UserMenuHeaderItemProps) {
   const id = useId();
-  const [open, setOpen] = useState(false);
+  const [_open, setOpen] = useState(false);
 
   const toggleMenu = () => setOpen(v => !v);
   const closeMenu = () => setOpen(false);

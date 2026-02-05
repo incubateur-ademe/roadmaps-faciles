@@ -4,5 +4,5 @@ export interface IBoardRepo {
   create(data: Prisma.BoardUncheckedCreateInput): Promise<Board>;
   findAll(): Promise<Board[]>;
   findById(id: number): Promise<Board | null>;
-  findSlugById(id: number): Promise<string | null>;
+  findSlugById(id: number): Promise<null | string>;
 }

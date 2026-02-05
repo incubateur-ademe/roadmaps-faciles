@@ -42,7 +42,7 @@ export class CreateFakePostsWorkflow implements IWorkflow {
 
     const previousPostCount = await prisma.post.count();
 
-    let alreadyPinned = false;
+    const pinnedBoards = new Set<number>();
     for (let i = 0; i < POSTS_COUNT; i++) {
       const randomUserOnTenant = faker.helpers.arrayElement(usersOnTenant);
       const randomBoard = faker.helpers.arrayElement(boards);
@@ -83,22 +83,15 @@ export class CreateFakePostsWorkflow implements IWorkflow {
         randomNewPostStatusDate = faker.date.soon({ refDate: randomNewPostStatusDate });
       }
 
-      // pin first post
-      if (!alreadyPinned) {
-        await prisma.pin.upsert({
-          create: {
+      // pin first post per board
+      if (!pinnedBoards.has(randomBoard.id)) {
+        await prisma.pin.create({
+          data: {
+            boardId: randomBoard.id,
             postId: post.id,
-            id: 1,
-          },
-          update: {
-            postId: post.id,
-            id: 1,
-          },
-          where: {
-            id: 1,
           },
         });
-        alreadyPinned = true;
+        pinnedBoards.add(randomBoard.id);
       }
 
       await prisma.like.createMany({

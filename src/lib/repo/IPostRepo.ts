@@ -4,6 +4,6 @@ export interface IPostRepo {
   create(data: Prisma.PostUncheckedCreateInput): Promise<Post>;
   delete(id: number): Promise<void>;
   findAll(): Promise<Post[]>;
-  findById(id: number): Promise<Post | null>;
+  findById(id: number): Promise<null | Post>;
   update(id: number, data: Prisma.PostUncheckedUpdateInput): Promise<Post>;
 }

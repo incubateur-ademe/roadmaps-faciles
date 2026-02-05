@@ -12,7 +12,7 @@ type PropValueAsString<T, TPropName extends string, WithPartial extends boolean 
     ? EmptyObject
     : {
         [P in TPropName]: Promise<
-          WithPartial extends true ? Partial<Record<R, string[] | string>> : Record<R, string[] | string>
+          WithPartial extends true ? Partial<Record<R, string | string[]>> : Record<R, string | string[]>
         >;
       }
   : never;
@@ -34,8 +34,8 @@ type PropValueAsZod<T, TPropName extends string> = T extends z.ZodType
   : never;
 
 export type NextServerPageProps<
-  Params extends z.ZodType | object | string = string,
-  SearchParams extends z.ZodType | object | string = never,
+  Params extends object | string | z.ZodType = string,
+  SearchParams extends object | string | z.ZodType = never,
 > = (
   | PropValueAsObject<Params, "params", false>
   | PropValueAsString<Params, "params", false>
@@ -58,8 +58,8 @@ interface ValidationOptionsWithRedirect {
 export type ValidationOptions = ValidationOptionsWithNotFound | ValidationOptionsWithRedirect;
 
 type ZodNextPage<
-  Params extends z.ZodType | object | string = string,
-  SearchParams extends z.ZodType | object | string = never,
+  Params extends object | string | z.ZodType = string,
+  SearchParams extends object | string | z.ZodType = never,
 > = (props: NextServerPageProps<Params, SearchParams>) => Promise<ReactElement> | ReactElement;
 
 export const withValidation =
@@ -116,16 +116,16 @@ export const withValidation =
 type PathParams<S extends string> =
   // Catch-all obligatoire: [...param]
   S extends `${infer Head}[...${infer P}]${infer Tail}`
-    ? PathParams<Head> & PathParams<Tail> & { [K in P]: string[] }
+    ? { [K in P]: string[] } & PathParams<Head> & PathParams<Tail>
     : // Catch-all optionnel: [[...param]]
       S extends `${infer Head}[[...${infer P}]]${infer Tail}`
-      ? PathParams<Head> & PathParams<Tail> & { [K in P]?: string[] }
+      ? { [K in P]?: string[] } & PathParams<Head> & PathParams<Tail>
       : // Param optionnel: [param?]
         S extends `${infer Head}[${infer P}?]${infer Tail}`
-        ? PathParams<Head> & PathParams<Tail> & { [K in P]?: string }
+        ? { [K in P]?: string } & PathParams<Head> & PathParams<Tail>
         : // Param simple: [param]
           S extends `${infer Head}[${infer P}]${infer Tail}`
-          ? PathParams<Head> & PathParams<Tail> & { [K in P]: string }
+          ? { [K in P]: string } & PathParams<Head> & PathParams<Tail>
           : // Rien de dynamique dans ce morceau
             EmptyObject;
 
@@ -144,9 +144,9 @@ export type NextRouteHandler<TParams extends string = string> = (
  */
 export type ServerActionResponse<TData = void, TError = string> =
   | { error: TError; ok: false }
-  | ((TData extends Nothing ? EmptyObject : { data: TData }) & {
+  | ({
       ok: true;
-    });
+    } & (TData extends Nothing ? EmptyObject : { data: TData }));
 
 /**
  * Wrap Next.js form action response to avoid bubbling up errors
