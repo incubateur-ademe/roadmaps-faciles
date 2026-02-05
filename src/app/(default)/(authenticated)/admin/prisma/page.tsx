@@ -1,7 +1,6 @@
 "use client";
 
 import "@prisma/studio-core/ui/index.css";
-
 import { fr } from "@codegouvfr/react-dsfr";
 import { createStudioBFFClient } from "@prisma/studio-core/data/bff";
 import { createPostgresAdapter } from "@prisma/studio-core/data/postgres-core";

@@ -13,9 +13,9 @@ import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomai
 type DomainRootPageOptions = {
   withSettings?: boolean;
 };
-export type DomainPageCombinedProps<Params extends object> = DomainProps<Params> & {
+export type DomainPageCombinedProps<Params extends object> = {
   _data: { dirtyDomainFixer: (pathname: string) => string; domain: string; settings?: TenantSettings; tenant: Tenant };
-};
+} & DomainProps<Params>;
 export type DomainPage<Params extends object = EmptyObject> = (
   props: DomainPageCombinedProps<Params>,
 ) => Promise<ReactElement> | ReactElement;

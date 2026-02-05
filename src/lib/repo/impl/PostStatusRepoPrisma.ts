@@ -8,7 +8,7 @@ export class PostStatusRepoPrisma implements IPostStatusRepo {
     return prisma.postStatus.findMany();
   }
 
-  public findById(id: number): Promise<PostStatus | null> {
+  public findById(id: number): Promise<null | PostStatus> {
     return prisma.postStatus.findUnique({ where: { id } });
   }
 

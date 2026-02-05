@@ -11,5 +11,5 @@ export interface IUserOnTenantRepo {
   create(data: Prisma.UserOnTenantUncheckedCreateInput): Promise<UserOnTenant>;
   findByTenantId(tenantId: number): Promise<UserOnTenantWithUser[]>;
   findByUserId(userId: string): Promise<UserOnTenantWithTenant[]>;
-  findMembership(userId: string, tenantId: number): Promise<UserOnTenant | null>;
+  findMembership(userId: string, tenantId: number): Promise<null | UserOnTenant>;
 }

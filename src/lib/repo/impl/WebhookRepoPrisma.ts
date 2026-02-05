@@ -8,7 +8,7 @@ export class WebhookRepoPrisma implements IWebhookRepo {
     return prisma.webhook.findMany();
   }
 
-  public findById(id: number): Promise<Webhook | null> {
+  public findById(id: number): Promise<null | Webhook> {
     return prisma.webhook.findUnique({ where: { id } });
   }
 

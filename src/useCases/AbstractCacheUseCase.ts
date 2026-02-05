@@ -28,9 +28,10 @@ export namespace AbstractCachedUseCase {
  *
  * Default revalidate is 30 seconds.
  */
-export abstract class AbstractCachedUseCase<TRequest, TResponse extends object>
-  implements UseCase<TRequest, TResponse>
-{
+export abstract class AbstractCachedUseCase<TRequest, TResponse extends object> implements UseCase<
+  TRequest,
+  TResponse
+> {
   protected debug = false;
   protected abstract cacheMasterKey: string;
   protected defaultOptions: CachedUseCaseOptions = {

@@ -12,7 +12,7 @@ export class UserOnTenantRepoPrisma implements IUserOnTenantRepo {
     return prisma.userOnTenant.findMany({ where: { tenantId }, include: { user: true } });
   }
 
-  public findMembership(userId: string, tenantId: number): Promise<UserOnTenant | null> {
+  public findMembership(userId: string, tenantId: number): Promise<null | UserOnTenant> {
     return prisma.userOnTenant.findUnique({
       where: {
         userId_tenantId: {

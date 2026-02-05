@@ -3,20 +3,20 @@ import { type FrCxArg, type SpacingToken } from "@codegouvfr/react-dsfr";
 import { type OmitStartsWith } from "@/utils/types";
 
 export type SpacingProps = {
-  m?: SpacingToken | "0" | "auto";
-  mb?: SpacingToken | "0" | "auto";
-  ml?: SpacingToken | "0" | "auto";
-  mr?: SpacingToken | "0" | "auto";
-  mt?: SpacingToken | "0" | "auto";
-  mx?: SpacingToken | "0" | "auto";
-  my?: SpacingToken | "0" | "auto";
-  p?: SpacingToken | "0";
-  pb?: SpacingToken | "0";
-  pl?: SpacingToken | "0";
-  pr?: SpacingToken | "0";
-  pt?: SpacingToken | "0";
-  px?: SpacingToken | "0";
-  py?: SpacingToken | "0";
+  m?: "0" | "auto" | SpacingToken;
+  mb?: "0" | "auto" | SpacingToken;
+  ml?: "0" | "auto" | SpacingToken;
+  mr?: "0" | "auto" | SpacingToken;
+  mt?: "0" | "auto" | SpacingToken;
+  mx?: "0" | "auto" | SpacingToken;
+  my?: "0" | "auto" | SpacingToken;
+  p?: "0" | SpacingToken;
+  pb?: "0" | SpacingToken;
+  pl?: "0" | SpacingToken;
+  pr?: "0" | SpacingToken;
+  pt?: "0" | SpacingToken;
+  px?: "0" | SpacingToken;
+  py?: "0" | SpacingToken;
 };
 
 export type ResponsiveSpacingProps = {

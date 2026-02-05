@@ -17,15 +17,15 @@ type BaseCountDisplayProps = {
   text: NonNullable<ReactNode>;
 };
 
-type LargeCountDisplayProps = BaseCountDisplayProps & {
+type LargeCountDisplayProps = {
   max?: number;
   size?: "large";
-};
+} & BaseCountDisplayProps;
 
-type SmallCountDisplayProps = BaseCountDisplayProps & {
+type SmallCountDisplayProps = {
   max?: never;
   size?: "small";
-};
+} & BaseCountDisplayProps;
 
 export type CountDisplayProps = LargeCountDisplayProps | SmallCountDisplayProps;
 

@@ -5,12 +5,12 @@ import { Box, type BoxProps } from "@/dsfr";
 export type ContainerProps = {
   size?: "lg" | "md" | "sm" | "xl";
 } & (
-  | (BoxProps & {
+  | ({
       fluid: true;
-    })
-  | (Omit<BoxProps, "ml" | "mr" | "mx" | "pl" | "pr" | "px"> & {
+    } & BoxProps)
+  | ({
       fluid?: never;
-    })
+    } & Omit<BoxProps, "ml" | "mr" | "mx" | "pl" | "pr" | "px">)
 );
 
 export const Container = ({ children, className, fluid, size, ...rest }: ContainerProps) => {

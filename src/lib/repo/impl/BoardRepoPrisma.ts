@@ -16,7 +16,7 @@ export class BoardRepoPrisma implements IBoardRepo {
     return prisma.board.create({ data });
   }
 
-  public async findSlugById(id: number): Promise<string | null> {
+  public async findSlugById(id: number): Promise<null | string> {
     return prisma.board.findUnique({ where: { id }, select: { slug: true } }).then(board => board?.slug ?? null);
   }
 }

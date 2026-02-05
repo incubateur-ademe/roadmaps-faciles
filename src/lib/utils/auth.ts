@@ -1,7 +1,6 @@
 import "server-only";
-
-import { forbidden } from "next/navigation";
 import { type Session } from "next-auth";
+import { forbidden } from "next/navigation";
 
 import { UserRole, type UserStatus } from "@/prisma/enums";
 
@@ -23,7 +22,7 @@ type AccessCheck = RequireAtLeastOne<{
   status: StatusCheck;
 }>;
 
-type AssertParam<T> = T | { check: T; message?: string };
+type AssertParam<T> = { check: T; message?: string } | T;
 
 type AssertSessionParams = {
   message?: string;

@@ -7,12 +7,12 @@ import { type Order } from "./types";
 
 const LOAD_LIMIT = 50;
 
-export type EnrichedPost = Post & {
+export type EnrichedPost = {
   _count: Prisma.PostCountOutputType;
   likes: Like[];
-  postStatus: PostStatus | null;
+  postStatus: null | PostStatus;
   user: User;
-};
+} & Post;
 const cleanFullTextSearch = (text: string) => {
   if (!text) return text;
 
@@ -29,7 +29,7 @@ const cleanFullTextSearch = (text: string) => {
 
 export async function fetchPostsForBoard<
   O extends Order,
-  R extends O extends "trending" ? Array<PostWithHotness & { post: Post }> : EnrichedPost[],
+  R extends O extends "trending" ? Array<{ post: Post } & PostWithHotness> : EnrichedPost[],
 >(
   page: number,
   order: O,
@@ -128,7 +128,7 @@ export async function fetchPostsForBoard<
 
   return {
     posts: (order === "trending"
-      ? (posts as Array<PostWithHotness & { post: Post }>).map(post => post.post)
+      ? (posts as Array<{ post: Post } & PostWithHotness>).map(post => post.post)
       : (posts as EnrichedPost[])) as R,
     filteredCount: count,
   };

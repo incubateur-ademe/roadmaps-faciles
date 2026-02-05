@@ -71,7 +71,7 @@ export const LRUCacheAdapater: Adapter = {
     return Promise.resolve(null);
   },
 
-  async createVerificationToken(verificationToken: VerificationToken): Promise<VerificationToken | null | undefined> {
+  async createVerificationToken(verificationToken: VerificationToken): Promise<null | undefined | VerificationToken> {
     tokenCache.set(verificationToken.identifier, verificationToken);
     return Promise.resolve(verificationToken);
   },
@@ -80,7 +80,7 @@ export const LRUCacheAdapater: Adapter = {
    * Return verification token from the database
    * and delete it so it cannot be used again.
    */
-  async useVerificationToken({ identifier, token }: SentVerificationToken): Promise<VerificationToken | null> {
+  async useVerificationToken({ identifier, token }: SentVerificationToken): Promise<null | VerificationToken> {
     const foundToken = tokenCache.get(identifier);
     if (foundToken?.token === token) {
       tokenCache.delete(identifier);

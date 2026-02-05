@@ -9,13 +9,13 @@ import styles from "./SimpleModal.module.scss";
 
 export interface SimpleModalProps extends PropsWithChildren {
   buttons?:
-    | SimpleModalProps.ActionAreaButtonProps
     | [
         SimpleModalProps.ActionAreaButtonProps,
         SimpleModalProps.ActionAreaButtonProps,
         SimpleModalProps.ActionAreaButtonProps,
       ]
-    | [SimpleModalProps.ActionAreaButtonProps, SimpleModalProps.ActionAreaButtonProps];
+    | [SimpleModalProps.ActionAreaButtonProps, SimpleModalProps.ActionAreaButtonProps]
+    | SimpleModalProps.ActionAreaButtonProps;
   buttonsEquisized?: boolean;
   className?: string;
   closeButtonProps?: ButtonProps.AsButton & ButtonProps.Common;
@@ -29,11 +29,11 @@ export interface SimpleModalProps extends PropsWithChildren {
 }
 
 export namespace SimpleModalProps {
-  export type ActionAreaButtonProps = ButtonProps & {
+  export type ActionAreaButtonProps = {
     /** @default false */
     canClosesModal?: boolean;
     refresh?: boolean;
-  };
+  } & ButtonProps;
 }
 
 export const SimpleModal = memo(

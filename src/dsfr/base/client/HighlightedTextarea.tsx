@@ -11,14 +11,11 @@ import { hljs } from "@/utils/highlight";
 import { Text } from "../Typography";
 import styles from "./HighlightedTextarea.module.scss";
 
-export type HighlightedTextareaProps = Omit<
-  InputProps.TextArea,
-  "nativeInputProps" | "nativeLabelProps" | "textArea"
-> & {
+export type HighlightedTextareaProps = {
   hightlighted?: boolean;
   nativeLabelProps?: DetailedHTMLProps<LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>;
   previewButton?: boolean;
-};
+} & Omit<InputProps.TextArea, "nativeInputProps" | "nativeLabelProps" | "textArea">;
 
 export const HighlightedTextarea = ({
   className,

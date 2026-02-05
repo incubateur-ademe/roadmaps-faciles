@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { type Comment, type User } from "@/prisma/client";
 import { type ServerActionResponse } from "@/utils/next";
 
-export async function getReplies(commentId: number): Promise<ServerActionResponse<Array<Comment & { user: User }>>> {
+export async function getReplies(commentId: number): Promise<ServerActionResponse<Array<{ user: User } & Comment>>> {
   if (isNaN(commentId)) {
     return {
       ok: false,
@@ -40,7 +40,7 @@ export async function getReplies(commentId: number): Promise<ServerActionRespons
 
 export interface SendCommentParams {
   body: string;
-  parentId?: number | null;
+  parentId?: null | number;
   postId: number;
   tenantId: number;
   userId: string;

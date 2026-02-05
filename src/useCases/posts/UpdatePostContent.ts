@@ -18,7 +18,7 @@ export type UpdatePostContentOutput = PostModel;
 export class UpdatePostContent implements UseCase<UpdatePostContentInput, UpdatePostContentOutput> {
   constructor(private readonly postRepo: IPostRepo) {}
 
-  public execute(input: UpdatePostContentInput): Promise<UpdatePostContentOutput> {
+  public execute(_input: UpdatePostContentInput): Promise<UpdatePostContentOutput> {
     return notImplemented();
     // const post = await this.postRepo.update(input.postId, {
     //   title: input.title,
