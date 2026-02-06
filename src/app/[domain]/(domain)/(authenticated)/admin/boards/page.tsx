@@ -1,14 +1,10 @@
-import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { boardRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
 
-// Lazy load admin list to reduce bundle size
-const BoardsList = dynamic(() => import("./BoardsList").then(m => ({ default: m.BoardsList })), {
-  ssr: false,
-});
+import { BoardsList } from "./BoardsList";
 
 const BoardsAdminPage = async () => {
   await connection();

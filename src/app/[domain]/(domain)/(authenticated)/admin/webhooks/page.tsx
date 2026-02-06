@@ -1,14 +1,10 @@
-import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { webhookRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 import { ListWebhooksForTenant } from "@/useCases/webhooks/ListWebhooksForTenant";
 
-// Lazy load admin list to reduce bundle size
-const WebhooksList = dynamic(() => import("./WebhooksList").then(m => ({ default: m.WebhooksList })), {
-  ssr: false,
-});
+import { WebhooksList } from "./WebhooksList";
 
 const WebhooksAdminPage = async () => {
   await connection();
