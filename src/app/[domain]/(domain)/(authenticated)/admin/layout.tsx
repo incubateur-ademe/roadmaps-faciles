@@ -73,7 +73,7 @@ const TenantAdminLayout = async ({ children }: LayoutProps<"/[domain]/admin">) =
           />
         </GridCol>
         <GridCol md={8}>
-          <Suspense fallback={<div>Chargement...</div>}>
+          <Suspense fallback={<div>Chargement…</div>}>
             <ClientAnimate>{children}</ClientAnimate>
           </Suspense>
         </GridCol>

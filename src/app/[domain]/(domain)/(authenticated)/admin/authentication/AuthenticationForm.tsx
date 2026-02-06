@@ -55,7 +55,12 @@ export const AuthenticationForm = ({ tenantSettings }: AuthenticationFormProps) 
             {domains.map(domain => (
               <li key={domain} className={fr.cx("fr-mb-1w")}>
                 {domain}
-                <Button size="small" priority="secondary" onClick={() => removeDomain(domain)}>
+                <Button
+                  size="small"
+                  priority="secondary"
+                  title="Retirer ce domaine"
+                  onClick={() => removeDomain(domain)}
+                >
                   ×
                 </Button>
               </li>
@@ -63,7 +68,12 @@ export const AuthenticationForm = ({ tenantSettings }: AuthenticationFormProps) 
           </ul>
           <Input
             label="Ajouter un domaine"
-            nativeInputProps={{ value: newDomain, onChange: e => setNewDomain(e.target.value) }}
+            nativeInputProps={{
+              value: newDomain,
+              onChange: e => setNewDomain(e.target.value),
+              autoComplete: "off",
+              name: "new-domain",
+            }}
           />
           <Button onClick={addDomain}>Ajouter</Button>
         </>

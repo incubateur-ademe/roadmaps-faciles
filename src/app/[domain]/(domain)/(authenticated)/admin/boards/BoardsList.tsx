@@ -1,6 +1,7 @@
 "use client";
 
 import { fr } from "@codegouvfr/react-dsfr";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { useState } from "react";
@@ -20,6 +21,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
   const [editingId, setEditingId] = useState<null | number>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [error, setError] = useState<null | string>(null);
 
   const handleCreate = async () => {
     const result = await createBoard({ name: newName, description: newDescription });
@@ -43,8 +45,9 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
     const result = await deleteBoard({ id });
     if (result.ok) {
       setBoards(boards.filter(b => b.id !== id));
+      setError(null);
     } else if (!result.ok) {
-      alert(result.error);
+      setError(result.error);
     }
   };
 
@@ -68,16 +71,40 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
 
   return (
     <div>
+      {error && (
+        <Alert
+          className={fr.cx("fr-mb-2w")}
+          severity="error"
+          title="Erreur"
+          description={error}
+          closable
+          onClose={() => setError(null)}
+        />
+      )}
+
       <ul>
         {boards.map((board, index) => (
           <li key={board.id} className={fr.cx("fr-mb-2w")}>
             {editingId === board.id ? (
               <>
-                <Input label="Nom" nativeInputProps={{ value: editName, onChange: e => setEditName(e.target.value) }} />
+                <Input
+                  label="Nom"
+                  nativeInputProps={{
+                    value: editName,
+                    onChange: e => setEditName(e.target.value),
+                    autoComplete: "off",
+                    name: "name",
+                  }}
+                />
                 <Input
                   label="Description"
                   textArea
-                  nativeTextAreaProps={{ value: editDescription, onChange: e => setEditDescription(e.target.value) }}
+                  nativeTextAreaProps={{
+                    value: editDescription,
+                    onChange: e => setEditDescription(e.target.value),
+                    autoComplete: "off",
+                    name: "description",
+                  }}
                 />
                 <Button onClick={() => void handleUpdate(board.id)}>Sauvegarder</Button>
                 <Button priority="secondary" onClick={() => setEditingId(null)}>
@@ -88,11 +115,17 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
               <>
                 <strong>{board.name}</strong> - {board.description}
                 <div>
-                  <Button size="small" onClick={() => void handleMoveUp(index)} disabled={index === 0}>
+                  <Button
+                    size="small"
+                    title="Déplacer vers le haut"
+                    onClick={() => void handleMoveUp(index)}
+                    disabled={index === 0}
+                  >
                     ↑
                   </Button>
                   <Button
                     size="small"
+                    title="Déplacer vers le bas"
                     onClick={() => void handleMoveDown(index)}
                     disabled={index === boards.length - 1}
                   >
@@ -119,11 +152,24 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
       </ul>
 
       <h2>Ajouter un board</h2>
-      <Input label="Nom" nativeInputProps={{ value: newName, onChange: e => setNewName(e.target.value) }} />
+      <Input
+        label="Nom"
+        nativeInputProps={{
+          value: newName,
+          onChange: e => setNewName(e.target.value),
+          autoComplete: "off",
+          name: "new-name",
+        }}
+      />
       <Input
         label="Description"
         textArea
-        nativeTextAreaProps={{ value: newDescription, onChange: e => setNewDescription(e.target.value) }}
+        nativeTextAreaProps={{
+          value: newDescription,
+          onChange: e => setNewDescription(e.target.value),
+          autoComplete: "off",
+          name: "new-description",
+        }}
       />
       <Button onClick={() => void handleCreate()} disabled={!newName}>
         Créer
