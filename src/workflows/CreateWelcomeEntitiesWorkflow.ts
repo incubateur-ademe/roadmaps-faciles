@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { getServerService } from "@/lib/services";
+import { getSeedTenant } from "@/lib/seedContext";
 
 import { type IWorkflow } from "./IWorkflow";
 
@@ -7,7 +7,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
   constructor(private readonly tenantId?: number) {}
 
   public async run() {
-    const tenantId = this.tenantId ?? (await getServerService("current")).tenant.id;
+    const tenantId = this.tenantId ?? getSeedTenant().id;
 
     const owner = (await prisma.userOnTenant.findFirst({
       where: {

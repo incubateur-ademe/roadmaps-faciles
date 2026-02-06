@@ -8,8 +8,8 @@ import { SaveTenantWithSettings, SaveTenantWithSettingsInput } from "@/useCases/
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const saveTenantSettings = async (data: unknown): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const saveTenantSettings = async (data: unknown, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   const validated = SaveTenantWithSettingsInput.safeParse(data);
   if (!validated.success) {

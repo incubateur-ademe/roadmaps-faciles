@@ -3,17 +3,21 @@
 import { revalidatePath } from "next/cache";
 
 import { tenantSettingsRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type EmailRegistrationPolicy } from "@/prisma/enums";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const saveAuthenticationSettings = async (data: {
-  allowedEmailDomains: string[];
-  emailRegistrationPolicy: EmailRegistrationPolicy;
-}): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const saveAuthenticationSettings = async (
+  data: {
+    allowedEmailDomains: string[];
+    emailRegistrationPolicy: EmailRegistrationPolicy;
+  },
+  domain: string,
+): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const settings = await tenantSettingsRepo.findByTenantId(tenant.id);

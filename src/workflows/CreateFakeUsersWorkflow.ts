@@ -2,7 +2,7 @@ import { fakerFR as faker } from "@faker-js/faker";
 
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
-import { getServerService } from "@/lib/services";
+import { getSeedTenant } from "@/lib/seedContext";
 import { $Enums } from "@/prisma/client";
 
 import { type IWorkflow } from "./IWorkflow";
@@ -13,8 +13,7 @@ const USERS_COUNT = faker.number.int({ min: MIN_USERS, max: MAX_USERS });
 
 export class CreateFakeUsersWorkflow implements IWorkflow {
   public async run() {
-    const current = await getServerService("current");
-    const tenant = current.tenant;
+    const tenant = getSeedTenant();
 
     const userStatusKeys = Object.keys($Enums.UserStatus) as Array<keyof typeof $Enums.UserStatus>;
     for (let i = 0; i < USERS_COUNT; i++) {

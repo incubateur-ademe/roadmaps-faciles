@@ -4,16 +4,17 @@ import { revalidatePath } from "next/cache";
 
 import { config } from "@/config";
 import { invitationRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type Invitation } from "@/prisma/client";
 import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
 import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const sendInvitation = async (data: { email: string }): Promise<ServerActionResponse<Invitation>> => {
-  await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const sendInvitation = async (data: { email: string }, domain: string): Promise<ServerActionResponse<Invitation>> => {
+  await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const useCase = new SendInvitation(invitationRepo);
@@ -29,8 +30,8 @@ export const sendInvitation = async (data: { email: string }): Promise<ServerAct
   }
 };
 
-export const revokeInvitation = async (data: { id: number }): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const revokeInvitation = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new RevokeInvitation(invitationRepo);

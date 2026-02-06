@@ -63,7 +63,12 @@ export const InvitationsList = ({ invitations: initialInvitations }: Invitations
       {invitations.length > 0 ? (
         <TableCustom
           className={fr.cx("fr-mb-3w")}
-          header={[{ children: "Email" }, { children: "Statut" }, { children: "Date de création" }, { children: "Actions" }]}
+          header={[
+            { children: "Email" },
+            { children: "Statut" },
+            { children: "Date de création" },
+            { children: "Actions" },
+          ]}
           body={invitations.map(invitation => [
             { children: invitation.email },
             {

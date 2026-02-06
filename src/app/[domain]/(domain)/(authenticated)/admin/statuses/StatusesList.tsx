@@ -8,7 +8,7 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { useState } from "react";
 
-import { POST_STATUS_COLOR, POST_STATUS_COLOR_MAP } from "@/lib/model/PostStatus";
+import { POST_STATUS_COLOR_MAP, type POST_STATUS_COLOR } from "@/lib/model/PostStatus";
 import { type PostStatus } from "@/prisma/client";
 
 import { createPostStatus, deletePostStatus, reorderPostStatuses, updatePostStatus } from "./actions";
@@ -17,8 +17,6 @@ import { ColorSelect } from "./ColorSelect";
 interface StatusesListProps {
   statuses: PostStatus[];
 }
-
-const colors = Object.keys(POST_STATUS_COLOR) as Array<keyof typeof POST_STATUS_COLOR>;
 
 export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) => {
   const [statuses, setStatuses] = useState(initialStatuses);
@@ -135,9 +133,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
               <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
                 <div className={fr.cx("fr-col")}>
                   <div className={fr.cx("fr-mb-1w")}>
-                    <span
-                      className={`${fr.cx("fr-badge", "fr-badge--lg")} fr-badge--${POST_STATUS_COLOR_MAP[status.color]}`}
-                    >
+                    <span className={`fr-badge fr-badge--lg fr-badge--${POST_STATUS_COLOR_MAP[status.color]}`}>
                       {status.name}
                     </span>
                   </div>
@@ -145,11 +141,13 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                     {status.showInRoadmap ? (
                       <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--success")}>Affiché en roadmap</span>
                     ) : (
-                      <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--info")}>Non affiché en roadmap</span>
+                      <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--info")}>
+                        Non affiché en roadmap
+                      </span>
                     )}
                   </div>
                 </div>
-                <div className={fr.cx("fr-col-auto")}>
+                <div className="fr-col-auto">
                   <ButtonsGroup
                     inlineLayoutWhen="always"
                     buttons={[

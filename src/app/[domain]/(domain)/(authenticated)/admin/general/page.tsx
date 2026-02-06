@@ -1,24 +1,20 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 
 import { Container } from "@/dsfr";
-import { tenantSettingsRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { GeneralForm } from "./GeneralForm";
 
-const AdminGeneralPage = async () => {
-  await connection();
-  const current = await getServerService("current");
-  const tenantSettings = await tenantSettingsRepo.findByTenantId(current.tenant.id);
+const AdminGeneralPage = DomainPageHOP({ withSettings: true })(async props => {
+  const { settings } = props._data;
 
-  if (!tenantSettings) notFound();
+  if (!settings) notFound();
 
   return (
     <Container fluid>
-      <GeneralForm tenantSettings={tenantSettings} />
+      <GeneralForm tenantSettings={settings} />
     </Container>
   );
-};
+});
 
 export default AdminGeneralPage;

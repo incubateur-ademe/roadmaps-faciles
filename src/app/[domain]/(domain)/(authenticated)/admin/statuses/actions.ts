@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { postStatusRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type PostStatus } from "@/prisma/client";
 import { type PostStatusColor } from "@/prisma/enums";
 import { CreatePostStatus } from "@/useCases/post_statuses/CreatePostStatus";
@@ -13,13 +12,18 @@ import { UpdatePostStatus } from "@/useCases/post_statuses/UpdatePostStatus";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createPostStatus = async (data: {
-  color: PostStatusColor;
-  name: string;
-  showInRoadmap: boolean;
-}): Promise<ServerActionResponse<PostStatus>> => {
-  await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const createPostStatus = async (
+  data: {
+    color: PostStatusColor;
+    name: string;
+    showInRoadmap: boolean;
+  },
+  domain: string,
+): Promise<ServerActionResponse<PostStatus>> => {
+  await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const useCase = new CreatePostStatus(postStatusRepo);
@@ -31,13 +35,16 @@ export const createPostStatus = async (data: {
   }
 };
 
-export const updatePostStatus = async (data: {
-  color: PostStatusColor;
-  id: number;
-  name: string;
-  showInRoadmap: boolean;
-}): Promise<ServerActionResponse<PostStatus>> => {
-  await assertTenantAdmin();
+export const updatePostStatus = async (
+  data: {
+    color: PostStatusColor;
+    id: number;
+    name: string;
+    showInRoadmap: boolean;
+  },
+  domain: string,
+): Promise<ServerActionResponse<PostStatus>> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new UpdatePostStatus(postStatusRepo);
@@ -49,8 +56,8 @@ export const updatePostStatus = async (data: {
   }
 };
 
-export const deletePostStatus = async (data: { id: number }): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const deletePostStatus = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new DeletePostStatus(postStatusRepo);
@@ -62,10 +69,13 @@ export const deletePostStatus = async (data: { id: number }): Promise<ServerActi
   }
 };
 
-export const reorderPostStatuses = async (data: {
-  items: Array<{ id: number; order: number }>;
-}): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const reorderPostStatuses = async (
+  data: {
+    items: Array<{ id: number; order: number }>;
+  },
+  domain: string,
+): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new ReorderPostStatuses(postStatusRepo);

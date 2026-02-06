@@ -2,11 +2,11 @@ import "server-only";
 import { type Session } from "next-auth";
 import { forbidden } from "next/navigation";
 
+import { getTenantFromDomain } from "@/app/[domain]/(domain)/getTenantFromDomainParam";
 import { UserRole, type UserStatus } from "@/prisma/enums";
 
 import { auth } from "../next-auth/auth";
 import { userOnTenantRepo, userRepo } from "../repo";
-import { getServerService } from "../services";
 import { JsonifiedError, UnexpectedSessionError } from "./error";
 import { type RequireAtLeastOne, type RequireOnlyOne } from "./types";
 
@@ -24,10 +24,12 @@ type AccessCheck = RequireAtLeastOne<{
 
 type AssertParam<T> = { check: T; message?: string } | T;
 
+type TenantAccessCheck = { domain: string } & AccessCheck;
+
 type AssertSessionParams = {
   message?: string;
   rootUser?: AssertParam<AccessCheck>;
-  tenantUser?: AssertParam<AccessCheck>;
+  tenantUser?: AssertParam<TenantAccessCheck>;
   useForbidden?: boolean;
 };
 
@@ -105,9 +107,9 @@ function checkRootUser(session: Session, check: AccessCheck, useForbidden: boole
   }
 }
 
-async function checkTenantUser(session: Session, check: AccessCheck, useForbidden: boolean, message: string) {
-  const current = await getServerService("current");
-  const userOnTenant = await userOnTenantRepo.findMembership(session.user.uuid, current.tenant.id);
+async function checkTenantUser(session: Session, check: TenantAccessCheck, useForbidden: boolean, message: string) {
+  const tenant = await getTenantFromDomain(check.domain);
+  const userOnTenant = await userOnTenantRepo.findMembership(session.user.uuid, tenant.id);
 
   if (!userOnTenant) {
     fail(useForbidden, message);
@@ -192,7 +194,7 @@ export const assertSession = async ({
     }
   }
 
-  let tenantUserToCheck: AccessCheck | null = null;
+  let tenantUserToCheck: null | TenantAccessCheck = null;
   let tenantUserMessage = message;
   if (tenantUser) {
     if (isAssertObj(tenantUser)) {
@@ -223,8 +225,8 @@ export const assertSession = async ({
  * @returns La `Session` si l’utilisateur est admin du tenant.
  * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l’utilisateur n’est pas admin du tenant.
  */
-export const assertTenantAdmin = async (useForbidden = true): Promise<Session> =>
-  assertSession({ tenantUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });
+export const assertTenantAdmin = async (domain: string, useForbidden = true): Promise<Session> =>
+  assertSession({ tenantUser: { check: { role: { min: UserRole.ADMIN }, domain } }, useForbidden });
 
 /**
  * Spécialisation d’`assertSession` pour vérifier que l’utilisateur courant est admin global.

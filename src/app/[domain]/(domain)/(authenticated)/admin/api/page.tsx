@@ -1,14 +1,11 @@
-import { connection } from "next/server";
-
 import { apiKeyRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { ListApiKeysForTenant } from "@/useCases/api_keys/ListApiKeysForTenant";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { ApiKeysList } from "./ApiKeysList";
 
-const ApiAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const ApiAdminPage = DomainPageHOP()(async props => {
+  const { tenant } = props._data;
   const useCase = new ListApiKeysForTenant(apiKeyRepo);
   const apiKeys = await useCase.execute({ tenantId: tenant.id });
 
@@ -18,6 +15,6 @@ const ApiAdminPage = async () => {
       <ApiKeysList apiKeys={apiKeys} />
     </div>
   );
-};
+});
 
 export default ApiAdminPage;

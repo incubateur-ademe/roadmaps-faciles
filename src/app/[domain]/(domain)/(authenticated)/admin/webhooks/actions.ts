@@ -3,16 +3,20 @@
 import { revalidatePath } from "next/cache";
 
 import { webhookRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type Webhook } from "@/prisma/client";
 import { CreateWebhook } from "@/useCases/webhooks/CreateWebhook";
 import { DeleteWebhook } from "@/useCases/webhooks/DeleteWebhook";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createWebhook = async (data: { event: string; url: string }): Promise<ServerActionResponse<Webhook>> => {
-  await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const createWebhook = async (
+  data: { event: string; url: string },
+  domain: string,
+): Promise<ServerActionResponse<Webhook>> => {
+  await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const useCase = new CreateWebhook(webhookRepo);
@@ -24,8 +28,8 @@ export const createWebhook = async (data: { event: string; url: string }): Promi
   }
 };
 
-export const deleteWebhook = async (data: { id: number }): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const deleteWebhook = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new DeleteWebhook(webhookRepo);

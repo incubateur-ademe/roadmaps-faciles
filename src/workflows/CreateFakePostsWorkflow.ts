@@ -2,7 +2,7 @@ import { fakerFR as faker } from "@faker-js/faker";
 
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
-import { getServerService } from "@/lib/services";
+import { getSeedTenant } from "@/lib/seedContext";
 import { type Comment, type Follow, type Like } from "@/prisma/client";
 
 import { type IWorkflow } from "./IWorkflow";
@@ -16,8 +16,7 @@ const MAX_REPLIES = config.seed.maxRepliesPerComment || 8; // Default to 8 if no
 const POSTS_COUNT = faker.number.int({ min: MIN_POSTS, max: MAX_POSTS });
 export class CreateFakePostsWorkflow implements IWorkflow {
   public async run() {
-    const current = await getServerService("current");
-    const tenant = current.tenant;
+    const tenant = getSeedTenant();
 
     const usersOnTenant = await prisma.userOnTenant.findMany({
       where: {
