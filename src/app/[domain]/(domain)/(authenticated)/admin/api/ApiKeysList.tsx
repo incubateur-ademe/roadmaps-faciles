@@ -5,6 +5,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { useState } from "react";
 
+import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type ApiKey } from "@/prisma/client";
 
 import { createApiKey, deleteApiKey } from "./actions";
@@ -39,6 +40,7 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
     <div>
       {newToken && (
         <Alert
+          className={fr.cx("fr-mb-3w")}
           severity="info"
           title="Nouvelle clé API créée"
           description={`Votre clé API : ${newToken}. Copiez-la maintenant, elle ne sera plus affichée.`}
@@ -47,30 +49,37 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
         />
       )}
 
-      <table className={fr.cx("fr-table")}>
-        <thead>
-          <tr>
-            <th>Préfixe</th>
-            <th>Date de création</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {apiKeys.map(apiKey => (
-            <tr key={apiKey.id}>
-              <td>
-                {apiKey.commonTokenPrefix}…{apiKey.randomTokenPrefix}
-              </td>
-              <td>{dateFormatter.format(new Date(apiKey.createdAt))}</td>
-              <td>
+      {apiKeys.length > 0 ? (
+        <TableCustom
+          className={fr.cx("fr-mb-3w")}
+          header={[{ children: "Préfixe" }, { children: "Date de création" }, { children: "Actions" }]}
+          body={apiKeys.map(apiKey => [
+            {
+              children: (
+                <code className={fr.cx("fr-text--sm")}>
+                  {apiKey.commonTokenPrefix}…{apiKey.randomTokenPrefix}
+                </code>
+              ),
+            },
+            { children: dateFormatter.format(new Date(apiKey.createdAt)) },
+            {
+              children: (
                 <Button size="small" priority="secondary" onClick={() => void handleDelete(apiKey.id)}>
                   Révoquer
                 </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              ),
+            },
+          ])}
+        />
+      ) : (
+        <Alert
+          className={fr.cx("fr-mb-3w")}
+          severity="info"
+          title="Aucune clé API"
+          description="Aucune clé API n'a été créée pour ce tenant."
+          small
+        />
+      )}
 
       <Button onClick={() => void handleCreate()}>Créer une clé API</Button>
     </div>

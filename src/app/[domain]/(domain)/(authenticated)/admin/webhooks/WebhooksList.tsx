@@ -1,11 +1,13 @@
 "use client";
 
 import { fr } from "@codegouvfr/react-dsfr";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
 import { useState } from "react";
 
+import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type Webhook } from "@/prisma/client";
 
 import { createWebhook, deleteWebhook } from "./actions";
@@ -48,30 +50,36 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
 
   return (
     <div>
-      <table className={fr.cx("fr-table")}>
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th>Événement</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {webhooks.map(webhook => (
-            <tr key={webhook.id}>
-              <td>{webhook.url}</td>
-              <td>{webhook.event}</td>
-              <td>{dateFormatter.format(new Date(webhook.createdAt))}</td>
-              <td>
+      {webhooks.length > 0 ? (
+        <TableCustom
+          className={fr.cx("fr-mb-3w")}
+          header={[{ children: "URL" }, { children: "Événement" }, { children: "Date de création" }, { children: "Actions" }]}
+          body={webhooks.map(webhook => [
+            {
+              children: <code className={fr.cx("fr-text--sm")}>{webhook.url}</code>,
+            },
+            {
+              children: <span className={fr.cx("fr-badge", "fr-badge--sm")}>{webhook.event}</span>,
+            },
+            { children: dateFormatter.format(new Date(webhook.createdAt)) },
+            {
+              children: (
                 <Button size="small" priority="secondary" onClick={() => void handleDelete(webhook.id)}>
                   Supprimer
                 </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              ),
+            },
+          ])}
+        />
+      ) : (
+        <Alert
+          className={fr.cx("fr-mb-3w")}
+          severity="info"
+          title="Aucun webhook"
+          description="Aucun webhook n'a été configuré pour ce tenant."
+          small
+        />
+      )}
 
       <h2>Ajouter un webhook</h2>
       <Input

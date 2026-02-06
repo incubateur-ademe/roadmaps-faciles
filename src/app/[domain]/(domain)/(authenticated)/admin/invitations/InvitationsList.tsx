@@ -6,6 +6,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { useState } from "react";
 
+import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type Invitation } from "@/prisma/client";
 
 import { revokeInvitation, sendInvitation } from "./actions";
@@ -59,38 +60,38 @@ export const InvitationsList = ({ invitations: initialInvitations }: Invitations
         />
       )}
 
-      <table className={fr.cx("fr-table")}>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Statut</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {invitations.map(invitation => (
-            <tr key={invitation.id}>
-              <td>{invitation.email}</td>
-              <td>
-                {invitation.acceptedAt ? (
-                  <span className={fr.cx("fr-badge", "fr-badge--success")}>Acceptée</span>
-                ) : (
-                  <span className={fr.cx("fr-badge", "fr-badge--info")}>En attente</span>
-                )}
-              </td>
-              <td>{dateFormatter.format(new Date(invitation.createdAt))}</td>
-              <td>
-                {!invitation.acceptedAt && (
-                  <Button size="small" priority="secondary" onClick={() => void handleRevoke(invitation.id)}>
-                    Révoquer
-                  </Button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {invitations.length > 0 ? (
+        <TableCustom
+          className={fr.cx("fr-mb-3w")}
+          header={[{ children: "Email" }, { children: "Statut" }, { children: "Date de création" }, { children: "Actions" }]}
+          body={invitations.map(invitation => [
+            { children: invitation.email },
+            {
+              children: invitation.acceptedAt ? (
+                <span className={fr.cx("fr-badge", "fr-badge--success")}>Acceptée</span>
+              ) : (
+                <span className={fr.cx("fr-badge", "fr-badge--info")}>En attente</span>
+              ),
+            },
+            { children: dateFormatter.format(new Date(invitation.createdAt)) },
+            {
+              children: !invitation.acceptedAt ? (
+                <Button size="small" priority="secondary" onClick={() => void handleRevoke(invitation.id)}>
+                  Révoquer
+                </Button>
+              ) : null,
+            },
+          ])}
+        />
+      ) : (
+        <Alert
+          className={fr.cx("fr-mb-3w")}
+          severity="info"
+          title="Aucune invitation"
+          description="Aucune invitation n'a été envoyée pour ce tenant."
+          small
+        />
+      )}
 
       <h2>Envoyer une invitation</h2>
       <Input
