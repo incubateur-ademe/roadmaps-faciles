@@ -1,14 +1,11 @@
-import { connection } from "next/server";
-
 import { boardRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { BoardsList } from "./BoardsList";
 
-const BoardsAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const BoardsAdminPage = DomainPageHOP()(async props => {
+  const { tenant } = props._data;
   const useCase = new ListBoardsForTenant(boardRepo);
   const boards = await useCase.execute({ tenantId: tenant.id });
 
@@ -18,6 +15,6 @@ const BoardsAdminPage = async () => {
       <BoardsList boards={boards} />
     </div>
   );
-};
+});
 
 export default BoardsAdminPage;

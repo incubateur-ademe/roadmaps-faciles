@@ -1,18 +1,15 @@
-import { connection } from "next/server";
-
-import { boardRepo, tenantSettingsRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
+import { boardRepo } from "@/lib/repo";
 import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { RoadmapForm } from "./RoadmapForm";
 
-const RoadmapAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const RoadmapAdminPage = DomainPageHOP({ withSettings: true })(async props => {
+  const { tenant, settings } = props._data;
+  if (!settings) throw new Error("Settings not found");
+
   const useCase = new ListBoardsForTenant(boardRepo);
   const boards = await useCase.execute({ tenantId: tenant.id });
-  const settings = await tenantSettingsRepo.findByTenantId(tenant.id);
-  if (!settings) throw new Error("Settings not found");
 
   return (
     <div>
@@ -20,6 +17,6 @@ const RoadmapAdminPage = async () => {
       <RoadmapForm boards={boards} currentRootBoardId={settings.rootBoardId} />
     </div>
   );
-};
+});
 
 export default RoadmapAdminPage;

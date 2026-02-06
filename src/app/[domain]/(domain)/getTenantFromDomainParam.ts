@@ -13,10 +13,8 @@ export interface DomainProps<Params extends object = EmptyObject> {
   params: Promise<DomainParams & Params>;
 }
 
-export const getTenantFromDomainProps = async <Params extends object>({
-  params,
-}: DomainProps<Params>): Promise<Tenant> => {
-  const domain = decodeURIComponent((await params).domain);
+export const getTenantFromDomain = async (domainParam: string): Promise<Tenant> => {
+  const domain = decodeURIComponent(domainParam);
   const useCase = new GetTenantForDomain(tenantRepo);
 
   try {

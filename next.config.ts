@@ -56,7 +56,6 @@ const config: NextConfig = {
     taint: true,
     turbopackFileSystemCacheForDev: true,
   },
-  cacheComponents: true,
   reactCompiler: true,
   serverExternalPackages: ["@prisma/client"],
   env,

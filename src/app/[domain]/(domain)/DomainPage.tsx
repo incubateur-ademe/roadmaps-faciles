@@ -8,7 +8,7 @@ import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings"
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
-import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomainParam";
+import { type DomainProps, getTenantFromDomain } from "./getTenantFromDomainParam";
 
 type DomainRootPageOptions = {
   withSettings?: boolean;
@@ -25,7 +25,8 @@ export const DomainPageHOP =
   <Params extends object>(options?: DomainRootPageOptions) =>
   (page: DomainPage<Params>) =>
     (async (props: DomainPageCombinedProps<Params>) => {
-      const tenant = await getTenantFromDomainProps<Params>(props);
+      const domain = (await props.params).domain;
+      const tenant = await getTenantFromDomain(domain);
       let settings: TenantSettings | undefined;
 
       if (options?.withSettings) {
@@ -44,7 +45,7 @@ export const DomainPageHOP =
           settings,
           tenant,
           dirtyDomainFixer,
-          domain: (await props.params).domain,
+          domain,
         },
       });
     }) as (props: unknown) => Promise<ReactElement>;

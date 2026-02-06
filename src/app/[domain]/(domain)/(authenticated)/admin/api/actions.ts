@@ -4,16 +4,19 @@ import { revalidatePath } from "next/cache";
 import crypto from "node:crypto";
 
 import { apiKeyRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type ApiKey } from "@/prisma/client";
 import { CreateApiKey } from "@/useCases/api_keys/CreateApiKey";
 import { DeleteApiKey } from "@/useCases/api_keys/DeleteApiKey";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createApiKey = async (): Promise<ServerActionResponse<{ apiKey: ApiKey; token: string }>> => {
-  const session = await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const createApiKey = async (
+  domain: string,
+): Promise<ServerActionResponse<{ apiKey: ApiKey; token: string }>> => {
+  const session = await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const randomBytes = crypto.randomBytes(32);
@@ -38,8 +41,8 @@ export const createApiKey = async (): Promise<ServerActionResponse<{ apiKey: Api
   }
 };
 
-export const deleteApiKey = async (data: { id: number }): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const deleteApiKey = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new DeleteApiKey(apiKeyRepo);

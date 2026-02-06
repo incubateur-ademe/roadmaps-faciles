@@ -1,14 +1,8 @@
-import { connection } from "next/server";
-
-import { tenantSettingsRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
-
+import { DomainPageHOP } from "../../../DomainPage";
 import { AuthenticationForm } from "./AuthenticationForm";
 
-const AuthenticationAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
-  const settings = await tenantSettingsRepo.findByTenantId(tenant.id);
+const AuthenticationAdminPage = DomainPageHOP({ withSettings: true })(props => {
+  const { settings } = props._data;
   if (!settings) throw new Error("Settings not found");
 
   return (
@@ -17,6 +11,6 @@ const AuthenticationAdminPage = async () => {
       <AuthenticationForm tenantSettings={settings} />
     </div>
   );
-};
+});
 
 export default AuthenticationAdminPage;

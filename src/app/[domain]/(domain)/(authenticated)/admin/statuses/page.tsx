@@ -1,14 +1,11 @@
-import { connection } from "next/server";
-
 import { postStatusRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { ListPostStatuses } from "@/useCases/post_statuses/ListPostStatuses";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { StatusesList } from "./StatusesList";
 
-const StatusesAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const StatusesAdminPage = DomainPageHOP()(async props => {
+  const { tenant } = props._data;
   const useCase = new ListPostStatuses(postStatusRepo);
   const statuses = await useCase.execute({ tenantId: tenant.id });
 
@@ -18,6 +15,6 @@ const StatusesAdminPage = async () => {
       <StatusesList statuses={statuses} />
     </div>
   );
-};
+});
 
 export default StatusesAdminPage;

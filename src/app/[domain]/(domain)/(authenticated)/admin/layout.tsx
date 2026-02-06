@@ -1,12 +1,11 @@
-import { Suspense } from "react";
-
+import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { Container, Grid, GridCol } from "@/dsfr";
 import { assertTenantAdmin } from "@/utils/auth";
 
 import { AdminSideMenu } from "./AdminSideMenu";
 
-const TenantAdminLayout = async ({ children }: LayoutProps<"/[domain]/admin">) => {
-  await assertTenantAdmin();
+const TenantAdminLayout = async ({ children, params }: LayoutProps<"/[domain]/admin">) => {
+  await assertTenantAdmin((await params).domain);
 
   return (
     <Container my="4w">
@@ -15,7 +14,7 @@ const TenantAdminLayout = async ({ children }: LayoutProps<"/[domain]/admin">) =
           <AdminSideMenu />
         </GridCol>
         <GridCol md={8}>
-          <Suspense fallback={<div>Chargement…</div>}>{children}</Suspense>
+          <ClientAnimate>{children}</ClientAnimate>
         </GridCol>
       </Grid>
     </Container>

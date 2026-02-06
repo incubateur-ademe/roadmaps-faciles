@@ -1,14 +1,11 @@
-import { connection } from "next/server";
-
 import { invitationRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { ListInvitationsForTenant } from "@/useCases/invitations/ListInvitationsForTenant";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { InvitationsList } from "./InvitationsList";
 
-const InvitationsAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const InvitationsAdminPage = DomainPageHOP()(async props => {
+  const { tenant } = props._data;
   const useCase = new ListInvitationsForTenant(invitationRepo);
   const invitations = await useCase.execute({ tenantId: tenant.id });
 
@@ -18,6 +15,6 @@ const InvitationsAdminPage = async () => {
       <InvitationsList invitations={invitations} />
     </div>
   );
-};
+});
 
 export default InvitationsAdminPage;

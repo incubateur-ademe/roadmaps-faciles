@@ -53,7 +53,12 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
       {webhooks.length > 0 ? (
         <TableCustom
           className={fr.cx("fr-mb-3w")}
-          header={[{ children: "URL" }, { children: "Événement" }, { children: "Date de création" }, { children: "Actions" }]}
+          header={[
+            { children: "URL" },
+            { children: "Événement" },
+            { children: "Date de création" },
+            { children: "Actions" },
+          ]}
           body={webhooks.map(webhook => [
             {
               children: <code className={fr.cx("fr-text--sm")}>{webhook.url}</code>,

@@ -6,10 +6,10 @@ import { useRef, useState } from "react";
 import { POST_STATUS_COLOR, POST_STATUS_COLOR_MAP, type PostStatusColor } from "@/lib/model/PostStatus";
 
 interface ColorSelectProps {
-  label: string;
-  value: PostStatusColor;
-  onChange: (value: PostStatusColor) => void;
   disabled?: boolean;
+  label: string;
+  onChange: (value: PostStatusColor) => void;
+  value: PostStatusColor;
 }
 
 const colors = Object.keys(POST_STATUS_COLOR) as Array<keyof typeof POST_STATUS_COLOR>;

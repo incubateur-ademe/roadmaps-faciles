@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { boardRepo, tenantSettingsRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { type Board } from "@/prisma/client";
 import { CreateBoard } from "@/useCases/boards/CreateBoard";
 import { DeleteBoard } from "@/useCases/boards/DeleteBoard";
@@ -12,12 +11,17 @@ import { UpdateBoard } from "@/useCases/boards/UpdateBoard";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createBoard = async (data: {
-  description?: string;
-  name: string;
-}): Promise<ServerActionResponse<Board>> => {
-  await assertTenantAdmin();
-  const { tenant } = await getServerService("current");
+import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
+
+export const createBoard = async (
+  data: {
+    description?: string;
+    name: string;
+  },
+  domain: string,
+): Promise<ServerActionResponse<Board>> => {
+  await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
 
   try {
     const useCase = new CreateBoard(boardRepo);
@@ -29,12 +33,15 @@ export const createBoard = async (data: {
   }
 };
 
-export const updateBoard = async (data: {
-  description?: string;
-  id: number;
-  name: string;
-}): Promise<ServerActionResponse<Board>> => {
-  await assertTenantAdmin();
+export const updateBoard = async (
+  data: {
+    description?: string;
+    id: number;
+    name: string;
+  },
+  domain: string,
+): Promise<ServerActionResponse<Board>> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new UpdateBoard(boardRepo);
@@ -46,8 +53,8 @@ export const updateBoard = async (data: {
   }
 };
 
-export const deleteBoard = async (data: { id: number }): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const deleteBoard = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new DeleteBoard(boardRepo, tenantSettingsRepo);
@@ -59,10 +66,13 @@ export const deleteBoard = async (data: { id: number }): Promise<ServerActionRes
   }
 };
 
-export const reorderBoards = async (data: {
-  items: Array<{ id: number; order: number }>;
-}): Promise<ServerActionResponse> => {
-  await assertTenantAdmin();
+export const reorderBoards = async (
+  data: {
+    items: Array<{ id: number; order: number }>;
+  },
+  domain: string,
+): Promise<ServerActionResponse> => {
+  await assertTenantAdmin(domain);
 
   try {
     const useCase = new ReorderBoards(boardRepo);

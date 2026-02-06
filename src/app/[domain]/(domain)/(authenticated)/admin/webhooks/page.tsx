@@ -1,14 +1,11 @@
-import { connection } from "next/server";
-
 import { webhookRepo } from "@/lib/repo";
-import { getServerService } from "@/lib/services";
 import { ListWebhooksForTenant } from "@/useCases/webhooks/ListWebhooksForTenant";
 
+import { DomainPageHOP } from "../../../DomainPage";
 import { WebhooksList } from "./WebhooksList";
 
-const WebhooksAdminPage = async () => {
-  await connection();
-  const { tenant } = await getServerService("current");
+const WebhooksAdminPage = DomainPageHOP()(async props => {
+  const { tenant } = props._data;
   const useCase = new ListWebhooksForTenant(webhookRepo);
   const webhooks = await useCase.execute({ tenantId: tenant.id });
 
@@ -18,6 +15,6 @@ const WebhooksAdminPage = async () => {
       <WebhooksList webhooks={webhooks} />
     </div>
   );
-};
+});
 
 export default WebhooksAdminPage;
