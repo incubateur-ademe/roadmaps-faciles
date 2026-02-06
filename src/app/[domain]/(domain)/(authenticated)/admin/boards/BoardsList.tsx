@@ -3,10 +3,14 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
+import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
+import Card from "@codegouvfr/react-dsfr/Card";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { useState } from "react";
+import Markdown from "react-markdown";
 
 import { type Board } from "@/prisma/client";
+import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { createBoard, deleteBoard, reorderBoards, updateBoard } from "./actions";
 
@@ -80,11 +84,14 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         />
       )}
 
-      <ul>
+      <div className={fr.cx("fr-mb-4w")}>
         {boards.map((board, index) => (
-          <li key={board.id} className={fr.cx("fr-mb-2w")}>
-            {formState.edit.id === board.id ? (
-              <>
+          <Card
+            key={board.id}
+            className={fr.cx("fr-mb-2w")}
+            border
+            title={
+              formState.edit.id === board.id ? (
                 <Input
                   label="Nom"
                   nativeInputProps={{
@@ -94,6 +101,12 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                     name: "name",
                   }}
                 />
+              ) : (
+                board.name
+              )
+            }
+            desc={
+              formState.edit.id === board.id ? (
                 <Input
                   label="Description"
                   textArea
@@ -103,56 +116,74 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                       setFormState(prev => ({ ...prev, edit: { ...prev.edit, description: e.target.value } })),
                     autoComplete: "off",
                     name: "description",
+                    rows: 4,
                   }}
                 />
-                <Button onClick={() => void handleUpdate(board.id)}>Sauvegarder</Button>
-                <Button
-                  priority="secondary"
-                  onClick={() => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } }))}
-                >
-                  Annuler
-                </Button>
-              </>
-            ) : (
-              <>
-                <strong>{board.name}</strong> - {board.description}
-                <div>
-                  <Button
-                    size="small"
-                    title="Déplacer vers le haut"
-                    onClick={() => void handleMoveUp(index)}
-                    disabled={index === 0}
-                  >
-                    ↑
-                  </Button>
-                  <Button
-                    size="small"
-                    title="Déplacer vers le bas"
-                    onClick={() => void handleMoveDown(index)}
-                    disabled={index === boards.length - 1}
-                  >
-                    ↓
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setFormState(prev => ({
-                        ...prev,
-                        edit: { id: board.id, name: board.name, description: board.description ?? "" },
-                      }));
-                    }}
-                  >
-                    Modifier
-                  </Button>
-                  <Button size="small" priority="secondary" onClick={() => void handleDelete(board.id)}>
-                    Supprimer
-                  </Button>
-                </div>
-              </>
-            )}
-          </li>
+              ) : board.description ? (
+                <Markdown {...reactMarkdownConfig}>{board.description}</Markdown>
+              ) : (
+                <em className={fr.cx("fr-text--xs")}>Aucune description</em>
+              )
+            }
+            footer={
+              formState.edit.id === board.id ? (
+                <ButtonsGroup
+                  inlineLayoutWhen="always"
+                  buttons={[
+                    {
+                      children: "Sauvegarder",
+                      onClick: () => void handleUpdate(board.id),
+                    },
+                    {
+                      children: "Annuler",
+                      priority: "secondary",
+                      onClick: () => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } })),
+                    },
+                  ]}
+                />
+              ) : (
+                <ButtonsGroup
+                  inlineLayoutWhen="always"
+                  buttons={[
+                    {
+                      children: "↑",
+                      title: "Déplacer vers le haut",
+                      size: "small",
+                      onClick: () => void handleMoveUp(index),
+                      disabled: index === 0,
+                      priority: "tertiary no outline",
+                    },
+                    {
+                      children: "↓",
+                      title: "Déplacer vers le bas",
+                      size: "small",
+                      onClick: () => void handleMoveDown(index),
+                      disabled: index === boards.length - 1,
+                      priority: "tertiary no outline",
+                    },
+                    {
+                      children: "Modifier",
+                      size: "small",
+                      onClick: () => {
+                        setFormState(prev => ({
+                          ...prev,
+                          edit: { id: board.id, name: board.name, description: board.description ?? "" },
+                        }));
+                      },
+                    },
+                    {
+                      children: "Supprimer",
+                      size: "small",
+                      priority: "secondary",
+                      onClick: () => void handleDelete(board.id),
+                    },
+                  ]}
+                />
+              )
+            }
+          />
         ))}
-      </ul>
+      </div>
 
       <h2>Ajouter un board</h2>
       <Input
@@ -165,13 +196,14 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         }}
       />
       <Input
-        label="Description"
+        label="Description (Markdown)"
         textArea
         nativeTextAreaProps={{
           value: formState.new.description,
           onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, description: e.target.value } })),
           autoComplete: "off",
           name: "new-description",
+          rows: 4,
         }}
       />
       <Button onClick={() => void handleCreate()} disabled={!formState.new.name}>
