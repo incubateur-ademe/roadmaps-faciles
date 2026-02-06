@@ -1,10 +1,14 @@
+import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { boardRepo, tenantSettingsRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
 
-import { RoadmapForm } from "./RoadmapForm";
+// Lazy load admin form to reduce bundle size
+const RoadmapForm = dynamic(() => import("./RoadmapForm").then(m => ({ default: m.RoadmapForm })), {
+  ssr: false,
+});
 
 const RoadmapAdminPage = async () => {
   await connection();

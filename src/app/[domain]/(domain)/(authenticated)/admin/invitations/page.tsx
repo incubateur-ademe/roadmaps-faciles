@@ -1,10 +1,14 @@
+import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { invitationRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 import { ListInvitationsForTenant } from "@/useCases/invitations/ListInvitationsForTenant";
 
-import { InvitationsList } from "./InvitationsList";
+// Lazy load admin list to reduce bundle size
+const InvitationsList = dynamic(() => import("./InvitationsList").then(m => ({ default: m.InvitationsList })), {
+  ssr: false,
+});
 
 const InvitationsAdminPage = async () => {
   await connection();

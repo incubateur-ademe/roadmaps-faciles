@@ -2,7 +2,6 @@ import { fr, type FrIconClassName, type RiIconClassName } from "@codegouvfr/reac
 import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup, { type ButtonsGroupProps } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
-import { isArray } from "lodash";
 import { type CSSProperties, forwardRef, memo, type PropsWithChildren, type ReactNode } from "react";
 
 import styles from "./SimpleModal.module.scss";
@@ -54,7 +53,7 @@ export const SimpleModal = memo(
       },
       ref,
     ) => {
-      const buttons = isArray(buttons_props) ? buttons_props : buttons_props ? [buttons_props] : undefined;
+      const buttons = Array.isArray(buttons_props) ? buttons_props : buttons_props ? [buttons_props] : undefined;
       const titleId = `${id}-title`;
       return (
         <dialog

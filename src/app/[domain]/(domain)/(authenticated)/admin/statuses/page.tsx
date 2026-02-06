@@ -1,10 +1,14 @@
+import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { postStatusRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 import { ListPostStatuses } from "@/useCases/post_statuses/ListPostStatuses";
 
-import { StatusesList } from "./StatusesList";
+// Lazy load admin list to reduce bundle size
+const StatusesList = dynamic(() => import("./StatusesList").then(m => ({ default: m.StatusesList })), {
+  ssr: false,
+});
 
 const StatusesAdminPage = async () => {
   await connection();

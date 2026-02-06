@@ -16,27 +16,25 @@ interface BoardsListProps {
 
 export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
   const [boards, setBoards] = useState(initialBoards);
-  const [newName, setNewName] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  const [editingId, setEditingId] = useState<null | number>(null);
-  const [editName, setEditName] = useState("");
-  const [editDescription, setEditDescription] = useState("");
+  const [formState, setFormState] = useState({
+    new: { name: "", description: "" },
+    edit: { id: null as null | number, name: "", description: "" },
+  });
   const [error, setError] = useState<null | string>(null);
 
   const handleCreate = async () => {
-    const result = await createBoard({ name: newName, description: newDescription });
+    const result = await createBoard({ name: formState.new.name, description: formState.new.description });
     if (result.ok && result.data) {
       setBoards([...boards, result.data]);
-      setNewName("");
-      setNewDescription("");
+      setFormState(prev => ({ ...prev, new: { name: "", description: "" } }));
     }
   };
 
   const handleUpdate = async (id: number) => {
-    const result = await updateBoard({ id, name: editName, description: editDescription });
+    const result = await updateBoard({ id, name: formState.edit.name, description: formState.edit.description });
     if (result.ok && result.data) {
       setBoards(boards.map(b => (b.id === id ? result.data : b)));
-      setEditingId(null);
+      setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } }));
     }
   };
 
@@ -85,13 +83,13 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
       <ul>
         {boards.map((board, index) => (
           <li key={board.id} className={fr.cx("fr-mb-2w")}>
-            {editingId === board.id ? (
+            {formState.edit.id === board.id ? (
               <>
                 <Input
                   label="Nom"
                   nativeInputProps={{
-                    value: editName,
-                    onChange: e => setEditName(e.target.value),
+                    value: formState.edit.name,
+                    onChange: e => setFormState(prev => ({ ...prev, edit: { ...prev.edit, name: e.target.value } })),
                     autoComplete: "off",
                     name: "name",
                   }}
@@ -100,14 +98,18 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                   label="Description"
                   textArea
                   nativeTextAreaProps={{
-                    value: editDescription,
-                    onChange: e => setEditDescription(e.target.value),
+                    value: formState.edit.description,
+                    onChange: e =>
+                      setFormState(prev => ({ ...prev, edit: { ...prev.edit, description: e.target.value } })),
                     autoComplete: "off",
                     name: "description",
                   }}
                 />
                 <Button onClick={() => void handleUpdate(board.id)}>Sauvegarder</Button>
-                <Button priority="secondary" onClick={() => setEditingId(null)}>
+                <Button
+                  priority="secondary"
+                  onClick={() => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } }))}
+                >
                   Annuler
                 </Button>
               </>
@@ -134,9 +136,10 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                   <Button
                     size="small"
                     onClick={() => {
-                      setEditingId(board.id);
-                      setEditName(board.name);
-                      setEditDescription(board.description ?? "");
+                      setFormState(prev => ({
+                        ...prev,
+                        edit: { id: board.id, name: board.name, description: board.description ?? "" },
+                      }));
                     }}
                   >
                     Modifier
@@ -155,8 +158,8 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
       <Input
         label="Nom"
         nativeInputProps={{
-          value: newName,
-          onChange: e => setNewName(e.target.value),
+          value: formState.new.name,
+          onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, name: e.target.value } })),
           autoComplete: "off",
           name: "new-name",
         }}
@@ -165,13 +168,13 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         label="Description"
         textArea
         nativeTextAreaProps={{
-          value: newDescription,
-          onChange: e => setNewDescription(e.target.value),
+          value: formState.new.description,
+          onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, description: e.target.value } })),
           autoComplete: "off",
           name: "new-description",
         }}
       />
-      <Button onClick={() => void handleCreate()} disabled={!newName}>
+      <Button onClick={() => void handleCreate()} disabled={!formState.new.name}>
         Créer
       </Button>
     </div>

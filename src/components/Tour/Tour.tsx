@@ -1,4 +1,13 @@
-import Joyride, { type Props as JoyrideProps } from "react-joyride";
+"use client";
+
+import dynamic from "next/dynamic";
+import { type Props as JoyrideProps } from "react-joyride";
+
+// Lazy load Joyride library (50KB) to reduce initial bundle
+const Joyride = dynamic(() => import("react-joyride").then(mod => mod.default), {
+  ssr: false,
+  loading: () => null,
+});
 
 interface Props {
   userFullName: string;

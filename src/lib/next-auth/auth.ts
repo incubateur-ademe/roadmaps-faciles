@@ -5,6 +5,7 @@ import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { headers } from "next/headers";
+import { cache } from "react";
 
 import { config } from "@/config";
 import { type UserRole, type UserStatus } from "@/prisma/enums";
@@ -60,8 +61,8 @@ export interface GetAuthMethodsProps {
   domain?: string;
 }
 
-export const {
-  auth,
+const {
+  auth: authCore,
   signIn,
   signOut,
   handlers: { GET, POST },
@@ -225,3 +226,10 @@ export const {
     }),
   };
 });
+
+// Wrap auth with React.cache() for per-request deduplication
+// This prevents multiple calls to auth() in the same request from executing multiple times
+export const auth = cache(authCore);
+
+// Re-export other auth functions
+export { signIn, signOut, GET, POST };
