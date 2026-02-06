@@ -1,4 +1,5 @@
 import SideMenu from "@codegouvfr/react-dsfr/SideMenu";
+import { Suspense } from "react";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { Container, Grid, GridCol } from "@/dsfr";
@@ -72,7 +73,9 @@ const TenantAdminLayout = async ({ children }: LayoutProps<"/[domain]/admin">) =
           />
         </GridCol>
         <GridCol md={8}>
-          <ClientAnimate>{children}</ClientAnimate>
+          <Suspense fallback={<div>Chargement...</div>}>
+            <ClientAnimate>{children}</ClientAnimate>
+          </Suspense>
         </GridCol>
       </Grid>
     </Container>

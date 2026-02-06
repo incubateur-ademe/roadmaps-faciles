@@ -5,11 +5,11 @@ import z from "zod";
 
 import { tenantSettingsRepo } from "@/lib/repo";
 import { SaveTenantWithSettings, SaveTenantWithSettingsInput } from "@/useCases/tenant/SaveTenantWithSettings";
-import { assertSession } from "@/utils/auth";
+import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
 export const saveTenantSettings = async (data: unknown): Promise<ServerActionResponse> => {
-  await assertSession({ message: "Authentification requise." });
+  await assertTenantAdmin();
 
   const validated = SaveTenantWithSettingsInput.safeParse(data);
   if (!validated.success) {

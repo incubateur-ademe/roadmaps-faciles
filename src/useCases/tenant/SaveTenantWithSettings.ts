@@ -17,6 +17,7 @@ export const SaveTenantWithSettingsInput = z.object({
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
+  useBrowserLocale: z.boolean(),
 });
 export type SaveTenantWithSettingsInput = z.infer<typeof SaveTenantWithSettingsInput>;
 export type SaveTenantWithSettingsOutput = TenantSettings;
@@ -36,6 +37,7 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
       allowVoting: tenantSettings.allowVoting,
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
+      useBrowserLocale: tenantSettings.useBrowserLocale,
     });
 
     return updatedTenantSetting;
