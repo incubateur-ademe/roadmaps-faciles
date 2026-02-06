@@ -22,6 +22,8 @@ interface WebhooksListProps {
   webhooks: Webhook[];
 }
 
+const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
+
 export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) => {
   const [webhooks, setWebhooks] = useState(initialWebhooks);
   const [newUrl, setNewUrl] = useState("");
@@ -60,7 +62,7 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
             <tr key={webhook.id}>
               <td>{webhook.url}</td>
               <td>{webhook.event}</td>
-              <td>{new Date(webhook.createdAt).toLocaleDateString()}</td>
+              <td>{dateFormatter.format(new Date(webhook.createdAt))}</td>
               <td>
                 <Button size="small" priority="secondary" onClick={() => void handleDelete(webhook.id)}>
                   Supprimer
@@ -72,7 +74,16 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
       </table>
 
       <h2>Ajouter un webhook</h2>
-      <Input label="URL" nativeInputProps={{ value: newUrl, onChange: e => setNewUrl(e.target.value) }} />
+      <Input
+        label="URL"
+        nativeInputProps={{
+          type: "url",
+          value: newUrl,
+          onChange: e => setNewUrl(e.target.value),
+          autoComplete: "off",
+          name: "url",
+        }}
+      />
       <Select
         label="Événement"
         nativeSelectProps={{ value: newEvent, onChange: e => setNewEvent(e.target.value) }}

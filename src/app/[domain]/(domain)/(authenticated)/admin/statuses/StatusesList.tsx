@@ -1,6 +1,7 @@
 "use client";
 
 import { fr } from "@codegouvfr/react-dsfr";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
@@ -27,6 +28,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
   const [editName, setEditName] = useState("");
   const [editColor, setEditColor] = useState<keyof typeof POST_STATUS_COLOR>("blueCumulus");
   const [editShowInRoadmap, setEditShowInRoadmap] = useState(true);
+  const [error, setError] = useState<null | string>(null);
 
   const handleCreate = async () => {
     const result = await createPostStatus({ name: newName, color: newColor, showInRoadmap: newShowInRoadmap });
@@ -51,8 +53,9 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
     const result = await deletePostStatus({ id });
     if (result.ok) {
       setStatuses(statuses.filter(s => s.id !== id));
+      setError(null);
     } else if (!result.ok) {
-      alert(result.error);
+      setError(result.error);
     }
   };
 
@@ -76,12 +79,31 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
 
   return (
     <div>
+      {error && (
+        <Alert
+          className={fr.cx("fr-mb-2w")}
+          severity="error"
+          title="Erreur"
+          description={error}
+          closable
+          onClose={() => setError(null)}
+        />
+      )}
+
       <ul>
         {statuses.map((status, index) => (
           <li key={status.id} className={fr.cx("fr-mb-2w")}>
             {editingId === status.id ? (
               <>
-                <Input label="Nom" nativeInputProps={{ value: editName, onChange: e => setEditName(e.target.value) }} />
+                <Input
+                  label="Nom"
+                  nativeInputProps={{
+                    value: editName,
+                    onChange: e => setEditName(e.target.value),
+                    autoComplete: "off",
+                    name: "name",
+                  }}
+                />
                 <Select
                   label="Couleur"
                   nativeSelectProps={{
@@ -107,11 +129,17 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                 </span>
                 {status.showInRoadmap && " (roadmap)"}
                 <div>
-                  <Button size="small" onClick={() => void handleMoveUp(index)} disabled={index === 0}>
+                  <Button
+                    size="small"
+                    title="Déplacer vers le haut"
+                    onClick={() => void handleMoveUp(index)}
+                    disabled={index === 0}
+                  >
                     ↑
                   </Button>
                   <Button
                     size="small"
+                    title="Déplacer vers le bas"
                     onClick={() => void handleMoveDown(index)}
                     disabled={index === statuses.length - 1}
                   >
@@ -139,7 +167,15 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
       </ul>
 
       <h2>Ajouter un statut</h2>
-      <Input label="Nom" nativeInputProps={{ value: newName, onChange: e => setNewName(e.target.value) }} />
+      <Input
+        label="Nom"
+        nativeInputProps={{
+          value: newName,
+          onChange: e => setNewName(e.target.value),
+          autoComplete: "off",
+          name: "new-name",
+        }}
+      />
       <Select
         label="Couleur"
         nativeSelectProps={{ value: newColor, onChange: e => setNewColor(e.target.value) }}

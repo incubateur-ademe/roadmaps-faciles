@@ -13,6 +13,8 @@ interface ApiKeysListProps {
   apiKeys: ApiKey[];
 }
 
+const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
+
 export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [newToken, setNewToken] = useState<null | string>(null);
@@ -57,9 +59,9 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
           {apiKeys.map(apiKey => (
             <tr key={apiKey.id}>
               <td>
-                {apiKey.commonTokenPrefix}...{apiKey.randomTokenPrefix}
+                {apiKey.commonTokenPrefix}…{apiKey.randomTokenPrefix}
               </td>
-              <td>{new Date(apiKey.createdAt).toLocaleDateString()}</td>
+              <td>{dateFormatter.format(new Date(apiKey.createdAt))}</td>
               <td>
                 <Button size="small" priority="secondary" onClick={() => void handleDelete(apiKey.id)}>
                   Révoquer
