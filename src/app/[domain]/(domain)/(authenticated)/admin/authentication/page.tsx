@@ -1,9 +1,16 @@
+import dynamic from "next/dynamic";
 import { connection } from "next/server";
 
 import { tenantSettingsRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 
-import { AuthenticationForm } from "./AuthenticationForm";
+// Lazy load admin form to reduce bundle size
+const AuthenticationForm = dynamic(
+  () => import("./AuthenticationForm").then(m => ({ default: m.AuthenticationForm })),
+  {
+    ssr: false,
+  },
+);
 
 const AuthenticationAdminPage = async () => {
   await connection();

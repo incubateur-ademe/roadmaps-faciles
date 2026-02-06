@@ -1,6 +1,5 @@
 "use client";
 
-import { isArray } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -43,7 +42,7 @@ export const PostSimpleModal = (props: SimpleModalProps) => {
 
   const addClosabilityToButtons = useCallback(
     (buttonsProps: SimpleModalProps["buttons"]) => {
-      const buttons = isArray(buttonsProps) ? buttonsProps : [buttonsProps];
+      const buttons = Array.isArray(buttonsProps) ? buttonsProps : [buttonsProps];
       return buttons.map(button => {
         console.log("PostSimpleModal: button", button);
         if (!button) return button;

@@ -31,19 +31,26 @@ const Navigation = async ({ tenant, tenantSettings }: { tenant: Tenant; tenantSe
 };
 
 const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
-  const dirtyDomain = await getDirtyDomain();
+  // Parallelize independent data fetches for better performance
+  const [dirtyDomain, tenant, current] = await Promise.all([
+    getDirtyDomain(),
+    getTenantFromDomainProps({ params }),
+    getServerService("current"),
+  ]);
+
   const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
-  const tenant = await getTenantFromDomainProps({ params });
+
+  // Fetch tenant settings after we have tenant.id
   const tenantSettings = await prisma.tenantSettings.findFirst({
     where: {
       tenantId: tenant.id,
     },
   });
+
   if (!tenantSettings) {
     notFound();
   }
 
-  const current = await getServerService("current");
   current.tenant = tenant;
 
   // Optional: Redirect to custom domain if it exists when on subdomain

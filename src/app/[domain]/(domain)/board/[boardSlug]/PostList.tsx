@@ -3,7 +3,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { BoardPost } from "@/components/Board/Post";
 import { Loader } from "@/components/utils/Loader";
@@ -36,17 +36,16 @@ export const PostList = ({
   boardSlug,
 }: PostListProps) => {
   const [posts, setPosts] = useState<EnrichedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const pathname = usePathname();
   const dirtyDomainFixer = dirtySafePathname(pathname);
 
   const handleLoadMore = () => {
-    setIsLoading(true);
-    void fetchPostsForBoard(page, order, boardId, search).then(({ posts: newPosts }) => {
+    startTransition(async () => {
+      const { posts: newPosts } = await fetchPostsForBoard(page, order, boardId, search);
       setPosts(prevPosts => [...prevPosts, ...(newPosts as EnrichedPost[])]);
-      setIsLoading(false);
-      setPage(prevPage => ++prevPage);
+      setPage(prevPage => prevPage + 1);
     });
   };
 
@@ -89,7 +88,7 @@ export const PostList = ({
         );
       })}
       <div className={fr.cx("fr-hr-or")}>
-        {isLoading ? (
+        {isPending ? (
           <Loader loading />
         ) : (
           <Button

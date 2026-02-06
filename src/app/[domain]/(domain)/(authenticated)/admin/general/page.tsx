@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
@@ -5,7 +6,10 @@ import { Container } from "@/dsfr";
 import { tenantSettingsRepo } from "@/lib/repo";
 import { getServerService } from "@/lib/services";
 
-import { GeneralForm } from "./GeneralForm";
+// Lazy load admin form to reduce bundle size
+const GeneralForm = dynamic(() => import("./GeneralForm").then(m => ({ default: m.GeneralForm })), {
+  ssr: false,
+});
 
 const AdminGeneralPage = async () => {
   await connection();

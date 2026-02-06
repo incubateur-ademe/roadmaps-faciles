@@ -32,63 +32,66 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       notFound();
     }
 
-    const post = await prisma.post.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        board: true,
-        likes: true,
-        postStatus: true,
-        user: true,
-        activities: {
-          orderBy: {
-            startTime: "desc",
-          },
-          include: {
-            comment: {
-              include: {
-                user: true,
-                replies: {
-                  take: 1,
-                  orderBy: {
-                    createdAt: "desc",
+    // Parallelize independent data fetches for better performance
+    const [post, session, anonymousId] = await Promise.all([
+      prisma.post.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          board: true,
+          likes: true,
+          postStatus: true,
+          user: true,
+          activities: {
+            orderBy: {
+              startTime: "desc",
+            },
+            include: {
+              comment: {
+                include: {
+                  user: true,
+                  replies: {
+                    take: 1,
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                    include: {
+                      user: true,
+                    },
                   },
-                  include: {
-                    user: true,
-                  },
-                },
-                _count: {
-                  select: {
-                    replies: true,
+                  _count: {
+                    select: {
+                      replies: true,
+                    },
                   },
                 },
               },
-            },
-            statusChange: {
-              include: {
-                postStatus: true,
+              statusChange: {
+                include: {
+                  postStatus: true,
+                },
               },
             },
           },
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-            follows: true,
-            activities: true,
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+              follows: true,
+              activities: true,
+            },
           },
         },
-      },
-    });
+      }),
+      auth(),
+      getAnonymousId(),
+    ]);
 
     if (!post) {
       notFound();
     }
 
-    const session = await auth();
-    const anonymousId = await getAnonymousId();
     const alreadyLiked = post.likes.some(like => session?.user.id === like.userId || like.anonymousId === anonymousId);
 
     return page({ post, user: session?.user, anonymousId, alreadyLiked });

@@ -37,30 +37,34 @@ const BoardPage = withValidation({
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
   const { boardSlug } = await params;
-  const session = await auth();
-  const board = await prisma.board.findUnique({
-    where: {
-      slug_tenantId: {
-        slug: boardSlug,
-        tenantId: _data.tenant.id,
-      },
-    },
-    include: {
-      _count: {
-        select: {
-          posts: true,
+
+  // Parallelize independent data fetches for better performance
+  const [session, board, anonymousId] = await Promise.all([
+    auth(),
+    prisma.board.findUnique({
+      where: {
+        slug_tenantId: {
+          slug: boardSlug,
+          tenantId: _data.tenant.id,
         },
       },
-    },
-  });
+      include: {
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    }),
+    getAnonymousId(),
+  ]);
 
   if (!board) {
     return <div>Board not found</div>;
   }
 
+  // Fetch posts after we have board.id
   const { posts, filteredCount } = await fetchPostsForBoard(1, validatedOrder, board.id, search);
-
-  const anonymousId = await getAnonymousId();
 
   return (
     <DsfrPage>
