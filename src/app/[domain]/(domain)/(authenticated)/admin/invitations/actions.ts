@@ -9,10 +9,10 @@ import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
 import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const sendInvitation = async (data: { email: string }, domain: string): Promise<ServerActionResponse<Invitation>> => {
+export const sendInvitation = async (data: { email: string }): Promise<ServerActionResponse<Invitation>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
@@ -30,7 +30,8 @@ export const sendInvitation = async (data: { email: string }, domain: string): P
   }
 };
 
-export const revokeInvitation = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+export const revokeInvitation = async (data: { id: number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {

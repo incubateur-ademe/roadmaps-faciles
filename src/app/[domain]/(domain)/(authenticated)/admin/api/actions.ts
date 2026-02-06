@@ -9,12 +9,10 @@ import { CreateApiKey } from "@/useCases/api_keys/CreateApiKey";
 import { DeleteApiKey } from "@/useCases/api_keys/DeleteApiKey";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const createApiKey = async (
-  domain: string,
-): Promise<ServerActionResponse<{ apiKey: ApiKey; token: string }>> => {
+export const createApiKey = async (): Promise<ServerActionResponse<{ apiKey: ApiKey; token: string }>> => {
+  const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
@@ -41,7 +39,8 @@ export const createApiKey = async (
   }
 };
 
-export const deleteApiKey = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+export const deleteApiKey = async (data: { id: number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {

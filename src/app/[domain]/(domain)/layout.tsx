@@ -10,11 +10,20 @@ import { type Tenant } from "@/lib/model/Tenant";
 import { type TenantSettings } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
+import { getTenantFromDomain } from "@/utils/tenant";
+import { type EmptyObject } from "@/utils/types";
 
 import { UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
-import { getTenantFromDomain } from "./getTenantFromDomainParam";
+
+export interface DomainParams {
+  domain: string;
+}
+
+export interface DomainProps<Params extends object = EmptyObject> {
+  params: Promise<DomainParams & Params>;
+}
 
 const Navigation = async ({ tenant, tenantSettings }: { tenant: Tenant; tenantSettings: TenantSettings }) => {
   const boards = await prisma.board.findMany({

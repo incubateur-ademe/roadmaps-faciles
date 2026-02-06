@@ -10,16 +10,13 @@ import { ReorderBoards } from "@/useCases/boards/ReorderBoards";
 import { UpdateBoard } from "@/useCases/boards/UpdateBoard";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const createBoard = async (
-  data: {
-    description?: string;
-    name: string;
-  },
-  domain: string,
-): Promise<ServerActionResponse<Board>> => {
+export const createBoard = async (data: {
+  description?: string;
+  name: string;
+}): Promise<ServerActionResponse<Board>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
@@ -33,14 +30,12 @@ export const createBoard = async (
   }
 };
 
-export const updateBoard = async (
-  data: {
-    description?: string;
-    id: number;
-    name: string;
-  },
-  domain: string,
-): Promise<ServerActionResponse<Board>> => {
+export const updateBoard = async (data: {
+  description?: string;
+  id: number;
+  name: string;
+}): Promise<ServerActionResponse<Board>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {
@@ -53,7 +48,8 @@ export const updateBoard = async (
   }
 };
 
-export const deleteBoard = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+export const deleteBoard = async (data: { id: number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {
@@ -66,12 +62,10 @@ export const deleteBoard = async (data: { id: number }, domain: string): Promise
   }
 };
 
-export const reorderBoards = async (
-  data: {
-    items: Array<{ id: number; order: number }>;
-  },
-  domain: string,
-): Promise<ServerActionResponse> => {
+export const reorderBoards = async (data: {
+  items: Array<{ id: number; order: number }>;
+}): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {

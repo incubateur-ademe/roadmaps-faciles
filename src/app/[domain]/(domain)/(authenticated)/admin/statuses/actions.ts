@@ -11,17 +11,14 @@ import { ReorderPostStatuses } from "@/useCases/post_statuses/ReorderPostStatuse
 import { UpdatePostStatus } from "@/useCases/post_statuses/UpdatePostStatus";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const createPostStatus = async (
-  data: {
-    color: PostStatusColor;
-    name: string;
-    showInRoadmap: boolean;
-  },
-  domain: string,
-): Promise<ServerActionResponse<PostStatus>> => {
+export const createPostStatus = async (data: {
+  color: PostStatusColor;
+  name: string;
+  showInRoadmap: boolean;
+}): Promise<ServerActionResponse<PostStatus>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
@@ -35,15 +32,13 @@ export const createPostStatus = async (
   }
 };
 
-export const updatePostStatus = async (
-  data: {
-    color: PostStatusColor;
-    id: number;
-    name: string;
-    showInRoadmap: boolean;
-  },
-  domain: string,
-): Promise<ServerActionResponse<PostStatus>> => {
+export const updatePostStatus = async (data: {
+  color: PostStatusColor;
+  id: number;
+  name: string;
+  showInRoadmap: boolean;
+}): Promise<ServerActionResponse<PostStatus>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {
@@ -56,7 +51,8 @@ export const updatePostStatus = async (
   }
 };
 
-export const deletePostStatus = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+export const deletePostStatus = async (data: { id: number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {
@@ -69,12 +65,10 @@ export const deletePostStatus = async (data: { id: number }, domain: string): Pr
   }
 };
 
-export const reorderPostStatuses = async (
-  data: {
-    items: Array<{ id: number; order: number }>;
-  },
-  domain: string,
-): Promise<ServerActionResponse> => {
+export const reorderPostStatuses = async (data: {
+  items: Array<{ id: number; order: number }>;
+}): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {

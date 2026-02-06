@@ -7,8 +7,10 @@ import { tenantSettingsRepo } from "@/lib/repo";
 import { SaveTenantWithSettings, SaveTenantWithSettingsInput } from "@/useCases/tenant/SaveTenantWithSettings";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost } from "@/utils/tenant";
 
-export const saveTenantSettings = async (data: unknown, domain: string): Promise<ServerActionResponse> => {
+export const saveTenantSettings = async (data: unknown): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   const validated = SaveTenantWithSettingsInput.safeParse(data);
