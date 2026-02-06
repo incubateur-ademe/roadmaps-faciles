@@ -5,15 +5,30 @@ import z from "zod";
 
 import { Tenant } from "@/lib/model/Tenant";
 import { TenantSettings } from "@/lib/model/TenantSettings";
-import { tenantRepo } from "@/lib/repo";
+import { tenantRepo, userOnTenantRepo } from "@/lib/repo";
 import { SaveTenant, type SaveTenantOutput } from "@/useCases/tenant/SaveTenant";
+import { assertSession } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+
+const ROLE_WEIGHT: Record<string, number> = { INHERITED: 0, USER: 1, MODERATOR: 2, ADMIN: 3, OWNER: 4 };
 
 type SaveTenantResponse = ServerActionResponse<SaveTenantOutput>;
 type SaveTenantProps = { setting: Partial<TenantSettings>; tenant: Partial<Tenant> };
 
 export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<SaveTenantResponse> => {
-  // TODO check if the user is allowed to update the tenant
+  const session = await assertSession();
+
+  if (!session.user.isSuperAdmin) {
+    const idParsed = Tenant.pick({ id: true }).safeParse(tenant);
+    if (!idParsed.success) {
+      return { ok: false, error: "ID du tenant invalide." };
+    }
+    const membership = await userOnTenantRepo.findMembership(session.user.uuid, idParsed.data.id);
+    const effectiveRole = membership?.role === "INHERITED" ? session.user.role : membership?.role;
+    if (!effectiveRole || ROLE_WEIGHT[effectiveRole] < ROLE_WEIGHT.ADMIN) {
+      return { ok: false, error: "Accès non autorisé." };
+    }
+  }
 
   const tenantValidated = Tenant.omit({
     updatedAt: true,

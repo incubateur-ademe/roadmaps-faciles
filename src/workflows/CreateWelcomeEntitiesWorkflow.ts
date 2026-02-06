@@ -4,13 +4,14 @@ import { getServerService } from "@/lib/services";
 import { type IWorkflow } from "./IWorkflow";
 
 export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
+  constructor(private readonly tenantId?: number) {}
+
   public async run() {
-    const current = await getServerService("current");
-    const tenant = current.tenant;
+    const tenantId = this.tenantId ?? (await getServerService("current")).tenant.id;
 
     const owner = (await prisma.userOnTenant.findFirst({
       where: {
-        tenantId: tenant.id,
+        tenantId,
         status: "ACTIVE",
         role: "OWNER",
       },
@@ -24,7 +25,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         description:
           "Ceci est un **tableau** ! Allez dans les Paramètres > Boards pour le personnaliser ou en ajouter d'autres !",
         order: 0,
-        tenantId: tenant.id,
+        tenantId,
       },
     });
     const bugBoard = await prisma.board.create({
@@ -33,7 +34,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         slug: "bug",
         description: "Dites-nous tout sur les problèmes que vous avez rencontrés dans nos services !",
         order: 1,
-        tenantId: tenant.id,
+        tenantId,
       },
     });
 
@@ -43,7 +44,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         name: "Planifié",
         color: "blueCumulus",
         order: 0,
-        tenantId: tenant.id,
+        tenantId,
         showInRoadmap: true,
       },
     });
@@ -52,7 +53,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         name: "En cours",
         color: "purpleGlycine",
         order: 1,
-        tenantId: tenant.id,
+        tenantId,
         showInRoadmap: true,
       },
     });
@@ -61,7 +62,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         name: "Complété",
         color: "greenMenthe",
         order: 2,
-        tenantId: tenant.id,
+        tenantId,
         showInRoadmap: true,
       },
     });
@@ -70,7 +71,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         name: "Rejetté",
         color: "error",
         order: 3,
-        tenantId: tenant.id,
+        tenantId,
         showInRoadmap: false,
       },
     });
@@ -84,7 +85,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         boardId: featureBoard.id,
         userId: owner.userId,
         postStatusId: plannedPostStatus.id,
-        tenantId: tenant.id,
+        tenantId,
       },
     });
     await prisma.postStatusChange.create({
@@ -92,7 +93,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         postId: post1.id,
         userId: owner.userId,
         postStatusId: plannedPostStatus.id,
-        tenantId: tenant.id,
+        tenantId,
       },
     });
 
@@ -110,7 +111,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
           'Nous avons créé deux tableaux pour vous, "Demandes de fonctionnalités" et "Rapports de bogues", mais vous pouvez en ajouter ou en supprimer autant que vous le souhaitez ! Il suffit d\'aller dans Paramètres du site > Tableaux !',
         boardId: bugBoard.id,
         userId: owner.userId,
-        tenantId: tenant.id,
+        tenantId,
       },
     });
 
@@ -119,7 +120,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
       data: {
         body: "Les utilisateurs peuvent commenter pour exprimer leurs opinions ! Comme pour les publications et les descriptions de tableau, les commentaires peuvent être formatés en *Markdown* **formaté**",
         userId: owner.userId,
-        tenantId: tenant.id,
+        tenantId,
         postId: post1.id,
       },
     });
@@ -127,7 +128,7 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
     // Set first board as root page
     await prisma.tenantSettings.update({
       where: {
-        tenantId: tenant.id,
+        tenantId,
       },
       data: {
         rootBoardId: featureBoard.id,

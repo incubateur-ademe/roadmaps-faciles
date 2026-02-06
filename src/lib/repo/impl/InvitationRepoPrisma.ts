@@ -15,4 +15,12 @@ export class InvitationRepoPrisma implements IInvitationRepo {
   public create(data: Prisma.InvitationUncheckedCreateInput): Promise<Invitation> {
     return prisma.invitation.create({ data });
   }
+
+  public findAllForTenant(tenantId: number): Promise<Invitation[]> {
+    return prisma.invitation.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+  }
+
+  public async delete(id: number): Promise<void> {
+    await prisma.invitation.delete({ where: { id } });
+  }
 }

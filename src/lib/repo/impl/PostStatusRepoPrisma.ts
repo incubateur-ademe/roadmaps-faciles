@@ -22,4 +22,18 @@ export class PostStatusRepoPrisma implements IPostStatusRepo {
       orderBy: { order: "asc" },
     });
   }
+
+  public update(id: number, data: Prisma.PostStatusUncheckedUpdateInput): Promise<PostStatus> {
+    return prisma.postStatus.update({ where: { id }, data });
+  }
+
+  public async delete(id: number): Promise<void> {
+    await prisma.postStatus.delete({ where: { id } });
+  }
+
+  public async reorder(items: Array<{ id: number; order: number }>): Promise<void> {
+    await prisma.$transaction(
+      items.map(item => prisma.postStatus.update({ where: { id: item.id }, data: { order: item.order } })),
+    );
+  }
 }

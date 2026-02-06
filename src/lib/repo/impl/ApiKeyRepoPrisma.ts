@@ -19,4 +19,8 @@ export class ApiKeyRepoPrisma implements IApiKeyRepo {
   public async delete(id: number): Promise<void> {
     await prisma.apiKey.delete({ where: { id } });
   }
+
+  public findAllForTenant(tenantId: number): Promise<ApiKey[]> {
+    return prisma.apiKey.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
+  }
 }
