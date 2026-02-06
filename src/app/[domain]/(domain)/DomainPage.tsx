@@ -1,5 +1,4 @@
 import { type ReactElement } from "react";
-import { type EmptyObject } from "react-hook-form";
 
 import { type Tenant } from "@/lib/model/Tenant";
 import { type TenantSettings } from "@/lib/model/TenantSettings";
@@ -7,8 +6,10 @@ import { tenantSettingsRepo } from "@/lib/repo";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
+import { getTenantFromDomain } from "@/utils/tenant";
+import { type EmptyObject } from "@/utils/types";
 
-import { type DomainProps, getTenantFromDomain } from "./getTenantFromDomainParam";
+import { type DomainProps } from "./layout";
 
 type DomainRootPageOptions = {
   withSettings?: boolean;

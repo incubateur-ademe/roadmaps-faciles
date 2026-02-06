@@ -2,7 +2,7 @@ import "server-only";
 import { type Session } from "next-auth";
 import { forbidden } from "next/navigation";
 
-import { getTenantFromDomain } from "@/app/[domain]/(domain)/getTenantFromDomainParam";
+import { getTenantFromDomain } from "@/utils/tenant";
 import { UserRole, type UserStatus } from "@/prisma/enums";
 
 import { auth } from "../next-auth/auth";

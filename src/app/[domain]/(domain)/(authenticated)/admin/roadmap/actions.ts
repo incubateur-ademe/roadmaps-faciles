@@ -5,13 +5,10 @@ import { revalidatePath } from "next/cache";
 import { tenantSettingsRepo } from "@/lib/repo";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const saveRoadmapSettings = async (
-  data: { rootBoardId: null | number },
-  domain: string,
-): Promise<ServerActionResponse> => {
+export const saveRoadmapSettings = async (data: { rootBoardId: null | number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 

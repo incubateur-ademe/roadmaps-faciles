@@ -8,13 +8,10 @@ import { CreateWebhook } from "@/useCases/webhooks/CreateWebhook";
 import { DeleteWebhook } from "@/useCases/webhooks/DeleteWebhook";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const createWebhook = async (
-  data: { event: string; url: string },
-  domain: string,
-): Promise<ServerActionResponse<Webhook>> => {
+export const createWebhook = async (data: { event: string; url: string }): Promise<ServerActionResponse<Webhook>> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
@@ -28,7 +25,8 @@ export const createWebhook = async (
   }
 };
 
-export const deleteWebhook = async (data: { id: number }, domain: string): Promise<ServerActionResponse> => {
+export const deleteWebhook = async (data: { id: number }): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
   try {

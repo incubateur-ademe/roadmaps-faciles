@@ -6,16 +6,13 @@ import { tenantSettingsRepo } from "@/lib/repo";
 import { type EmailRegistrationPolicy } from "@/prisma/enums";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
-import { getTenantFromDomain } from "../../../getTenantFromDomainParam";
-
-export const saveAuthenticationSettings = async (
-  data: {
-    allowedEmailDomains: string[];
-    emailRegistrationPolicy: EmailRegistrationPolicy;
-  },
-  domain: string,
-): Promise<ServerActionResponse> => {
+export const saveAuthenticationSettings = async (data: {
+  allowedEmailDomains: string[];
+  emailRegistrationPolicy: EmailRegistrationPolicy;
+}): Promise<ServerActionResponse> => {
+  const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 

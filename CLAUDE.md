@@ -32,6 +32,10 @@
 
 ## Architecture
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
+  - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
+  - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
+  - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
+  - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Caching: Redis via ioredis + unstorage
