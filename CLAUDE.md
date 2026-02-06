@@ -22,10 +22,13 @@
 ## Code conventions
 - ESLint 9 flat config (`eslint.config.ts`) — strict rules enforced:
   - No default exports except Next.js special files (page, layout, error, loading, template, route, metadata)
-  - Imports must be sorted (perfectionist plugin)
+  - Imports must be sorted (perfectionist plugin) — group external/internal with blank line between
+  - Array types: use `Array<{...}>` for complex types, not `T[]`
 - Path aliases (tsconfig): `@/*` → `src/*`, `@/utils/*` → `src/lib/utils/*`, `@/prisma/*` → `src/generated/prisma/*`
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
+  - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
+- TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
@@ -37,3 +40,6 @@
 ## Gotchas
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing
 - Zod 4 is used (not v3) — API differs slightly
+- Next.js 16 `cacheComponents: true` is incompatible with route config exports (`dynamic`, `revalidate`, etc.) — use `await connection()` from `next/server` in pages instead
+- Circular Zod schemas: use `z.lazy(() => Schema)` to avoid initialization errors
+- Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering
