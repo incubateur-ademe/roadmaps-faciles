@@ -13,17 +13,21 @@
 - `pnpm lint` — runs `next typegen && eslint`
 - `pnpm prisma db seed` — seed dev database
 - `pnpm prisma:studio` — open Prisma Studio (embedded in admin UI)
+- `pnpm prisma:reset` — reset database and re-seed
+- `pnpm export` — export standalone build
 
 ## Local services (docker-compose)
 - PostgreSQL 15 → `localhost:5432` (db: roadmaps-faciles, user/pass: postgres/postgres)
 - Redis → `localhost:6379`
 - Maildev SMTP → `localhost:1025` (web UI: localhost:1080)
+- Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
 - ESLint 9 flat config (`eslint.config.ts`) — strict rules enforced:
   - No default exports except Next.js special files (page, layout, error, loading, template, route, metadata)
   - Imports must be sorted (perfectionist plugin) — group external/internal with blank line between
   - Array types: use `Array<{...}>` for complex types, not `T[]`
+  - Union/intersection types are auto-sorted alphabetically (`null | string`, not `string | null`)
 - Path aliases (tsconfig): `@/*` → `src/*`, `@/utils/*` → `src/lib/utils/*`, `@/prisma/*` → `src/generated/prisma/*`
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
   - Always prefer `react-dsfr` components (`Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, etc.) over raw DSFR CSS classes
@@ -43,6 +47,9 @@
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
+
+## Testing
+- No test framework configured — no unit/integration/e2e tests in the project currently
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
