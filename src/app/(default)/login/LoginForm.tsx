@@ -10,13 +10,14 @@ import { signIn } from "@/lib/next-auth/auth";
 import { isRedirectError, type NextError } from "@/utils/next";
 
 export interface LoginFormProps {
+  defaultEmail?: string;
   domain?: string;
   loginWithEmail?: boolean;
 }
 
 const loginValueKey = "login";
 
-export const LoginForm = ({ loginWithEmail }: LoginFormProps) => {
+export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
   return (
     <form
       action={async data => {
@@ -56,6 +57,7 @@ export const LoginForm = ({ loginWithEmail }: LoginFormProps) => {
                 type: "email",
                 required: true,
                 name: loginValueKey,
+                defaultValue: defaultEmail,
               }}
             />
           ) : (

@@ -60,6 +60,15 @@ export async function sendComment({
     };
   }
 
+  const settings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { allowComments: true },
+  });
+
+  if (!settings?.allowComments) {
+    return { ok: false, error: "Les commentaires sont désactivés." };
+  }
+
   try {
     const newComment = await prisma.comment.create({
       data: {

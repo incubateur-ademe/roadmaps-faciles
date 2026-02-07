@@ -20,9 +20,6 @@ const formSchema = z.object({
   allowAnonymousFeedback: z.boolean(),
   allowPostEdits: z.boolean(),
   showRoadmapInHeader: z.boolean(),
-  collapsedBoards: z.boolean(),
-  showVoteCount: z.boolean(),
-  showVoteButton: z.boolean(),
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
@@ -31,7 +28,22 @@ const formSchema = z.object({
 
 type FormType = z.infer<typeof formSchema>;
 
-const SECTIONS = [
+type BooleanFormKeys = { [K in keyof FormType]: FormType[K] extends boolean ? K : never }[keyof FormType];
+
+interface SectionToggle {
+  disabled?: boolean;
+  helperText: string;
+  label: string;
+  name: BooleanFormKeys;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  toggles: SectionToggle[];
+}
+
+const SECTIONS: Section[] = [
   {
     id: "privacy",
     title: "Confidentialité",
@@ -51,7 +63,8 @@ const SECTIONS = [
       {
         name: "useBrowserLocale",
         label: "Utiliser la locale du navigateur",
-        helperText: "La langue est automatiquement détectée selon les préférences du navigateur",
+        helperText: "Fonctionnalité à venir",
+        disabled: true,
       },
     ],
   },
@@ -75,11 +88,6 @@ const SECTIONS = [
         label: "Feuille de route dans l'en-tête",
         helperText: "Un lien vers la roadmap apparaît dans la navigation principale",
       },
-      {
-        name: "collapsedBoards",
-        label: "Boards réduits par défaut",
-        helperText: "Les boards sont affichés sous forme de liste compacte sur la page d'accueil",
-      },
     ],
   },
   {
@@ -87,16 +95,6 @@ const SECTIONS = [
     title: "Visibilité",
     toggles: [
       { name: "allowVoting", label: "Vote autorisé", helperText: "Les utilisateurs peuvent voter sur les posts" },
-      {
-        name: "showVoteButton",
-        label: "Bouton vote affiché",
-        helperText: "Le bouton vote est visible sur chaque post",
-      },
-      {
-        name: "showVoteCount",
-        label: "Nombre de votes affiché",
-        helperText: "Le compteur de votes est visible sur chaque post",
-      },
       {
         name: "allowComments",
         label: "Commentaires autorisés",
@@ -109,9 +107,7 @@ const SECTIONS = [
       },
     ],
   },
-] as const;
-
-type _ToggleName = (typeof SECTIONS)[number]["toggles"][number]["name"];
+];
 
 interface GeneralFormProps {
   tenantSettings: TenantSettings;
@@ -126,6 +122,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
     watch,
     setValue,
     handleSubmit,
+    reset,
     formState: { isDirty },
   } = useForm<FormType>({
     mode: "onChange",
@@ -136,9 +133,6 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
       allowAnonymousFeedback: tenantSettings.allowAnonymousFeedback,
       allowPostEdits: tenantSettings.allowPostEdits,
       showRoadmapInHeader: tenantSettings.showRoadmapInHeader,
-      collapsedBoards: tenantSettings.collapsedBoards,
-      showVoteCount: tenantSettings.showVoteCount,
-      showVoteButton: tenantSettings.showVoteButton,
       allowVoting: tenantSettings.allowVoting,
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
@@ -153,6 +147,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
     if (!response.ok) {
       setSaveError(response.error);
     } else {
+      reset(data);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 5000);
     }
@@ -167,6 +162,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
           label: item.label,
           helperText: item.helperText,
           checked: watch(item.name),
+          disabled: item.disabled ?? false,
           onChange: (checked: boolean) => setValue(item.name, checked, { shouldDirty: true }),
         }));
 

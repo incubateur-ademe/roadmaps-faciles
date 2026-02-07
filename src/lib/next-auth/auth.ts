@@ -116,23 +116,37 @@ const {
       },
       async signIn(params) {
         if (params.account?.provider === "nodemailer" && params.email?.verificationRequest) {
-          // should not missing email or tenantSettings here
+          // Phase 1: User entered email — decide if we send the verification email
           if (!params.user.email || !tenantSettings || !tenant) {
             return false;
           }
           const [possibleUsername, emailDomain] = params.user.email.split("@");
-          // check if domain is allowed for this tenant
           if (!emailDomain) {
             return false;
           }
 
-          const isAllowedDomain =
-            tenantSettings.allowedEmailDomains.includes(emailDomain) ||
-            tenantSettings.allowedEmailDomains.includes("*") ||
-            tenantSettings.allowedEmailDomains.length === 0;
+          // Check for pending invitation — bypasses emailRegistrationPolicy
+          const pendingInvitation = await prisma.invitation.findFirst({
+            where: { email: params.user.email, tenantId: tenant.id, acceptedAt: null },
+          });
 
-          if (!isAllowedDomain) {
-            return false;
+          if (!pendingInvitation) {
+            // No invitation — apply emailRegistrationPolicy
+            if (tenantSettings.emailRegistrationPolicy === "NOONE") {
+              return false;
+            }
+
+            if (tenantSettings.emailRegistrationPolicy === "DOMAINS") {
+              const isAllowedDomain =
+                tenantSettings.allowedEmailDomains.includes(emailDomain) ||
+                tenantSettings.allowedEmailDomains.includes("*") ||
+                tenantSettings.allowedEmailDomains.length === 0;
+
+              if (!isAllowedDomain) {
+                return false;
+              }
+            }
+            // ANYONE — falls through
           }
 
           if (params.user.email?.endsWith("@beta.gouv.fr") || params.user.email?.endsWith("@ext.beta.gouv.fr")) {
@@ -180,6 +194,35 @@ const {
             }
           }
         }
+
+        // Phase 2: Magic link clicked — handle invitation acceptance
+        if (params.account?.provider === "nodemailer" && !params.email?.verificationRequest && tenant) {
+          const email = params.user.email;
+          if (email) {
+            // Use updateMany to atomically mark as accepted (prevents race condition)
+            const updated = await prisma.invitation.updateMany({
+              where: { email, tenantId: tenant.id, acceptedAt: null },
+              data: { acceptedAt: new Date() },
+            });
+
+            if (updated.count > 0) {
+              // Create UserOnTenant membership if not exists
+              const userId = params.user.id;
+              if (userId) {
+                const existingMembership = await userOnTenantRepo.findMembership(userId, tenant.id);
+                if (!existingMembership) {
+                  await userOnTenantRepo.create({
+                    userId,
+                    tenantId: tenant.id,
+                    role: "USER",
+                    status: "ACTIVE",
+                  });
+                }
+              }
+            }
+          }
+        }
+
         return true;
       },
       async jwt({ token, trigger, espaceMembreMember }) {

@@ -1,9 +1,8 @@
 import { DomainPageHOP } from "../../../DomainPage";
 import { AuthenticationForm } from "./AuthenticationForm";
 
-const AuthenticationAdminPage = DomainPageHOP({ withSettings: true })(props => {
+const AuthenticationAdminPage = DomainPageHOP()(props => {
   const { settings } = props._data;
-  if (!settings) throw new Error("Settings not found");
 
   return (
     <div>

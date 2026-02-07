@@ -38,7 +38,7 @@ git clone https://github.com/incubateur-ademe/roadmaps-faciles.git
 cd roadmaps-faciles
 
 # Installer deps
-yarn install
+pnpm install
 ```
 
 ### docker-compose (optionnel)
@@ -63,13 +63,13 @@ Créer `.env.development.local` à partir de `.env.development` et renseigner si
 
 ```bash
 # Générer Prisma Client
-yarn prisma generate
+pnpm prisma generate
 
 # Appliquer le schéma
-yarn prisma migrate dev
+pnpm prisma migrate dev
 
 # (optionnel) Seed
-yarn seed
+pnpm seed
 ```
 
 ---
@@ -88,7 +88,7 @@ Pour y accéder en local, ajouter dans `/etc/hosts` :
 ### Lancer en dev
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 L’application est servie sur **http://localhost:3000** pour le site principal, et **http://default.localhost:3000** pour le tenant `default`.
@@ -98,13 +98,13 @@ L’application est servie sur **http://localhost:3000** pour le site principal,
 ## ⚙️ Scripts utiles
 
 ```bash
-yarn lint                       # ESLint + format
-yarn generateEnvDeclaration     # Générer env.d.ts à partir de .env.development
+pnpm lint                       # ESLint + format
+pnpm generateEnvDeclaration     # Générer env.d.ts à partir de .env.development
 
 # Prisma
-yarn prisma:studio              # Prisma Studio (http://localhost:5555/)
-yarn prisma:reset               # Reset DB (migrations, pas de seed)
-yarn run-script xx.ts           # Permet d'exécuter un script TS présent dans /scripts/xx.ts
+pnpm prisma:studio              # Prisma Studio (http://localhost:5555/)
+pnpm prisma:reset               # Reset DB (migrations, pas de seed)
+pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans /scripts/xx.ts
 ```
 
 ---
