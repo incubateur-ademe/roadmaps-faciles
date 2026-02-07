@@ -2,28 +2,52 @@
 
 import SideMenu, { type SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/dsfr";
+
+const GENERAL_SECTION_IDS = ["privacy", "localization", "moderation", "header", "visibility"];
 
 export const AdminSideMenu = () => {
   const pathname = usePathname();
   const [activeSection, setActiveSection] = useState<null | string>(null);
+  const visibleSections = useRef(new Set<string>());
 
   // Extract the current admin page from pathname (e.g., /admin/general -> general)
   const currentPage = pathname.split("/admin/")[1]?.split("#")[0] || "general";
 
-  // Handle hash changes for section navigation
+  // Track visible sections with IntersectionObserver
   useEffect(() => {
-    const updateActiveSection = () => {
-      const hash = window.location.hash.slice(1);
-      setActiveSection(hash || null);
-    };
+    if (currentPage !== "general") return;
 
-    updateActiveSection();
-    window.addEventListener("hashchange", updateActiveSection);
-    return () => window.removeEventListener("hashchange", updateActiveSection);
-  }, []);
+    const elements = GENERAL_SECTION_IDS.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (elements.length === 0) return;
+
+    visibleSections.current.clear();
+
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visibleSections.current.add(entry.target.id);
+          } else {
+            visibleSections.current.delete(entry.target.id);
+          }
+        }
+
+        // Pick the topmost visible section (by DOM order)
+        const topmost = GENERAL_SECTION_IDS.find(id => visibleSections.current.has(id));
+        setActiveSection(topmost ?? null);
+      },
+      { rootMargin: "-10% 0px -60% 0px" },
+    );
+
+    for (const el of elements) observer.observe(el);
+    return () => observer.disconnect();
+  }, [currentPage]);
+
+  // Only relevant when on the general page
+  const currentSection = currentPage === "general" ? activeSection : null;
 
   // Define menu structure with dynamic active states
   const menuItems: SideMenuProps.Item[] = [
@@ -31,32 +55,32 @@ export const AdminSideMenu = () => {
       text: "Général",
       linkProps: { href: `/admin/general` },
       isActive: currentPage === "general",
-      expandedByDefault: activeSection !== null,
+      expandedByDefault: currentPage === "general",
       items: [
         {
           linkProps: { href: `/admin/general#privacy` },
           text: "Confidentialité",
-          isActive: currentPage === "general" && activeSection === "privacy",
+          isActive: currentPage === "general" && currentSection === "privacy",
         },
         {
           linkProps: { href: `/admin/general#localization` },
           text: "Localisation",
-          isActive: currentPage === "general" && activeSection === "localization",
+          isActive: currentPage === "general" && currentSection === "localization",
         },
         {
           linkProps: { href: `/admin/general#moderation` },
           text: "Modération",
-          isActive: currentPage === "general" && activeSection === "moderation",
+          isActive: currentPage === "general" && currentSection === "moderation",
         },
         {
           linkProps: { href: `/admin/general#header` },
           text: "En-tête",
-          isActive: currentPage === "general" && activeSection === "header",
+          isActive: currentPage === "general" && currentSection === "header",
         },
         {
           linkProps: { href: `/admin/general#visibility` },
           text: "Visibilité",
-          isActive: currentPage === "general" && activeSection === "visibility",
+          isActive: currentPage === "general" && currentSection === "visibility",
         },
       ],
     },
