@@ -7,7 +7,7 @@ const AdminGeneralPage = DomainPageHOP()(props => {
   const { settings } = props._data;
 
   return (
-    <Container fluid>
+    <Container fluid className="!overflow-visible">
       <GeneralForm tenantSettings={settings} />
     </Container>
   );
