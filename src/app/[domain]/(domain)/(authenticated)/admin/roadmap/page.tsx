@@ -4,9 +4,8 @@ import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
 import { DomainPageHOP } from "../../../DomainPage";
 import { RoadmapForm } from "./RoadmapForm";
 
-const RoadmapAdminPage = DomainPageHOP({ withSettings: true })(async props => {
+const RoadmapAdminPage = DomainPageHOP()(async props => {
   const { tenant, settings } = props._data;
-  if (!settings) throw new Error("Settings not found");
 
   const useCase = new ListBoardsForTenant(boardRepo);
   const boards = await useCase.execute({ tenantId: tenant.id });

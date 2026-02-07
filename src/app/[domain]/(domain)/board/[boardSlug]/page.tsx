@@ -11,6 +11,7 @@ import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
+import { assertPublicAccess } from "@/utils/auth";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
@@ -34,6 +35,8 @@ const BoardPage = withValidation({
 })(async ({ searchParams, searchParamsError, ...rest }) => {
   const { _data, params } = rest as DomainPageCombinedProps<BoardPageParams>;
   const { order, search } = await searchParams;
+
+  await assertPublicAccess(_data.settings, _data.dirtyDomainFixer("/login"));
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
   const { boardSlug } = await params;
@@ -66,27 +69,31 @@ const BoardPage = withValidation({
   // Fetch posts after we have board.id
   const { posts, filteredCount } = await fetchPostsForBoard(1, validatedOrder, board.id, search);
 
+  const showSuggestionForm = _data.settings.allowAnonymousFeedback || !!session;
+
   return (
     <DsfrPage>
       <Container my="2w">
         <Grid haveGutters className={style.board}>
-          <GridCol base={3} className={cx("sticky self-start top-[0]", style.sidebar)}>
-            <div>
-              <form className={cx(fr.cx("fr-py-2w"), "flex flex-col gap-[1rem]", style.suggestionForm)}>
-                <h3 className={fr.cx("fr-text--lg", "fr-mb-0")}>Soumettre une suggestion</h3>
-                <Input label="Titre" />
-                <Input
-                  label="Description"
-                  textArea
-                  classes={{
-                    nativeInputOrTextArea: "resize-y",
-                  }}
-                />
-                <Button className="place-self-end">Valider</Button>
-              </form>
-            </div>
-          </GridCol>
-          <GridCol base={9}>
+          {showSuggestionForm && (
+            <GridCol base={3} className={cx("sticky self-start top-[0]", style.sidebar)}>
+              <div>
+                <form className={cx(fr.cx("fr-py-2w"), "flex flex-col gap-[1rem]", style.suggestionForm)}>
+                  <h3 className={fr.cx("fr-text--lg", "fr-mb-0")}>Soumettre une suggestion</h3>
+                  <Input label="Titre" />
+                  <Input
+                    label="Description"
+                    textArea
+                    classes={{
+                      nativeInputOrTextArea: "resize-y",
+                    }}
+                  />
+                  <Button className="place-self-end">Valider</Button>
+                </form>
+              </div>
+            </GridCol>
+          )}
+          <GridCol base={showSuggestionForm ? 9 : 12}>
             <Grid className={cx("sticky self-start top-[0] z-[501]", style.header)}>
               <GridCol base={8} className={style.title} pr="1w">
                 <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>{board.name}</h1>
@@ -109,6 +116,8 @@ const BoardPage = withValidation({
             <ClientAnimate className={cx("flex flex-col gap-[1rem]", style.postList)}>
               <PostList
                 key={`postList_${board.id}`}
+                allowAnonymousVoting={_data.settings.allowAnonymousVoting}
+                allowVoting={_data.settings.allowVoting}
                 anonymousId={anonymousId}
                 initialPosts={posts as EnrichedPost[]}
                 totalCount={filteredCount}
@@ -126,6 +135,4 @@ const BoardPage = withValidation({
   );
 });
 
-export default DomainPageHOP({
-  withSettings: true,
-})(BoardPage);
+export default DomainPageHOP()(BoardPage);

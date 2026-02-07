@@ -4,6 +4,8 @@ import SideMenu, { type SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Container } from "@/dsfr";
+
 export const AdminSideMenu = () => {
   const pathname = usePathname();
   const [activeSection, setActiveSection] = useState<null | string>(null);
@@ -29,7 +31,7 @@ export const AdminSideMenu = () => {
       text: "Général",
       linkProps: { href: `/admin/general` },
       isActive: currentPage === "general",
-      expandedByDefault: currentPage === "general",
+      expandedByDefault: activeSection !== null,
       items: [
         {
           linkProps: { href: `/admin/general#privacy` },
@@ -96,8 +98,8 @@ export const AdminSideMenu = () => {
   ];
 
   return (
-    <div style={{ position: "sticky", top: "1rem", alignSelf: "flex-start" }}>
+    <Container style={{ position: "sticky", top: "1rem" }}>
       <SideMenu burgerMenuButtonText="Administration" items={menuItems} />
-    </div>
+    </Container>
   );
 };

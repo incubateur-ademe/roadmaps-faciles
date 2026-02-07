@@ -313,10 +313,7 @@ model TenantSettings {
   allowAnonymousVoting    Boolean                 @default(true)
   allowPostEdits          Boolean                 @default(false)
   showRoadmapInHeader     Boolean                 @default(false)
-  collapsedBoards         Boolean                 @default(false)
   allowAnonymousFeedback  Boolean                 @default(true)
-  showVoteCount           Boolean                 @default(true)
-  showVoteButton          Boolean                 @default(true)
   emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
   allowedEmailDomains     String[]
   createdAt               DateTime                @default(now())

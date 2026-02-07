@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
+import { prisma } from "@/lib/db/prisma";
 import { likeRepo } from "@/lib/repo";
-import { LikePost, LikePostInput, type LikePostOutput } from "@/useCases/likes/LikePost";
+import { LikePost, type LikePostInput, LikePostInputBase, type LikePostOutput } from "@/useCases/likes/LikePost";
 import { UnlikePost, type UnlikePostOutput } from "@/useCases/likes/UnlikePost";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { type ServerActionResponse } from "@/utils/next";
@@ -12,7 +13,7 @@ import { type ServerActionResponse } from "@/utils/next";
 type LikePostResponse = ServerActionResponse<LikePostOutput | UnlikePostOutput>;
 
 export async function likePost(input: Partial<LikePostInput>, unlike?: boolean): Promise<LikePostResponse> {
-  const inputValidated = LikePostInput.omit({
+  const inputValidated = LikePostInputBase.omit({
     anonymousId: true,
   }).safeParse(input);
 
@@ -21,6 +22,22 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
       ok: false,
       error: z.prettifyError(inputValidated.error),
     };
+  }
+
+  const settings = await prisma.tenantSettings.findUnique({
+    where: { tenantId: inputValidated.data.tenantId },
+    select: { allowVoting: true, allowAnonymousVoting: true },
+  });
+
+  if (!unlike) {
+    if (!settings?.allowVoting) {
+      return { ok: false, error: "Le vote est désactivé." };
+    }
+
+    const isAnonymous = !inputValidated.data.userId;
+    if (isAnonymous && !settings.allowAnonymousVoting) {
+      return { ok: false, error: "Le vote anonyme est désactivé." };
+    }
   }
 
   try {

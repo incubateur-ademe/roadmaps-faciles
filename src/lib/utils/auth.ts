@@ -1,9 +1,10 @@
 import "server-only";
 import { type Session } from "next-auth";
-import { forbidden } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 
-import { getTenantFromDomain } from "@/utils/tenant";
+import { type TenantSettings } from "@/lib/model/TenantSettings";
 import { UserRole, type UserStatus } from "@/prisma/enums";
+import { getTenantFromDomain } from "@/utils/tenant";
 
 import { auth } from "../next-auth/auth";
 import { userOnTenantRepo, userRepo } from "../repo";
@@ -237,3 +238,15 @@ export const assertTenantAdmin = async (domain: string, useForbidden = true): Pr
  */
 export const assertAdmin = async (useForbidden = true): Promise<Session> =>
   assertSession({ rootUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });
+
+/**
+ * Si le site est privé et l'utilisateur non connecté, redirige vers la page de login.
+ */
+export const assertPublicAccess = async (settings: TenantSettings, loginPath: string): Promise<void> => {
+  if (!settings.isPrivate) return;
+
+  const session = await auth();
+  if (!session?.user) {
+    redirect(loginPath);
+  }
+};

@@ -1,4 +1,4 @@
-import Header from "@codegouvfr/react-dsfr/Header";
+import Header, { type HeaderProps } from "@codegouvfr/react-dsfr/Header";
 import { notFound } from "next/navigation";
 
 import { Brand } from "@/components/Brand";
@@ -72,7 +72,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
           title: tenantSettings.name,
         }}
         serviceTitle={tenantSettings.name}
-        quickAccessItems={[<UserHeaderItem key="hqai-user" />].filter(Boolean)}
+        quickAccessItems={[<UserHeaderItem key="hqai-user" />] as HeaderProps.QuickAccessItem[]}
       />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}

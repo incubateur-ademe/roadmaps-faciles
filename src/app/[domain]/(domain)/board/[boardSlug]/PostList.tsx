@@ -15,6 +15,8 @@ import { type Order } from "./types";
 const MARKER = "-------";
 
 export interface PostListProps {
+  allowAnonymousVoting?: boolean;
+  allowVoting?: boolean;
   anonymousId: string;
   boardId: number;
   boardSlug: string;
@@ -26,6 +28,8 @@ export interface PostListProps {
 }
 
 export const PostList = ({
+  allowAnonymousVoting,
+  allowVoting,
   initialPosts,
   totalCount,
   userId,
@@ -81,6 +85,8 @@ export const PostList = ({
               description: description || null,
             }}
             alreadyLiked={alreadyLiked}
+            allowAnonymousVoting={allowAnonymousVoting}
+            allowVoting={allowVoting}
             userId={userId}
             boardSlug={boardSlug}
             dirtyDomainFixer={dirtyDomainFixer}

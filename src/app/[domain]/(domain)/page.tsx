@@ -7,12 +7,10 @@ import BoardPage from "./board/[boardSlug]/page";
 import { DomainPageHOP } from "./DomainPage";
 import RoadmapPage from "./roadmap/page";
 
-const DomainRootPage = DomainPageHOP({
-  withSettings: true,
-})(async props => {
+const DomainRootPage = DomainPageHOP()(async props => {
   const settings = props._data.settings;
 
-  if (settings?.rootBoardId) {
+  if (settings.rootBoardId) {
     const useCase = new GetBoardSlug(boardRepo);
     try {
       const { slug } = await useCase.execute(settings.rootBoardId);

@@ -30,6 +30,7 @@ export const Post = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   approvalStatus: postApprovalStatusEnum,
+  tags: z.string().array(),
 });
 
 export type Post = z.infer<typeof Post>;

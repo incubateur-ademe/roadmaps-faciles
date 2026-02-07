@@ -20,7 +20,9 @@ export const DomainNavigation = ({ boards, tenantSettings }: DomainNavigationPro
   return (
     <MainNavigation
       items={[
-        { text: "Roadmap", linkProps: { href: dirtyDomainFixer("/roadmap") }, isActive: segment === "roadmap" },
+        ...(tenantSettings.showRoadmapInHeader
+          ? [{ text: "Roadmap", linkProps: { href: dirtyDomainFixer("/roadmap") }, isActive: segment === "roadmap" }]
+          : []),
         ...boards.map<MainNavigationProps.Item>(board => ({
           text: board.name,
           linkProps: { href: dirtyDomainFixer(`/board/${board.slug}`) },

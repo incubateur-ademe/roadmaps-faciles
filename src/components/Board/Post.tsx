@@ -13,6 +13,8 @@ import { type EnrichedPost } from "@/app/[domain]/(domain)/board/[boardSlug]/act
 import { LikeButton } from "./LikeButton";
 
 export interface BoardPostProps {
+  allowAnonymousVoting?: boolean;
+  allowVoting?: boolean;
   alreadyLiked: boolean;
   boardSlug: string;
   dirtyDomainFixer: (pathname: string) => string;
@@ -21,7 +23,15 @@ export interface BoardPostProps {
   userId?: string;
 }
 
-export const BoardPost = ({ post, alreadyLiked, userId, first, dirtyDomainFixer }: BoardPostProps) => {
+export const BoardPost = ({
+  post,
+  alreadyLiked,
+  allowAnonymousVoting = true,
+  allowVoting = true,
+  userId,
+  first,
+  dirtyDomainFixer,
+}: BoardPostProps) => {
   const { isDark } = useIsDark();
   return (
     <Card
@@ -72,9 +82,11 @@ export const BoardPost = ({ post, alreadyLiked, userId, first, dirtyDomainFixer 
       }
       desc={
         <span className="flex gap-[.5rem] items-center">
-          <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={userId}>
-            {post._count.likes}
-          </LikeButton>
+          {allowVoting && (allowAnonymousVoting || userId) && (
+            <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={userId}>
+              {post._count.likes}
+            </LikeButton>
+          )}
           <span className="line-clamp-3">
             {post.description && (
               <MarkdownHooks

@@ -11,15 +11,17 @@ import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
+import { assertPublicAccess } from "@/utils/auth";
 
 import { DomainPageHOP } from "../DomainPage";
 
-const RoadmapPage = DomainPageHOP({ withSettings: true })(async props => {
-  const tenant = props._data.tenant;
-  const dirtyDomainFixer = props._data.dirtyDomainFixer;
+const RoadmapPage = DomainPageHOP()(async props => {
+  const { tenant, settings, dirtyDomainFixer } = props._data;
+  await assertPublicAccess(settings, dirtyDomainFixer("/login"));
   const anonymousId = await getAnonymousId();
   const session = await auth();
   const userId = session?.user.id;
+  const showVotes = settings.allowVoting && (settings.allowAnonymousVoting || !!userId);
 
   const postStatuses = await prisma.postStatus.findMany({
     where: {
@@ -103,17 +105,19 @@ const RoadmapPage = DomainPageHOP({ withSettings: true })(async props => {
                       size="small"
                       horizontal
                       start={
-                        <LikeButton
-                          postId={post.id}
-                          tenantId={tenant.id}
-                          size="small"
-                          userId={userId}
-                          alreadyLiked={post.likes.some(
-                            like => userId === like.userId || like.anonymousId === anonymousId,
-                          )}
-                        >
-                          {post._count.likes}
-                        </LikeButton>
+                        showVotes ? (
+                          <LikeButton
+                            postId={post.id}
+                            tenantId={tenant.id}
+                            size="small"
+                            userId={userId}
+                            alreadyLiked={post.likes.some(
+                              like => userId === like.userId || like.anonymousId === anonymousId,
+                            )}
+                          >
+                            {post._count.likes}
+                          </LikeButton>
+                        ) : undefined
                       }
                       endDetail={
                         <Tag as="span" small>
