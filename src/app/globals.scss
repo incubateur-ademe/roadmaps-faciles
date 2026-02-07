@@ -39,6 +39,16 @@ code:hover {
 /* === */
 
 /* === based on dsfr === */
+
+/* Fix: DSFR collapse initial state with React.
+ * DSFR JS (window.dsfr.start()) may not have initialized yet when React renders
+ * aria-expanded="true". This CSS forces the collapse open until DSFR JS takes over
+ * (adds fr-collapse--expanded), then this rule stops matching. */
+.fr-sidemenu [aria-expanded="true"] + .fr-collapse:not(.fr-collapse--expanded):not(.fr-collapsing) {
+    --collapse-max-height: none;
+    visibility: visible;
+}
+
 /* typo */
 .text-dsfr-neutral {
     color: var(--text-default-grey);
