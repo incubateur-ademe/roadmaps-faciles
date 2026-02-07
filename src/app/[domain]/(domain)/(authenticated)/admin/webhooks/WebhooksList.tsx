@@ -2,6 +2,7 @@
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
@@ -64,7 +65,11 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
               children: <code className={fr.cx("fr-text--sm")}>{webhook.url}</code>,
             },
             {
-              children: <span className={fr.cx("fr-badge", "fr-badge--sm")}>{webhook.event}</span>,
+              children: (
+                <Badge as="span" small noIcon>
+                  {webhook.event}
+                </Badge>
+              ),
             },
             { children: dateFormatter.format(new Date(webhook.createdAt)) },
             {

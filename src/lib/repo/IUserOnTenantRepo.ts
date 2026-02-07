@@ -9,7 +9,9 @@ export interface UserOnTenantWithUser extends UserOnTenant {
 
 export interface IUserOnTenantRepo {
   create(data: Prisma.UserOnTenantUncheckedCreateInput): Promise<UserOnTenant>;
+  delete(userId: string, tenantId: number): Promise<void>;
   findByTenantId(tenantId: number): Promise<UserOnTenantWithUser[]>;
   findByUserId(userId: string): Promise<UserOnTenantWithTenant[]>;
   findMembership(userId: string, tenantId: number): Promise<null | UserOnTenant>;
+  update(userId: string, tenantId: number, data: Prisma.UserOnTenantUncheckedUpdateInput): Promise<UserOnTenant>;
 }

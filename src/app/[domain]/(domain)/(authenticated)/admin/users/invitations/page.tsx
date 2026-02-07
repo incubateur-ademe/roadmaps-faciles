@@ -1,7 +1,7 @@
 import { invitationRepo } from "@/lib/repo";
 import { ListInvitationsForTenant } from "@/useCases/invitations/ListInvitationsForTenant";
 
-import { DomainPageHOP } from "../../../DomainPage";
+import { DomainPageHOP } from "../../../../DomainPage";
 import { InvitationsList } from "./InvitationsList";
 
 const InvitationsAdminPage = DomainPageHOP()(async props => {

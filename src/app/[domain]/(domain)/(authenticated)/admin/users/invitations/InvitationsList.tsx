@@ -2,6 +2,7 @@
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { useState } from "react";
@@ -73,9 +74,13 @@ export const InvitationsList = ({ invitations: initialInvitations }: Invitations
             { children: invitation.email },
             {
               children: invitation.acceptedAt ? (
-                <span className={fr.cx("fr-badge", "fr-badge--success")}>Acceptée</span>
+                <Badge as="span" noIcon severity="success">
+                  Acceptée
+                </Badge>
               ) : (
-                <span className={fr.cx("fr-badge", "fr-badge--info")}>En attente</span>
+                <Badge as="span" noIcon severity="info">
+                  En attente
+                </Badge>
               ),
             },
             { children: dateFormatter.format(new Date(invitation.createdAt)) },
