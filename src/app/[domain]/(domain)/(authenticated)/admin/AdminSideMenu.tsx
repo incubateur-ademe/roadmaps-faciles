@@ -86,9 +86,22 @@ export const AdminSideMenu = () => {
       isActive: currentPage === "webhooks",
     },
     {
-      text: "Invitations",
-      linkProps: { href: `/admin/invitations` },
-      isActive: currentPage === "invitations",
+      text: "Utilisateurs",
+      linkProps: { href: `/admin/users` },
+      isActive: currentPage.startsWith("users"),
+      expandedByDefault: currentPage.startsWith("users"),
+      items: [
+        {
+          text: "Membres",
+          linkProps: { href: `/admin/users` },
+          isActive: currentPage === "users",
+        },
+        {
+          text: "Invitations",
+          linkProps: { href: `/admin/users/invitations` },
+          isActive: currentPage === "users/invitations",
+        },
+      ],
     },
     {
       text: "API",

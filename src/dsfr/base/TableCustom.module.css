@@ -45,5 +45,11 @@
     padding: 1rem .5rem;
     font-size: 0.875rem;
     white-space: nowrap;
+    vertical-align: middle;
+}
+
+.colShrink {
+    width: 1%;
+    white-space: nowrap;
 }
 

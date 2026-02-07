@@ -26,7 +26,10 @@
   - Array types: use `Array<{...}>` for complex types, not `T[]`
 - Path aliases (tsconfig): `@/*` → `src/*`, `@/utils/*` → `src/lib/utils/*`, `@/prisma/*` → `src/generated/prisma/*`
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
+  - Always prefer `react-dsfr` components (`Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, etc.) over raw DSFR CSS classes
+  - Custom DSFR components in `src/dsfr/` (e.g., `Icon`, `TableCustom`) — check here before creating new wrappers
   - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
+  - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
@@ -40,6 +43,9 @@
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
+
+## Security
+- Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
 
 ## Gotchas
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing

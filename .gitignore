@@ -74,3 +74,4 @@ certificates
 /.claude.local/
 /.claude/**/*.local.json
 /next-env.d.ts
+.claude.local.md

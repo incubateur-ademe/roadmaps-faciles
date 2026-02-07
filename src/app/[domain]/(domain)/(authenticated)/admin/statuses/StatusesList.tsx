@@ -2,6 +2,7 @@
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
@@ -139,11 +140,13 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                   </div>
                   <div>
                     {status.showInRoadmap ? (
-                      <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--success")}>Affiché en roadmap</span>
+                      <Badge as="span" small noIcon severity="success">
+                        Affiché en roadmap
+                      </Badge>
                     ) : (
-                      <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--info")}>
+                      <Badge as="span" small noIcon severity="info">
                         Non affiché en roadmap
-                      </span>
+                      </Badge>
                     )}
                   </div>
                 </div>

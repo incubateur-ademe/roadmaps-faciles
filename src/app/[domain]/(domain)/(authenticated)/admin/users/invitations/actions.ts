@@ -23,7 +23,7 @@ export const sendInvitation = async (data: { email: string }): Promise<ServerAct
 
     const tenantUrl = `${config.host.split("//")[0]}//${settings.subdomain}.${config.rootDomain}`;
     const invitation = await useCase.execute({ tenantId: tenant.id, email: data.email, tenantUrl });
-    revalidatePath("/admin/invitations");
+    revalidatePath("/admin/users/invitations");
     return { ok: true, data: invitation };
   } catch (error) {
     return { ok: false, error: (error as Error).message };
@@ -37,7 +37,7 @@ export const revokeInvitation = async (data: { id: number }): Promise<ServerActi
   try {
     const useCase = new RevokeInvitation(invitationRepo);
     await useCase.execute(data);
-    revalidatePath("/admin/invitations");
+    revalidatePath("/admin/users/invitations");
     return { ok: true };
   } catch (error) {
     return { ok: false, error: (error as Error).message };
