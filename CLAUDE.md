@@ -35,6 +35,7 @@
   - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
+  - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
@@ -60,3 +61,6 @@
 - Next.js 16 `cacheComponents: true` is incompatible with route config exports (`dynamic`, `revalidate`, etc.) — use `await connection()` from `next/server` in pages instead
 - Circular Zod schemas: use `z.lazy(() => Schema)` to avoid initialization errors
 - Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering
+- DSFR `fr-container--fluid` has `overflow: hidden` — override with `!overflow-visible` (Tailwind `!important`) when content needs to scroll/overflow
+- DSFR `.fr-select-group:not(:last-child)` adds `margin-bottom: 1.5rem` — counter with `[&_.fr-select-group]:!mb-0` when using inline Select groups
+- Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)

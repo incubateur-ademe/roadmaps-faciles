@@ -6,18 +6,19 @@ import Badge, { type BadgeProps } from "@codegouvfr/react-dsfr/Badge";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "@/dsfr/base/Icon";
-import { TableCustom } from "@/dsfr/base/TableCustom";
+import { TableCustom, type TableCustomHeadColProps } from "@/dsfr/base/TableCustom";
 import tableStyle from "@/dsfr/base/TableCustom.module.css";
 import { type UserOnTenantWithUser } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole, UserStatus } from "@/prisma/enums";
 
 import { removeMember, updateMemberRole, updateMemberStatus } from "./actions";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50] as const;
+const DEFAULT_PAGE_SIZE = 10;
 
 interface MembersListProps {
   currentUserId: string;
@@ -63,7 +64,13 @@ const STATUS_WEIGHT: Record<UserStatus, number> = {
 const ASSIGNABLE_ROLES = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN] as const;
 type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
-type SortDirection = "asc" | "desc";
+const FILTERABLE_ROLES = [UserRole.OWNER, UserRole.ADMIN, UserRole.MODERATOR, UserRole.USER] as const;
+
+/** For INHERITED members, the effective role is the root (User) role. */
+const getEffectiveRole = (member: UserOnTenantWithUser): UserRole =>
+  member.role === UserRole.INHERITED ? member.user.role : member.role;
+
+type SortDirection = string & TableCustomHeadColProps["orderDirection"];
 type SortKey = "email" | "joinedAt" | "name" | "role" | "status";
 
 export const MembersList = ({ members: initialMembers, currentUserId }: MembersListProps) => {
@@ -74,6 +81,9 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<null | number>(DEFAULT_PAGE_SIZE);
+  const [filterRole, setFilterRole] = useState<null | UserRole>(null);
+  const [filterStatus, setFilterStatus] = useState<null | UserStatus>(null);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -85,8 +95,16 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
     setCurrentPage(1);
   };
 
+  const filteredMembers = useMemo(() => {
+    return members.filter(m => {
+      if (filterRole && getEffectiveRole(m) !== filterRole) return false;
+      if (filterStatus && m.status !== filterStatus) return false;
+      return true;
+    });
+  }, [members, filterRole, filterStatus]);
+
   const sortedMembers = useMemo(() => {
-    return [...members].sort((a, b) => {
+    return [...filteredMembers].sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
         case "name":
@@ -96,7 +114,7 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
           cmp = a.user.email.localeCompare(b.user.email);
           break;
         case "role":
-          cmp = ROLE_WEIGHT[a.role] - ROLE_WEIGHT[b.role];
+          cmp = ROLE_WEIGHT[getEffectiveRole(a)] - ROLE_WEIGHT[getEffectiveRole(b)];
           break;
         case "status":
           cmp = STATUS_WEIGHT[a.status] - STATUS_WEIGHT[b.status];
@@ -107,10 +125,12 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [members, sortKey, sortDir]);
+  }, [filteredMembers, sortKey, sortDir]);
 
-  const totalPages = Math.ceil(sortedMembers.length / PAGE_SIZE);
-  const paginatedMembers = sortedMembers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = pageSize ? Math.ceil(sortedMembers.length / pageSize) : 1;
+  const paginatedMembers = pageSize
+    ? sortedMembers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : sortedMembers;
 
   const copyTimeoutRef = useRef<null | ReturnType<typeof setTimeout>>(null);
 
@@ -168,10 +188,10 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
   const isOwner = (member: UserOnTenantWithUser) => member.role === UserRole.OWNER;
   const isSelf = (member: UserOnTenantWithUser) => member.userId === currentUserId;
 
-  const sortHeader = (label: string, key: SortKey) => ({
+  const sortHeader = (label: string, key: SortKey): TableCustomHeadColProps => ({
     children: label,
     onClick: () => toggleSort(key),
-    orderDirection: (sortKey === key && sortDir) as "asc" | "desc" | false,
+    orderDirection: sortKey === key && sortDir,
   });
 
   return (
@@ -187,7 +207,59 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
         />
       )}
 
-      <p className={fr.cx("fr-mb-2w")}>{members.length} membre(s)</p>
+      <div className={cx(fr.cx("fr-mb-2w"), "flex items-end justify-between flex-wrap gap-4")}>
+        <p className={fr.cx("fr-mb-1v")}>
+          {filteredMembers.length === members.length
+            ? `${members.length} membre(s)`
+            : `${filteredMembers.length} / ${members.length} membre(s)`}
+        </p>
+        <div className="flex items-end flex-wrap gap-4 [&_.fr-select-group]:!mb-0">
+          <Select
+            label="Rôle"
+            options={[
+              { value: "all", label: "Tous" },
+              ...FILTERABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
+            ]}
+            nativeSelectProps={{
+              value: filterRole ?? "all",
+              onChange: e => {
+                setFilterRole(e.target.value === "all" ? null : (e.target.value as UserRole));
+                setCurrentPage(1);
+              },
+            }}
+          />
+          <Select
+            label="Statut"
+            options={[
+              { value: "all", label: "Tous" },
+              ...Object.values(UserStatus).map(status => ({ value: status, label: STATUS_LABELS[status] })),
+            ]}
+            nativeSelectProps={{
+              value: filterStatus ?? "all",
+              onChange: e => {
+                setFilterStatus(e.target.value === "all" ? null : (e.target.value as UserStatus));
+                setCurrentPage(1);
+              },
+            }}
+          />
+          <Select
+            className="ml-auto"
+            label="Par page"
+            options={[
+              ...PAGE_SIZE_OPTIONS.map(size => ({ value: String(size), label: String(size) })),
+              { value: "all", label: "Tous" },
+            ]}
+            nativeSelectProps={{
+              value: pageSize ? String(pageSize) : "all",
+              onChange: e => {
+                const val = e.target.value;
+                setPageSize(val === "all" ? null : Number(val));
+                setCurrentPage(1);
+              },
+            }}
+          />
+        </div>
+      </div>
 
       {members.length > 0 ? (
         <>
@@ -209,25 +281,32 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
             body={paginatedMembers.map(member => [
               {
                 children: (
-                  <Tooltip title={member.userId}>
-                    <Icon
-                      icon={copiedId === member.userId ? "fr-icon-check-line" : "fr-icon-file-text-line"}
-                      onClick={() => handleCopyId(member.userId)}
-                      size="sm"
-                    />
-                  </Tooltip>
+                  <Icon
+                    icon={copiedId === member.userId ? "fr-icon-check-line" : "fr-icon-file-text-line"}
+                    onClick={() => handleCopyId(member.userId)}
+                    size="sm"
+                    title={member.userId}
+                  />
                 ),
               },
               { children: member.user.name ?? "—" },
               { children: member.user.email },
               {
                 children:
-                  isOwner(member) || isSelf(member) ? (
-                    <Badge as="span" small noIcon severity="info">
-                      {ROLE_LABELS[member.role]}
-                    </Badge>
+                  isOwner(member) || isSelf(member) || member.role === UserRole.INHERITED ? (
+                    <span className="flex items-center gap-2">
+                      <Badge as="span" small noIcon severity="info">
+                        {ROLE_LABELS[getEffectiveRole(member)]}
+                      </Badge>
+                      {member.role === UserRole.INHERITED && (
+                        <Badge as="span" small noIcon severity="new">
+                          Hérité
+                        </Badge>
+                      )}
+                    </span>
                   ) : (
                     <Select
+                      className="min-w-48"
                       label={<span className="sr-only">Rôle</span>}
                       options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
                       nativeSelectProps={{
@@ -250,21 +329,21 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
                 children:
                   isOwner(member) || isSelf(member) ? null : (
                     <ButtonsGroup
-                      inlineLayoutWhen="sm and up"
+                      inlineLayoutWhen="always"
                       buttonsSize="small"
-                      alignment="right"
+                      className="min-w-64"
                       buttons={[
                         {
-                          children: member.status === UserStatus.BLOCKED ? "Débloquer" : "Bloquer",
+                          children: "Retirer",
                           priority: "secondary",
                           disabled: loadingId === member.userId,
-                          onClick: () => void handleToggleStatus(member.userId, member.status),
+                          onClick: () => void handleRemove(member.userId),
                         },
                         {
-                          children: "Retirer",
-                          priority: "tertiary no outline",
+                          children: member.status === UserStatus.BLOCKED ? "Débloquer" : "Bloquer",
+                          priority: "tertiary",
                           disabled: loadingId === member.userId,
-                          onClick: () => void handleRemove(member.userId),
+                          onClick: () => void handleToggleStatus(member.userId, member.status),
                         },
                       ]}
                     />
@@ -272,19 +351,18 @@ export const MembersList = ({ members: initialMembers, currentUserId }: MembersL
               },
             ])}
           />
-          {totalPages > 1 && (
-            <Pagination
-              count={totalPages}
-              defaultPage={currentPage}
-              getPageLinkProps={page => ({
-                href: "#",
-                onClick: (e: React.MouseEvent) => {
-                  e.preventDefault();
-                  setCurrentPage(page);
-                },
-              })}
-            />
-          )}
+          <Pagination
+            className={fr.cx("fr-mt-2w")}
+            count={totalPages}
+            defaultPage={currentPage}
+            getPageLinkProps={page => ({
+              href: "#",
+              onClick: (e: React.MouseEvent) => {
+                e.preventDefault();
+                setCurrentPage(page);
+              },
+            })}
+          />
         </>
       ) : (
         <Alert severity="info" title="Aucun membre" description="Aucun membre dans ce tenant." small />

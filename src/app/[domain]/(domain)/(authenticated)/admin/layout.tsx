@@ -8,7 +8,7 @@ const TenantAdminLayout = async ({ children, params }: LayoutProps<"/[domain]/ad
   await assertTenantAdmin((await params).domain);
 
   return (
-    <Container m="4w" fluid>
+    <Container m="4w" fluid className="!overflow-visible">
       <Grid align="center" haveGutters>
         <GridCol md={2}>
           <AdminSideMenu />
