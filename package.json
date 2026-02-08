@@ -15,6 +15,7 @@
     "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && (cp src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client 2>/dev/null || true)",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
+    "prelint": "pnpm prisma generate",
     "lint": "next typegen && eslint",
     "export": "next export",
     "build:export": "yarn build && yarn export",
