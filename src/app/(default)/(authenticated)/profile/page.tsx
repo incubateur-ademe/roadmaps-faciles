@@ -2,6 +2,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Form from "next/form";
+import { connection } from "next/server";
 
 import { Container, FormFieldset, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
@@ -10,6 +11,7 @@ import { userRepo } from "@/lib/repo";
 import { PasswordCheck } from "./PasswordCheck";
 
 const ProfilePage = async (_: PageProps<"/[domain]/profile"> | PageProps<"/profile">) => {
+  await connection();
   const user = await userRepo.findByEmail("lilian.sagetlethias@beta.gouv.fr");
   console.log({ user });
   return (
