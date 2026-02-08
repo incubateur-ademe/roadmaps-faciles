@@ -22,3 +22,33 @@ Respecter les standards de l’État (DSFR) tout en gardant de la souplesse.
 
 ## Liens
 - Guidelines DSFR, composants.
+
+---
+
+## Mise à jour — 2026-02-08 (post PR #18)
+
+### react-dsfr comme couche principale
+
+L'ADR initial décrit l'usage des "classes `fr-*`" brutes. En pratique, la couche **react-dsfr** (`@codegouvfr/react-dsfr`) est devenue le point d'entrée principal pour les composants DSFR : `Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, `Alert`, `ToggleSwitch`, `SideMenu`, etc.
+
+Les classes `fr-*` brutes ne sont utilisées que pour le micro-layout ou les cas non couverts par react-dsfr.
+
+### Composants custom dans `src/dsfr/`
+
+Plusieurs composants custom ont été créés pour combler les manques :
+- `TableCustom` — tableau avec header/body typés, remplace les tables HTML et le composant react-dsfr `Table`
+- `Icon` — wrapper pour les icônes DSFR/Remix Icon
+- Composants de layout DSFR (`DsfrPage`, etc.)
+
+### Place de MUI réévaluée
+
+La mention "peu de besoin de composants custom grâce à MUI" n'est plus exacte. C'est react-dsfr qui couvre la majorité des besoins. MUI reste utilisé ponctuellement (timeline), mais n'est plus la solution de fallback principale.
+
+### Composition de classes
+
+Convention établie pour mixer DSFR et Tailwind :
+```tsx
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+className={cx(fr.cx("fr-mt-2w"), "tw-flex tw-gap-2")}
+```
+Jamais de template literals pour mixer les deux systèmes.
