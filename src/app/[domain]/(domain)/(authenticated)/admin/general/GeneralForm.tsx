@@ -3,6 +3,8 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { type ToggleSwitchProps } from "@codegouvfr/react-dsfr/ToggleSwitch";
+import { type ToggleSwitchGroupProps } from "@codegouvfr/react-dsfr/ToggleSwitchGroup";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -159,11 +161,11 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
       {SECTIONS.map(section => {
-        const toggles = section.toggles.map(item => ({
+        const toggles = section.toggles.map<ToggleSwitchProps.Controlled>(item => ({
           id: item.name,
           label: item.label,
           helperText: item.helperText,
-          checked: watchedValues[item.name],
+          checked: !!watchedValues[item.name],
           disabled: item.disabled ?? false,
           onChange: (checked: boolean) => setValue(item.name, checked, { shouldDirty: true }),
         }));
@@ -171,7 +173,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
         return (
           <section id={section.id} key={section.id} className={fr.cx("fr-mb-4w")}>
             <h3 className={fr.cx("fr-h3")}>{section.title}</h3>
-            <ToggleSwitchGroup toggles={toggles as [(typeof toggles)[0], ...typeof toggles]} />
+            <ToggleSwitchGroup toggles={toggles as ToggleSwitchGroupProps["toggles"]} />
           </section>
         );
       })}
