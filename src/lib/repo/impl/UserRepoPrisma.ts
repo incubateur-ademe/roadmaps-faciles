@@ -1,11 +1,19 @@
 import { prisma } from "@/lib/db/prisma";
 import { type Prisma, type User } from "@/prisma/client";
 
-import { type IUserRepo } from "../IUserRepo";
+import { type IUserRepo, type UserWithTenantCount } from "../IUserRepo";
 
 export class UserRepoPrisma implements IUserRepo {
   public findAll(): Promise<User[]> {
     return prisma.user.findMany();
+  }
+
+  public findAllWithTenantCount(): Promise<UserWithTenantCount[]> {
+    return prisma.user.findMany({
+      include: {
+        _count: { select: { memberships: true } },
+      },
+    });
   }
 
   public findById(id: string): Promise<null | User> {
