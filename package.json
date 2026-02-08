@@ -3,7 +3,7 @@
   "description": "Roadmaps et product feedbacks, facilement.",
   "version": "0.0.1",
   "private": true,
-  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264",
+  "packageManager": "pnpm@10.29.1+sha512.48dae233635a645768a3028d19545cacc1688639eeb1f3734e42d6d6b971afbf22aa1ac9af52a173d9c3a20c15857cfa400f19994d79a2f626fcc73fccda9bbc",
   "engines": {
     "node": "^24"
   },
@@ -15,8 +15,8 @@
     "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && (cp src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client 2>/dev/null || true)",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
-    "prelint": "pnpm prisma generate",
-    "lint": "next typegen && eslint",
+    "prelint": "next typegen && pnpm prisma generate",
+    "lint": "eslint",
     "export": "next export",
     "build:export": "yarn build && yarn export",
     "run-script": "tsx --tsconfig scripts/tsconfig.json",
@@ -41,6 +41,7 @@
     "@mui/lab": "7.0.1-beta.21",
     "@mui/material": "^7.3.7",
     "@mui/material-nextjs": "^7.3.7",
+    "@next/env": "^16.1.6",
     "@next/mdx": "^16.1.6",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",

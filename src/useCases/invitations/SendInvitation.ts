@@ -28,7 +28,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
       select: {
         id: true,
         status: true,
-        tenants: {
+        memberships: {
           where: { tenantId: input.tenantId },
           select: { status: true },
         },
@@ -40,7 +40,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
         throw new Error("Cet utilisateur est bloqué ou supprimé.");
       }
 
-      const membership = existingUser.tenants[0];
+      const membership = existingUser.memberships[0];
       if (membership) {
         if (membership.status === "BLOCKED") {
           throw new Error("Cet utilisateur est bloqué sur ce tenant.");

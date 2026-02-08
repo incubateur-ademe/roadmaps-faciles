@@ -43,6 +43,7 @@ const config = [
       "dist/**",
       "coverage/**",
       "public/**",
+      "prisma.config.ts",
     ],
   },
 
