@@ -1,6 +1,6 @@
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
-import { getServerService } from "@/lib/services";
+import { setSeedTenant } from "@/lib/seedContext";
 import { $Enums } from "@/prisma/client";
 import { CreateFakePostsWorkflow } from "@/workflows/CreateFakePostsWorkflow";
 import { CreateFakeUsersWorkflow } from "@/workflows/CreateFakeUsersWorkflow";
@@ -10,22 +10,20 @@ async function main() {
   console.log("🌱 Seed en cours...");
 
   const tenant = await prisma.tenant.create({
+    data: {},
+  });
+  console.log("🌱 Tenant créé : ", tenant.id);
+  setSeedTenant(tenant);
+
+  const settings = await prisma.tenantSettings.create({
     data: {
+      tenantId: tenant.id,
       name: config.seed.tenantName,
       subdomain: config.seed.tenantSubdomain,
       customDomain: null,
     },
   });
-  console.log("🌱 Tenant créé : ", tenant.name);
-  const current = await getServerService("current");
-  current.tenant = tenant;
-
-  await prisma.tenantSetting.create({
-    data: {
-      tenantId: tenant.id,
-    },
-  });
-  console.log("🌱 TenantSetting créé : ", tenant.name);
+  console.log("🌱 TenantSettings créé : ", settings.name);
 
   const admin = await prisma.user.create({
     data: {

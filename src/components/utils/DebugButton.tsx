@@ -37,6 +37,7 @@ export const DebugButton = ({ obj, infoText, alwaysOn, children }: PropsWithChil
   const [isDebugEnabled, setIsDebugEnabled] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDebugEnabled(alwaysOn ?? localStorage.getItem(DEBUG_KEY) === DEBUG_KEY);
   }, [alwaysOn]);
 

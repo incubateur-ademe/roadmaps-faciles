@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { Tenant } from "@/lib/model/Tenant";
-import { TenantSetting } from "@/lib/model/TenantSetting";
+import { TenantSettings } from "@/lib/model/TenantSettings";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 
 import { type UseCase } from "../types";
@@ -13,7 +13,7 @@ export type GetTenantWithSettingsInput = z.infer<typeof GetTenantWithSettingsInp
 
 export const GetTenantWithSettingsOutput = z.object({
   tenant: Tenant,
-  tenantSetting: TenantSetting,
+  tenantSettings: TenantSettings,
 });
 export type GetTenantWithSettingsOutput = z.infer<typeof GetTenantWithSettingsOutput>;
 
@@ -28,7 +28,7 @@ export class GetTenantWithSettings implements UseCase<GetTenantWithSettingsInput
 
     return {
       tenant: Tenant.parse(tenant),
-      tenantSetting: TenantSetting.parse(tenant.settings),
+      tenantSettings: TenantSettings.parse(tenant.settings),
     };
   }
 }

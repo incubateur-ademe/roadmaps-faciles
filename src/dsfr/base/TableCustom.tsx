@@ -4,10 +4,10 @@ import { type JSX, type PropsWithChildren, useId } from "react";
 import style from "./TableCustom.module.css";
 
 export interface TableCustomProps {
-  body: Array<Array<JSX.IntrinsicElements["td"]> | { className?: CxArg; row: Array<JSX.IntrinsicElements["td"]> }>;
+  body: Array<{ className?: CxArg; row: Array<JSX.IntrinsicElements["td"]> } | Array<JSX.IntrinsicElements["td"]>>;
   bodyRef?: React.Ref<HTMLTableSectionElement>;
-  className?: CxArg;
   classes?: Partial<Record<"col" | "row" | "table" | `col-${number}`, CxArg>>;
+  className?: CxArg;
   compact?: boolean;
   header: TableCustomHeadColProps[];
   showColWhenNullData?: boolean;

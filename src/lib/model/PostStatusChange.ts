@@ -13,7 +13,7 @@ export const PostStatusChange = z.object({
 });
 
 export const PostStatusChangeWithPost = PostStatusChange.extend({
-  postsStatus: PostStatus.array(),
+  postsStatus: z.lazy(() => PostStatus.array()),
 });
 
 export type PostStatusChange = z.infer<typeof PostStatusChange>;

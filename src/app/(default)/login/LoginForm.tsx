@@ -2,21 +2,22 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { ESPACE_MEMBRE_PROVIDER_ID } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
-import { redirect, unstable_rethrow as rethrow } from "next/navigation";
 import { AuthError } from "next-auth";
+import { redirect, unstable_rethrow as rethrow } from "next/navigation";
 
 import { FormFieldset } from "@/dsfr";
 import { signIn } from "@/lib/next-auth/auth";
 import { isRedirectError, type NextError } from "@/utils/next";
 
 export interface LoginFormProps {
+  defaultEmail?: string;
   domain?: string;
   loginWithEmail?: boolean;
 }
 
 const loginValueKey = "login";
 
-export const LoginForm = ({ loginWithEmail }: LoginFormProps) => {
+export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
   return (
     <form
       action={async data => {
@@ -56,6 +57,7 @@ export const LoginForm = ({ loginWithEmail }: LoginFormProps) => {
                 type: "email",
                 required: true,
                 name: loginValueKey,
+                defaultValue: defaultEmail,
               }}
             />
           ) : (

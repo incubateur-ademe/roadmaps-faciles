@@ -7,6 +7,7 @@ import { notImplemented } from "@/utils/error";
 import { type UseCase } from "../types";
 
 export const PinPostInput = z.object({
+  boardId: z.number(),
   postId: z.number(),
   isPinned: z.boolean(),
 });
@@ -17,7 +18,7 @@ export type PinPostOutput = PostModel;
 export class PinPost implements UseCase<PinPostInput, PinPostOutput> {
   constructor(private readonly postRepo: IPostRepo) {}
 
-  public execute(input: PinPostInput): Promise<PinPostOutput> {
+  public execute(_input: PinPostInput): Promise<PinPostOutput> {
     return notImplemented();
     // const post = await this.postRepo.update(input.postId, {
     //   isPinned: input.isPinned,

@@ -7,16 +7,25 @@ import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
 import { prisma } from "@/lib/db/prisma";
 import { type Tenant } from "@/lib/model/Tenant";
-import { type TenantSetting } from "@/prisma/client";
+import { type TenantSettings } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
+import { getTenantFromDomain } from "@/utils/tenant";
+import { type EmptyObject } from "@/utils/types";
 
-import { LoginLogoutHeaderItem, UserHeaderItem } from "../../AuthHeaderItems";
+import { UserHeaderItem } from "../../AuthHeaderItems";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
-import { getTenantFromDomainProps } from "./getTenantFromDomainParam";
 
-const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSetting: TenantSetting }) => {
+export interface DomainParams {
+  domain: string;
+}
+
+export interface DomainProps<Params extends object = EmptyObject> {
+  params: Promise<DomainParams & Params>;
+}
+
+const Navigation = async ({ tenant, tenantSettings }: { tenant: Tenant; tenantSettings: TenantSettings }) => {
   const boards = await prisma.board.findMany({
     where: {
       tenantId: tenant.id,
@@ -26,19 +35,21 @@ const Navigation = async ({ tenant, tenantSetting }: { tenant: Tenant; tenantSet
     },
   });
 
-  return <DomainNavigation boards={boards} tenantSetting={tenantSetting} />;
+  return <DomainNavigation boards={boards} tenantSettings={tenantSettings} />;
 };
 
 const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
-  const dirtyDomain = await getDirtyDomain();
+  const [dirtyDomain, tenant] = await Promise.all([getDirtyDomain(), getTenantFromDomain((await params).domain)]);
+
   const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
-  const tenant = await getTenantFromDomainProps({ params });
-  const tenantSetting = await prisma.tenantSetting.findFirst({
+
+  const tenantSettings = await prisma.tenantSettings.findFirst({
     where: {
       tenantId: tenant.id,
     },
   });
-  if (!tenantSetting) {
+
+  if (!tenantSettings) {
     notFound();
   }
 
@@ -54,16 +65,14 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
   return (
     <>
       <Header
-        navigation={<Navigation tenant={tenant} tenantSetting={tenantSetting} />}
+        navigation={<Navigation tenant={tenant} tenantSettings={tenantSettings} />}
         brandTop={<Brand />}
         homeLinkProps={{
           href: dirtyDomainFixer("/"),
-          title: tenant.name,
+          title: tenantSettings.name,
         }}
-        serviceTitle={tenant.name}
-        quickAccessItems={[<UserHeaderItem key="hqai-user" />, <LoginLogoutHeaderItem key="hqai-loginlogout" />].filter(
-          Boolean,
-        )}
+        serviceTitle={tenantSettings.name}
+        quickAccessItems={[<UserHeaderItem key="hqai-user" />]}
       />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}

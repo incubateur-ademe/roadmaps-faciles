@@ -8,7 +8,7 @@ export class OAuthRepoPrisma implements IOAuthRepo {
     return prisma.oAuth.findMany();
   }
 
-  public findById(id: number): Promise<OAuth | null> {
+  public findById(id: number): Promise<null | OAuth> {
     return prisma.oAuth.findUnique({ where: { id } });
   }
 

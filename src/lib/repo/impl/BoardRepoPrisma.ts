@@ -16,7 +16,25 @@ export class BoardRepoPrisma implements IBoardRepo {
     return prisma.board.create({ data });
   }
 
-  public async findSlugById(id: number): Promise<string | null> {
+  public findAllForTenant(tenantId: number): Promise<Board[]> {
+    return prisma.board.findMany({ where: { tenantId }, orderBy: { order: "asc" } });
+  }
+
+  public update(id: number, data: Prisma.BoardUncheckedUpdateInput): Promise<Board> {
+    return prisma.board.update({ where: { id }, data });
+  }
+
+  public async delete(id: number): Promise<void> {
+    await prisma.board.delete({ where: { id } });
+  }
+
+  public async reorder(items: Array<{ id: number; order: number }>): Promise<void> {
+    await prisma.$transaction(
+      items.map(item => prisma.board.update({ where: { id: item.id }, data: { order: item.order } })),
+    );
+  }
+
+  public async findSlugById(id: number): Promise<null | string> {
     return prisma.board.findUnique({ where: { id }, select: { slug: true } }).then(board => board?.slug ?? null);
   }
 }

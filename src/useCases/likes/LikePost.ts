@@ -5,22 +5,22 @@ import { type ILikeRepo } from "@/lib/repo/ILikeRepo";
 
 import { type UseCase } from "../types";
 
-export const LikePostInput = z
-  .object({
-    postId: z.number(),
-    tenantId: z.number(),
-    userId: z.string().optional(),
-    anonymousId: z.string().optional(),
-  })
-  .check(ctx => {
-    if (!ctx.value.userId && !ctx.value.anonymousId) {
-      ctx.issues.push({
-        code: "custom",
-        message: "Either userId or anonymousId must be provided",
-        input: ctx.value,
-      });
-    }
-  });
+export const LikePostInputBase = z.object({
+  postId: z.number(),
+  tenantId: z.number(),
+  userId: z.string().optional(),
+  anonymousId: z.string().optional(),
+});
+
+export const LikePostInput = LikePostInputBase.check(ctx => {
+  if (!ctx.value.userId && !ctx.value.anonymousId) {
+    ctx.issues.push({
+      code: "custom",
+      message: "Either userId or anonymousId must be provided",
+      input: ctx.value,
+    });
+  }
+});
 
 export type LikePostInput = z.infer<typeof LikePostInput>;
 export type LikePostOutput = LikeModel;

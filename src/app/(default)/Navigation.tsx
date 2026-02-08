@@ -1,8 +1,8 @@
 "use client";
 
 import { MainNavigation, type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
-import { useSelectedLayoutSegment } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useSelectedLayoutSegment } from "next/navigation";
 
 export const Navigation = () => {
   const segment = useSelectedLayoutSegment("default");
@@ -41,7 +41,7 @@ export const Navigation = () => {
           isActive: segment === "startup",
         },
         ...(((status === "authenticated" &&
-          session.user.isAdmin && [
+          session.user.isSuperAdmin && [
             {
               text: "Admin",
               linkProps: {

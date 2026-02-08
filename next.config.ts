@@ -2,7 +2,6 @@
 
 import createMDX from "@next/mdx";
 import { type NextConfig } from "next";
-import { type Configuration } from "webpack";
 
 import packageJson from "./package.json" with { type: "json" };
 
@@ -49,24 +48,16 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
-  webpack: (config: Configuration) => {
-    config.module?.rules?.push({
-      test: /\.(woff2|webmanifest|ttf)$/,
-      type: "asset/resource",
-    });
-
-    return config;
-  },
+  allowedDevOrigins: ["*.localhost:3000"],
   experimental: {
     serverMinification: true,
     authInterrupts: true,
     optimizePackageImports: ["@/lib/repo", "@/dsfr/client", "@/dsfr"],
     taint: true,
+    turbopackFileSystemCacheForDev: true,
   },
+  reactCompiler: true,
   serverExternalPackages: ["@prisma/client"],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   env,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   images: {

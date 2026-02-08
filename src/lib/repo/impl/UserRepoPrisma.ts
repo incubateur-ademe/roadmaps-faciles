@@ -8,15 +8,15 @@ export class UserRepoPrisma implements IUserRepo {
     return prisma.user.findMany();
   }
 
-  public findById(id: string): Promise<User | null> {
+  public findById(id: string): Promise<null | User> {
     return prisma.user.findUnique({ where: { id } });
   }
 
-  public findByUsername(username: string): Promise<User | null> {
+  public findByUsername(username: string): Promise<null | User> {
     return prisma.user.findUnique({ where: { username } });
   }
 
-  public findByEmail(email: string): Promise<User | null> {
+  public findByEmail(email: string): Promise<null | User> {
     return prisma.user.findUnique({ where: { email } });
   }
 

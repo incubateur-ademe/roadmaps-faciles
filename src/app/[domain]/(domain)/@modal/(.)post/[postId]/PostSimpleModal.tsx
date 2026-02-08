@@ -1,6 +1,5 @@
 "use client";
 
-import { isArray } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -32,7 +31,6 @@ export const PostSimpleModal = (props: SimpleModalProps) => {
   const getOnClickFn = useCallback(
     (props: { onClick?(e: SimpleEvent): void }, refresh?: boolean): SimpleModalProps.ActionAreaButtonProps["onClick"] =>
       e => {
-        console.log("PostSimpleModal: button clicked", { props, refresh });
         const ret = props?.onClick?.(e);
         handleClose(e);
         if (refresh) location.reload();
@@ -43,9 +41,8 @@ export const PostSimpleModal = (props: SimpleModalProps) => {
 
   const addClosabilityToButtons = useCallback(
     (buttonsProps: SimpleModalProps["buttons"]) => {
-      const buttons = isArray(buttonsProps) ? buttonsProps : [buttonsProps];
+      const buttons = Array.isArray(buttonsProps) ? buttonsProps : [buttonsProps];
       return buttons.map(button => {
-        console.log("PostSimpleModal: button", button);
         if (!button) return button;
         if (button.canClosesModal || button.refresh) {
           return {

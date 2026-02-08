@@ -7,7 +7,7 @@ import { type UseCase } from "../types";
 
 export const GetUserByIdInput = z.object({ id: z.string() });
 export type GetUserByIdInput = z.infer<typeof GetUserByIdInput>;
-export type GetUserByIdOutput = UserModel | null;
+export type GetUserByIdOutput = null | UserModel;
 
 export class GetUserById implements UseCase<GetUserByIdInput, GetUserByIdOutput> {
   constructor(private readonly userRepo: IUserRepo) {}

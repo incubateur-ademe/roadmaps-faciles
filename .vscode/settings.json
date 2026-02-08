@@ -24,4 +24,5 @@
     "^@faker-js/faker",
     "^@mui/[^/]+$"
   ],
+  "json.format.keepLines": true,
 }

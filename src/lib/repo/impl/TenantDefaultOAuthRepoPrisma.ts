@@ -8,7 +8,7 @@ export class TenantDefaultOAuthRepoPrisma implements ITenantDefaultOAuthRepo {
     return prisma.tenantDefaultOAuth.findMany();
   }
 
-  public findById(id: number): Promise<TenantDefaultOAuth | null> {
+  public findById(id: number): Promise<null | TenantDefaultOAuth> {
     return prisma.tenantDefaultOAuth.findUnique({ where: { id } });
   }
 

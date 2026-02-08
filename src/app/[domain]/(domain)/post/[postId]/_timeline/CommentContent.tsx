@@ -26,8 +26,8 @@ import style from "./CommentContent.module.scss";
 export const CommentContent = ({ activity, userId }: { activity: CommentActivity; userId?: string }) => {
   const comment = activity.comment;
   const [showInput, setShowInput] = useState(false);
-  const [content, setContent] = useState("");
-  const [replies, setReplies] = useState(comment.replies as Array<Comment & { user: User }>);
+  const [_content, setContent] = useState("");
+  const [replies, setReplies] = useState(comment.replies as Array<{ user: User } & Comment>);
   const [showReplies, setShowReplies] = useState(false);
   const [firstOpen, setFirstOpen] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -291,7 +291,7 @@ export const ThreadEntity = ({
   </div>
 );
 
-export const Reply = ({ reply }: { reply: Comment & { user: User } }) => {
+export const Reply = ({ reply }: { reply: { user: User } & Comment }) => {
   return (
     <Card
       shadow

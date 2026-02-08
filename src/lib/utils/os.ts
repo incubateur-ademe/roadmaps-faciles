@@ -10,9 +10,9 @@ export const ensureEnvVar = <T extends keyof NodeJS.ProcessEnv>(key: T, defaultV
 
 type DefaultEnsureNextEnvVar = <T extends primitive | primitive[]>(
   envVar: string | undefined,
-  transformerOrDefaultValue?: T | ((envVar: string) => T),
+  transformerOrDefaultValue?: ((envVar: string) => T) | T,
   defaultValue?: T,
-) => T | string;
+) => string | T;
 
 /**
  * Avoid having "bad" literals as defined type. (e.g. `""` instead of `string`)

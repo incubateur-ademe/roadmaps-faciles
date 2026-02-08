@@ -34,11 +34,11 @@ const TenantPage = async () => {
         <ul>
           {tenants.map(tenant => (
             <li key={tenant.id}>
-              <Link href={`/tenant/${tenant.id}`}>{tenant.name}</Link> (
+              <Link href={`/tenant/${tenant.id}`}>{tenant.settings.name}</Link> (
               <Link
                 href={
-                  tenant.customDomain ??
-                  `${new URL(config.host).protocol}//${tenant.subdomain}.${new URL(config.host).host}`
+                  tenant.settings.customDomain ??
+                  `${new URL(config.host).protocol}//${tenant.settings.subdomain}.${new URL(config.host).host}`
                 }
               >
                 Voir le dashboard

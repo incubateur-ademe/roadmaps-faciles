@@ -15,5 +15,6 @@ export function ClientOnlyPortal({ children, selector }: ClientOnlyPortalProps) 
     setMounted(true);
   }, [selector]);
 
+  // eslint-disable-next-line react-hooks/refs
   return mounted && ref.current ? createPortal(children, ref.current) : null;
 }

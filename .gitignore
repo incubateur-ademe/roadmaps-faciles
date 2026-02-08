@@ -69,3 +69,9 @@ certificates
 
 /src/generated/*
 !/src/generated/.gitattributes
+
+# claude local files
+/.claude.local/
+/.claude/**/*.local.json
+/next-env.d.ts
+.claude.local.md

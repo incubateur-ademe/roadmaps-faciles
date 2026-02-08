@@ -39,6 +39,16 @@ code:hover {
 /* === */
 
 /* === based on dsfr === */
+
+/* Fix: DSFR collapse initial state with React.
+ * DSFR JS (window.dsfr.start()) may not have initialized yet when React renders
+ * aria-expanded="true". This CSS forces the collapse open until DSFR JS takes over
+ * (adds fr-collapse--expanded), then this rule stops matching. */
+.fr-sidemenu [aria-expanded="true"] + .fr-collapse:not(.fr-collapse--expanded):not(.fr-collapsing) {
+    --collapse-max-height: none;
+    visibility: visible;
+}
+
 /* typo */
 .text-dsfr-neutral {
     color: var(--text-default-grey);
@@ -147,4 +157,173 @@ $postStatusColor: (
 
 .scrollbar-thin {
     scrollbar-width: thin;
+}
+
+
+/* ==============================
+   Menu utilisateur DSFR étendu
+   ============================== */
+.fr-user-menu {
+    --rows: 8;
+    position: relative;
+    text-align: initial;
+    margin-top: -1rem !important;
+
+    /* --- Bouton principal --- */
+    &__btn {
+        margin-bottom: 0 !important;
+
+        &[aria-expanded="true"] &-label:after {
+            transform: rotate(-180deg);
+        }
+
+        /* Icône droite (chevron) */
+        &-label:after {
+            transition: transform 0.3s;
+        }
+
+        &[aria-expanded="true"] {
+            color: var(--text-active-blue-france);
+            background-color: var(--background-open-blue-france) !important;
+            --idle: transparent;
+            --hover: var(--background-open-blue-france-hover);
+            --active: var(--background-open-blue-france-active);
+        }
+    }
+
+    /* --- Réinitialisations DSFR inutiles --- */
+    .fr-nav__item:before {
+        content: none;
+    }
+
+    .fr-menu__list {
+        background-color: var(--background-alt-grey);
+    }
+
+    /* --- En-tête utilisateur --- */
+    &__header {
+        padding: 1rem 1.25rem;
+    }
+
+    &__name {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    &__email {
+        color: var(--text-mention-grey);
+    }
+
+    /* --- Liens du menu --- */
+    .fr-nav__link {
+        transition: background-color 0.2s ease, color 0.2s ease;
+        justify-content: start;
+
+        &>.fr-icon {
+            margin-right: 0.5rem;
+        }
+
+        &:hover,
+        &:focus {
+            background-color: var(--background-alt-grey-hover);
+            color: var(--text-action-high-blue-france);
+        }
+    }
+
+
+    /* --- Bouton de déconnexion --- */
+    &__logout {
+        display: flex;
+        justify-content: center;
+
+        &>button.fr-btn,
+        &>a.fr-btn {
+            flex: 1 !important;
+            margin: 1rem !important;
+            justify-content: center !important;
+        }
+    }
+
+    /* --- Responsive desktop --- */
+    @media (width >=62em) {
+        .fr-user-menu {
+            &__btn {
+                &-label:after {
+                    margin-left: 0.25rem;
+                    margin-right: -0.25rem;
+                }
+            }
+
+            /* --- Menu déroulant --- */
+            &__menu {
+                padding: 0 !important;
+                left: .25rem !important;
+                margin: 0 !important;
+            }
+        }
+
+        .fr-menu__list {
+            grid-template-rows: repeat(var(--rows), auto);
+            grid-auto-flow: column;
+            display: grid;
+        }
+    }
+
+    /* --- Accessibilité : réduit les animations --- */
+    @media (prefers-reduced-motion: reduce) {
+        .fr-user-menu {
+
+            &__btn-label:after,
+            &__menu {
+                transition: none;
+            }
+        }
+    }
+}
+
+/* ----- */
+
+/* Prisma Sudio */
+:root .ps {
+    --background: var(--background-default-grey);
+    --foreground: var(--text-default-grey);
+    --primary: var(--background-action-high-blue-france);
+    --primary-foreground: var(--text-inverted-blue-france);
+    --secondary: var(--background-lifted-grey);
+    --secondary-foreground: var(--text-action-high-blue-france);
+    --popover: var(--background-lifted-grey);
+    --popover-foreground: var(--text-default-grey);
+    --border: var(--border-default-grey);
+    --input: var(--border-action-high-blue-france);
+    --ring: 35.5 91.7% 32.9%;
+    --card: var(--background-alt-grey);
+    --card-foreground: var(--text-default-grey);
+    --muted: var(--background-disabled-grey);
+    --muted-foreground: var(--text-label-grey);
+    --accent: var(--background-action-high-blue-france);
+    --accent-foreground: var(--text-inverted-blue-france);
+    --destructive: var(--background-flat-error);
+    --destructive-foreground: var(--text-error);
+    --color-green-500: var(--background-flat-success);
+    --font-sans: 'Marianne', sans-serif;
+    --text-lg: 1rem;
+    --text-sm: 0.875rem;
+}
+
+.ps .data-\[active\=true\]\:text-foreground[data-active="true"] {
+    background-color: var(--background-action-high-blue-france) !important;
+    color: var(--text-inverted-blue-france) !important;
+}
+
+.ps .data-\[active\=true\]\:text-foreground[data-active="true"]:hover {
+    color: var(--text-blue-france) !important;
+    color: var(--text-inverted-blue-france) !important;
+}
+
+.ps button[class~="hover:text-accent-foreground"]:hover {
+    color: var(--text-blue-france) !important;
+}
+
+.ps tr {
+    --muted: var(--background-alt-grey) !important;
 }

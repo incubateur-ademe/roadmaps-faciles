@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { type Prisma, type Tenant, type TenantSetting } from "@/prisma/client";
+import { type Prisma, type Tenant, type TenantSettings } from "@/prisma/client";
 
 import { type ITenantRepo } from "../ITenantRepo";
 
@@ -8,7 +8,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     return prisma.tenant.findMany();
   }
 
-  public async findById(id: number): Promise<Tenant | null> {
+  public async findById(id: number): Promise<null | Tenant> {
     const ret = await prisma.tenant.findUnique({
       where: { id },
     });
@@ -16,7 +16,7 @@ export class TenantRepoPrisma implements ITenantRepo {
     return ret;
   }
 
-  public async findByIdWithSettings(id: number): Promise<(Tenant & { settings: TenantSetting | null }) | null> {
+  public async findByIdWithSettings(id: number): Promise<({ settings: null | TenantSettings } & Tenant) | null> {
     const ret = await prisma.tenant.findUnique({
       where: { id },
       include: {
@@ -27,12 +27,24 @@ export class TenantRepoPrisma implements ITenantRepo {
     return ret;
   }
 
-  public findBySubdomain(subdomain: string): Promise<Tenant | null> {
-    return prisma.tenant.findUnique({ where: { subdomain } });
+  public findBySubdomain(subdomain: string): Promise<null | Tenant> {
+    return prisma.tenant.findFirst({
+      where: {
+        settings: {
+          subdomain,
+        },
+      },
+    });
   }
 
-  public findByCustomDomain(customDomain: string): Promise<Tenant | null> {
-    return prisma.tenant.findUnique({ where: { customDomain } });
+  public findByCustomDomain(customDomain: string): Promise<null | Tenant> {
+    return prisma.tenant.findFirst({
+      where: {
+        settings: {
+          customDomain,
+        },
+      },
+    });
   }
 
   public create(data: Prisma.TenantUncheckedCreateInput): Promise<Tenant> {
@@ -42,16 +54,31 @@ export class TenantRepoPrisma implements ITenantRepo {
   public async findAllForUser(userId: string): Promise<Tenant[]> {
     const links = await prisma.userOnTenant.findMany({
       where: { userId },
-      include: { tenant: true },
+      include: {
+        tenant: {
+          include: {
+            settings: true,
+          },
+        },
+      },
     });
 
     return links.map(link => link.tenant);
   }
 
-  public update(id: number, data: Prisma.TenantUncheckedUpdateInput): Promise<Tenant> {
+  public update<
+    WithSetting extends boolean = false,
+    R extends WithSetting extends true ? TenantWithSettings : Tenant = WithSetting extends true
+      ? TenantWithSettings
+      : Tenant,
+  >(id: number, data: Prisma.TenantUncheckedUpdateInput, withSetting = false as WithSetting): Promise<R> {
     return prisma.tenant.update({
       where: { id },
       data,
-    });
+      include: {
+        settings: withSetting,
+      },
+    }) as Promise<R>;
   }
 }
+type TenantWithSettings = { settings: null | TenantSettings } & Tenant;

@@ -8,7 +8,7 @@ export class PostRepoPrisma implements IPostRepo {
     return prisma.post.findMany();
   }
 
-  public findById(id: number): Promise<Post | null> {
+  public findById(id: number): Promise<null | Post> {
     return prisma.post.findUnique({ where: { id } });
   }
 

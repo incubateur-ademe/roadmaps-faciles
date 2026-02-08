@@ -1,27 +1,37 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { EspaceMembreProvider } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
-import { headers } from "next/headers";
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Nodemailer from "next-auth/providers/nodemailer";
+import { headers } from "next/headers";
+import { cache } from "react";
 
 import { config } from "@/config";
-import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
+import { type UserRole, type UserStatus } from "@/prisma/enums";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
+import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 
 import { prisma } from "../db/prisma";
-import { tenantRepo, tenantSettingRepo, userOnTenantRepo, userRepo } from "../repo";
+import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
+
+type CustomUser = {
+  isBetaGouvMember: boolean;
+  isSuperAdmin?: boolean;
+  role: UserRole;
+  status: UserStatus;
+  uuid: string;
+} & AdapterUser;
 
 declare module "next-auth" {
   interface Session {
-    user: AdapterUser & { isAdmin?: boolean; uuid: string };
+    user: CustomUser;
   }
 }
 
 declare module "@auth/core/jwt" {
   interface JWT {
-    user: AdapterUser & { isAdmin?: boolean; uuid: string };
+    user: CustomUser;
   }
 }
 
@@ -51,8 +61,8 @@ export interface GetAuthMethodsProps {
   domain?: string;
 }
 
-export const {
-  auth,
+const {
+  auth: authCore,
   signIn,
   signOut,
   handlers: { GET, POST },
@@ -64,10 +74,10 @@ export const {
 
   const domain = protocol && host && `${protocol}://${host}` === config.host ? null : host || null;
   const getTenantForDomain = new GetTenantForDomain(tenantRepo);
-  const getTenantSettings = new GetTenantSettings(tenantSettingRepo);
+  const getTenantSettings = new GetTenantSettings(tenantSettingsRepo);
 
   const tenant = domain ? await getTenantForDomain.execute({ domain }) : null;
-  const tenantSetting = tenant ? await getTenantSettings.execute({ tenantId: tenant.id }) : null;
+  const tenantSettings = tenant ? await getTenantSettings.execute({ tenantId: tenant.id }) : null;
 
   if (!url) {
     console.error("Invalid request url");
@@ -106,27 +116,42 @@ export const {
       },
       async signIn(params) {
         if (params.account?.provider === "nodemailer" && params.email?.verificationRequest) {
-          // should not missing email or tenantSetting here
-          if (!params.user.email || !tenantSetting || !tenant) {
+          // Phase 1: User entered email — decide if we send the verification email
+          if (!params.user.email || !tenantSettings || !tenant) {
             return false;
           }
           const [possibleUsername, emailDomain] = params.user.email.split("@");
-          // check if domain is allowed for this tenant
           if (!emailDomain) {
             return false;
           }
 
-          const isAllowedDomain =
-            tenantSetting.allowedEmailDomains.includes(emailDomain) ||
-            tenantSetting.allowedEmailDomains.includes("*") ||
-            tenantSetting.allowedEmailDomains.length === 0;
+          // Check for pending invitation — bypasses emailRegistrationPolicy
+          const pendingInvitation = await prisma.invitation.findFirst({
+            where: { email: params.user.email, tenantId: tenant.id, acceptedAt: null },
+          });
 
-          if (!isAllowedDomain) {
-            return false;
+          if (!pendingInvitation) {
+            // No invitation — apply emailRegistrationPolicy
+            if (tenantSettings.emailRegistrationPolicy === "NOONE") {
+              return false;
+            }
+
+            if (tenantSettings.emailRegistrationPolicy === "DOMAINS") {
+              const isAllowedDomain =
+                tenantSettings.allowedEmailDomains.includes(emailDomain) ||
+                tenantSettings.allowedEmailDomains.includes("*") ||
+                tenantSettings.allowedEmailDomains.length === 0;
+
+              if (!isAllowedDomain) {
+                return false;
+              }
+            }
+            // ANYONE — falls through
           }
 
           if (params.user.email?.endsWith("@beta.gouv.fr") || params.user.email?.endsWith("@ext.beta.gouv.fr")) {
-            // check if user is found in espace membre
+            // check if user is found in espace membre, if not, block connection
+            // if found but account not found in db, create it with isBetaGouvMember = true
             try {
               const betaUser = await espaceMembreProvider.client.member.getByUsername(possibleUsername);
               if (!betaUser.isActive) {
@@ -141,6 +166,8 @@ export const {
                   username: betaUser.username,
                   image: betaUser.avatar,
                   isBetaGouvMember: true,
+                  role: "USER",
+                  status: "ACTIVE",
                 });
               } else {
                 let userInTenant = await userOnTenantRepo.findMembership(dbUser.id, tenant.id);
@@ -148,14 +175,15 @@ export const {
                   userInTenant = await userOnTenantRepo.create({
                     userId: dbUser.id,
                     tenantId: tenant.id,
-                    role: "USER",
+                    role: "INHERITED",
                     status: "ACTIVE",
                   });
                 }
 
-                if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
-                  return false;
-                }
+                // should be checked on layouts
+                // if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
+                //   return false;
+                // }
                 params.user = dbUser;
               }
             } catch (error: unknown) {
@@ -166,6 +194,35 @@ export const {
             }
           }
         }
+
+        // Phase 2: Magic link clicked — handle invitation acceptance
+        if (params.account?.provider === "nodemailer" && !params.email?.verificationRequest && tenant) {
+          const email = params.user.email;
+          if (email) {
+            // Use updateMany to atomically mark as accepted (prevents race condition)
+            const updated = await prisma.invitation.updateMany({
+              where: { email, tenantId: tenant.id, acceptedAt: null },
+              data: { acceptedAt: new Date() },
+            });
+
+            if (updated.count > 0) {
+              // Create UserOnTenant membership if not exists
+              const userId = params.user.id;
+              if (userId) {
+                const existingMembership = await userOnTenantRepo.findMembership(userId, tenant.id);
+                if (!existingMembership) {
+                  await userOnTenantRepo.create({
+                    userId,
+                    tenantId: tenant.id,
+                    role: "USER",
+                    status: "ACTIVE",
+                  });
+                }
+              }
+            }
+          }
+        }
+
         return true;
       },
       async jwt({ token, trigger, espaceMembreMember }) {
@@ -188,9 +245,11 @@ export const {
               emailVerified: now,
               username: dbUser.username!,
               image: dbUser.image,
-              isAdmin: dbUser.username ? config.admins.includes(dbUser.username) : false,
+              isSuperAdmin: dbUser.username ? config.admins.includes(dbUser.username) : false,
               uuid: dbUser.id,
               isBetaGouvMember: dbUser.isBetaGouvMember,
+              role: dbUser.role,
+              status: dbUser.status,
             },
           };
           token.sub = dbUser.username || dbUser.id;
@@ -210,3 +269,10 @@ export const {
     }),
   };
 });
+
+// Wrap auth with React.cache() for per-request deduplication
+// This prevents multiple calls to auth() in the same request from executing multiple times
+export const auth = cache(authCore);
+
+// Re-export other auth functions
+export { signIn, signOut, GET, POST };

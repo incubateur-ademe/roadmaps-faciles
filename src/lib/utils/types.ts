@@ -46,10 +46,10 @@ export type MutableArray<T> = T extends ReadonlyArray<infer U> ? U[] : never;
  * };
  * ```
  */
-export type UniqueString<TStr extends string = string> = TStr & {
+export type UniqueString<TStr extends string = string> = {
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- hack to keep autocomplete
   _?: never & symbol;
-};
+} & TStr;
 
 /**
  * Usefull when you need a node props with string autocomplete.
@@ -81,7 +81,7 @@ export type UnknownMapping = UniqueString<string>;
 
 export type FilterMethod<T> = (element: T) => boolean;
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- consistency
-export type Nothing = never | 0 | null | undefined | void;
+export type Nothing = 0 | never | null | undefined | void;
 
 /**
  * Get all event "name" attached to an EventEmitter
@@ -119,7 +119,7 @@ export type Any = any;
  * @deprecated
  */
 
-export type __DEBUG_TYPE__<T> = EmptyObject & { [P in keyof T]: T[P] };
+export type __DEBUG_TYPE__<T> = { [P in keyof T]: T[P] } & EmptyObject;
 
 /**
  * Get direct subkeys of a given non array object and/or unpack a subarray type to use its keys as subkeys.
@@ -182,9 +182,9 @@ export type UnwrapObjectize<T> =
 export type ClearObject<T> = UnwrapObjectize<Objectize<T>>;
 
 export type InvertPartial<T> = Objectize<
-  {
+  { [K in PartialKeys<T>]: NonNullable<T[K]> } & {
     [K in RequiredKeys<T>]?: T[K];
-  } & { [K in PartialKeys<T>]: NonNullable<T[K]> }
+  }
 >;
 
 export type Awaitable<T> = T extends (...args: infer A) => infer R ? (...args: A) => Promise<R> : Promise<T>;
@@ -230,7 +230,7 @@ export type UnionConcat<TUnion extends string, TSep extends string = ","> =
     ? Self extends string
       ? Exclude<TUnion, Self> extends never
         ? Self
-        : Self | UnionConcat<Exclude<TUnion, Self>, TSep> | `${UnionConcat<Exclude<TUnion, Self>, TSep>}${TSep}${Self}`
+        : `${UnionConcat<Exclude<TUnion, Self>, TSep>}${TSep}${Self}` | Self | UnionConcat<Exclude<TUnion, Self>, TSep>
       : never
     : never;
 

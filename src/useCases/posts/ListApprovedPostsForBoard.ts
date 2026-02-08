@@ -12,7 +12,7 @@ export interface ListApprovedPostsForBoardInput {
 export class ListApprovedPostsForBoard implements UseCase<ListApprovedPostsForBoardInput, PostModel[]> {
   constructor(private readonly postRepo: IPostRepo) {}
 
-  public execute(input: ListApprovedPostsForBoardInput): Promise<PostModel[]> {
+  public execute(_input: ListApprovedPostsForBoardInput): Promise<PostModel[]> {
     return notImplemented();
     // const posts = await this.postRepo.findAll();
 

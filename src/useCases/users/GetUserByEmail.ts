@@ -7,7 +7,7 @@ import { type UseCase } from "../types";
 
 export const GetUserByEmailInput = z.object({ email: z.string().email() });
 export type GetUserByEmailInput = z.infer<typeof GetUserByEmailInput>;
-export type GetUserByEmailOutput = UserModel | null;
+export type GetUserByEmailOutput = null | UserModel;
 
 export class GetUserByEmail implements UseCase<GetUserByEmailInput, GetUserByEmailOutput> {
   constructor(private readonly userRepo: IUserRepo) {}

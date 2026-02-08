@@ -14,10 +14,12 @@ export const useBreakpoints = () => {
       breakpoint => window.matchMedia(breakpoints.up(breakpoint).replace("@media ", "")),
     );
 
+    /* eslint-disable react-hooks/set-state-in-effect */
     setIsSmAndUp(smMediaWatcher.matches);
     setIsMdAndUp(mdMediaWatcher.matches);
     setIsLgAndUp(lgMediaWatcher.matches);
     setIsXlAndUp(xlMediaWatcher.matches);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     const [smListener, mdListener, lgListener, xlListener] = [
       setIsSmAndUp,

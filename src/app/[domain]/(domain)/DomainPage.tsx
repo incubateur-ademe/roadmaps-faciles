@@ -1,39 +1,35 @@
 import { type ReactElement } from "react";
-import { type EmptyObject } from "react-hook-form";
 
 import { type Tenant } from "@/lib/model/Tenant";
-import { type TenantSetting } from "@/lib/model/TenantSetting";
-import { tenantSettingRepo } from "@/lib/repo";
+import { type TenantSettings } from "@/lib/model/TenantSettings";
+import { tenantSettingsRepo } from "@/lib/repo";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
+import { getTenantFromDomain } from "@/utils/tenant";
+import { type EmptyObject } from "@/utils/types";
 
-import { type DomainProps, getTenantFromDomainProps } from "./getTenantFromDomainParam";
+import { type DomainProps } from "./layout";
 
-type DomainRootPageOptions = {
-  withSettings?: boolean;
-};
-export type DomainPageCombinedProps<Params extends object> = DomainProps<Params> & {
-  _data: { dirtyDomainFixer: (pathname: string) => string; domain: string; settings?: TenantSetting; tenant: Tenant };
-};
+export type DomainPageCombinedProps<Params extends object> = {
+  _data: { dirtyDomainFixer: (pathname: string) => string; domain: string; settings: TenantSettings; tenant: Tenant };
+} & DomainProps<Params>;
 export type DomainPage<Params extends object = EmptyObject> = (
   props: DomainPageCombinedProps<Params>,
 ) => Promise<ReactElement> | ReactElement;
 
 // This is a HOP (Higher Order Page) that wraps the page component with the tenant and settings data
 export const DomainPageHOP =
-  <Params extends object>(options?: DomainRootPageOptions) =>
+  <Params extends object>() =>
   (page: DomainPage<Params>) =>
     (async (props: DomainPageCombinedProps<Params>) => {
-      const tenant = await getTenantFromDomainProps<Params>(props);
-      let settings: TenantSetting | undefined;
+      const domain = (await props.params).domain;
+      const tenant = await getTenantFromDomain(domain);
 
-      if (options?.withSettings) {
-        const useCase = new GetTenantSettings(tenantSettingRepo);
-        settings = await useCase.execute({
-          tenantId: tenant.id,
-        });
-      }
+      const useCase = new GetTenantSettings(tenantSettingsRepo);
+      const settings = await useCase.execute({
+        tenantId: tenant.id,
+      });
 
       const dirtyDomain = await getDirtyDomain();
       const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
@@ -44,7 +40,7 @@ export const DomainPageHOP =
           settings,
           tenant,
           dirtyDomainFixer,
-          domain: (await props.params).domain,
+          domain,
         },
       });
     }) as (props: unknown) => Promise<ReactElement>;
