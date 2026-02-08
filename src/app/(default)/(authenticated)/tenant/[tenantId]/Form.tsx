@@ -7,7 +7,7 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import Select from "@codegouvfr/react-dsfr/Select";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -40,11 +40,11 @@ export const Form = ({ tenant }: FormProps) => {
   const [success, setSuccess] = useState(false);
 
   const {
+    control,
     formState: { errors, isValid, isDirty },
     handleSubmit,
     register,
     reset,
-    watch,
   } = useForm({
     mode: "onChange",
     resolver: standardSchemaResolver(formSchema),
@@ -90,7 +90,7 @@ export const Form = ({ tenant }: FormProps) => {
     setPending(false);
   }
 
-  const tenantName = watch("tenantName");
+  const tenantName = useWatch({ control, name: "tenantName" });
 
   return (
     <>

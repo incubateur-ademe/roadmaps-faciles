@@ -5,7 +5,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -119,7 +119,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
   const [success, setSuccess] = useState(false);
 
   const {
-    watch,
+    control,
     setValue,
     handleSubmit,
     reset,
@@ -139,6 +139,8 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
       useBrowserLocale: tenantSettings.useBrowserLocale,
     },
   });
+
+  const watchedValues = useWatch({ control });
 
   async function onSubmit(data: FormType) {
     setSaveError(null);
@@ -161,7 +163,7 @@ export const GeneralForm = ({ tenantSettings }: GeneralFormProps) => {
           id: item.name,
           label: item.label,
           helperText: item.helperText,
-          checked: watch(item.name),
+          checked: watchedValues[item.name],
           disabled: item.disabled ?? false,
           onChange: (checked: boolean) => setValue(item.name, checked, { shouldDirty: true }),
         }));
