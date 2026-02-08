@@ -1,7 +1,6 @@
 "use client";
 
 import "@prisma/studio-core/ui/index.css";
-import { fr } from "@codegouvfr/react-dsfr";
 import { createStudioBFFClient } from "@prisma/studio-core/data/bff";
 import { createPostgresAdapter } from "@prisma/studio-core/data/postgres-core";
 import dynamic from "next/dynamic";
@@ -35,8 +34,6 @@ const ClientOnlyStudio = () => {
     // Create the Postgres adapter using the executor
     return createPostgresAdapter({ executor });
   }, []);
-  fr.cx("fr-m-1-5v");
-
   return <Studio adapter={adapter} />;
 };
 

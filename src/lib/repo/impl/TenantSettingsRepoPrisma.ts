@@ -3,7 +3,7 @@ import { type Prisma, type TenantSettings } from "@/prisma/client";
 
 import { type ITenantSettingsRepo } from "../ITenantSettingsRepo";
 
-export class TenantSettingRepoPrisma implements ITenantSettingsRepo {
+export class TenantSettingsRepoPrisma implements ITenantSettingsRepo {
   public findAll(): Promise<TenantSettings[]> {
     return prisma.tenantSettings.findMany();
   }

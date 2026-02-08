@@ -46,7 +46,7 @@ model Board {
 
   tenant               Tenant            @relation(fields: [tenantId], references: [id])
   posts                Post[]
-  pin                  Pin?
+  pins                 Pin[]
   tenantSettingForRoot TenantSettings?
   postsWithHotness     PostWithHotness[]
 
@@ -251,11 +251,13 @@ view PostWithHotness {
 
 model Pin {
   id      Int @id @default(autoincrement())
-  boardId Int @unique
+  boardId Int
   postId  Int @unique
 
   board Board @relation(fields: [boardId], references: [id])
   post  Post  @relation(fields: [postId], references: [id])
+
+  @@unique([boardId, postId])
 }
 
 model PostStatusChange {

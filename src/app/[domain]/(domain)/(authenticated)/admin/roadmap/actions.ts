@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { tenantSettingsRepo } from "@/lib/repo";
+import { boardRepo, tenantSettingsRepo } from "@/lib/repo";
 import { assertTenantAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
@@ -15,6 +15,11 @@ export const saveRoadmapSettings = async (data: { rootBoardId: null | number }):
   try {
     const settings = await tenantSettingsRepo.findByTenantId(tenant.id);
     if (!settings) throw new Error("Settings not found");
+
+    if (data.rootBoardId !== null) {
+      const board = await boardRepo.findById(data.rootBoardId);
+      if (!board || board.tenantId !== tenant.id) throw new Error("Board not found");
+    }
 
     await tenantSettingsRepo.update(settings.id, data);
     revalidatePath("/admin/roadmap");
