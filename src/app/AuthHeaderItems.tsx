@@ -33,18 +33,9 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
         },
       ];
 
-      if (variant === "root") {
-        if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.OWNER || user.isSuperAdmin) {
-          items.push({
-            label: "Administration",
-            iconId: "fr-icon-settings-5-line",
-            linkProps: { href: "/admin" },
-            isCurrent: segments.includes("admin"),
-          });
-        }
-      } else {
+      if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.OWNER || user.isSuperAdmin) {
         items.push({
-          label: "Admin du tenant",
+          label: variant === "root" ? "Administration" : "Admin du tenant",
           iconId: "fr-icon-settings-5-line",
           linkProps: { href: "/admin" },
           isCurrent: segments.includes("admin"),
