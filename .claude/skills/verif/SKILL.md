@@ -21,7 +21,7 @@ Si tu ne connais pas les fichiers modifies, lance les diagnostics sans URI pour 
 
 ## 3. Vérification post-implementation
 
-Fais un tour complet de l'implementation pour verifier que les changements sont conformes aux attentes, que les fonctionnalités sont bien implementées, et que le code est propre et maintenable.
+Fais une revue approfondie de l'implementation pour verifier que les changements sont conformes aux attentes, que les fonctionnalités sont bien implementées, et que le code est propre et maintenable. Tu peux uiliser le MCP `feature-dev:code-reviewer` (et d'autres si besoin) pour t'assister dans cette revue.
 
 ## 4. Resume
 
