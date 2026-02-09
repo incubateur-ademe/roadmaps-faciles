@@ -2,6 +2,7 @@ import { type Prisma, type Tenant, type TenantSettings } from "@/prisma/client";
 
 export interface TenantWithMemberCount {
   _count: { members: number };
+  members: Array<{ user: { email: string; name: null | string } }>;
   settings: TenantSettings;
 }
 

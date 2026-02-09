@@ -32,6 +32,12 @@
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
   - Always prefer `react-dsfr` components (`Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, etc.) over raw DSFR CSS classes
   - Custom DSFR components in `src/dsfr/` (e.g., `Icon`, `TableCustom`) — check here before creating new wrappers
+  - `@/dsfr` barrel (`src/dsfr/server.ts`) exports: `Box`, `FormFieldset`, `Icon`, `Grid`, `GridCol`, `Container`, `CenteredContainer`
+  - Grid layout: always use `Grid` + `GridCol` from `@/dsfr` — never raw `fr-grid-row`/`fr-col-*` divs
+  - Fieldsets: always use `FormFieldset` from `@/dsfr` — never raw `<fieldset>`
+  - SearchBar + Autocomplete: combine DSFR `SearchBar` (`renderInput`) + MUI `Autocomplete` (`renderInput` nested) for autocomplete inputs
+  - MUI `Autocomplete` inside DSFR `SearchBar`: must add `className="flex-1"` on `Autocomplete` to fill the `fr-search-bar` flex container
+  - "use client" function props: rename non-action callbacks to end with `Action` (e.g., `onSelectAction`) to avoid Next.js TS 71007 warning
   - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)

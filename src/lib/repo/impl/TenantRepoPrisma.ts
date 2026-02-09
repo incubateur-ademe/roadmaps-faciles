@@ -13,6 +13,10 @@ export class TenantRepoPrisma implements ITenantRepo {
       where: { settings: { isNot: null } },
       include: {
         settings: true,
+        members: {
+          where: { role: "OWNER" },
+          select: { user: { select: { email: true, name: true } } },
+        },
         _count: { select: { members: true } },
       },
     }) as Promise<TenantWithSettingsAndMemberCount[]>;

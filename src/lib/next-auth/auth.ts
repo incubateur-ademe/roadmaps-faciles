@@ -233,13 +233,19 @@ const {
         if (params.account?.provider === "nodemailer" && !params.email?.verificationRequest && tenant) {
           const email = params.user.email;
           if (email) {
-            // Use updateMany to atomically mark as accepted (prevents race condition)
-            const updated = await prisma.invitation.updateMany({
+            // Find the invitation to get its role before marking as accepted
+            const invitation = await prisma.invitation.findFirst({
               where: { email, tenantId: tenant.id, acceptedAt: null },
-              data: { acceptedAt: new Date() },
+              select: { role: true },
             });
 
-            if (updated.count > 0) {
+            if (invitation) {
+              // Mark as accepted
+              await prisma.invitation.updateMany({
+                where: { email, tenantId: tenant.id, acceptedAt: null },
+                data: { acceptedAt: new Date() },
+              });
+
               // Create UserOnTenant membership if not exists
               const userId = params.user.id;
               if (userId) {
@@ -248,7 +254,7 @@ const {
                   await userOnTenantRepo.create({
                     userId,
                     tenantId: tenant.id,
-                    role: "USER",
+                    role: invitation.role,
                     status: "ACTIVE",
                   });
                 }

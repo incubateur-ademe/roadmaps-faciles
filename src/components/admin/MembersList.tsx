@@ -68,8 +68,7 @@ const STATUS_WEIGHT: Record<UserStatus, number> = {
   DELETED: 2,
 };
 
-const ASSIGNABLE_ROLES = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN] as const;
-type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+const ASSIGNABLE_ROLES = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN, UserRole.OWNER] as const;
 
 const FILTERABLE_ROLES = [UserRole.OWNER, UserRole.ADMIN, UserRole.MODERATOR, UserRole.USER] as const;
 
@@ -98,6 +97,9 @@ export const MembersList = ({
   const [pageSize, setPageSize] = useState<null | number>(DEFAULT_PAGE_SIZE);
   const [filterRole, setFilterRole] = useState<null | UserRole>(null);
   const [filterStatus, setFilterStatus] = useState<null | UserStatus>(null);
+
+  const ownerCount = useMemo(() => members.filter(m => m.role === UserRole.OWNER).length, [members]);
+  const isLastOwner = (member: UserOnTenantWithUser) => member.role === UserRole.OWNER && ownerCount <= 1;
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -199,7 +201,6 @@ export const MembersList = ({
     setLoadingId(null);
   };
 
-  const isOwner = (member: UserOnTenantWithUser) => member.role === UserRole.OWNER;
   const isSelf = (member: UserOnTenantWithUser) => member.userId === currentUserId;
 
   const sortHeader = (label: string, key: SortKey): TableCustomHeadColProps => ({
@@ -315,7 +316,7 @@ export const MembersList = ({
               { children: member.user.email },
               {
                 children:
-                  isOwner(member) || isSelf(member) || member.role === UserRole.INHERITED ? (
+                  isLastOwner(member) || isSelf(member) || member.role === UserRole.INHERITED ? (
                     <span className="flex items-center gap-2">
                       <Badge as="span" small noIcon severity="info">
                         {ROLE_LABELS[getEffectiveRole(member)]}
@@ -332,7 +333,7 @@ export const MembersList = ({
                       label={<span className="sr-only">Rôle</span>}
                       options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
                       nativeSelectProps={{
-                        value: member.role as AssignableRole,
+                        value: member.role,
                         onChange: e => void handleRoleChange(member.userId, e.target.value as UserRole),
                       }}
                       disabled={loadingId === member.userId}
@@ -349,7 +350,7 @@ export const MembersList = ({
               { children: dateFormatter.format(new Date(member.joinedAt)) },
               {
                 children:
-                  isOwner(member) || isSelf(member) ? null : (
+                  isLastOwner(member) || isSelf(member) ? null : (
                     <ButtonsGroup
                       inlineLayoutWhen="always"
                       buttonsSize="small"

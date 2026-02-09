@@ -173,8 +173,24 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
   try {
     const anonymousEmail = `deleted-${crypto.randomUUID()}@anonymous.local`;
 
-    await prisma.$transaction([
-      prisma.user.update({
+    // Transaction interactive pour vérifier atomiquement le last-owner + supprimer
+    await prisma.$transaction(async tx => {
+      const ownerships = await tx.userOnTenant.findMany({
+        where: { userId, role: "OWNER" },
+        select: { tenantId: true },
+      });
+      for (const { tenantId } of ownerships) {
+        const ownerCount = await tx.userOnTenant.count({
+          where: { tenantId, role: "OWNER" },
+        });
+        if (ownerCount <= 1) {
+          throw new Error(
+            "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte.",
+          );
+        }
+      }
+
+      await tx.user.update({
         where: { id: userId },
         data: {
           email: anonymousEmail,
@@ -185,13 +201,13 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
           status: "DELETED",
           notificationsEnabled: false,
         },
-      }),
-      prisma.userOnTenant.deleteMany({ where: { userId } }),
-      prisma.account.deleteMany({ where: { userId } }),
-      prisma.session.deleteMany({ where: { userId } }),
-      prisma.apiKey.deleteMany({ where: { userId } }),
-      prisma.follow.deleteMany({ where: { userId } }),
-    ]);
+      });
+      await tx.userOnTenant.deleteMany({ where: { userId } });
+      await tx.account.deleteMany({ where: { userId } });
+      await tx.session.deleteMany({ where: { userId } });
+      await tx.apiKey.deleteMany({ where: { userId } });
+      await tx.follow.deleteMany({ where: { userId } });
+    });
 
     return { ok: true };
   } catch (error) {

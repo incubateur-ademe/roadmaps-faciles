@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { type Prisma, type User } from "@/prisma/client";
 
-import { type IUserRepo, type UserWithTenantCount } from "../IUserRepo";
+import { type IUserRepo, type UserEmailSearchResult, type UserWithTenantCount } from "../IUserRepo";
 
 export class UserRepoPrisma implements IUserRepo {
   public findAll(): Promise<User[]> {
@@ -30,6 +30,14 @@ export class UserRepoPrisma implements IUserRepo {
 
   public create(data: Prisma.UserUncheckedCreateInput): Promise<User> {
     return prisma.user.create({ data });
+  }
+
+  public searchByEmail(query: string, limit = 10): Promise<UserEmailSearchResult[]> {
+    return prisma.user.findMany({
+      where: { email: { contains: query, mode: "insensitive" }, status: "ACTIVE" },
+      select: { id: true, email: true, name: true },
+      take: limit,
+    });
   }
 
   public async update(id: string, data: Prisma.UserUncheckedUpdateInput): Promise<User> {

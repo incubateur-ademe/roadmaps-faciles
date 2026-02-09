@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
+import { userRoleEnum } from "@/lib/model/User";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type Invitation } from "@/prisma/client";
 
@@ -13,6 +14,7 @@ export const SendInvitationInput = z.object({
   tenantId: z.number(),
   email: z.string().email(),
   tenantUrl: z.string().url(),
+  role: userRoleEnum.optional().default("USER"),
 });
 
 export type SendInvitationInput = z.infer<typeof SendInvitationInput>;
@@ -69,6 +71,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
       tenantId: input.tenantId,
       email: input.email,
       tokenDigest,
+      role: input.role,
     });
 
     const invitationLink = `${input.tenantUrl}/login?invitation=${token}`;
@@ -86,12 +89,18 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
           : undefined,
     });
 
+    const isOwnerInvite = input.role === "OWNER";
+    const subject = isOwnerInvite
+      ? "Vous êtes invité en tant que propriétaire d'un espace"
+      : "Vous êtes invité à rejoindre un espace";
+    const roleText = isOwnerInvite ? " en tant que propriétaire" : "";
+
     await transporter.sendMail({
       from: config.mailer.from,
       to: input.email,
-      subject: "Vous êtes invité à rejoindre un espace",
-      text: `Bonjour,\n\nVous avez été invité à rejoindre un espace. Cliquez sur le lien suivant pour accepter l'invitation :\n\n${invitationLink}\n\nCordialement,`,
-      html: `<p>Bonjour,</p><p>Vous avez été invité à rejoindre un espace. Cliquez sur le lien suivant pour accepter l'invitation :</p><p><a href="${invitationLink}">${invitationLink}</a></p><p>Cordialement,</p>`,
+      subject,
+      text: `Bonjour,\n\nVous avez été invité à rejoindre un espace${roleText}. Cliquez sur le lien suivant pour accepter l'invitation :\n\n${invitationLink}\n\nCordialement,`,
+      html: `<p>Bonjour,</p><p>Vous avez été invité à rejoindre un espace${roleText}. Cliquez sur le lien suivant pour accepter l'invitation :</p><p><a href="${invitationLink}">${invitationLink}</a></p><p>Cordialement,</p>`,
     });
 
     return invitation;
