@@ -226,7 +226,7 @@ const {
         return true;
       },
       async jwt({ token, trigger, espaceMembreMember }) {
-        if (trigger === "signIn") {
+        if (trigger === "signIn" || !token.user) {
           const now = new Date();
           const dbUser = espaceMembreMember
             ? await userRepo.findByUsername(espaceMembreMember.username)
@@ -254,11 +254,13 @@ const {
           };
           token.sub = dbUser.username || dbUser.id;
 
-          await userRepo.update(dbUser.id, {
-            signInCount: dbUser.signInCount + 1,
-            lastSignInAt: dbUser.currentSignInAt ?? now,
-            currentSignInAt: now,
-          });
+          if (trigger === "signIn") {
+            await userRepo.update(dbUser.id, {
+              signInCount: dbUser.signInCount + 1,
+              lastSignInAt: dbUser.currentSignInAt ?? now,
+              currentSignInAt: now,
+            });
+          }
         }
         return token;
       },

@@ -5,21 +5,23 @@ import { type AvatarProps } from "@mui/material/Avatar";
 import styles from "./InitialsAvatar.module.scss";
 
 export interface InitialsAvatarProps {
+  as?: "div" | "span";
   className?: CxArg;
   name: string;
   size?: number;
 }
 
-export const InitialsAvatar = ({ name, className }: InitialsAvatarProps) => {
+export const InitialsAvatar = ({ name, className, as = "div" }: InitialsAvatarProps) => {
   const initials = getInitials(name);
   const background = generateBackground(name);
+  const Component = as;
   return (
-    <div
+    <Component
       className={cx(styles["initials-avatar"], className)}
       style={{ backgroundColor: background[0], color: background[1] }}
     >
       <span>{initials}</span>
-    </div>
+    </Component>
   );
 };
 
