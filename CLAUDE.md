@@ -45,6 +45,7 @@
   - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
   - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
+  - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
@@ -63,4 +64,7 @@
 - Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering
 - DSFR `fr-container--fluid` has `overflow: hidden` — override with `!overflow-visible` (Tailwind `!important`) when content needs to scroll/overflow
 - DSFR `.fr-select-group:not(:last-child)` adds `margin-bottom: 1.5rem` — counter with `[&_.fr-select-group]:!mb-0` when using inline Select groups
+- NextAuth `signIn()` uses `cookies().set()` internally — cannot be called during RSC render (read-only). Use a Server Action (form auto-submit pattern) instead
+- Route Handlers: use `NextResponse.redirect()`, not `redirect()` from `next/navigation` (which throws and is for RSC/Server Actions only)
+- Multi-tenant Route Handlers: never use `request.url` as base for root URLs — use `config.host` directly (request may reflect tenant domain)
 - Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)

@@ -21,4 +21,16 @@ Besoin que l'auth puisse se faire via des providers externes (SSO, Google, etc.)
 - Tests d’intégration sur le flux login/out.
 
 ## Liens
-- README (env NEXTAUTH_*), code d’intégration.
+- README (env NEXTAUTH_*), code d'intégration.
+
+---
+
+## Mise à jour — 2026-02-09
+
+### Nouveau provider : Credentials `"bridge"` (SSO cross-domain)
+
+Un Credentials provider `"bridge"` a été ajouté pour permettre le transfert d'authentification du root vers un tenant via un token HMAC-SHA256 signé. Ce provider ne passe pas par l'adapter Prisma (pas de création de compte/session côté adapter) — il s'appuie uniquement sur la stratégie JWT.
+
+Le callback `signIn` crée automatiquement la membership `UserOnTenant` (rôle `INHERITED`) si elle n'existe pas.
+
+Voir ADR 0011 pour les détails du flow et les contraintes.
