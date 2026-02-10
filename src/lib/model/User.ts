@@ -37,6 +37,8 @@ export const User = z.object({
 
   recapNotificationFrequency: z.number(),
 
+  isBetaGouvMember: z.boolean(),
+
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
