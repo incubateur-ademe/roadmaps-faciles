@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { config } from "@/config";
+import { getDomainProvider } from "@/lib/domain-provider";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole } from "@/prisma/enums";
@@ -21,7 +23,7 @@ export class DeleteTenant implements UseCase<DeleteTenantInput, DeleteTenantOutp
   ) {}
 
   public async execute(input: DeleteTenantInput): Promise<DeleteTenantOutput> {
-    const tenant = await this.tenantRepo.findById(input.tenantId);
+    const tenant = await this.tenantRepo.findByIdWithSettings(input.tenantId);
     if (!tenant) {
       throw new Error("Tenant introuvable.");
     }
@@ -32,5 +34,13 @@ export class DeleteTenant implements UseCase<DeleteTenantInput, DeleteTenantOutp
     }
 
     await this.tenantRepo.update(input.tenantId, { deletedAt: new Date() });
+
+    if (tenant.settings) {
+      const provider = getDomainProvider();
+      await provider.removeDomain(`${tenant.settings.subdomain}.${config.rootDomain}`);
+      if (tenant.settings.customDomain) {
+        await provider.removeDomain(tenant.settings.customDomain);
+      }
+    }
   }
 }

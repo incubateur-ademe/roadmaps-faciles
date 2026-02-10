@@ -18,6 +18,7 @@ import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
 
 type CustomUser = {
+  currentTenantRole?: UserRole;
   isBetaGouvMember: boolean;
   isSuperAdmin?: boolean;
   role: UserRole;
@@ -302,6 +303,15 @@ const {
             });
           }
         }
+
+        // Resolve current tenant role on every request
+        if (token.user && tenant) {
+          const membership = await userOnTenantRepo.findMembership(token.user.uuid, tenant.id);
+          token.user = { ...token.user, currentTenantRole: membership?.role ?? undefined };
+        } else if (token.user) {
+          token.user = { ...token.user, currentTenantRole: undefined };
+        }
+
         return token;
       },
       session({ session, token }) {

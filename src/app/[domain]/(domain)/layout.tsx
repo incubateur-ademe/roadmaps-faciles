@@ -53,15 +53,6 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     notFound();
   }
 
-  // Optional: Redirect to custom domain if it exists when on subdomain
-  // if (
-  //   domain.endsWith(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) &&
-  //   tenant.customDomain &&
-  //   process.env.REDIRECT_TO_CUSTOM_DOMAIN_IF_EXISTS === "true"
-  // ) {
-  //   return redirect(`https://${tenant.customDomain}`);
-  // }
-
   return (
     <>
       <Header

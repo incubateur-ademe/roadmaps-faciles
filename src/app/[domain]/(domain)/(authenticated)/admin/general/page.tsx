@@ -1,6 +1,6 @@
 import { Container } from "@/dsfr";
 import { auth } from "@/lib/next-auth/auth";
-import { userOnTenantRepo } from "@/lib/repo";
+import { boardRepo, postStatusRepo, userOnTenantRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
 
 import { DomainPageHOP } from "../../../DomainPage";
@@ -20,9 +20,13 @@ const AdminGeneralPage = DomainPageHOP()(async props => {
     }
   }
 
+  const boards = await boardRepo.findAllForTenant(tenant.id);
+  const statuses = await postStatusRepo.findAllForTenant(tenant.id);
+  const hasData = boards.length > 0 || statuses.length > 0;
+
   return (
     <Container fluid className="!overflow-visible">
-      <GeneralForm tenantSettings={settings} isOwner={isOwner} />
+      <GeneralForm tenantSettings={settings} isOwner={isOwner} hasData={hasData} />
     </Container>
   );
 });

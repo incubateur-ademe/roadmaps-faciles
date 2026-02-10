@@ -1,6 +1,8 @@
 import { z } from "zod";
 
+import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
+import { getDomainProvider } from "@/lib/domain-provider";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 import { type TenantSettings } from "@/prisma/client";
 
@@ -45,6 +47,20 @@ export class UpdateTenantDomain implements UseCase<UpdateTenantDomainInput, Upda
       data.customDomain = input.customDomain;
     }
 
-    return this.tenantSettingsRepo.update(input.settingsId, data);
+    const result = await this.tenantSettingsRepo.update(input.settingsId, data);
+
+    const provider = getDomainProvider();
+
+    if (input.subdomain && input.subdomain !== existing.subdomain) {
+      await provider.removeDomain(`${existing.subdomain}.${config.rootDomain}`);
+      await provider.addDomain(`${input.subdomain}.${config.rootDomain}`, "subdomain");
+    }
+
+    if (input.customDomain !== undefined && input.customDomain !== existing.customDomain) {
+      if (existing.customDomain) await provider.removeDomain(existing.customDomain);
+      if (input.customDomain) await provider.addDomain(input.customDomain, "custom");
+    }
+
+    return result;
   }
 }

@@ -33,7 +33,13 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
         },
       ];
 
-      if (user.role === USER_ROLE.ADMIN || user.role === USER_ROLE.OWNER || user.isSuperAdmin) {
+      const isAdmin =
+        user.role === USER_ROLE.ADMIN ||
+        user.role === USER_ROLE.OWNER ||
+        user.isSuperAdmin ||
+        user.currentTenantRole === USER_ROLE.ADMIN ||
+        user.currentTenantRole === USER_ROLE.OWNER;
+      if (isAdmin) {
         items.push({
           label: variant === "root" ? "Administration" : "Admin du tenant",
           iconId: "fr-icon-settings-5-line",

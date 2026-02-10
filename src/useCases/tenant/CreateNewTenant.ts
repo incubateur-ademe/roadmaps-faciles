@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { config } from "@/config";
+import { getDomainProvider } from "@/lib/domain-provider";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
@@ -36,6 +37,9 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
       name: input.name,
       subdomain: input.subdomain,
     });
+
+    const provider = getDomainProvider();
+    await provider.addDomain(`${input.subdomain}.${config.rootDomain}`, "subdomain");
 
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
     const sendInvitation = new SendInvitation(this.invitationRepo);
