@@ -10,7 +10,7 @@ export function proxy(req: NextRequest) {
   const url = req.nextUrl;
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
-  const hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
+  let hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
 
   // experimental: support for Chrome DevTools
   if (req.url.includes("/.well-known/appspecific/com.chrome.devtools.json") && appConfig.env === "dev") {
@@ -51,6 +51,12 @@ export function proxy(req: NextRequest) {
         },
       }),
     );
+  }
+
+  // Custom domains in dev: strip port so [domain] param matches DB customDomain without port.
+  // Subdomains keep the port (needed for getTenantSubdomain matching against rootDomain).
+  if (!hostname.endsWith(`.${appConfig.rootDomain}`)) {
+    hostname = hostname.replace(/:(\d+)$/, "");
   }
 
   // rewrite everything else to `/[domain] dynamic route

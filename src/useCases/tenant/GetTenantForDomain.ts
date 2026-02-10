@@ -35,9 +35,12 @@ export class GetTenantForDomain extends AbstractCachedUseCase<GetTenantForDomain
   public async cachedExecute(input: GetTenantForDomainInput): Promise<GetTenantForDomainOutput> {
     const { domain } = GetTenantForDomainInput.parse(input);
     const subdomain = getTenantSubdomain(domain);
+    // Custom domains: strip port (in dev, host header includes :3000).
+    // Subdomains keep the port since getTenantSubdomain matches against rootDomain which includes it.
+    const customDomainLookup = domain.replace(/:(\d+)$/, "");
     const result = subdomain
       ? await this.tenantRepo.findBySubdomain(subdomain)
-      : await this.tenantRepo.findByCustomDomain(domain);
+      : await this.tenantRepo.findByCustomDomain(customDomainLookup);
     if (!result) {
       throw new GetTenantForDomainNotFoundError(`Tenant not found for domain: ${domain}`);
     }

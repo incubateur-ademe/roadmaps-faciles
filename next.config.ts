@@ -16,9 +16,17 @@ const env = {
 
 const isDev = process.env.NODE_ENV === "development";
 
+const localCustomDomains = ["*.localhost", "mon-espace.local"];
+
 const csp = {
   "default-src": ["'none'"],
-  "connect-src": ["'self'", "https://*.gouv.fr", isDev && "http://localhost"],
+  "connect-src": [
+    "'self'",
+    "https://*.gouv.fr",
+    isDev && "http://localhost",
+    isDev && localCustomDomains.map(domain => `http://${domain}`),
+    isDev && localCustomDomains.map(domain => `ws://${domain}`),
+  ].flat(),
   "font-src": ["'self'"],
   "media-src": ["'self'"],
   "img-src": ["'self'", "data:", "espace-membre.incubateur.net"],
@@ -28,7 +36,8 @@ const csp = {
     process.env.NEXT_PUBLIC_MATOMO_URL,
     "'unsafe-eval'",
     isDev && "http://localhost",
-  ],
+    isDev && localCustomDomains.map(domain => `http://${domain}`),
+  ].flat(),
   "style-src": ["'self'", "'unsafe-inline'"],
   "object-src": ["'self'", "data:"],
   "frame-ancestors": ["'self'"],
@@ -48,7 +57,7 @@ const ContentSecurityPolicy = Object.entries(csp)
 const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
-  allowedDevOrigins: ["*.localhost:3000"],
+  allowedDevOrigins: localCustomDomains,
   experimental: {
     serverMinification: true,
     authInterrupts: true,
