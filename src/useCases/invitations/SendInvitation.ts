@@ -4,17 +4,18 @@ import { z } from "zod";
 
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
-import { userRoleEnum } from "@/lib/model/User";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type Invitation } from "@/prisma/client";
 
 import { type UseCase } from "../types";
 
+const invitationRoleEnum = z.enum(["USER", "MODERATOR", "ADMIN", "OWNER"]);
+
 export const SendInvitationInput = z.object({
   tenantId: z.number(),
   email: z.string().email(),
   tenantUrl: z.string().url(),
-  role: userRoleEnum.optional().default("USER"),
+  role: invitationRoleEnum.optional().default("USER"),
 });
 
 export type SendInvitationInput = z.infer<typeof SendInvitationInput>;

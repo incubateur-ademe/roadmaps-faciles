@@ -30,7 +30,9 @@ export const verifyBridgeToken = (token: string): BridgeTokenPayload => {
 
   const expectedSignature = crypto.createHmac("sha256", config.security.auth.secret).update(data).digest("base64url");
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+  const sigBuf = Buffer.from(signature);
+  const expectedBuf = Buffer.from(expectedSignature);
+  if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
     throw new Error("Token invalide.");
   }
 

@@ -130,7 +130,10 @@ const domainSchema = z.object({
     .string()
     .min(1, "Le sous-domaine est requis.")
     .regex(/^[a-z0-9-]+$/, "Seuls les caractères minuscules, chiffres et tirets sont autorisés."),
-  customDomain: z.string().nullable(),
+  customDomain: z
+    .string()
+    .transform(v => (v === "" ? null : v))
+    .nullable(),
 });
 
 type DomainFormType = z.infer<typeof domainSchema>;
@@ -335,7 +338,7 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
 
   const subdomain = useWatch({ control, name: "subdomain" });
 
-  const savedCustomDomain = tenantSettings.customDomain;
+  const [savedCustomDomain, setSavedCustomDomain] = useState(tenantSettings.customDomain);
 
   const runDNSCheck = useCallback(async () => {
     if (!savedCustomDomain) return;
@@ -392,6 +395,8 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
     const result = await updateTenantDomain(data);
     if (result.ok) {
       reset(data);
+      setSavedCustomDomain(data.customDomain);
+      setDnsStatus(null);
       setDomainSuccess(true);
       setTimeout(() => setDomainSuccess(false), 5000);
     } else if (!result.ok) {

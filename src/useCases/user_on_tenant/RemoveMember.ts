@@ -26,7 +26,7 @@ export class RemoveMember implements UseCase<RemoveMemberInput, RemoveMemberOutp
       // Transaction pour éviter une race condition TOCTOU
       await prisma.$transaction(async tx => {
         const ownerCount = await tx.userOnTenant.count({
-          where: { tenantId: input.tenantId, role: "OWNER" },
+          where: { tenantId: input.tenantId, role: "OWNER", status: "ACTIVE" },
         });
         if (ownerCount <= 1) {
           throw new Error("Impossible de retirer le dernier propriétaire.");

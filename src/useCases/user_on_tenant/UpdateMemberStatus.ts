@@ -32,7 +32,7 @@ export class UpdateMemberStatus implements UseCase<UpdateMemberStatusInput, Upda
       // Transaction pour éviter une race condition TOCTOU
       await prisma.$transaction(async tx => {
         const ownerCount = await tx.userOnTenant.count({
-          where: { tenantId: input.tenantId, role: "OWNER" },
+          where: { tenantId: input.tenantId, role: "OWNER", status: "ACTIVE" },
         });
         if (ownerCount <= 1) {
           throw new Error("Impossible de bloquer le dernier propriétaire.");

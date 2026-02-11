@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/config";
 import { createBridgeToken } from "@/lib/authBridge";
 import { auth } from "@/lib/next-auth/auth";
+import { tenantRepo } from "@/lib/repo";
 
 const rootUrl = (path = "/") => new URL(path, config.host);
 
@@ -26,11 +27,12 @@ export const GET = async (request: NextRequest) => {
     return NextResponse.redirect(rootUrl());
   }
 
-  // Only allow redirect to same host or tenant subdomains
+  // Allow redirect to same host, tenant subdomains, or registered custom domains
   const rootDomain = config.rootDomain;
   const rootHost = rootUrl().host;
-  const isAllowedHost = parsedUrl.host === rootHost || parsedUrl.host.endsWith(`.${rootDomain}`);
-  if (!isAllowedHost) {
+  const isSubdomainHost = parsedUrl.host === rootHost || parsedUrl.host.endsWith(`.${rootDomain}`);
+  const isCustomDomainHost = !isSubdomainHost && !!(await tenantRepo.findByCustomDomain(parsedUrl.hostname));
+  if (!isSubdomainHost && !isCustomDomainHost) {
     return NextResponse.redirect(rootUrl());
   }
 

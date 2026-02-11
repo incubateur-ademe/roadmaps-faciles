@@ -7,7 +7,7 @@ export const WELCOME_DATA_PREVIEW = {
     { name: "Planifié", color: "blueCumulus" },
     { name: "En cours", color: "purpleGlycine" },
     { name: "Complété", color: "greenMenthe" },
-    { name: "Rejetté", color: "error" },
+    { name: "Rejeté", color: "error" },
   ],
   extras: "2 posts d'exemple, 1 commentaire, 1 épingle",
 } as const;

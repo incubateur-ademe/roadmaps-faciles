@@ -181,7 +181,7 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
       });
       for (const { tenantId } of ownerships) {
         const ownerCount = await tx.userOnTenant.count({
-          where: { tenantId, role: "OWNER" },
+          where: { tenantId, role: "OWNER", status: "ACTIVE" },
         });
         if (ownerCount <= 1) {
           throw new Error(

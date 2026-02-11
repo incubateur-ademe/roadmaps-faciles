@@ -44,6 +44,14 @@ export class UpdateTenantDomain implements UseCase<UpdateTenantDomainInput, Upda
     }
 
     if (input.customDomain !== undefined) {
+      if (input.customDomain) {
+        const domainConflict = await prisma.tenantSettings.findFirst({
+          where: { customDomain: input.customDomain, id: { not: input.settingsId } },
+        });
+        if (domainConflict) {
+          throw new Error("Ce domaine personnalisé est déjà utilisé par un autre tenant.");
+        }
+      }
       data.customDomain = input.customDomain;
     }
 

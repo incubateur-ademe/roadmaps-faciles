@@ -98,7 +98,10 @@ export const MembersList = ({
   const [filterRole, setFilterRole] = useState<null | UserRole>(null);
   const [filterStatus, setFilterStatus] = useState<null | UserStatus>(null);
 
-  const ownerCount = useMemo(() => members.filter(m => m.role === UserRole.OWNER).length, [members]);
+  const ownerCount = useMemo(
+    () => members.filter(m => m.role === UserRole.OWNER && m.status === UserStatus.ACTIVE).length,
+    [members],
+  );
   const isLastOwner = (member: UserOnTenantWithUser) => member.role === UserRole.OWNER && ownerCount <= 1;
 
   const toggleSort = (key: SortKey) => {
