@@ -79,7 +79,11 @@
     "emailSentTitle": "Connexion site {brandName}",
     "emailSentHeadline": "Email envoyé !",
     "emailSentBody": "Un email de vérification a été envoyé à l'adresse principale rattachée à votre compte Espace Membre. Veuillez vérifier votre boîte mail et cliquer sur le lien pour valider votre adresse email.",
-    "emailSentSpam": "Vérifiez également les spams dans votre antispam Mailinblack ou équivalent."
+    "emailSentSpam": "Vérifiez également les spams dans votre antispam Mailinblack ou équivalent.",
+    "tenantLogin": "Connexion espace : {name}",
+    "bridgePrompt": "Vous avez un compte sur {brand} ?",
+    "bridgeLink": "Se connecter via {brand}",
+    "bridgeLoggingIn": "Connexion en cours..."
   },
   "errors": {
     "401": {
@@ -114,6 +118,8 @@
     },
     "errorCode": "Erreur {code}",
     "homepage": "Page d'accueil",
+    "technicalError": "Erreur technique",
+    "retry": "Réessayer",
     "saveError": "Erreur de sauvegarde"
   },
   "home": {

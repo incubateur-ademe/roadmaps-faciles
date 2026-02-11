@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import crypto from "node:crypto";
 
@@ -12,6 +13,7 @@ import { DomainPageHOP } from "../DomainPage";
 import { BridgeAutoLogin } from "./BridgeAutoLogin";
 
 const TenantLoginPage = DomainPageHOP()(async props => {
+  const t = await getTranslations("auth");
   // Validate invitation token if present in URL
   const searchParams = await (props as unknown as { searchParams: Promise<Record<string, string | undefined>> })
     .searchParams;
@@ -66,14 +68,14 @@ const TenantLoginPage = DomainPageHOP()(async props => {
             <Container pxmd="0" py="10v" mymd="14v" className={style.login}>
               <Grid haveGutters align="center">
                 <GridCol md={9} lg={8}>
-                  <h1>Connexion espace : {props._data.settings.name}</h1>
+                  <h1>{t("tenantLogin", { name: props._data.settings.name })}</h1>
                   <Box>
                     <LoginForm loginWithEmail defaultEmail={invitationEmail} />
                   </Box>
                   <hr className="fr-mt-4w fr-pb-2w" />
                   <p className="fr-text--sm">
-                    Vous avez un compte sur {config.brand.name} ?{" "}
-                    <a href={bridgeUrl}>Se connecter via {config.brand.name}</a>
+                    {t("bridgePrompt", { brand: config.brand.name })}{" "}
+                    <a href={bridgeUrl}>{t("bridgeLink", { brand: config.brand.name })}</a>
                   </p>
                 </GridCol>
               </Grid>

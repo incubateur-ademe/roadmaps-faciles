@@ -79,7 +79,11 @@
     "emailSentTitle": "Sign in to {brandName}",
     "emailSentHeadline": "Email sent!",
     "emailSentBody": "A verification email has been sent to the main address linked to your Espace Membre account. Please check your inbox and click the link to verify your email address.",
-    "emailSentSpam": "Also check your spam folder in Mailinblack or equivalent."
+    "emailSentSpam": "Also check your spam folder in Mailinblack or equivalent.",
+    "tenantLogin": "Sign in to: {name}",
+    "bridgePrompt": "Have an account on {brand}?",
+    "bridgeLink": "Sign in via {brand}",
+    "bridgeLoggingIn": "Signing in..."
   },
   "errors": {
     "401": {
@@ -114,6 +118,8 @@
     },
     "errorCode": "Error {code}",
     "homepage": "Homepage",
+    "technicalError": "Technical error",
+    "retry": "Retry",
     "saveError": "Save error"
   },
   "home": {

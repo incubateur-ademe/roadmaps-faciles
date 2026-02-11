@@ -159,7 +159,7 @@ export function UserMenuHeaderItem({
   const componentClass = "fr-user-menu";
 
   return (
-    <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), className)} id={menuId}>
+    <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)} id={menuId}>
       <div className={fr.cx("fr-nav__item")}>
         <Button
           className={`${componentClass}__btn`}

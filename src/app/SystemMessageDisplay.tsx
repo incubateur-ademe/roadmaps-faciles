@@ -19,7 +19,9 @@ export const normalizeArtwork = (pictogram: SimpleSrcImage | string): SimpleSrcI
   return pictogram;
 };
 
-const artworkMap = {
+export { artworkOvoidSvgUrl };
+
+export const artworkMap = {
   calendar: normalizeArtwork(artworkCalendarSvgUrl),
   inProgress: normalizeArtwork(artworkInProgressSvgUrl),
   padlock: normalizeArtwork(artworkPadlockSvgUrl),
