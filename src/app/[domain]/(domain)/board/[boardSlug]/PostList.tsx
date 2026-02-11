@@ -2,6 +2,7 @@
 
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -44,6 +45,7 @@ export const PostList = ({
   const [page, setPage] = useState(1);
   const pathname = usePathname();
   const dirtyDomainFixer = dirtySafePathname(pathname);
+  const t = useTranslations("common");
 
   const handleLoadMore = () => {
     startTransition(async () => {
@@ -103,7 +105,7 @@ export const PostList = ({
             onClick={handleLoadMore}
             disabled={totalCount === posts.length}
           >
-            Plus
+            {t("more")}
           </Button>
         )}
       </div>

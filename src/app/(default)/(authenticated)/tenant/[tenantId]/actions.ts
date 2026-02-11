@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
@@ -21,12 +22,14 @@ export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<
   if (!session.user.isSuperAdmin) {
     const idParsed = Tenant.pick({ id: true }).safeParse(tenant);
     if (!idParsed.success) {
-      return { ok: false, error: "ID du tenant invalide." };
+      const t = await getTranslations("serverErrors");
+      return { ok: false, error: t("invalidTenantId") };
     }
     const membership = await userOnTenantRepo.findMembership(session.user.uuid, idParsed.data.id);
     const effectiveRole = membership?.role === "INHERITED" ? session.user.role : membership?.role;
     if (!effectiveRole || ROLE_WEIGHT[effectiveRole] < ROLE_WEIGHT.ADMIN) {
-      return { ok: false, error: "Accès non autorisé." };
+      const t = await getTranslations("serverErrors");
+      return { ok: false, error: t("unauthorized") };
     }
   }
 

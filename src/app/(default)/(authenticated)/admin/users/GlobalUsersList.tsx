@@ -8,6 +8,7 @@ import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { TableCustom, type TableCustomHeadColProps } from "@/dsfr/base/TableCustom";
@@ -19,22 +20,6 @@ import { updateUserRole, updateUserStatus } from "./actions";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50] as const;
 const DEFAULT_PAGE_SIZE = 10;
-
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  USER: "Utilisateur",
-  INHERITED: "Hérité",
-};
-
-const STATUS_LABELS: Record<UserStatus, string> = {
-  ACTIVE: "Actif",
-  BLOCKED: "Bloqué",
-  DELETED: "Supprimé",
-};
 
 const STATUS_BADGE_SEVERITY: Record<UserStatus, BadgeProps["severity"]> = {
   ACTIVE: "success",
@@ -71,6 +56,27 @@ interface GlobalUsersListProps {
 }
 
 export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdminIds }: GlobalUsersListProps) => {
+  const t = useTranslations("adminUsers");
+  const tr = useTranslations("roles");
+  const ts = useTranslations("memberStatus");
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
+
+  const ROLE_LABELS: Record<UserRole, string> = {
+    OWNER: tr("OWNER"),
+    ADMIN: tr("ADMIN"),
+    MODERATOR: tr("MODERATOR"),
+    USER: tr("USER"),
+    INHERITED: tr("INHERITED"),
+  };
+
+  const STATUS_LABELS: Record<UserStatus, string> = {
+    ACTIVE: ts("ACTIVE"),
+    BLOCKED: ts("BLOCKED"),
+    DELETED: ts("DELETED"),
+  };
+
   const [users, setUsers] = useState(initialUsers);
   const [error, setError] = useState<null | string>(null);
   const [loadingId, setLoadingId] = useState<null | string>(null);
@@ -170,7 +176,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
         <Alert
           className={fr.cx("fr-mb-2w")}
           severity="error"
-          title="Erreur"
+          title={tc("error")}
           description={error}
           closable
           onClose={() => setError(null)}
@@ -179,15 +185,16 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
 
       <div className={cx(fr.cx("fr-mb-2w"), "flex items-end justify-between flex-wrap gap-4")}>
         <p className={fr.cx("fr-mb-1v")}>
-          {filteredUsers.length === users.length
-            ? `${users.length} utilisateur(s)`
-            : `${filteredUsers.length} / ${users.length} utilisateur(s)`}
+          {t("userCount", {
+            filtered: filteredUsers.length === users.length ? "same" : String(filteredUsers.length),
+            total: users.length,
+          })}
         </p>
         <div className="flex items-end flex-wrap gap-4 [&_.fr-select-group]:!mb-0">
           <Select
-            label="Rôle"
+            label={t("role")}
             options={[
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
               ...FILTERABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
             ]}
             nativeSelectProps={{
@@ -199,9 +206,9 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
             }}
           />
           <Select
-            label="Statut"
+            label={t("status")}
             options={[
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
               ...Object.values(UserStatus).map(status => ({ value: status, label: STATUS_LABELS[status] })),
             ]}
             nativeSelectProps={{
@@ -214,10 +221,10 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
           />
           <Select
             className="ml-auto"
-            label="Par page"
+            label={tc("perPage")}
             options={[
               ...PAGE_SIZE_OPTIONS.map(size => ({ value: String(size), label: String(size) })),
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
             ]}
             nativeSelectProps={{
               value: pageSize ? String(pageSize) : "all",
@@ -238,21 +245,21 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
               "col-5": tableStyle.colShrink,
             }}
             header={[
-              sortHeader("Nom", "name"),
-              sortHeader("Email", "email"),
-              sortHeader("Rôle", "role"),
-              sortHeader("Statut", "status"),
-              sortHeader("Tenants", "tenants"),
-              sortHeader("Inscrit le", "createdAt"),
-              { children: "Actions" },
+              sortHeader(t("name"), "name"),
+              sortHeader(t("email"), "email"),
+              sortHeader(t("role"), "role"),
+              sortHeader(t("status"), "status"),
+              sortHeader(t("tenants"), "tenants"),
+              sortHeader(t("registeredAt"), "createdAt"),
+              { children: tc("actions") },
             ]}
             body={paginatedUsers.map(user => [
               {
                 children: (
                   <span className="flex items-center gap-2">
                     {user.name ?? "—"}
-                    {isSelf(user.id) && <Tag small>Vous</Tag>}
-                    {superAdminIds.includes(user.id) && <Tag small>Super Admin</Tag>}
+                    {isSelf(user.id) && <Tag small>{t("you")}</Tag>}
+                    {superAdminIds.includes(user.id) && <Tag small>{t("superAdmin")}</Tag>}
                   </span>
                 ),
               },
@@ -265,7 +272,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                 ) : (
                   <Select
                     className="min-w-48"
-                    label={<span className="sr-only">Rôle</span>}
+                    label={<span className="sr-only">{t("role")}</span>}
                     options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
                     nativeSelectProps={{
                       value: user.role as AssignableRole,
@@ -291,12 +298,12 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                     buttonsSize="small"
                     buttons={[
                       {
-                        children: "Éditer",
+                        children: tc("edit"),
                         priority: "secondary",
                         linkProps: { href: `/admin/users/${user.id}` },
                       },
                       {
-                        children: user.status === UserStatus.BLOCKED ? "Débloquer" : "Bloquer",
+                        children: user.status === UserStatus.BLOCKED ? t("unblock") : t("block"),
                         priority: "tertiary",
                         disabled: loadingId === user.id,
                         onClick: () => void handleToggleStatus(user.id, user.status),
@@ -321,7 +328,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
           />
         </>
       ) : (
-        <Alert severity="info" title="Aucun utilisateur" description="Aucun utilisateur trouvé." small />
+        <Alert severity="info" title={t("noUsers")} description={t("noUsersDescription")} small />
       )}
     </>
   );

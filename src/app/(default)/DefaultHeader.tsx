@@ -5,6 +5,7 @@ import { Brand } from "@/components/Brand";
 import { config } from "@/config";
 
 import { UserHeaderItem } from "../AuthHeaderItems";
+import { LanguageSelectClient } from "../LanguageSelectClient";
 import { Navigation } from "./Navigation";
 
 export const DefaultHeader = () => (
@@ -34,6 +35,10 @@ export const DefaultHeader = () => (
     classes={{
       operator: "shimmer",
     }}
-    quickAccessItems={config.maintenance ? [] : [<UserHeaderItem key="hqai-user" variant="root" />].filter(Boolean)}
+    quickAccessItems={
+      config.maintenance
+        ? [<LanguageSelectClient key="hqai-lang" />]
+        : [<LanguageSelectClient key="hqai-lang" />, <UserHeaderItem key="hqai-user" variant="root" />].filter(Boolean)
+    }
   />
 );

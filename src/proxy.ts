@@ -3,11 +3,46 @@ import { type NextRequest, NextResponse } from "next/server";
 import { responseWithAnonymousId } from "@/utils/anonymousId/responseWithAnonymousId";
 import { DIRTY_DOMAIN_HEADER } from "@/utils/dirtyDomain/config";
 import { getDomainPathname, pathnameDirtyCheck } from "@/utils/dirtyDomain/pathnameDirtyCheck";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from "@/utils/i18n";
 
 import { config as appConfig } from "./config";
 
+const NON_DEFAULT_LOCALES = LOCALES.filter(l => l !== DEFAULT_LOCALE);
+const localePrefix = new RegExp(`^/(${NON_DEFAULT_LOCALES.join("|")})(/.*)?$`);
+const defaultLocalePrefix = new RegExp(`^/${DEFAULT_LOCALE}(/.*)?$`);
+
+function detectLocale(req: NextRequest, pathname: string): { locale: string; strippedPathname: string } {
+  // 1. Redirect /fr/... → /... (default locale should not have prefix)
+  const defaultMatch = pathname.match(defaultLocalePrefix);
+  if (defaultMatch) {
+    const target = defaultMatch[1] || "/";
+    const url = req.nextUrl.clone();
+    url.pathname = target;
+    // This will be handled specially by the caller
+    return { locale: DEFAULT_LOCALE, strippedPathname: `__REDIRECT__${target}${url.search}` };
+  }
+
+  // 2. Extract non-default locale prefix (/en/...)
+  const match = pathname.match(localePrefix);
+  if (match) {
+    return { locale: match[1], strippedPathname: match[2] || "/" };
+  }
+
+  // 3. No prefix — read cookie, fallback to default
+  const cookieLocale = req.cookies.get(LOCALE_COOKIE)?.value;
+  const locale =
+    cookieLocale && LOCALES.includes(cookieLocale as (typeof LOCALES)[number]) ? cookieLocale : DEFAULT_LOCALE;
+  return { locale, strippedPathname: pathname };
+}
+
 export function proxy(req: NextRequest) {
   const url = req.nextUrl;
+  const pathname = url.pathname;
+
+  // Skip locale handling for auth API routes
+  if (pathname.startsWith("/api/auth")) {
+    return;
+  }
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
@@ -26,30 +61,39 @@ export function proxy(req: NextRequest) {
     });
   }
 
-  // special case for Vercel preview deployment URLs (should it be used for scalingo?)
-  // if (
-  //   hostname.includes("---") &&
-  //   hostname.endsWith(`.${process.env.NEXT_PUBLIC_VERCEL_DEPLOYMENT_SUFFIX}`)
-  // ) {
-  //   hostname = `${hostname.split("---")[0]}.${
-  //     appConfig.rootDomain
-  //   }`;
-  // }
+  // Detect and strip locale prefix
+  const { locale, strippedPathname } = detectLocale(req, pathname);
 
-  const isDirtyDomain = pathnameDirtyCheck(url.pathname);
+  // Handle redirect for default locale prefix
+  if (strippedPathname.startsWith("__REDIRECT__")) {
+    const target = strippedPathname.replace("__REDIRECT__", "");
+    return NextResponse.redirect(new URL(target, req.url));
+  }
+
+  const isDirtyDomain = pathnameDirtyCheck(strippedPathname);
   const searchParams = req.nextUrl.searchParams.toString();
-  // Get the pathname of the request
-  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
+  const path = `${strippedPathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
+
+  const setLocaleCookie = (response: NextResponse) => {
+    response.cookies.set(LOCALE_COOKIE, locale, {
+      path: "/",
+      maxAge: 365 * 24 * 60 * 60,
+      sameSite: "lax",
+    });
+    return response;
+  };
 
   // rewrites for app pages
   if (hostname == appConfig.rootDomain) {
-    return responseWithAnonymousId(
-      req,
-      NextResponse.rewrite(new URL(`${path === "/" ? "" : path}`, req.url), {
-        headers: {
-          [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(url.pathname) : "false",
-        },
-      }),
+    return setLocaleCookie(
+      responseWithAnonymousId(
+        req,
+        NextResponse.rewrite(new URL(`${path === "/" ? "" : path}`, req.url), {
+          headers: {
+            [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(strippedPathname) : "false",
+          },
+        }),
+      ),
     );
   }
 
@@ -60,7 +104,7 @@ export function proxy(req: NextRequest) {
   }
 
   // rewrite everything else to `/[domain] dynamic route
-  return responseWithAnonymousId(req, NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url)));
+  return setLocaleCookie(responseWithAnonymousId(req, NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url))));
 }
 
 export const config = {

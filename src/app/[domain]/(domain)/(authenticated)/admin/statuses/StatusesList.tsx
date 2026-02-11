@@ -7,6 +7,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { POST_STATUS_COLOR_MAP, type POST_STATUS_COLOR } from "@/lib/model/PostStatus";
@@ -20,6 +21,8 @@ interface StatusesListProps {
 }
 
 export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) => {
+  const t = useTranslations("domainAdmin.statuses");
+  const tc = useTranslations("common");
   const [statuses, setStatuses] = useState(initialStatuses);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState<keyof typeof POST_STATUS_COLOR>("blueCumulus");
@@ -49,7 +52,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Êtes-vous sûr ?")) return;
+    if (!confirm(tc("areYouSure"))) return;
     const result = await deletePostStatus({ id });
     if (result.ok) {
       setStatuses(statuses.filter(s => s.id !== id));
@@ -83,7 +86,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
         <Alert
           className={fr.cx("fr-mb-2w")}
           severity="error"
-          title="Erreur"
+          title={tc("error")}
           description={error}
           closable
           onClose={() => setError(null)}
@@ -100,7 +103,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
             {editingId === status.id ? (
               <div>
                 <Input
-                  label="Nom"
+                  label={t("name")}
                   nativeInputProps={{
                     value: editName,
                     onChange: e => setEditName(e.target.value),
@@ -108,22 +111,18 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                     name: "name",
                   }}
                 />
-                <ColorSelect label="Couleur" value={editColor} onChange={setEditColor} />
-                <ToggleSwitch
-                  label="Afficher dans la roadmap"
-                  checked={editShowInRoadmap}
-                  onChange={setEditShowInRoadmap}
-                />
+                <ColorSelect label={t("color")} value={editColor} onChange={setEditColor} />
+                <ToggleSwitch label={t("showInRoadmap")} checked={editShowInRoadmap} onChange={setEditShowInRoadmap} />
                 <ButtonsGroup
                   className={fr.cx("fr-mt-2w")}
                   inlineLayoutWhen="always"
                   buttons={[
                     {
-                      children: "Sauvegarder",
+                      children: tc("save"),
                       onClick: () => void handleUpdate(status.id),
                     },
                     {
-                      children: "Annuler",
+                      children: tc("cancel"),
                       priority: "secondary",
                       onClick: () => setEditingId(null),
                     },
@@ -141,11 +140,11 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                   <div>
                     {status.showInRoadmap ? (
                       <Badge as="span" small noIcon severity="success">
-                        Affiché en roadmap
+                        {t("shownInRoadmap")}
                       </Badge>
                     ) : (
                       <Badge as="span" small noIcon severity="info">
-                        Non affiché en roadmap
+                        {t("notShownInRoadmap")}
                       </Badge>
                     )}
                   </div>
@@ -156,7 +155,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                     buttons={[
                       {
                         children: "↑",
-                        title: "Déplacer vers le haut",
+                        title: t("moveUp"),
                         size: "small",
                         onClick: () => void handleMoveUp(index),
                         disabled: index === 0,
@@ -164,14 +163,14 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                       },
                       {
                         children: "↓",
-                        title: "Déplacer vers le bas",
+                        title: t("moveDown"),
                         size: "small",
                         onClick: () => void handleMoveDown(index),
                         disabled: index === statuses.length - 1,
                         priority: "tertiary no outline",
                       },
                       {
-                        children: "Modifier",
+                        children: t("modify"),
                         size: "small",
                         onClick: () => {
                           setEditingId(status.id);
@@ -181,7 +180,7 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
                         },
                       },
                       {
-                        children: "Supprimer",
+                        children: tc("delete"),
                         size: "small",
                         priority: "secondary",
                         onClick: () => void handleDelete(status.id),
@@ -195,9 +194,9 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
         ))}
       </div>
 
-      <h2>Ajouter un statut</h2>
+      <h2>{t("addStatus")}</h2>
       <Input
-        label="Nom"
+        label={t("name")}
         nativeInputProps={{
           value: newName,
           onChange: e => setNewName(e.target.value),
@@ -205,10 +204,10 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
           name: "new-name",
         }}
       />
-      <ColorSelect label="Couleur" value={newColor} onChange={setNewColor} />
-      <ToggleSwitch label="Afficher dans la roadmap" checked={newShowInRoadmap} onChange={setNewShowInRoadmap} />
+      <ColorSelect label={t("color")} value={newColor} onChange={setNewColor} />
+      <ToggleSwitch label={t("showInRoadmap")} checked={newShowInRoadmap} onChange={setNewShowInRoadmap} />
       <Button onClick={() => void handleCreate()} disabled={!newName}>
-        Créer
+        {tc("create")}
       </Button>
     </div>
   );

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
 import { config } from "@/config";
@@ -10,7 +11,7 @@ import { GlobalUsersList } from "./GlobalUsersList";
 const UsersPage = async () => {
   await connection();
 
-  const session = await auth();
+  const [session, t] = await Promise.all([auth(), getTranslations("adminUsers")]);
   const useCase = new ListAllUsers(userRepo);
   const users = await useCase.execute();
 
@@ -18,7 +19,7 @@ const UsersPage = async () => {
 
   return (
     <div>
-      <h1>Utilisateurs</h1>
+      <h1>{t("title")}</h1>
       <GlobalUsersList users={users} currentUserId={session?.user.uuid ?? ""} superAdminIds={[...superAdminIds]} />
     </div>
   );

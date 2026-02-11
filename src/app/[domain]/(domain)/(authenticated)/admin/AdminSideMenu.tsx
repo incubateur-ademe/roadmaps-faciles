@@ -1,6 +1,7 @@
 "use client";
 
 import SideMenu, { type SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -12,6 +13,7 @@ export const AdminSideMenu = () => {
   const pathname = usePathname();
   const [activeSection, setActiveSection] = useState<null | string>(null);
   const visibleSections = useRef(new Set<string>());
+  const t = useTranslations("domainAdmin.sideMenu");
 
   // Extract the current admin page from pathname (e.g., /admin/general -> general)
   const currentPage = pathname.split("/admin/")[1]?.split("#")[0] || "general";
@@ -52,83 +54,83 @@ export const AdminSideMenu = () => {
   // Define menu structure with dynamic active states
   const menuItems: SideMenuProps.Item[] = [
     {
-      text: "Général",
+      text: t("general"),
       linkProps: { href: `/admin/general` },
       isActive: currentPage === "general",
       expandedByDefault: currentPage === "general",
       items: [
         {
           linkProps: { href: `/admin/general#privacy` },
-          text: "Confidentialité",
+          text: t("privacy"),
           isActive: currentPage === "general" && currentSection === "privacy",
         },
         {
           linkProps: { href: `/admin/general#localization` },
-          text: "Localisation",
+          text: t("localization"),
           isActive: currentPage === "general" && currentSection === "localization",
         },
         {
           linkProps: { href: `/admin/general#moderation` },
-          text: "Modération",
+          text: t("moderation"),
           isActive: currentPage === "general" && currentSection === "moderation",
         },
         {
           linkProps: { href: `/admin/general#header` },
-          text: "En-tête",
+          text: t("headerSection"),
           isActive: currentPage === "general" && currentSection === "header",
         },
         {
           linkProps: { href: `/admin/general#visibility` },
-          text: "Visibilité",
+          text: t("visibility"),
           isActive: currentPage === "general" && currentSection === "visibility",
         },
       ],
     },
     {
-      text: "Authentification",
+      text: t("authentication"),
       linkProps: { href: `/admin/authentication` },
       isActive: currentPage === "authentication",
     },
     {
-      text: "Boards",
+      text: t("boards"),
       linkProps: { href: `/admin/boards` },
       isActive: currentPage === "boards",
     },
     {
-      text: "Statuts",
+      text: t("statuses"),
       linkProps: { href: `/admin/statuses` },
       isActive: currentPage === "statuses",
     },
     {
-      text: "Feuille de route",
+      text: t("roadmap"),
       linkProps: { href: `/admin/roadmap` },
       isActive: currentPage === "roadmap",
     },
     {
-      text: "Webhooks",
+      text: t("webhooks"),
       linkProps: { href: `/admin/webhooks` },
       isActive: currentPage === "webhooks",
     },
     {
-      text: "Utilisateurs",
+      text: t("users"),
       linkProps: { href: `/admin/users` },
       isActive: currentPage.startsWith("users"),
       expandedByDefault: currentPage.startsWith("users"),
       items: [
         {
-          text: "Membres",
+          text: t("members"),
           linkProps: { href: `/admin/users` },
           isActive: currentPage === "users",
         },
         {
-          text: "Invitations",
+          text: t("invitations"),
           linkProps: { href: `/admin/users/invitations` },
           isActive: currentPage === "users/invitations",
         },
       ],
     },
     {
-      text: "API",
+      text: t("api"),
       linkProps: { href: `/admin/api` },
       isActive: currentPage === "api",
     },
@@ -136,7 +138,7 @@ export const AdminSideMenu = () => {
 
   return (
     <Container style={{ position: "sticky", top: "1rem" }}>
-      <SideMenu burgerMenuButtonText="Administration" items={menuItems} />
+      <SideMenu burgerMenuButtonText={t("title")} items={menuItems} />
     </Container>
   );
 };

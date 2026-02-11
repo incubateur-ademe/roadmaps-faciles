@@ -5,21 +5,24 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { type ServerActionResponse } from "@/utils/next";
-
-const CONFIRMATION_TEXT = "SUPPRIMER";
 
 interface DeleteAccountSectionProps {
   deleteAccount: () => Promise<ServerActionResponse>;
 }
 
 export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProps) => {
+  const t = useTranslations("profile");
+  const tc = useTranslations("common");
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmInput, setConfirmInput] = useState("");
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
+
+  const confirmationWord = t("deleteConfirmationWord");
 
   const handleDelete = async () => {
     setPending(true);
@@ -37,14 +40,9 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
   if (!showConfirm) {
     return (
       <div>
-        <Alert
-          severity="warning"
-          small
-          description="La suppression de votre compte est irréversible. Vos contributions (posts, commentaires) seront conservées de manière anonyme."
-          className={fr.cx("fr-mb-2w")}
-        />
+        <Alert severity="warning" small description={t("deleteWarning")} className={fr.cx("fr-mb-2w")} />
         <Button priority="tertiary" size="small" onClick={() => setShowConfirm(true)}>
-          Supprimer mon compte
+          {t("deleteAccount")}
         </Button>
       </div>
     );
@@ -55,15 +53,15 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
       <Alert
         severity="error"
         small
-        description={`Pour confirmer la suppression, tapez "${CONFIRMATION_TEXT}" ci-dessous.`}
+        description={t("deleteConfirmPrompt", { text: confirmationWord })}
         className={fr.cx("fr-mb-2w")}
       />
       <Input
-        label="Confirmation"
+        label={t("confirmation")}
         nativeInputProps={{
           value: confirmInput,
           onChange: e => setConfirmInput(e.target.value),
-          placeholder: CONFIRMATION_TEXT,
+          placeholder: confirmationWord,
           autoComplete: "off",
         }}
         disabled={pending}
@@ -73,10 +71,10 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
         <Button
           priority="primary"
           size="small"
-          disabled={pending || confirmInput !== CONFIRMATION_TEXT}
+          disabled={pending || confirmInput !== confirmationWord}
           onClick={() => void handleDelete()}
         >
-          Confirmer la suppression
+          {t("confirmDelete")}
         </Button>
         <Button
           priority="tertiary"
@@ -88,7 +86,7 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
             setErrorMessage(null);
           }}
         >
-          Annuler
+          {tc("cancel")}
         </Button>
       </div>
     </div>

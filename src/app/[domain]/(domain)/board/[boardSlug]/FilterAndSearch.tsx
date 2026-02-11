@@ -5,6 +5,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import SearchBar from "@codegouvfr/react-dsfr/SearchBar";
 import { SegmentedControl, type SegmentedControlProps } from "@codegouvfr/react-dsfr/SegmentedControl";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { defaultOrder, type Order, ORDER_OPTIONS } from "./types";
@@ -18,6 +19,7 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("board");
   const handleOrderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedOrder = event.target.value as Order;
     const params = new URLSearchParams(searchParams.toString());
@@ -39,10 +41,16 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
+  const ORDER_LABELS: Record<Order, string> = {
+    trending: t("trending"),
+    top: t("top"),
+    new: t("new"),
+  };
+
   return (
     <>
       <SegmentedControl
-        legend="Trier par"
+        legend={t("sortBy")}
         hideLegend
         small
         className={cx(fr.cx("fr-mb-2w"), "w-full")}
@@ -51,9 +59,9 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
         }}
         name="order"
         segments={
-          Object.entries(ORDER_OPTIONS).map<SegmentedControlProps.Segment>(([key, { label, icon }]) => ({
+          Object.entries(ORDER_OPTIONS).map<SegmentedControlProps.Segment>(([key, { icon }]) => ({
             iconId: icon,
-            label,
+            label: ORDER_LABELS[key as Order],
             nativeInputProps: {
               value: key,
               defaultChecked: order === key,
@@ -63,7 +71,7 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
         }
       />
       <div className="flex gap-[1rem] justify-between">
-        <Button disabled title="Arrive prochainement" iconId="fr-icon-filter-line" priority="secondary" />
+        <Button disabled title={t("filterComing")} iconId="fr-icon-filter-line" priority="secondary" />
         <SearchBar className="grow" allowEmptySearch onButtonClick={handleSearch} defaultValue={search} />
       </div>
     </>

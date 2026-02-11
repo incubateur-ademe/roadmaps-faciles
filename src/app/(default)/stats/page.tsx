@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { Container } from "@/dsfr";
 
@@ -23,11 +24,15 @@ export const metadata: Metadata = {
   },
 };
 
-const Stats = () => (
-  <Container py="6w">
-    <h1>{title}</h1>
-    {/* <StatsContent /> */}
-  </Container>
-);
+const Stats = async () => {
+  const t = await getTranslations("stats");
+
+  return (
+    <Container py="6w">
+      <h1>{t("title")}</h1>
+      {/* <StatsContent /> */}
+    </Container>
+  );
+};
 
 export default Stats;

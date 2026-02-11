@@ -1,6 +1,7 @@
 "use client";
 
 import MainNavigation, { type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
+import { useTranslations } from "next-intl";
 import { usePathname, useSelectedLayoutSegments } from "next/navigation";
 
 import { type Board, type TenantSettings } from "@/prisma/client";
@@ -16,12 +17,13 @@ export const DomainNavigation = ({ boards, tenantSettings }: DomainNavigationPro
   const segment = segments.join("/");
   const pathname = usePathname();
   const dirtyDomainFixer = dirtySafePathname(pathname);
+  const t = useTranslations("navigation");
 
   return (
     <MainNavigation
       items={[
         ...(tenantSettings.showRoadmapInHeader
-          ? [{ text: "Roadmap", linkProps: { href: dirtyDomainFixer("/roadmap") }, isActive: segment === "roadmap" }]
+          ? [{ text: t("roadmap"), linkProps: { href: dirtyDomainFixer("/roadmap") }, isActive: segment === "roadmap" }]
           : []),
         ...boards.map<MainNavigationProps.Item>(board => ({
           text: board.name,

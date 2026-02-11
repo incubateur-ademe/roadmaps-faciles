@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { userOnTenantRepo } from "@/lib/repo";
@@ -12,13 +13,14 @@ import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
 export const updateMemberRole = async (data: { role: UserRole; userId: string }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const domain = await getDomainFromHost();
   // Promouvoir en OWNER nécessite d'être owner soi-même
   const session = data.role === UserRole.OWNER ? await assertTenantOwner(domain) : await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre rôle." };
+    return { ok: false, error: t("cannotEditOwnRole") };
   }
 
   try {
@@ -35,12 +37,13 @@ export const updateMemberStatus = async (data: {
   status: UserStatus;
   userId: string;
 }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre statut." };
+    return { ok: false, error: t("cannotEditOwnStatus") };
   }
 
   try {
@@ -54,12 +57,13 @@ export const updateMemberStatus = async (data: {
 };
 
 export const removeMember = async (data: { userId: string }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas vous retirer vous-même." };
+    return { ok: false, error: t("cannotRemoveSelf") };
   }
 
   try {

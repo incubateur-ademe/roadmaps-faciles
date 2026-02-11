@@ -6,6 +6,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Card from "@codegouvfr/react-dsfr/Card";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Markdown from "react-markdown";
 
@@ -19,6 +20,8 @@ interface BoardsListProps {
 }
 
 export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
+  const t = useTranslations("domainAdmin.boards");
+  const tc = useTranslations("common");
   const [boards, setBoards] = useState(initialBoards);
   const [formState, setFormState] = useState({
     new: { name: "", description: "" },
@@ -43,7 +46,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Êtes-vous sûr ?")) return;
+    if (!confirm(tc("areYouSure"))) return;
     const result = await deleteBoard({ id });
     if (result.ok) {
       setBoards(boards.filter(b => b.id !== id));
@@ -77,7 +80,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         <Alert
           className={fr.cx("fr-mb-2w")}
           severity="error"
-          title="Erreur"
+          title={tc("error")}
           description={error}
           closable
           onClose={() => setError(null)}
@@ -93,7 +96,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
             title={
               formState.edit.id === board.id ? (
                 <Input
-                  label="Nom"
+                  label={t("name")}
                   nativeInputProps={{
                     value: formState.edit.name,
                     onChange: e => setFormState(prev => ({ ...prev, edit: { ...prev.edit, name: e.target.value } })),
@@ -108,7 +111,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
             desc={
               formState.edit.id === board.id ? (
                 <Input
-                  label="Description"
+                  label={t("description")}
                   textArea
                   nativeTextAreaProps={{
                     value: formState.edit.description,
@@ -122,7 +125,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
               ) : board.description ? (
                 <Markdown {...reactMarkdownConfig}>{board.description}</Markdown>
               ) : (
-                <em className={fr.cx("fr-text--xs")}>Aucune description</em>
+                <em className={fr.cx("fr-text--xs")}>{t("noDescription")}</em>
               )
             }
             footer={
@@ -131,11 +134,11 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                   inlineLayoutWhen="always"
                   buttons={[
                     {
-                      children: "Sauvegarder",
+                      children: tc("save"),
                       onClick: () => void handleUpdate(board.id),
                     },
                     {
-                      children: "Annuler",
+                      children: tc("cancel"),
                       priority: "secondary",
                       onClick: () => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } })),
                     },
@@ -147,7 +150,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                   buttons={[
                     {
                       children: "↑",
-                      title: "Déplacer vers le haut",
+                      title: t("moveUp"),
                       size: "small",
                       onClick: () => void handleMoveUp(index),
                       disabled: index === 0,
@@ -155,14 +158,14 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                     },
                     {
                       children: "↓",
-                      title: "Déplacer vers le bas",
+                      title: t("moveDown"),
                       size: "small",
                       onClick: () => void handleMoveDown(index),
                       disabled: index === boards.length - 1,
                       priority: "tertiary no outline",
                     },
                     {
-                      children: "Modifier",
+                      children: t("modify"),
                       size: "small",
                       onClick: () => {
                         setFormState(prev => ({
@@ -172,7 +175,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
                       },
                     },
                     {
-                      children: "Supprimer",
+                      children: tc("delete"),
                       size: "small",
                       priority: "secondary",
                       onClick: () => void handleDelete(board.id),
@@ -185,9 +188,9 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         ))}
       </div>
 
-      <h2>Ajouter un board</h2>
+      <h2>{t("addBoard")}</h2>
       <Input
-        label="Nom"
+        label={t("name")}
         nativeInputProps={{
           value: formState.new.name,
           onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, name: e.target.value } })),
@@ -196,7 +199,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         }}
       />
       <Input
-        label="Description (Markdown)"
+        label={t("descriptionMarkdown")}
         textArea
         nativeTextAreaProps={{
           value: formState.new.description,
@@ -207,7 +210,7 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
         }}
       />
       <Button onClick={() => void handleCreate()} disabled={!formState.new.name}>
-        Créer
+        {tc("create")}
       </Button>
     </div>
   );

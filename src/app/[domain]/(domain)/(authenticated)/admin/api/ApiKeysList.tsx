@@ -3,7 +3,8 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
-import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 
 import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type ApiKey } from "@/prisma/client";
@@ -14,9 +15,11 @@ interface ApiKeysListProps {
   apiKeys: ApiKey[];
 }
 
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
-
 export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
+  const t = useTranslations("domainAdmin.api");
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
   const [apiKeys, setApiKeys] = useState(initialApiKeys);
   const [newToken, setNewToken] = useState<null | string>(null);
 
@@ -29,7 +32,7 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Êtes-vous sûr ?")) return;
+    if (!confirm(tc("areYouSure"))) return;
     const result = await deleteApiKey({ id });
     if (result.ok) {
       setApiKeys(apiKeys.filter(k => k.id !== id));
@@ -42,8 +45,8 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
         <Alert
           className={fr.cx("fr-mb-3w")}
           severity="info"
-          title="Nouvelle clé API créée"
-          description={`Votre clé API : ${newToken}. Copiez-la maintenant, elle ne sera plus affichée.`}
+          title={t("newKeyCreated")}
+          description={t("newKeyMessage", { token: newToken })}
           closable
           onClose={() => setNewToken(null)}
         />
@@ -52,7 +55,7 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
       {apiKeys.length > 0 ? (
         <TableCustom
           className={fr.cx("fr-mb-3w")}
-          header={[{ children: "Préfixe" }, { children: "Date de création" }, { children: "Actions" }]}
+          header={[{ children: t("prefix") }, { children: t("createdAt") }, { children: tc("actions") }]}
           body={apiKeys.map(apiKey => [
             {
               children: (
@@ -65,7 +68,7 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
             {
               children: (
                 <Button size="small" priority="secondary" onClick={() => void handleDelete(apiKey.id)}>
-                  Révoquer
+                  {tc("revoke")}
                 </Button>
               ),
             },
@@ -75,13 +78,13 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
         <Alert
           className={fr.cx("fr-mb-3w")}
           severity="info"
-          title="Aucune clé API"
-          description="Aucune clé API n'a été créée pour ce tenant."
+          title={t("noKeys")}
+          description={t("noKeysDescription")}
           small
         />
       )}
 
-      <Button onClick={() => void handleCreate()}>Créer une clé API</Button>
+      <Button onClick={() => void handleCreate()}>{t("createKey")}</Button>
     </div>
   );
 };

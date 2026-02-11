@@ -14,6 +14,7 @@ import { getTenantFromDomain } from "@/utils/tenant";
 import { type EmptyObject } from "@/utils/types";
 
 import { UserHeaderItem } from "../../AuthHeaderItems";
+import { LanguageSelectClient } from "../../LanguageSelectClient";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
 
@@ -63,7 +64,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
           title: tenantSettings.name,
         }}
         serviceTitle={tenantSettings.name}
-        quickAccessItems={[<UserHeaderItem key="hqai-user" />]}
+        quickAccessItems={[<LanguageSelectClient key="hqai-lang" />, <UserHeaderItem key="hqai-user" />]}
       />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}

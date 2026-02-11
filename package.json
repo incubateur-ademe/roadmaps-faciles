@@ -58,6 +58,7 @@
     "lru-cache": "^11.2.5",
     "next": "^16.1.6",
     "next-auth": "5.0.0-beta.30",
+    "next-intl": "^4.8.2",
     "next-mdx-remote": "^5.0.0",
     "next-mdx-remote-client": "^2.1.7",
     "next-sitemap": "^4.2.3",

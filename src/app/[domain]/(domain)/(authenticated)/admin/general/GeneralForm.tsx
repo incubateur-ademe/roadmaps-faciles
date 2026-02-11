@@ -9,6 +9,7 @@ import { type ToggleSwitchProps } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { type ToggleSwitchGroupProps } from "@codegouvfr/react-dsfr/ToggleSwitchGroup";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
@@ -58,85 +59,77 @@ interface Section {
   toggles: SectionToggle[];
 }
 
-const SECTIONS: Section[] = [
+const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">>): Section[] => [
   {
     id: "privacy",
-    title: "Confidentialité",
+    title: t("privacy"),
     toggles: [
-      { name: "isPrivate", label: "Site privé", helperText: "Seuls les membres du tenant peuvent accéder au contenu" },
+      { name: "isPrivate", label: t("isPrivate"), helperText: t("isPrivateHelper") },
       {
         name: "allowAnonymousFeedback",
-        label: "Feedback anonyme autorisé",
-        helperText: "Les visiteurs non connectés peuvent soumettre du feedback",
+        label: t("allowAnonymousFeedback"),
+        helperText: t("allowAnonymousFeedbackHelper"),
       },
     ],
   },
   {
     id: "localization",
-    title: "Localisation",
+    title: t("localization"),
     toggles: [
       {
         name: "useBrowserLocale",
-        label: "Utiliser la locale du navigateur",
-        helperText: "Fonctionnalité à venir",
+        label: t("useBrowserLocale"),
+        helperText: t("useBrowserLocaleHelper"),
         disabled: true,
       },
     ],
   },
   {
     id: "moderation",
-    title: "Modération",
+    title: t("moderationTitle"),
     toggles: [
       {
         name: "allowPostEdits",
-        label: "Modification des posts autorisée",
-        helperText: "Les auteurs peuvent modifier leurs posts après publication",
+        label: t("allowPostEdits"),
+        helperText: t("allowPostEditsHelper"),
       },
     ],
   },
   {
     id: "header",
-    title: "En-tête",
+    title: t("headerTitle"),
     toggles: [
       {
         name: "showRoadmapInHeader",
-        label: "Feuille de route dans l'en-tête",
-        helperText: "Un lien vers la roadmap apparaît dans la navigation principale",
+        label: t("showRoadmapInHeader"),
+        helperText: t("showRoadmapInHeaderHelper"),
       },
     ],
   },
   {
     id: "visibility",
-    title: "Visibilité",
+    title: t("visibilityTitle"),
     toggles: [
-      { name: "allowVoting", label: "Vote autorisé", helperText: "Les utilisateurs peuvent voter sur les posts" },
+      { name: "allowVoting", label: t("allowVoting"), helperText: t("allowVotingHelper") },
       {
         name: "allowComments",
-        label: "Commentaires autorisés",
-        helperText: "Les utilisateurs peuvent commenter les posts",
+        label: t("allowComments"),
+        helperText: t("allowCommentsHelper"),
       },
       {
         name: "allowAnonymousVoting",
-        label: "Vote anonyme autorisé",
-        helperText: "Les visiteurs non connectés peuvent voter sur les posts",
+        label: t("allowAnonymousVoting"),
+        helperText: t("allowAnonymousVotingHelper"),
       },
     ],
   },
 ];
 
-const domainSchema = z.object({
-  settingsId: z.number(),
-  subdomain: z
-    .string()
-    .min(1, "Le sous-domaine est requis.")
-    .regex(/^[a-z0-9-]+$/, "Seuls les caractères minuscules, chiffres et tirets sont autorisés."),
-  customDomain: z
-    .string()
-    .transform(v => (v === "" ? null : v))
-    .nullable(),
-});
-
-type DomainFormType = z.infer<typeof domainSchema>;
+type DomainFormType = {
+  customDomain: null | string;
+  settingsId: number;
+  subdomain: string;
+};
 
 interface GeneralFormProps {
   hasData: boolean;
@@ -145,6 +138,11 @@ interface GeneralFormProps {
 }
 
 export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormProps) => {
+  const t = useTranslations("domainAdmin.general");
+  const tc = useTranslations("common");
+  const te = useTranslations("errors");
+  const SECTIONS = getSections(t);
+
   const [saveError, setSaveError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -211,18 +209,13 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
 
         <ClientAnimate>
           {saveError && (
-            <Alert
-              className={fr.cx("fr-mb-2w")}
-              severity="error"
-              title="Erreur de sauvegarde"
-              description={saveError}
-            />
+            <Alert className={fr.cx("fr-mb-2w")} severity="error" title={te("saveError")} description={saveError} />
           )}
-          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title="Sauvegarde réussie" />}
+          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("saveSuccess")} />}
         </ClientAnimate>
 
         <Button type="submit" disabled={pending || !isDirty}>
-          Sauvegarder
+          {tc("save")}
         </Button>
       </form>
 
@@ -237,6 +230,8 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
 };
 
 const SeedSection = ({ hasData }: { hasData: boolean }) => {
+  const t = useTranslations("domainAdmin.general");
+  const tc = useTranslations("common");
   const [seeding, setSeeding] = useState(false);
   const [seedError, setSeedError] = useState<null | string>(null);
   const [seedSuccess, setSeedSuccess] = useState(false);
@@ -260,27 +255,29 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
 
   return (
     <section id="seed" className={fr.cx("fr-mb-6w")}>
-      <h3 className={fr.cx("fr-h3")}>Données initiales</h3>
+      <h3 className={fr.cx("fr-h3")}>{t("seedTitle")}</h3>
       {seedSuccess ? (
-        <Alert severity="success" title="Données initialisées avec succès" className={fr.cx("fr-mb-2w")} />
+        <Alert severity="success" title={t("seedSuccess")} className={fr.cx("fr-mb-2w")} />
       ) : (
         <>
-          <p className={fr.cx("fr-mb-2w")}>
-            Votre espace est vide. Vous pouvez initialiser des données par défaut pour démarrer rapidement.
-          </p>
+          <p className={fr.cx("fr-mb-2w")}>{t("seedEmpty")}</p>
           <div className={fr.cx("fr-mb-2w")}>
-            <p className={fr.cx("fr-text--bold", "fr-mb-1w")}>Ce qui sera créé :</p>
+            <p className={fr.cx("fr-text--bold", "fr-mb-1w")}>{t("seedPreview")}</p>
             <ul className={fr.cx("fr-mb-1w")}>
               {WELCOME_DATA_PREVIEW.boards.map(board => (
                 <li key={board.name}>
-                  Tableau <strong>{board.name}</strong> — {board.description}
+                  {t.rich("seedBoard", {
+                    name: board.name,
+                    description: board.description,
+                    strong: chunks => <strong>{chunks}</strong>,
+                  })}
                 </li>
               ))}
             </ul>
             <ul className={fr.cx("fr-mb-1w")}>
               {WELCOME_DATA_PREVIEW.statuses.map(status => (
                 <li key={status.name}>
-                  Statut <strong>{status.name}</strong>
+                  {t.rich("seedStatus", { name: status.name, strong: chunks => <strong>{chunks}</strong> })}
                 </li>
               ))}
             </ul>
@@ -288,11 +285,11 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
           </div>
           <ClientAnimate>
             {seedError && (
-              <Alert className={fr.cx("fr-mb-2w")} severity="error" title="Erreur" description={seedError} />
+              <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={seedError} />
             )}
           </ClientAnimate>
           <Button disabled={seeding} onClick={() => void handleSeed()}>
-            {seeding ? "Initialisation…" : "Initialiser les données par défaut"}
+            {seeding ? t("seeding") : t("seedButton")}
           </Button>
         </>
       )}
@@ -300,15 +297,24 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
   );
 };
 
-const DNS_STATUS_CONFIG: Record<DNSStatus, { label: string; severity: "error" | "info" | "success" | "warning" }> = {
-  valid: { severity: "success", label: "DNS valide" },
-  invalid: { severity: "warning", label: "DNS non configuré" },
-  error: { severity: "error", label: "Erreur de vérification DNS" },
+const DNS_STATUS_SEVERITY: Record<DNSStatus, "error" | "info" | "success" | "warning"> = {
+  valid: "success",
+  invalid: "warning",
+  error: "error",
+};
+
+const DNS_STATUS_KEY: Record<DNSStatus, "dnsError" | "dnsInvalid" | "dnsValid"> = {
+  valid: "dnsValid",
+  invalid: "dnsInvalid",
+  error: "dnsError",
 };
 
 const DNS_POLL_INTERVAL = 30_000;
 
 const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) => {
+  const t = useTranslations("domainAdmin.general");
+  const tc = useTranslations("common");
+  const tv = useTranslations("validation");
   const [error, setError] = useState<null | string>(null);
   const [domainPending, setDomainPending] = useState(false);
   const [domainSuccess, setDomainSuccess] = useState(false);
@@ -320,6 +326,18 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
   useEffect(() => {
     dnsStatusRef.current = dnsStatus;
   }, [dnsStatus]);
+
+  const domainSchema = z.object({
+    settingsId: z.number(),
+    subdomain: z
+      .string()
+      .min(1, tv("subdomainRequired"))
+      .regex(/^[a-z0-9-]+$/, tv("subdomainRegex")),
+    customDomain: z
+      .string()
+      .transform(v => (v === "" ? null : v))
+      .nullable(),
+  });
 
   const {
     register,
@@ -409,10 +427,10 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
 
   return (
     <section id="domain" className={fr.cx("fr-mt-6w")}>
-      <h3 className={fr.cx("fr-h3")}>Domaines</h3>
+      <h3 className={fr.cx("fr-h3")}>{t("domains")}</h3>
       <form noValidate onSubmit={e => void handleSubmit(onDomainSubmit)(e)}>
         <Input
-          label="Sous-domaine"
+          label={t("subdomainLabel")}
           hintText={
             subdomain ? (
               <span>
@@ -428,8 +446,8 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
         />
 
         <Input
-          label="Domaine personnalisé"
-          hintText="Laissez vide si vous n'utilisez pas de domaine personnalisé"
+          label={t("customDomain")}
+          hintText={t("customDomainHint")}
           nativeInputProps={{
             ...register("customDomain"),
             placeholder: "feedback.example.com",
@@ -441,7 +459,7 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
         {showDnsStatus && (
           <div className={fr.cx("fr-mb-2w")}>
             <div className={cx("flex items-center gap-2")}>
-              <Badge severity={DNS_STATUS_CONFIG[dnsStatus].severity}>{DNS_STATUS_CONFIG[dnsStatus].label}</Badge>
+              <Badge severity={DNS_STATUS_SEVERITY[dnsStatus]}>{t(DNS_STATUS_KEY[dnsStatus])}</Badge>
               <Button
                 type="button"
                 priority="tertiary no outline"
@@ -450,15 +468,12 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
                 iconId="ri-refresh-line"
                 onClick={() => void runDNSCheck()}
               >
-                {dnsChecking ? "Vérification…" : "Vérifier DNS"}
+                {dnsChecking ? t("dnsChecking") : t("checkDns")}
               </Button>
             </div>
             {dnsStatus === "invalid" && dnsExpected && (
               <div className={fr.cx("fr-hint-text", "fr-mt-1v")}>
-                <p>
-                  Le domaine <code>{savedCustomDomain}</code> existe mais ne pointe pas vers notre serveur. Modifiez
-                  votre enregistrement DNS :
-                </p>
+                <p>{t.rich("dnsInvalidHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
                 <p className={fr.cx("fr-mt-1v")}>
                   <code>
                     {savedCustomDomain} CNAME {dnsExpected}
@@ -468,38 +483,42 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
             )}
             {dnsStatus === "error" && dnsExpected && (
               <div className={fr.cx("fr-hint-text", "fr-mt-1v")}>
-                <p>
-                  Impossible de résoudre le domaine <code>{savedCustomDomain}</code>. Ajoutez l'enregistrement suivant
-                  dans votre zone DNS :
-                </p>
+                <p>{t.rich("dnsErrorHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
                 <p className={fr.cx("fr-mt-1v")}>
                   <code>
                     {savedCustomDomain} CNAME {dnsExpected}
                   </code>
                 </p>
                 <p className={fr.cx("fr-mt-1v")}>
-                  Ou, si votre fournisseur DNS ne supporte pas les CNAME, un enregistrement <strong>A</strong> pointant
-                  vers l'IP de <code>{dnsExpected}</code>.
+                  {t.rich("dnsErrorAlternative", {
+                    expected: dnsExpected ?? "",
+                    strong: chunks => <strong>{chunks}</strong>,
+                    code: chunks => <code>{chunks}</code>,
+                  })}
                 </p>
               </div>
             )}
             {dnsStatus === "valid" && (
               <p className={fr.cx("fr-hint-text", "fr-mt-1v")}>
-                Le domaine <code>{savedCustomDomain}</code> pointe correctement vers <code>{dnsExpected}</code>.
+                {t.rich("dnsValidHint", {
+                  domain: savedCustomDomain,
+                  expected: dnsExpected ?? "",
+                  code: chunks => <code>{chunks}</code>,
+                })}
               </p>
             )}
           </div>
         )}
 
         <ClientAnimate>
-          {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title="Erreur" description={error} />}
+          {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
           {domainSuccess && (
-            <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title="Domaines mis à jour" />
+            <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("domainsUpdated")} />
           )}
         </ClientAnimate>
 
         <Button type="submit" disabled={domainPending || !isDomainDirty}>
-          Mettre à jour les domaines
+          {t("updateDomains")}
         </Button>
       </form>
     </section>
@@ -507,17 +526,14 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
 };
 
 const DangerZone = () => {
+  const t = useTranslations("domainAdmin.general");
+  const tc = useTranslations("common");
   const [error, setError] = useState<null | string>(null);
   const [purging, setPurging] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handlePurge = async () => {
-    if (
-      !confirm(
-        "Êtes-vous sûr de vouloir supprimer toutes les données de ce tenant (tableaux, posts, statuts, commentaires…) ? Cette action est irréversible.",
-      )
-    )
-      return;
+    if (!confirm(t("purgeConfirm"))) return;
     setPurging(true);
     setError(null);
     const result = await purgeTenantData();
@@ -530,7 +546,7 @@ const DangerZone = () => {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce tenant ? Cette action est irréversible.")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     setError(null);
     const result = await deleteTenant();
@@ -544,14 +560,14 @@ const DangerZone = () => {
 
   return (
     <section id="danger" className={fr.cx("fr-mt-6w")}>
-      <h3 className={fr.cx("fr-h3")}>Zone de danger</h3>
-      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title="Erreur" description={error} />}
+      <h3 className={fr.cx("fr-h3")}>{t("dangerZone")}</h3>
+      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
       <div className={cx("flex gap-4")}>
         <Button priority="tertiary" disabled={purging || deleting} onClick={() => void handlePurge()}>
-          {purging ? "Purge en cours…" : "Réinitialiser les données"}
+          {purging ? t("purging") : t("purgeData")}
         </Button>
         <Button priority="tertiary" disabled={purging || deleting} onClick={() => void handleDelete()}>
-          {deleting ? "Suppression…" : "Supprimer le tenant"}
+          {deleting ? t("deleting") : t("deleteTenant")}
         </Button>
       </div>
     </section>

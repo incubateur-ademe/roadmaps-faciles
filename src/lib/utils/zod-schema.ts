@@ -1,21 +1,23 @@
+import { type useTranslations } from "next-intl";
 import { z } from "zod";
 
 import { AVAILABLE_LOCALES, DEFAULT_LOCALE } from "./i18n";
 
-export const percentageSchema = z
-  .number({ error: "Le pourcentage est obligatoire." })
-  .positive("Le pourcentage doit être positif.")
-  .max(100, "Le pourcentage doit être inférieur à 100.");
+export type ValidationTranslator = ReturnType<typeof useTranslations<"validation">>;
+
+export const createPercentageSchema = (t: ValidationTranslator) =>
+  z
+    .number({ error: t("percentageRequired") })
+    .positive(t("percentagePositive"))
+    .max(100, t("percentageMax"));
 
 export const localeSchema = z.enum(AVAILABLE_LOCALES).default(DEFAULT_LOCALE);
 
-export const subdomainSchema = z
-  .string()
-  .min(3, "Le sous-domaine doit contenir au moins 3 caractères.")
-  .max(63, "Le sous-domaine doit contenir au maximum 63 caractères.")
-  .regex(
-    /^[a-z0-9-_]+$/,
-    "Le sous-domaine ne doit contenir que des lettres minuscules, des chiffres, des tirets et des traits de soulignement.",
-  )
-  .regex(/^[a-z0-9]/, "Le sous-domaine doit commencer par une lettre ou un chiffre.")
-  .regex(/[a-z0-9]$/, "Le sous-domaine doit se terminer par une lettre ou un chiffre.");
+export const createSubdomainSchema = (t: ValidationTranslator) =>
+  z
+    .string()
+    .min(3, t("subdomainMinLength", { min: 3 }))
+    .max(63, t("subdomainMaxLength", { max: 63 }))
+    .regex(/^[a-z0-9-_]+$/, t("subdomainInvalidChars"))
+    .regex(/^[a-z0-9]/, t("subdomainMustStartAlphanumeric"))
+    .regex(/[a-z0-9]$/, t("subdomainMustEndAlphanumeric"));

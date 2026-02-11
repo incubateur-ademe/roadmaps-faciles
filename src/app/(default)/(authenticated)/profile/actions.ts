@@ -1,6 +1,7 @@
 "use server";
 
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import crypto from "node:crypto";
@@ -18,6 +19,9 @@ import { type ServerActionResponse } from "@/utils/next";
 const isUniqueConstraintError = (error: unknown): boolean =>
   error instanceof PrismaClientKnownRequestError && error.code === "P2002";
 
+const escapeHtml = (str: string) =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
 interface UpdateProfileData {
   email?: string;
   name?: null | string;
@@ -26,6 +30,7 @@ interface UpdateProfileData {
 
 export const updateProfile = async (data: UpdateProfileData): Promise<ServerActionResponse> => {
   const session = await assertSession();
+  const t = await getTranslations("serverErrors");
 
   try {
     const useCase = new UpdateUser(userRepo);
@@ -34,7 +39,7 @@ export const updateProfile = async (data: UpdateProfileData): Promise<ServerActi
     return { ok: true };
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      return { ok: false, error: "Cet e-mail est déjà utilisé par un autre compte." };
+      return { ok: false, error: t("emailAlreadyUsed") };
     }
     return { ok: false, error: (error as Error).message };
   }
@@ -46,18 +51,20 @@ interface RequestEmLinkData {
 
 export const requestEmLink = async (username: string): Promise<ServerActionResponse<RequestEmLinkData>> => {
   const session = await assertSession();
+  const t = await getTranslations("serverErrors");
+  const tEmail = await getTranslations("emails.emLinkConfirm");
 
   try {
     // Vérifier si ce username EM est déjà lié à un autre utilisateur
     const existingUser = await userRepo.findByUsername(username);
     if (existingUser && existingUser.id !== session.user.uuid) {
-      return { ok: false, error: "Ce login Espace Membre est déjà lié à un autre compte." };
+      return { ok: false, error: t("emLoginAlreadyLinked") };
     }
 
     const member = await espaceMembreClient.member.getByUsername(username);
 
     if (!member.isActive) {
-      return { ok: false, error: "Ce membre n'est plus actif sur l'Espace Membre." };
+      return { ok: false, error: t("emMemberNotActive") };
     }
 
     const emEmail = getEmUserEmail(member);
@@ -86,9 +93,9 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
     await transporter.sendMail({
       from: config.mailer.from,
       to: emEmail,
-      subject: "Confirmez la liaison de votre compte Espace Membre",
-      text: `Bonjour,\n\nVous avez demandé à lier votre compte à l'Espace Membre (${username}).\n\nCliquez sur le lien suivant pour confirmer :\n\n${confirmUrl}\n\nCe lien expire dans 1 heure.\n\nCordialement,`,
-      html: `<p>Bonjour,</p><p>Vous avez demandé à lier votre compte à l'Espace Membre (<strong>${username}</strong>).</p><p>Cliquez sur le lien suivant pour confirmer :</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>Ce lien expire dans 1 heure.</p><p>Cordialement,</p>`,
+      subject: tEmail("subject"),
+      text: `${tEmail("greeting")}\n\n${tEmail("body", { username })}\n\n${tEmail("clickToConfirm")}\n\n${confirmUrl}\n\n${tEmail("expiry")}\n\n${tEmail("closing")}`,
+      html: `<p>${tEmail("greeting")}</p><p>${tEmail("body", { username: `<strong>${escapeHtml(username)}</strong>` })}</p><p>${tEmail("clickToConfirm")}</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>${tEmail("expiry")}</p><p>${tEmail("closing")}</p>`,
     });
 
     // Mask email: show first 3 chars + domain
@@ -98,7 +105,7 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
     return { ok: true, data: { emEmail: maskedEmail } };
   } catch (error) {
     if (error instanceof EspaceMembreClientMemberNotFoundError) {
-      return { ok: false, error: "Aucun membre trouvé avec ce login sur l'Espace Membre." };
+      return { ok: false, error: t("emMemberNotFound") };
     }
     return { ok: false, error: (error as Error).message };
   }
@@ -126,28 +133,29 @@ export const unlinkEspaceMembre = async (): Promise<ServerActionResponse> => {
 
 export const switchToEmEmail = async (): Promise<ServerActionResponse> => {
   const session = await assertSession();
+  const t = await getTranslations("serverErrors");
 
   try {
     if (!session.user.isBetaGouvMember) {
-      return { ok: false, error: "Votre compte n'est pas lié à l'Espace Membre." };
+      return { ok: false, error: t("accountNotLinkedToEm") };
     }
 
     const user = await userRepo.findById(session.user.uuid);
     if (!user?.username) {
-      return { ok: false, error: "Aucun username Espace Membre trouvé." };
+      return { ok: false, error: t("noEmUsername") };
     }
 
     const member = await espaceMembreClient.member.getByUsername(user.username);
     const emEmail = getEmUserEmail(member);
 
     if (emEmail === user.email) {
-      return { ok: false, error: "Votre e-mail est déjà identique à celui de l'Espace Membre." };
+      return { ok: false, error: t("emailAlreadySameAsEm") };
     }
 
     // Vérifier si l'email EM est déjà utilisé par un autre compte
     const existingUser = await userRepo.findByEmail(emEmail);
     if (existingUser && existingUser.id !== session.user.uuid) {
-      return { ok: false, error: "Cet e-mail est déjà utilisé par un autre compte." };
+      return { ok: false, error: t("emailAlreadyUsed") };
     }
 
     const useCase = new UpdateUser(userRepo);
@@ -160,7 +168,7 @@ export const switchToEmEmail = async (): Promise<ServerActionResponse> => {
     return { ok: true };
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      return { ok: false, error: "Cet e-mail est déjà utilisé par un autre compte." };
+      return { ok: false, error: t("emailAlreadyUsed") };
     }
     return { ok: false, error: (error as Error).message };
   }
@@ -169,6 +177,7 @@ export const switchToEmEmail = async (): Promise<ServerActionResponse> => {
 export const deleteAccount = async (): Promise<ServerActionResponse> => {
   const session = await assertSession();
   const userId = session.user.uuid;
+  const t = await getTranslations("serverErrors");
 
   try {
     const anonymousEmail = `deleted-${crypto.randomUUID()}@anonymous.local`;
@@ -184,9 +193,7 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
           where: { tenantId, role: "OWNER", status: "ACTIVE" },
         });
         if (ownerCount <= 1) {
-          throw new Error(
-            "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte.",
-          );
+          throw new Error(t("lastOwnerCannotDelete"));
         }
       }
 

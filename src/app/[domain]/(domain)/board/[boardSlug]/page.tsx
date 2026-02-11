@@ -2,6 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { getTranslations } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import z from "zod";
 
@@ -62,8 +63,10 @@ const BoardPage = withValidation({
     getAnonymousId(),
   ]);
 
+  const t = await getTranslations();
+
   if (!board) {
-    return <div>Board not found</div>;
+    return <div>{t("board.boardNotFound")}</div>;
   }
 
   // Fetch posts after we have board.id
@@ -79,16 +82,16 @@ const BoardPage = withValidation({
             <GridCol base={3} className={cx("sticky self-start top-[0]", style.sidebar)}>
               <div>
                 <form className={cx(fr.cx("fr-py-2w"), "flex flex-col gap-[1rem]", style.suggestionForm)}>
-                  <h3 className={fr.cx("fr-text--lg", "fr-mb-0")}>Soumettre une suggestion</h3>
-                  <Input label="Titre" />
+                  <h3 className={fr.cx("fr-text--lg", "fr-mb-0")}>{t("board.submitSuggestion")}</h3>
+                  <Input label={t("board.title")} />
                   <Input
-                    label="Description"
+                    label={t("board.description")}
                     textArea
                     classes={{
                       nativeInputOrTextArea: "resize-y",
                     }}
                   />
-                  <Button className="place-self-end">Valider</Button>
+                  <Button className="place-self-end">{t("common.validate")}</Button>
                 </form>
               </div>
             </GridCol>
@@ -107,9 +110,9 @@ const BoardPage = withValidation({
                 <FilterAndSearch order={validatedOrder} search={search} />
               </GridCol>
               <GridCol base={12} className={cx(fr.cx("fr-hint-text"))}>
-                {filteredCount} résultat{filteredCount > 1 ? "s" : ""}
+                {t("common.result", { count: filteredCount })}
                 {filteredCount !== board._count.posts
-                  ? ` filtré${filteredCount > 1 ? "s" : ""} sur ${board._count.posts} au total`
+                  ? ` ${t("common.filteredOf", { count: filteredCount, total: board._count.posts })}`
                   : ""}
               </GridCol>
             </Grid>

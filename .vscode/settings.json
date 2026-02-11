@@ -25,4 +25,6 @@
     "^@mui/[^/]+$"
   ],
   "json.format.keepLines": true,
+  "loccy.annotations.previewLocale": "fr",
+  "loccy.sourceLocale": "fr"
 }

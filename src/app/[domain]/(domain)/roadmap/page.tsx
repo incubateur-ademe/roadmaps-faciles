@@ -2,6 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Card from "@codegouvfr/react-dsfr/Card";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { getTranslations } from "next-intl/server";
 
 import { LikeButton } from "@/components/Board/LikeButton";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -57,11 +58,13 @@ const RoadmapPage = DomainPageHOP()(async props => {
     },
   });
 
+  const [t, tc] = await Promise.all([getTranslations("roadmap"), getTranslations("common")]);
+
   return (
     <DsfrPage>
       <Container className="flex-1 flex flex-col overflow-x-hidden" my="2w">
         <Heading as="h2" className={fr.cx("fr-mb-2w")}>
-          Feuille de route
+          {t("title")}
         </Heading>
         <Box className={cx("flex flex-1 min-h-0 gap-2 w-full overflow-x-auto scrollbar-thin snap-x")}>
           {postStatuses.map(statusColumn => {
@@ -81,17 +84,11 @@ const RoadmapPage = DomainPageHOP()(async props => {
                 >
                   {statusColumn.name}
 
-                  <span className={fr.cx("fr-hint-text")}>
-                    {postsInColumn.length} élément{postsInColumn.length > 1 ? "s" : ""}
-                  </span>
+                  <span className={fr.cx("fr-hint-text")}>{tc("item", { count: postsInColumn.length })}</span>
                 </Text>
 
                 <ClientAnimate className="flex-1 overflow-y-auto snap-y scrollbar-thin">
-                  {postsInColumn.length === 0 && (
-                    <Text className={fr.cx("fr-p-2w")}>
-                      Partagez vos retours et revenez plus tard pour découvrir les nouveautés !
-                    </Text>
-                  )}
+                  {postsInColumn.length === 0 && <Text className={fr.cx("fr-p-2w")}>{t("emptyColumn")}</Text>}
                   {postsInColumn.map(post => (
                     <Card
                       key={post.id}

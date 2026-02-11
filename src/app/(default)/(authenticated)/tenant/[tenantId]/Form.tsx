@@ -6,6 +6,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Select from "@codegouvfr/react-dsfr/Select";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
@@ -15,7 +16,7 @@ import { config } from "@/config";
 import { FormFieldset } from "@/dsfr";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
 import { LOCALE_LABELS } from "@/utils/i18n";
-import { localeSchema, subdomainSchema } from "@/utils/zod-schema";
+import { createSubdomainSchema, localeSchema } from "@/utils/zod-schema";
 
 import { saveTenant } from "./actions";
 import style from "./TenantMain.module.scss";
@@ -24,17 +25,21 @@ interface FormProps {
   tenant: TenantWithSettings;
 }
 
-const formSchema = z.object({
-  tenantId: z.number(),
-  tenantName: z.string().nonempty("Le nom est requis"),
-  tenantSubdomain: subdomainSchema.nonempty("Le sous-domaine est requis"),
-  tenantCustomDomain: z.string(),
-  locale: localeSchema,
-});
-
-type FormType = z.infer<typeof formSchema>;
-
 export const Form = ({ tenant }: FormProps) => {
+  const t = useTranslations("tenant");
+  const tc = useTranslations("common");
+  const tv = useTranslations("validation");
+
+  const formSchema = z.object({
+    tenantId: z.number(),
+    tenantName: z.string().min(1, tv("nameRequired")),
+    tenantSubdomain: createSubdomainSchema(tv),
+    tenantCustomDomain: z.string(),
+    locale: localeSchema,
+  });
+
+  type FormType = z.infer<typeof formSchema>;
+
   const [saveError, setSaveError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -94,18 +99,16 @@ export const Form = ({ tenant }: FormProps) => {
 
   return (
     <>
-      <h1>
-        Configuration <code>{tenantName}</code>
-      </h1>
+      <h1>{t.rich("configTitle", { name: tenantName, code: chunks => <code>{chunks}</code> })}</h1>
       <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
         <input type="hidden" {...register("tenantId")} />
         <FormFieldset
-          legend={<h3>Identité</h3>}
+          legend={<h3>{t("identityLegend")}</h3>}
           elements={[
             <Input
               key="tenantName"
-              label="Nom"
-              hintText="Nom de l'organisation"
+              label={t("nameLabel")}
+              hintText={t("nameHint")}
               state={errors.tenantName ? "error" : "default"}
               stateRelatedMessage={errors.tenantName?.message}
               nativeInputProps={{
@@ -117,8 +120,8 @@ export const Form = ({ tenant }: FormProps) => {
               children: (
                 <Input
                   key="tenantSubdomain"
-                  label="Sous-domaine"
-                  hintText={"Le sous-domaine doit être unique et ne pas contenir d'espace"}
+                  label={t("subdomainLabel")}
+                  hintText={t("subdomainUniqueHint")}
                   state={errors?.tenantSubdomain ? "error" : "default"}
                   stateRelatedMessage={errors?.tenantSubdomain?.message}
                   nativeInputProps={{
@@ -147,8 +150,8 @@ export const Form = ({ tenant }: FormProps) => {
               children: (
                 <Input
                   key="tenantCustomDomain"
-                  label="Domaine personnalisé"
-                  hintText="Ex: roadmap.mon-organisation.fr"
+                  label={t("customDomain")}
+                  hintText={t("customDomainHint")}
                   nativeInputProps={{
                     ...register("tenantCustomDomain"),
                   }}
@@ -162,7 +165,7 @@ export const Form = ({ tenant }: FormProps) => {
               key: "locale",
               children: (
                 <Select
-                  label="Langue"
+                  label={t("localeLabel")}
                   state={errors?.locale ? "error" : "default"}
                   stateRelatedMessage={errors?.locale?.message}
                   nativeSelectProps={{
@@ -170,7 +173,7 @@ export const Form = ({ tenant }: FormProps) => {
                   }}
                 >
                   <option value="" disabled>
-                    Sélectionner une langue
+                    {t("selectLocale")}
                   </option>
                   {Object.entries(LOCALE_LABELS).map(([key, value]) => (
                     <option key={key} value={key}>
@@ -188,14 +191,14 @@ export const Form = ({ tenant }: FormProps) => {
             <Alert
               className={fr.cx("fr-mb-2w")}
               severity="error"
-              title="Erreur de validation"
+              title={t("validationError")}
               description={saveError}
             />
           )}
-          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title="Sauvegarde réussie" />}
+          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("saveSuccess")} />}
         </ClientAnimate>
         <Button type="submit" disabled={pending || !isValid || !isDirty}>
-          Sauvegarder
+          {tc("save")}
         </Button>
       </form>
     </>

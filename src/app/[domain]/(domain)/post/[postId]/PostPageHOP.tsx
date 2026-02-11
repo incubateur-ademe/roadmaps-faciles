@@ -3,6 +3,7 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { type User } from "next-auth";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { type ReactElement } from "react";
 import { MarkdownAsync } from "react-markdown";
@@ -15,7 +16,7 @@ import { type Activity, type Board } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
-import { toFrenchDate } from "@/utils/date";
+import { formatDate } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { type EnrichedPost } from "../../board/[boardSlug]/actions";
@@ -146,15 +147,17 @@ export interface PostPageComponentProps {
   user?: null | User;
 }
 
-export const PostPageComponent = (props: PostPageComponentProps) => {
+export const PostPageComponent = async (props: PostPageComponentProps) => {
   const { post, allowComments, canEdit } = props;
+  const [t, locale] = await Promise.all([getTranslations("post"), getLocale()]);
+
   return (
     <>
       <span className="flex gap-[.5rem] items-center">
         {post.postStatus ? (
           <Badge className={`fr-badge--color-${post.postStatus.color}`}>{post.postStatus.name}</Badge>
         ) : (
-          <Badge className={"fr-badge--color-grey"}>Non classé</Badge>
+          <Badge className={"fr-badge--color-grey"}>{t("unclassified")}</Badge>
         )}
         <Badge className={`fr-badge--color-blueFrance`}>{post.board.name}</Badge>
         {post.tags?.map(tag => (
@@ -164,7 +167,11 @@ export const PostPageComponent = (props: PostPageComponentProps) => {
         ))}
       </span>
       <Text mt="2w">
-        Ajouté par <b>{post.user.name}</b> le {toFrenchDate(post.user.createdAt)}
+        {t.rich("addedBy", {
+          author: post.user.name ?? "",
+          date: formatDate(post.user.createdAt, locale),
+          b: chunks => <b>{chunks}</b>,
+        })}
       </Text>
       <PostEditToggle canEdit={canEdit} postId={post.id} title={post.title} description={post.description}>
         <Text mt="2w" variant="lg">
@@ -174,7 +181,7 @@ export const PostPageComponent = (props: PostPageComponentProps) => {
       {allowComments && (
         <Input
           textArea
-          label="Ajouter un commentaire"
+          label={t("addComment")}
           classes={{
             nativeInputOrTextArea: "resize-y",
           }}
@@ -184,14 +191,14 @@ export const PostPageComponent = (props: PostPageComponentProps) => {
         <>
           {post._count.comments > 0 && (
             <Tag as="span" iconId="fr-icon-discuss-line" small>
-              <b>{post._count.comments}</b>&nbsp;commentaire{post._count.comments > 1 ? "s" : ""}
+              {t.rich("comment", { count: post._count.comments, b: chunks => <b>{chunks}</b> })}
             </Tag>
           )}
         </>
       ) : (
         <>
           <div className={fr.cx("fr-hr-or")}>
-            <span className="text-nowrap">Flux d'activité</span>
+            <span className="text-nowrap">{t("activityFeed")}</span>
           </div>
 
           <PostTimeline {...props} />

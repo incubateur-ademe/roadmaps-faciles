@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { auth } from "@/lib/next-auth/auth";
 import { invitationRepo, userOnTenantRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
@@ -9,9 +11,12 @@ import { InvitationsList } from "./InvitationsList";
 const InvitationsAdminPage = DomainPageHOP()(async props => {
   const { tenant } = props._data;
   const useCase = new ListInvitationsForTenant(invitationRepo);
-  const invitations = await useCase.execute({ tenantId: tenant.id });
+  const [invitations, session, t] = await Promise.all([
+    useCase.execute({ tenantId: tenant.id }),
+    auth(),
+    getTranslations("domainAdmin.invitations"),
+  ]);
 
-  const session = await auth();
   let isOwner = false;
   if (session?.user) {
     if (session.user.isSuperAdmin) {
@@ -24,7 +29,7 @@ const InvitationsAdminPage = DomainPageHOP()(async props => {
 
   return (
     <div>
-      <h1>Invitations</h1>
+      <h1>{t("title")}</h1>
       <InvitationsList invitations={invitations} isOwner={isOwner} />
     </div>
   );

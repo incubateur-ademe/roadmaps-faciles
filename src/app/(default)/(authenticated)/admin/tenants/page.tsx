@@ -1,32 +1,37 @@
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
 import { CopyButton } from "@/components/CopyButton";
 import { config } from "@/config";
 import { TableCustom } from "@/dsfr/base/TableCustom";
+import { Link } from "@/i18n/navigation";
 import { tenantRepo } from "@/lib/repo";
 import { ListAllTenants } from "@/useCases/tenant/ListAllTenants";
-
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
 
 const TenantsPage = async () => {
   await connection();
 
-  const useCase = new ListAllTenants(tenantRepo);
+  const [useCase, t, tc, locale] = await Promise.all([
+    Promise.resolve(new ListAllTenants(tenantRepo)),
+    getTranslations("adminTenants"),
+    getTranslations("common"),
+    getLocale(),
+  ]);
   const tenants = await useCase.execute();
+  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
   return (
     <div>
-      <h1>Tenants</h1>
+      <h1>{t("title")}</h1>
       <div className="flex items-center justify-between fr-mb-2w">
-        <p className="fr-mb-0">{tenants.length} tenant(s)</p>
+        <p className="fr-mb-0">{t("tenantCount", { count: tenants.length })}</p>
         <ButtonsGroup
           inlineLayoutWhen="always"
           buttonsSize="small"
           buttons={[
             {
-              children: "Créer un tenant",
+              children: t("create"),
               linkProps: { href: "/admin/tenants/new" },
             },
           ]}
@@ -35,12 +40,12 @@ const TenantsPage = async () => {
 
       <TableCustom
         header={[
-          { children: "Nom" },
-          { children: "URL" },
-          { children: "Owners" },
-          { children: "Membres" },
-          { children: "Créé le" },
-          { children: "Actions" },
+          { children: t("name") },
+          { children: t("url") },
+          { children: t("owners") },
+          { children: t("members") },
+          { children: t("createdAt") },
+          { children: tc("actions") },
         ]}
         body={tenants.map(tenant => {
           const tenantUrl = `${config.host.replace("://", `://${tenant.settings.subdomain}.`)}`;
@@ -87,7 +92,7 @@ const TenantsPage = async () => {
                   buttonsSize="small"
                   buttons={[
                     {
-                      children: "Détail",
+                      children: tc("detail"),
                       priority: "secondary",
                       linkProps: { href: `/admin/tenants/${tenant.id}` },
                     },

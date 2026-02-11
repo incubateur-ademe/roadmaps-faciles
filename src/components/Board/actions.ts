@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
@@ -30,13 +31,15 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
   });
 
   if (!unlike) {
+    const t = await getTranslations("serverErrors");
+
     if (!settings?.allowVoting) {
-      return { ok: false, error: "Le vote est désactivé." };
+      return { ok: false, error: t("votingDisabled") };
     }
 
     const isAnonymous = !inputValidated.data.userId;
     if (isAnonymous && !settings.allowAnonymousVoting) {
-      return { ok: false, error: "Le vote anonyme est désactivé." };
+      return { ok: false, error: t("anonymousVotingDisabled") };
     }
   }
 

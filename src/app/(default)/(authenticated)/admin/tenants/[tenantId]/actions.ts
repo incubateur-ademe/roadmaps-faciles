@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { userOnTenantRepo } from "@/lib/repo";
@@ -17,8 +18,10 @@ export const updateMemberRole = async (data: {
 }): Promise<ServerActionResponse> => {
   const session = await assertAdmin();
 
+  const t = await getTranslations("serverErrors");
+
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre rôle." };
+    return { ok: false, error: t("cannotEditOwnRole") };
   }
 
   try {
@@ -37,9 +40,10 @@ export const updateMemberStatus = async (data: {
   userId: string;
 }): Promise<ServerActionResponse> => {
   const session = await assertAdmin();
+  const t = await getTranslations("serverErrors");
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre statut." };
+    return { ok: false, error: t("cannotEditOwnStatus") };
   }
 
   try {
@@ -54,9 +58,10 @@ export const updateMemberStatus = async (data: {
 
 export const removeMember = async (data: { tenantId: number; userId: string }): Promise<ServerActionResponse> => {
   const session = await assertAdmin();
+  const t = await getTranslations("serverErrors");
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas vous retirer vous-même." };
+    return { ok: false, error: t("cannotRemoveSelf") };
   }
 
   try {

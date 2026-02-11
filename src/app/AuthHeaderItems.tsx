@@ -5,8 +5,8 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { cx, type CxArg } from "@codegouvfr/react-dsfr/tools/cx";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link, { type LinkProps } from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { type ReactNode, useId, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -14,11 +14,13 @@ import Skeleton from "react-loading-skeleton";
 import { InitialsAvatar } from "@/components/img/InitialsAvatar";
 import { config } from "@/config";
 import { Icon } from "@/dsfr";
+import { Link } from "@/i18n/navigation";
 import { USER_ROLE } from "@/lib/model/User";
 
 export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "tenant" }) => {
   const session = useSession();
   const segments = useSelectedLayoutSegments();
+  const t = useTranslations("auth");
 
   switch (session.status) {
     case "authenticated": {
@@ -26,7 +28,7 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
 
       const items: UserMenuItem[] = [
         {
-          label: "Mon profil utilisateur",
+          label: t("myProfile"),
           iconId: "fr-icon-user-line",
           linkProps: { href: "/profile" },
           isCurrent: segments.includes("profile"),
@@ -41,7 +43,7 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
         user.currentTenantRole === USER_ROLE.OWNER;
       if (isAdmin) {
         items.push({
-          label: variant === "root" ? "Administration" : "Admin du tenant",
+          label: variant === "root" ? t("administration") : t("tenantAdmin"),
           iconId: "fr-icon-settings-5-line",
           linkProps: { href: "/admin" },
           isCurrent: segments.includes("admin"),
@@ -53,6 +55,7 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
           showLogout
           showUserInfo
           withOutline
+          buttonLabel={t("mySpace")}
           userName={
             <>
               {user.name}
@@ -103,7 +106,7 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
               href: "/login",
               className: fr.cx("fr-btn--secondary"),
             },
-            text: "Se connecter",
+            text: t("login"),
           }}
         />
       );
@@ -114,7 +117,7 @@ export interface UserMenuItem {
   iconId: FrIconClassName;
   isCurrent?: boolean;
   label: ReactNode;
-  linkProps: Omit<LinkProps, "children" | "onClick">;
+  linkProps: { href: string };
   onClick?: () => void;
 }
 
@@ -122,7 +125,7 @@ export interface UserMenuHeaderItemProps {
   buttonLabel?: string;
   className?: CxArg;
   items: UserMenuItem[];
-  logoutHref?: LinkProps["href"];
+  logoutHref?: string;
   onLogout?: () => void;
   showLogout?: boolean;
   showUserInfo?: boolean;
@@ -132,7 +135,7 @@ export interface UserMenuHeaderItemProps {
 }
 
 export function UserMenuHeaderItem({
-  buttonLabel = "Mon espace",
+  buttonLabel,
   withOutline = true,
   showUserInfo = true,
   showLogout = true,
@@ -145,6 +148,8 @@ export function UserMenuHeaderItem({
 }: UserMenuHeaderItemProps) {
   const id = useId();
   const [_open, setOpen] = useState(false);
+  const t = useTranslations("auth");
+  const label = buttonLabel ?? t("mySpace");
 
   const toggleMenu = () => setOpen(v => !v);
   const closeMenu = () => setOpen(false);
@@ -163,7 +168,7 @@ export function UserMenuHeaderItem({
             "aria-controls": collapseId,
             "aria-expanded": "false",
             type: "button",
-            title: buttonLabel,
+            title: label,
           }}
           priority={withOutline ? "tertiary" : "tertiary no outline"}
           size="small"
@@ -173,7 +178,7 @@ export function UserMenuHeaderItem({
           <Icon
             className={`${componentClass}__btn-label`}
             icon="fr-icon-arrow-down-s-line"
-            text={buttonLabel}
+            text={label}
             iconPosition="right"
           />
         </Button>
@@ -219,7 +224,7 @@ export function UserMenuHeaderItem({
                       },
                     }}
                   >
-                    Se déconnecter
+                    {t("logout")}
                   </Button>
                 </li>
               </>

@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { userRepo } from "@/lib/repo";
@@ -9,14 +10,15 @@ import { assertAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
 export const updateUserRole = async (data: { role: UserRole; userId: string }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const session = await assertAdmin();
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre rôle." };
+    return { ok: false, error: t("cannotEditOwnRole") };
   }
 
   if (data.role === UserRole.OWNER || data.role === UserRole.INHERITED) {
-    return { ok: false, error: "Rôle cible non autorisé." };
+    return { ok: false, error: t("targetRoleForbidden") };
   }
 
   try {
@@ -30,14 +32,15 @@ export const updateUserRole = async (data: { role: UserRole; userId: string }): 
 };
 
 export const updateUserStatus = async (data: { status: UserStatus; userId: string }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const session = await assertAdmin();
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre statut." };
+    return { ok: false, error: t("cannotEditOwnStatus") };
   }
 
   if (data.status === UserStatus.DELETED) {
-    return { ok: false, error: "Statut cible non autorisé." };
+    return { ok: false, error: t("targetStatusForbidden") };
   }
 
   try {
