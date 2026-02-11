@@ -1,1 +1,1 @@
-postdeploy: echo "====== PRISMA MIGRATE DEPLOY ======" && npm install --no-package-lock --no-save prisma && pnpm prisma:migrate:deploy && rm -rf node_modules && echo "====== PRISMA MIGRATE DEPLOY FINISH ======"
+postdeploy: echo "====== PRISMA MIGRATE DEPLOY ======" && npm install --prefix /tmp/prisma prisma @next/env && NODE_PATH=/tmp/prisma/node_modules /tmp/prisma/node_modules/.bin/prisma migrate deploy && rm -rf /tmp/prisma && echo "====== PRISMA MIGRATE DEPLOY FINISH ======"
