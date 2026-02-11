@@ -10,6 +10,7 @@ import { type Invitation } from "@/prisma/client";
 import { type UseCase } from "../types";
 
 const invitationRoleEnum = z.enum(["USER", "MODERATOR", "ADMIN", "OWNER"]);
+export type InvitationRole = z.infer<typeof invitationRoleEnum>;
 
 export const SendInvitationInput = z.object({
   tenantId: z.number(),

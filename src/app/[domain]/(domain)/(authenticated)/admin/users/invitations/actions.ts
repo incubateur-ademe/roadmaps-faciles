@@ -6,16 +6,15 @@ import { config } from "@/config";
 import { invitationRepo, userRepo } from "@/lib/repo";
 import { type UserEmailSearchResult } from "@/lib/repo/IUserRepo";
 import { type Invitation } from "@/prisma/client";
-import { type UserRole } from "@/prisma/enums";
 import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
-import { SendInvitation } from "@/useCases/invitations/SendInvitation";
+import { type InvitationRole, SendInvitation } from "@/useCases/invitations/SendInvitation";
 import { assertTenantAdmin, assertTenantOwner } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
 export const sendInvitation = async (data: {
   email: string;
-  role?: UserRole;
+  role?: InvitationRole;
 }): Promise<ServerActionResponse<Invitation>> => {
   const domain = await getDomainFromHost();
 

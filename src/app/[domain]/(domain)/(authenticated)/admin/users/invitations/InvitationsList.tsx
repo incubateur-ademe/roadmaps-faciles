@@ -12,6 +12,7 @@ import { EmailAutocomplete } from "@/dsfr/base/EmailAutocomplete";
 import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type Invitation } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
+import { type InvitationRole } from "@/useCases/invitations/SendInvitation";
 
 import { revokeInvitation, searchUsersForInvitation, sendInvitation } from "./actions";
 
@@ -35,7 +36,7 @@ const INVITE_ROLES_WITH_OWNER = [UserRole.USER, UserRole.MODERATOR, UserRole.ADM
 export const InvitationsList = ({ invitations: initialInvitations, isOwner }: InvitationsListProps) => {
   const [invitations, setInvitations] = useState(initialInvitations);
   const [newEmail, setNewEmail] = useState("");
-  const [newRole, setNewRole] = useState<UserRole>(UserRole.USER);
+  const [newRole, setNewRole] = useState<InvitationRole>("USER");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
@@ -48,7 +49,7 @@ export const InvitationsList = ({ invitations: initialInvitations, isOwner }: In
     if (result.ok && result.data) {
       setInvitations([result.data, ...invitations]);
       setNewEmail("");
-      setNewRole(UserRole.USER);
+      setNewRole("USER");
     } else if (!result.ok) {
       setError(result.error);
     }
@@ -146,7 +147,7 @@ export const InvitationsList = ({ invitations: initialInvitations, isOwner }: In
             options={availableRoles.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
             nativeSelectProps={{
               value: newRole,
-              onChange: e => setNewRole(e.target.value as UserRole),
+              onChange: e => setNewRole(e.target.value),
             }}
           />
         </GridCol>
