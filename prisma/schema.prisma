@@ -309,7 +309,6 @@ model TenantSettings {
   customDomain            String?
   subdomain               String
   locale                  Locale                  @default(fr)
-  useBrowserLocale        Boolean                 @default(false)
   isPrivate               Boolean                 @default(false)
   allowVoting             Boolean                 @default(true)
   allowComments           Boolean                 @default(true)

@@ -39,7 +39,6 @@ const formSchema = z.object({
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
-  useBrowserLocale: z.boolean(),
 });
 
 type FormType = z.infer<typeof formSchema>;
@@ -69,18 +68,6 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
         name: "allowAnonymousFeedback",
         label: t("allowAnonymousFeedback"),
         helperText: t("allowAnonymousFeedbackHelper"),
-      },
-    ],
-  },
-  {
-    id: "localization",
-    title: t("localization"),
-    toggles: [
-      {
-        name: "useBrowserLocale",
-        label: t("useBrowserLocale"),
-        helperText: t("useBrowserLocaleHelper"),
-        disabled: true,
       },
     ],
   },
@@ -165,7 +152,6 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
       allowVoting: tenantSettings.allowVoting,
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
-      useBrowserLocale: tenantSettings.useBrowserLocale,
     },
   });
 
