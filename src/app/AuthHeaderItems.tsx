@@ -14,13 +14,40 @@ import Skeleton from "react-loading-skeleton";
 import { InitialsAvatar } from "@/components/img/InitialsAvatar";
 import { config } from "@/config";
 import { Icon } from "@/dsfr";
+import { USER_ROLE } from "@/lib/model/User";
 
-export const UserHeaderItem = () => {
+export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "tenant" }) => {
   const session = useSession();
   const segments = useSelectedLayoutSegments();
 
   switch (session.status) {
-    case "authenticated":
+    case "authenticated": {
+      const { user } = session.data;
+
+      const items: UserMenuItem[] = [
+        {
+          label: "Mon profil utilisateur",
+          iconId: "fr-icon-user-line",
+          linkProps: { href: "/profile" },
+          isCurrent: segments.includes("profile"),
+        },
+      ];
+
+      const isAdmin =
+        user.role === USER_ROLE.ADMIN ||
+        user.role === USER_ROLE.OWNER ||
+        user.isSuperAdmin ||
+        user.currentTenantRole === USER_ROLE.ADMIN ||
+        user.currentTenantRole === USER_ROLE.OWNER;
+      if (isAdmin) {
+        items.push({
+          label: variant === "root" ? "Administration" : "Admin du tenant",
+          iconId: "fr-icon-settings-5-line",
+          linkProps: { href: "/admin" },
+          isCurrent: segments.includes("admin"),
+        });
+      }
+
       return (
         <UserMenuHeaderItem
           showLogout
@@ -28,43 +55,28 @@ export const UserHeaderItem = () => {
           withOutline
           userName={
             <>
-              {session.data.user.name}
-              {session.data.user.image ? (
+              {user.name}
+              {user.image ? (
                 <Image
-                  src={new URL(session.data.user.image, config.espaceMembre.url).toString()}
+                  src={new URL(user.image, config.espaceMembre.url).toString()}
                   alt="Avatar"
                   width={40}
                   height={40}
                   className="rounded-full float-right"
                 />
               ) : (
-                <InitialsAvatar
-                  className="float-right"
-                  name={session.data.user.name || session.data.user.email.toLocaleUpperCase()}
-                />
+                <InitialsAvatar as="span" className="float-right" name={user.name || user.email.toLocaleUpperCase()} />
               )}
             </>
           }
-          userEmail={session.data.user.email}
+          userEmail={user.email}
           onLogout={() => {
             void signOut({ redirectTo: "/" });
           }}
-          items={[
-            {
-              label: "Mon profil utilisateur",
-              iconId: "fr-icon-user-line",
-              linkProps: { href: "/profile" },
-              isCurrent: segments.includes("profile"),
-            },
-            {
-              label: "Admin du tenant",
-              iconId: "fr-icon-settings-5-line",
-              linkProps: { href: "/admin" },
-              isCurrent: segments.includes("admin"),
-            },
-          ]}
+          items={items}
         />
       );
+    }
     case "loading":
       return (
         <HeaderQuickAccessItem

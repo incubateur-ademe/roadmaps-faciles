@@ -240,6 +240,12 @@ export const assertAdmin = async (useForbidden = true): Promise<Session> =>
   assertSession({ rootUser: { check: { role: { min: UserRole.ADMIN } } }, useForbidden });
 
 /**
+ * Spécialisation d'`assertSession` pour vérifier que l'utilisateur courant est propriétaire du tenant.
+ */
+export const assertTenantOwner = async (domain: string, useForbidden = true): Promise<Session> =>
+  assertSession({ tenantUser: { check: { role: { only: UserRole.OWNER }, domain } }, useForbidden });
+
+/**
  * Si le site est privé et l'utilisateur non connecté, redirige vers la page de login.
  */
 export const assertPublicAccess = async (settings: TenantSettings, loginPath: string): Promise<void> => {

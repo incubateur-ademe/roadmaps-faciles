@@ -1,11 +1,25 @@
 import { prisma } from "@/lib/db/prisma";
 import { type Prisma, type Tenant, type TenantSettings } from "@/prisma/client";
 
-import { type ITenantRepo } from "../ITenantRepo";
+import { type ITenantRepo, type TenantWithSettingsAndMemberCount } from "../ITenantRepo";
 
 export class TenantRepoPrisma implements ITenantRepo {
   public findAll(): Promise<Tenant[]> {
     return prisma.tenant.findMany();
+  }
+
+  public findAllWithSettings(): Promise<TenantWithSettingsAndMemberCount[]> {
+    return prisma.tenant.findMany({
+      where: { settings: { isNot: null } },
+      include: {
+        settings: true,
+        members: {
+          where: { role: "OWNER" },
+          select: { user: { select: { email: true, name: true } } },
+        },
+        _count: { select: { members: true } },
+      },
+    }) as Promise<TenantWithSettingsAndMemberCount[]>;
   }
 
   public async findById(id: number): Promise<null | Tenant> {

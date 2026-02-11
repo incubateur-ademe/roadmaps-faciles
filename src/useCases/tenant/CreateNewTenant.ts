@@ -1,11 +1,12 @@
 import { z } from "zod";
 
+import { config } from "@/config";
+import { getDomainProvider } from "@/lib/domain-provider";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
+import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
-import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
-import { UserRole, UserStatus } from "@/prisma/client";
-import { CreateWelcomeEntitiesWorkflow } from "@/workflows/CreateWelcomeEntitiesWorkflow";
+import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 
 import { type UseCase } from "../types";
 
@@ -15,7 +16,7 @@ export const CreateNewTenantInput = z.object({
     .string()
     .min(1)
     .regex(/^[a-z0-9-]+$/),
-  userId: z.string(),
+  ownerEmails: z.array(z.string().email()).min(1),
 });
 
 export type CreateNewTenantInput = z.infer<typeof CreateNewTenantInput>;
@@ -25,7 +26,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
   constructor(
     private readonly tenantRepo: ITenantRepo,
     private readonly tenantSettingsRepo: ITenantSettingsRepo,
-    private readonly userOnTenantRepo: IUserOnTenantRepo,
+    private readonly invitationRepo: IInvitationRepo,
   ) {}
 
   public async execute(input: CreateNewTenantInput): Promise<CreateNewTenantOutput> {
@@ -37,15 +38,20 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
       subdomain: input.subdomain,
     });
 
-    await this.userOnTenantRepo.create({
-      userId: input.userId,
-      tenantId: tenant.id,
-      role: UserRole.OWNER,
-      status: UserStatus.ACTIVE,
-    });
+    const provider = getDomainProvider();
+    await provider.addDomain(`${input.subdomain}.${config.rootDomain}`, "subdomain");
 
-    const workflow = new CreateWelcomeEntitiesWorkflow(tenant.id);
-    await workflow.run();
+    const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
+    const sendInvitation = new SendInvitation(this.invitationRepo);
+
+    for (const email of input.ownerEmails) {
+      await sendInvitation.execute({
+        tenantId: tenant.id,
+        email,
+        tenantUrl,
+        role: "OWNER",
+      });
+    }
 
     return { ...tenant, settings };
   }

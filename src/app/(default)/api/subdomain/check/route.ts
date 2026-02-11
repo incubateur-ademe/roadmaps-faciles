@@ -1,3 +1,4 @@
+import { StatusCodes } from "http-status-codes";
 import { NextResponse } from "next/server";
 import z from "zod";
 
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
 
   const tenant = await tenantRepo.findBySubdomain(subdomain);
   if (!tenant) {
-    return new Response("Tenant not found", { status: 404 });
+    return new Response("Tenant not found", { status: StatusCodes.NOT_FOUND });
   }
   return NextResponse.json(tenant);
 }

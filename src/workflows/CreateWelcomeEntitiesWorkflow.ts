@@ -9,13 +9,15 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
   public async run() {
     const tenantId = this.tenantId ?? getSeedTenant().id;
 
-    const owner = (await prisma.userOnTenant.findFirst({
+    const owner = await prisma.userOnTenant.findFirst({
       where: {
         tenantId,
         status: "ACTIVE",
         role: "OWNER",
       },
-    }))!;
+    });
+
+    if (!owner) return;
 
     // Create some Boards
     const featureBoard = await prisma.board.create({

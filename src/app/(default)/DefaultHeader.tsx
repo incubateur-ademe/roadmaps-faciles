@@ -34,6 +34,6 @@ export const DefaultHeader = () => (
     classes={{
       operator: "shimmer",
     }}
-    quickAccessItems={config.maintenance ? [] : [<UserHeaderItem key="hqai-user" />].filter(Boolean)}
+    quickAccessItems={config.maintenance ? [] : [<UserHeaderItem key="hqai-user" variant="root" />].filter(Boolean)}
   />
 );

@@ -12,7 +12,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    seed: "yarn run tsx --tsconfig prisma/tsconfig.json prisma/seed.cts",
+    seed: "pnpm tsx --tsconfig prisma/tsconfig.json prisma/seed.cts",
   },
   datasource: {
     url: process.env.DATABASE_URL as string,

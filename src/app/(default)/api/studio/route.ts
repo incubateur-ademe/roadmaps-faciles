@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json([null, results], { headers: CORS_HEADERS });
   } catch (err) {
     return NextResponse.json([serializeError(err)], {
-      status: 400,
+      status: StatusCodes.BAD_REQUEST,
       headers: CORS_HEADERS,
     });
   }

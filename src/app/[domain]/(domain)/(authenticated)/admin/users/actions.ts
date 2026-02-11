@@ -3,17 +3,18 @@
 import { revalidatePath } from "next/cache";
 
 import { userOnTenantRepo } from "@/lib/repo";
-import { type UserRole, type UserStatus } from "@/prisma/enums";
+import { UserRole, type UserStatus } from "@/prisma/enums";
 import { RemoveMember } from "@/useCases/user_on_tenant/RemoveMember";
 import { UpdateMemberRole } from "@/useCases/user_on_tenant/UpdateMemberRole";
 import { UpdateMemberStatus } from "@/useCases/user_on_tenant/UpdateMemberStatus";
-import { assertTenantAdmin } from "@/utils/auth";
+import { assertTenantAdmin, assertTenantOwner } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
 export const updateMemberRole = async (data: { role: UserRole; userId: string }): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  const session = await assertTenantAdmin(domain);
+  // Promouvoir en OWNER nécessite d'être owner soi-même
+  const session = data.role === UserRole.OWNER ? await assertTenantOwner(domain) : await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
 
   if (data.userId === session.user.uuid) {

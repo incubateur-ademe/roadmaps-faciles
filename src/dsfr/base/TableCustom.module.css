@@ -53,3 +53,8 @@
     white-space: nowrap;
 }
 
+/* Reset DSFR ButtonsGroup margin on buttons inside table cells */
+.tableBodyRowCol :global(.fr-btns-group) :global(.fr-btn) {
+    margin-bottom: 0;
+}
+

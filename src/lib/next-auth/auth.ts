@@ -3,11 +3,13 @@ import { EspaceMembreProvider } from "@incubateur-ademe/next-auth-espace-membre-
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
+import Credentials from "next-auth/providers/credentials";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { headers } from "next/headers";
 import { cache } from "react";
 
 import { config } from "@/config";
+import { verifyBridgeToken } from "@/lib/authBridge";
 import { type UserRole, type UserStatus } from "@/prisma/enums";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
@@ -16,6 +18,7 @@ import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
 
 type CustomUser = {
+  currentTenantRole?: UserRole;
   isBetaGouvMember: boolean;
   isSuperAdmin?: boolean;
   role: UserRole;
@@ -104,6 +107,22 @@ const {
     providers: [
       nodemailerProvider,
       espaceMembreProvider.ProviderWrapper(nodemailerProvider),
+      Credentials({
+        id: "bridge",
+        credentials: { token: { type: "text" } },
+        async authorize(credentials) {
+          const token = credentials?.token as string;
+          if (!token) return null;
+          try {
+            const payload = verifyBridgeToken(token);
+            const user = await userRepo.findById(payload.userId);
+            if (!user || user.status === "DELETED") return null;
+            return { id: user.id, email: user.email, name: user.name };
+          } catch {
+            return null;
+          }
+        },
+      }),
       // TODO
       // WebAuthn,
       // Passkey({
@@ -195,17 +214,39 @@ const {
           }
         }
 
+        // Bridge provider — create UserOnTenant membership if needed
+        if (params.account?.provider === "bridge" && tenant) {
+          const userId = params.user.id;
+          if (userId) {
+            const existing = await userOnTenantRepo.findMembership(userId, tenant.id);
+            if (!existing) {
+              await userOnTenantRepo.create({
+                userId,
+                tenantId: tenant.id,
+                role: "INHERITED",
+                status: "ACTIVE",
+              });
+            }
+          }
+        }
+
         // Phase 2: Magic link clicked — handle invitation acceptance
         if (params.account?.provider === "nodemailer" && !params.email?.verificationRequest && tenant) {
           const email = params.user.email;
           if (email) {
-            // Use updateMany to atomically mark as accepted (prevents race condition)
-            const updated = await prisma.invitation.updateMany({
+            // Find the invitation to get its role before marking as accepted
+            const invitation = await prisma.invitation.findFirst({
               where: { email, tenantId: tenant.id, acceptedAt: null },
-              data: { acceptedAt: new Date() },
+              select: { role: true },
             });
 
-            if (updated.count > 0) {
+            if (invitation) {
+              // Mark as accepted
+              await prisma.invitation.updateMany({
+                where: { email, tenantId: tenant.id, acceptedAt: null },
+                data: { acceptedAt: new Date() },
+              });
+
               // Create UserOnTenant membership if not exists
               const userId = params.user.id;
               if (userId) {
@@ -214,7 +255,7 @@ const {
                   await userOnTenantRepo.create({
                     userId,
                     tenantId: tenant.id,
-                    role: "USER",
+                    role: invitation.role,
                     status: "ACTIVE",
                   });
                 }
@@ -226,7 +267,7 @@ const {
         return true;
       },
       async jwt({ token, trigger, espaceMembreMember }) {
-        if (trigger === "signIn") {
+        if (trigger === "signIn" || !token.user) {
           const now = new Date();
           const dbUser = espaceMembreMember
             ? await userRepo.findByUsername(espaceMembreMember.username)
@@ -254,12 +295,23 @@ const {
           };
           token.sub = dbUser.username || dbUser.id;
 
-          await userRepo.update(dbUser.id, {
-            signInCount: dbUser.signInCount + 1,
-            lastSignInAt: dbUser.currentSignInAt ?? now,
-            currentSignInAt: now,
-          });
+          if (trigger === "signIn") {
+            await userRepo.update(dbUser.id, {
+              signInCount: dbUser.signInCount + 1,
+              lastSignInAt: dbUser.currentSignInAt ?? now,
+              currentSignInAt: now,
+            });
+          }
         }
+
+        // Resolve current tenant role on every request
+        if (token.user && tenant) {
+          const membership = await userOnTenantRepo.findMembership(token.user.uuid, tenant.id);
+          token.user = { ...token.user, currentTenantRole: membership?.role ?? undefined };
+        } else if (token.user) {
+          token.user = { ...token.user, currentTenantRole: undefined };
+        }
+
         return token;
       },
       session({ session, token }) {

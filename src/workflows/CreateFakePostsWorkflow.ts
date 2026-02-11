@@ -178,7 +178,6 @@ export class CreateFakePostsWorkflow implements IWorkflow {
     // test PostWithHotness
     const postsWithHotnessCount = await prisma.postWithHotness.count();
     if (postsWithHotnessCount !== POSTS_COUNT + previousPostCount) {
-      console.log({ postsWithHotnessCount, POSTS_COUNT, previousPostCount });
       throw new Error("PostWithHotness count is not correct");
     }
   }

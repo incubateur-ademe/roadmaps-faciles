@@ -4,6 +4,10 @@ import { type Prisma, type UserOnTenant } from "@/prisma/client";
 import { type IUserOnTenantRepo, type UserOnTenantWithTenant, type UserOnTenantWithUser } from "../IUserOnTenantRepo";
 
 export class UserOnTenantRepoPrisma implements IUserOnTenantRepo {
+  public countOwners(tenantId: number): Promise<number> {
+    return prisma.userOnTenant.count({ where: { tenantId, role: "OWNER", status: "ACTIVE" } });
+  }
+
   public findByUserId(userId: string): Promise<UserOnTenantWithTenant[]> {
     return prisma.userOnTenant.findMany({ where: { userId }, include: { tenant: true } });
   }

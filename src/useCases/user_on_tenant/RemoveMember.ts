@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { prisma } from "@/lib/db/prisma";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole } from "@/prisma/enums";
 
@@ -22,7 +23,19 @@ export class RemoveMember implements UseCase<RemoveMemberInput, RemoveMemberOutp
     }
 
     if (membership.role === UserRole.OWNER) {
-      throw new Error("Impossible de retirer un propriétaire.");
+      // Transaction pour éviter une race condition TOCTOU
+      await prisma.$transaction(async tx => {
+        const ownerCount = await tx.userOnTenant.count({
+          where: { tenantId: input.tenantId, role: "OWNER", status: "ACTIVE" },
+        });
+        if (ownerCount <= 1) {
+          throw new Error("Impossible de retirer le dernier propriétaire.");
+        }
+        await tx.userOnTenant.delete({
+          where: { userId_tenantId: { userId: input.userId, tenantId: input.tenantId } },
+        });
+      });
+      return;
     }
 
     await this.repo.delete(input.userId, input.tenantId);

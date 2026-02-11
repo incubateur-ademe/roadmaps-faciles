@@ -32,6 +32,12 @@
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
   - Always prefer `react-dsfr` components (`Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, etc.) over raw DSFR CSS classes
   - Custom DSFR components in `src/dsfr/` (e.g., `Icon`, `TableCustom`) — check here before creating new wrappers
+  - `@/dsfr` barrel (`src/dsfr/server.ts`) exports: `Box`, `FormFieldset`, `Icon`, `Grid`, `GridCol`, `Container`, `CenteredContainer`
+  - Grid layout: always use `Grid` + `GridCol` from `@/dsfr` — never raw `fr-grid-row`/`fr-col-*` divs
+  - Fieldsets: always use `FormFieldset` from `@/dsfr` — never raw `<fieldset>`
+  - SearchBar + Autocomplete: combine DSFR `SearchBar` (`renderInput`) + MUI `Autocomplete` (`renderInput` nested) for autocomplete inputs
+  - MUI `Autocomplete` inside DSFR `SearchBar`: must add `className="flex-1"` on `Autocomplete` to fill the `fr-search-bar` flex container
+  - "use client" function props: rename non-action callbacks to end with `Action` (e.g., `onSelectAction`) to avoid Next.js TS 71007 warning
   - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
@@ -45,6 +51,7 @@
   - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
   - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
+  - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
@@ -63,4 +70,7 @@
 - Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering
 - DSFR `fr-container--fluid` has `overflow: hidden` — override with `!overflow-visible` (Tailwind `!important`) when content needs to scroll/overflow
 - DSFR `.fr-select-group:not(:last-child)` adds `margin-bottom: 1.5rem` — counter with `[&_.fr-select-group]:!mb-0` when using inline Select groups
+- NextAuth `signIn()` uses `cookies().set()` internally — cannot be called during RSC render (read-only). Use a Server Action (form auto-submit pattern) instead
+- Route Handlers: use `NextResponse.redirect()`, not `redirect()` from `next/navigation` (which throws and is for RSC/Server Actions only)
+- Multi-tenant Route Handlers: never use `request.url` as base for root URLs — use `config.host` directly (request may reflect tenant domain)
 - Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)
