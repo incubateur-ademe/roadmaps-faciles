@@ -6,6 +6,7 @@ import { config } from "@/config";
 import { invitationRepo, userRepo } from "@/lib/repo";
 import { type UserEmailSearchResult } from "@/lib/repo/IUserRepo";
 import { type Invitation } from "@/prisma/client";
+import { UserRole } from "@/prisma/enums";
 import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
 import { type InvitationRole, SendInvitation } from "@/useCases/invitations/SendInvitation";
 import { assertTenantAdmin, assertTenantOwner } from "@/utils/auth";
@@ -36,7 +37,7 @@ export const sendInvitation = async (data: {
       tenantId: tenant.id,
       email: data.email,
       tenantUrl,
-      role: data.role,
+      role: data.role ?? UserRole.USER,
     });
     revalidatePath("/admin/users/invitations");
     return { ok: true, data: invitation };
