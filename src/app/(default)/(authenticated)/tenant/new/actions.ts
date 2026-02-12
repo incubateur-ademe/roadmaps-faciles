@@ -15,13 +15,13 @@ export const createTenant = async (data: {
 
   try {
     const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo);
-    const tenant = await useCase.execute({
+    const result = await useCase.execute({
       name: data.name,
       subdomain: data.subdomain,
       ownerEmails: [session.user.email],
     });
 
-    redirect(`/tenant/${tenant.id}`);
+    redirect(`/tenant/${result.tenant.id}`);
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }

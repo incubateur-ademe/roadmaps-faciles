@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import { config } from "@/config";
+import { getDnsProvider } from "@/lib/dns-provider";
+import { type DnsProvisionResult } from "@/lib/dns-provider/IDnsProvider";
 import { getDomainProvider } from "@/lib/domain-provider";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
@@ -20,7 +22,10 @@ export const CreateNewTenantInput = z.object({
 });
 
 export type CreateNewTenantInput = z.infer<typeof CreateNewTenantInput>;
-export type CreateNewTenantOutput = TenantWithSettings;
+export interface CreateNewTenantOutput {
+  dns?: DnsProvisionResult;
+  tenant: TenantWithSettings;
+}
 
 export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewTenantOutput> {
   constructor(
@@ -41,6 +46,14 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
     const provider = getDomainProvider();
     await provider.addDomain(`${input.subdomain}.${config.rootDomain}`, "subdomain");
 
+    let dnsResult: DnsProvisionResult | undefined;
+    try {
+      const dnsProvider = getDnsProvider();
+      dnsResult = await dnsProvider.addRecord(input.subdomain);
+    } catch (error) {
+      console.warn("[CreateNewTenant] DNS provisioning failed:", error);
+    }
+
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
     const sendInvitation = new SendInvitation(this.invitationRepo);
 
@@ -53,6 +66,6 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
       });
     }
 
-    return { ...tenant, settings };
+    return { tenant: { ...tenant, settings }, dns: dnsResult };
   }
 }

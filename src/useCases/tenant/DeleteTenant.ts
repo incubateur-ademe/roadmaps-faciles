@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { config } from "@/config";
+import { getDnsProvider } from "@/lib/dns-provider";
 import { getDomainProvider } from "@/lib/domain-provider";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
@@ -40,6 +41,13 @@ export class DeleteTenant implements UseCase<DeleteTenantInput, DeleteTenantOutp
       await provider.removeDomain(`${tenant.settings.subdomain}.${config.rootDomain}`);
       if (tenant.settings.customDomain) {
         await provider.removeDomain(tenant.settings.customDomain);
+      }
+
+      try {
+        const dnsProvider = getDnsProvider();
+        await dnsProvider.removeRecord(tenant.settings.subdomain);
+      } catch (error) {
+        console.warn("[DeleteTenant] DNS removal failed:", error);
       }
     }
   }

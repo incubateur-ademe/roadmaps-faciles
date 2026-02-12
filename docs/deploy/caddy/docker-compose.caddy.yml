@@ -11,8 +11,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     environment:
-      CADDY_ASK_URL: "${CADDY_ASK_URL:-http://app:3000/api/domains/check}"
-      CADDY_UPSTREAM: "${CADDY_UPSTREAM:-app:3000}"
+      DOMAIN_CADDY_ASK_URL: "${DOMAIN_CADDY_ASK_URL:-http://app:3000/api/domains/check}"
+      DOMAIN_CADDY_UPSTREAM: "${DOMAIN_CADDY_UPSTREAM:-app:3000}"
 
 volumes:
   caddy_data:

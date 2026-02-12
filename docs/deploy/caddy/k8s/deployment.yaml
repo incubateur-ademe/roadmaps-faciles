@@ -21,9 +21,9 @@ spec:
             - containerPort: 80
             - containerPort: 443
           env:
-            - name: CADDY_ASK_URL
+            - name: DOMAIN_CADDY_ASK_URL
               value: "http://app-service:3000/api/domains/check"
-            - name: CADDY_UPSTREAM
+            - name: DOMAIN_CADDY_UPSTREAM
               value: "app-service:3000"
           volumeMounts:
             - name: caddy-config

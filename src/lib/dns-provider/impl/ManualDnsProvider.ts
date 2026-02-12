@@ -1,0 +1,53 @@
+import dns from "node:dns/promises";
+
+import { config } from "@/config";
+
+import { type DnsProvisionResult, type DnsRecordStatus, type IDnsProvider } from "../IDnsProvider";
+
+export class ManualDnsProvider implements IDnsProvider {
+  private get rootDomain() {
+    return config.rootDomain.replace(/:\d+$/, "");
+  }
+
+  private get target() {
+    return config.dnsProvider.target;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async addRecord(subdomain: string): Promise<DnsProvisionResult> {
+    const fqdn = `${subdomain}.${this.rootDomain}`;
+    const record = { name: fqdn, target: this.target, type: "CNAME" as const };
+
+    console.log(`[ManualDnsProvider] Manual DNS record needed: ${fqdn} CNAME ${this.target}`);
+
+    return {
+      provisioned: false,
+      status: "pending",
+      instructions: {
+        message: `Veuillez créer un enregistrement DNS CNAME pour "${fqdn}" pointant vers "${this.target}".`,
+        record,
+      },
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async removeRecord(subdomain: string): Promise<void> {
+    const fqdn = `${subdomain}.${this.rootDomain}`;
+    console.log(`[ManualDnsProvider] Manual DNS removal needed: ${fqdn}`);
+  }
+
+  public async checkRecord(subdomain: string): Promise<DnsRecordStatus> {
+    const fqdn = `${subdomain}.${this.rootDomain}`;
+
+    try {
+      const records = await dns.resolveCname(fqdn);
+      const normalizedTarget = this.target.replace(/\.$/, "");
+      if (records.some(r => r.replace(/\.$/, "") === normalizedTarget)) {
+        return "active";
+      }
+      return "error";
+    } catch {
+      return "pending";
+    }
+  }
+}

@@ -94,21 +94,38 @@ export const config = {
     password: ensureApiEnvVar(process.env.REDIS_PASSWORD, ""),
   },
   domainProvider: {
-    type: ensureApiEnvVar<"caddy" | "clevercloud" | "noop" | "scalingo">(process.env.DOMAIN_PROVIDER, "noop"),
+    type: ensureApiEnvVar<"caddy" | "clevercloud" | "noop" | "scalingo-wildcard" | "scalingo">(
+      process.env.DOMAIN_PROVIDER,
+      "noop",
+    ),
     scalingo: {
-      apiToken: ensureApiEnvVar(process.env.SCALINGO_API_TOKEN, ""),
-      apiUrl: ensureApiEnvVar(process.env.SCALINGO_API_URL, "https://api.osc-fr1.scalingo.com"),
-      appId: ensureApiEnvVar(process.env.SCALINGO_APP_ID, ""),
+      apiToken: ensureApiEnvVar(process.env.DOMAIN_SCALINGO_API_TOKEN, ""),
+      apiUrl: ensureApiEnvVar(process.env.DOMAIN_SCALINGO_API_URL, "https://api.osc-fr1.scalingo.com"),
+      appId: ensureApiEnvVar(process.env.DOMAIN_SCALINGO_APP_ID, ""),
     },
     clevercloud: {
-      consumerKey: ensureApiEnvVar(process.env.CLEVERCLOUD_OAUTH_CONSUMER_KEY, ""),
-      consumerSecret: ensureApiEnvVar(process.env.CLEVERCLOUD_OAUTH_CONSUMER_SECRET, ""),
-      token: ensureApiEnvVar(process.env.CLEVERCLOUD_OAUTH_TOKEN, ""),
-      tokenSecret: ensureApiEnvVar(process.env.CLEVERCLOUD_OAUTH_TOKEN_SECRET, ""),
-      appId: ensureApiEnvVar(process.env.CLEVERCLOUD_APP_ID, ""),
+      consumerKey: ensureApiEnvVar(process.env.DOMAIN_CLEVERCLOUD_CONSUMER_KEY, ""),
+      consumerSecret: ensureApiEnvVar(process.env.DOMAIN_CLEVERCLOUD_CONSUMER_SECRET, ""),
+      token: ensureApiEnvVar(process.env.DOMAIN_CLEVERCLOUD_TOKEN, ""),
+      tokenSecret: ensureApiEnvVar(process.env.DOMAIN_CLEVERCLOUD_TOKEN_SECRET, ""),
+      appId: ensureApiEnvVar(process.env.DOMAIN_CLEVERCLOUD_APP_ID, ""),
     },
     caddy: {
-      adminUrl: ensureApiEnvVar(process.env.CADDY_ADMIN_URL, "http://localhost:2019"),
+      adminUrl: ensureApiEnvVar(process.env.DOMAIN_CADDY_ADMIN_URL, "http://localhost:2019"),
+    },
+  },
+  dnsProvider: {
+    type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
+    target: ensureApiEnvVar(process.env.DNS_PROVIDER_TARGET, ""),
+    ovh: {
+      endpoint: ensureApiEnvVar<"ovh-ca" | "ovh-eu">(process.env.DNS_OVH_ENDPOINT, "ovh-eu"),
+      applicationKey: ensureApiEnvVar(process.env.DNS_OVH_APPLICATION_KEY, ""),
+      applicationSecret: ensureApiEnvVar(process.env.DNS_OVH_APPLICATION_SECRET, ""),
+      consumerKey: ensureApiEnvVar(process.env.DNS_OVH_CONSUMER_KEY, ""),
+    },
+    cloudflare: {
+      email: ensureApiEnvVar(process.env.DNS_CLOUDFLARE_EMAIL, ""),
+      apiKey: ensureApiEnvVar(process.env.DNS_CLOUDFLARE_API_KEY, ""),
     },
   },
 } as const;

@@ -33,12 +33,7 @@ declare namespace NodeJS {
          */
         NEXT_PUBLIC_SITE_URL?: string;
         /**
-         * Dist: `http://localhost:3000/api/auth`  
-         * {@link [Local Env Dist](.env.development)}
-         */
-        AUTH_URL?: string;
-        /**
-         * Dist: `0`  
+         * Dist: `1`  
          * {@link [Local Env Dist](.env.development)}
          */
         AUTH_TRUST_HOST?: string;
@@ -174,6 +169,11 @@ Française`
          */
         NEXT_PUBLIC_MATOMO_URL?: string;
         /**
+         * Dist: `postgresql://postgres:postgres@localhost:5432/roadmaps-faciles`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DATABASE_URL?: string;
+        /**
          * Dist: `Admin`  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -249,6 +249,101 @@ Française`
          */
         NEXT_PUBLIC_APP_VERSION_COMMIT?: string;
         /**
+         * Dist: `http://default.localhost:3000/api/auth`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        AUTH_URL?: string;
+        /**
+         * Dist: `noop`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_PROVIDER?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_SCALINGO_API_TOKEN?: string;
+        /**
+         * Dist: `https://api.osc-fr1.scalingo.com`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_SCALINGO_API_URL?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_SCALINGO_APP_ID?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CLEVERCLOUD_CONSUMER_KEY?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CLEVERCLOUD_CONSUMER_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CLEVERCLOUD_TOKEN?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CLEVERCLOUD_TOKEN_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CLEVERCLOUD_APP_ID?: string;
+        /**
+         * Dist: `http://localhost:2019`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DOMAIN_CADDY_ADMIN_URL?: string;
+        /**
+         * Dist: `noop`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_PROVIDER?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_PROVIDER_TARGET?: string;
+        /**
+         * Dist: `ovh-eu`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_OVH_ENDPOINT?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_OVH_APPLICATION_KEY?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_OVH_APPLICATION_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_OVH_CONSUMER_KEY?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_CLOUDFLARE_EMAIL?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_CLOUDFLARE_API_KEY?: string;
+        /**
          * Dist: `localhost`  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -307,7 +402,6 @@ declare type ProcessEnvCustomKeys =
     | 'NODE_ENV'
     | 'NEXT_PUBLIC_REPOSITORY_URL'
     | 'NEXT_PUBLIC_SITE_URL'
-    | 'AUTH_URL'
     | 'AUTH_TRUST_HOST'
     | 'ADMINS'
     | 'ESPACE_MEMBRE_API_KEY'
@@ -335,6 +429,7 @@ declare type ProcessEnvCustomKeys =
     | 'REDIS_URL'
     | 'NEXT_PUBLIC_MATOMO_SITE_ID'
     | 'NEXT_PUBLIC_MATOMO_URL'
+    | 'DATABASE_URL'
     | 'SEED_ADMIN_NAME'
     | 'SEED_ADMIN_EMAIL'
     | 'SEED_ADMIN_IMAGE'
@@ -350,6 +445,25 @@ declare type ProcessEnvCustomKeys =
     | 'SEED_MAX_REPLIES_PER_COMMENT'
     | 'NEXT_PUBLIC_APP_VERSION'
     | 'NEXT_PUBLIC_APP_VERSION_COMMIT'
+    | 'AUTH_URL'
+    | 'DOMAIN_PROVIDER'
+    | 'DOMAIN_SCALINGO_API_TOKEN'
+    | 'DOMAIN_SCALINGO_API_URL'
+    | 'DOMAIN_SCALINGO_APP_ID'
+    | 'DOMAIN_CLEVERCLOUD_CONSUMER_KEY'
+    | 'DOMAIN_CLEVERCLOUD_CONSUMER_SECRET'
+    | 'DOMAIN_CLEVERCLOUD_TOKEN'
+    | 'DOMAIN_CLEVERCLOUD_TOKEN_SECRET'
+    | 'DOMAIN_CLEVERCLOUD_APP_ID'
+    | 'DOMAIN_CADDY_ADMIN_URL'
+    | 'DNS_PROVIDER'
+    | 'DNS_PROVIDER_TARGET'
+    | 'DNS_OVH_ENDPOINT'
+    | 'DNS_OVH_APPLICATION_KEY'
+    | 'DNS_OVH_APPLICATION_SECRET'
+    | 'DNS_OVH_CONSUMER_KEY'
+    | 'DNS_CLOUDFLARE_EMAIL'
+    | 'DNS_CLOUDFLARE_API_KEY'
     | 'HOSTNAME'
     | 'PORT'
     | 'CONTAINER_VERSION'

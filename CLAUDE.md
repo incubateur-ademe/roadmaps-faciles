@@ -32,6 +32,7 @@
 - UI: DSFR (French gov design system) is primary; components/utilities in `src/dsfr/`
   - Always prefer `react-dsfr` components (`Badge`, `Button`, `Select`, `ButtonsGroup`, `Tooltip`, `Pagination`, etc.) over raw DSFR CSS classes
   - Custom DSFR components in `src/dsfr/` (e.g., `Icon`, `TableCustom`) — check here before creating new wrappers
+  - `TableCustom`: always use for admin tables — never native HTML tables or react-dsfr `Table`
   - `@/dsfr` barrel (`src/dsfr/server.ts`) exports: `Box`, `FormFieldset`, `Icon`, `Grid`, `GridCol`, `Container`, `CenteredContainer`
   - Grid layout: always use `Grid` + `GridCol` from `@/dsfr` — never raw `fr-grid-row`/`fr-col-*` divs
   - Fieldsets: always use `FormFieldset` from `@/dsfr` — never raw `<fieldset>`
@@ -42,6 +43,7 @@
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
   - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
+- Styling preference: Tailwind for simple, SCSS modules for complex — never inline styles (`style={{...}}`)
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
@@ -50,11 +52,27 @@
   - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
   - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
   - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
+  - `EmptyObject` type: import from `@/utils/types` (not `react-hook-form`)
+  - Auth: `assertTenantAdmin(domain)` takes domain explicitly — type `TenantAccessCheck = { domain: string } & AccessCheck` in `src/lib/utils/auth.ts`
+  - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
+- Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
+- DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
+  - DNS errors are non-blocking in use cases (try/catch + `console.warn`)
+  - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
+- i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
+  - Config: `src/i18n/request.ts` (reads `NEXT_LOCALE` cookie), utils/types in `src/lib/utils/i18n.ts`
+  - Messages: `messages/fr.json` + `messages/en.json` — 23 namespaces, ICU plural syntax supported
+  - Navigation: `src/i18n/navigation.tsx` — simple re-exports from `next/link` / `next/navigation` (no locale prefix)
+  - Server components/actions: `await getTranslations("namespace")` + `await getLocale()` from `next-intl/server`
+  - Client components: `useTranslations("namespace")` + `useLocale()` from `next-intl`
+  - Zod validation schemas: accept `ValidationTranslator` param for translated error messages (`src/lib/utils/zod-schema.ts`)
+  - Date formatting: `formatDateHour(date, locale)` / `formatRelativeDate(date, locale)` in `src/lib/utils/date.ts`
+  - Language switch: DSFR `LanguageSelect` + cookie set + `window.location.reload()` in `src/app/LanguageSelectClient.tsx`
 
 ## Testing
 - No test framework configured — no unit/integration/e2e tests in the project currently
@@ -63,8 +81,10 @@
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
 
 ## Gotchas
+- `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
+- DNS CNAME trailing dot: resolvers may return `"target.io."` — always normalize with `.replace(/\.$/, "")` before comparing
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing
-- Zod 4 is used (not v3) — API differs slightly
+- Zod 4 is used (not v3) — API differs slightly; docs available via MCP: `https://mcp.inkeep.com/zod/mcp`
 - Next.js 16 `cacheComponents: true` is incompatible with route config exports (`dynamic`, `revalidate`, etc.) — use `await connection()` from `next/server` in pages instead
 - Circular Zod schemas: use `z.lazy(() => Schema)` to avoid initialization errors
 - Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering

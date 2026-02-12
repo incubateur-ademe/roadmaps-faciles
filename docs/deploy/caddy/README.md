@@ -34,27 +34,27 @@ DOMAIN_PROVIDER="caddy"  # ou "scalingo", "clevercloud", "noop"
 ### Caddy
 
 ```bash
-CADDY_ADMIN_URL=http://localhost:2019  # URL de l'API admin Caddy (health check)
-CADDY_ASK_URL=http://app:3000/api/domains/check  # URL de l'endpoint de validation
-CADDY_UPSTREAM=app:3000  # Adresse de l'app Next.js
+DOMAIN_CADDY_ADMIN_URL=http://localhost:2019  # URL de l'API admin Caddy (health check)
+DOMAIN_CADDY_ASK_URL=http://app:3000/api/domains/check  # URL de l'endpoint de validation
+DOMAIN_CADDY_UPSTREAM=app:3000  # Adresse de l'app Next.js
 ```
 
 ### Scalingo
 
 ```bash
-SCALINGO_API_TOKEN=tk-xxx
-SCALINGO_API_URL=https://api.osc-fr1.scalingo.com
-SCALINGO_APP_ID=my-app-id
+DOMAIN_SCALINGO_API_TOKEN=tk-xxx
+DOMAIN_SCALINGO_API_URL=https://api.osc-fr1.scalingo.com
+DOMAIN_SCALINGO_APP_ID=my-app-id
 ```
 
 ### Clever Cloud
 
 ```bash
-CLEVERCLOUD_OAUTH_CONSUMER_KEY=xxx
-CLEVERCLOUD_OAUTH_CONSUMER_SECRET=xxx
-CLEVERCLOUD_OAUTH_TOKEN=xxx
-CLEVERCLOUD_OAUTH_TOKEN_SECRET=xxx
-CLEVERCLOUD_APP_ID=app_xxx
+DOMAIN_CLEVERCLOUD_CONSUMER_KEY=xxx
+DOMAIN_CLEVERCLOUD_CONSUMER_SECRET=xxx
+DOMAIN_CLEVERCLOUD_TOKEN=xxx
+DOMAIN_CLEVERCLOUD_TOKEN_SECRET=xxx
+DOMAIN_CLEVERCLOUD_APP_ID=app_xxx
 ```
 
 ## Docker Compose
@@ -64,8 +64,8 @@ docker compose -f docs/deploy/caddy/docker-compose.caddy.yml up -d
 ```
 
 Variables à configurer :
-- `CADDY_ASK_URL` — URL complète de l'endpoint de validation (accessible depuis le container Caddy)
-- `CADDY_UPSTREAM` — adresse de l'app Next.js (nom du service Docker ou IP)
+- `DOMAIN_CADDY_ASK_URL` — URL complète de l'endpoint de validation (accessible depuis le container Caddy)
+- `DOMAIN_CADDY_UPSTREAM` — adresse de l'app Next.js (nom du service Docker ou IP)
 
 ## Kubernetes
 
@@ -78,7 +78,7 @@ Les manifests incluent :
 - `deployment.yaml` — Pod Caddy avec volumes pour les certs
 - `service.yaml` — Service LoadBalancer exposant 80/443
 
-Adapter les variables `CADDY_ASK_URL` et `CADDY_UPSTREAM` dans le deployment.
+Adapter les variables `DOMAIN_CADDY_ASK_URL` et `DOMAIN_CADDY_UPSTREAM` dans le deployment.
 
 ## VPS (systemd)
 
@@ -89,8 +89,8 @@ Adapter les variables `CADDY_ASK_URL` et `CADDY_UPSTREAM` dans le deployment.
    ```
 3. Configurer les variables d'environnement dans `/etc/caddy/environment` :
    ```bash
-   CADDY_ASK_URL=http://localhost:3000/api/domains/check
-   CADDY_UPSTREAM=localhost:3000
+   DOMAIN_CADDY_ASK_URL=http://localhost:3000/api/domains/check
+   DOMAIN_CADDY_UPSTREAM=localhost:3000
    ```
 4. Démarrer Caddy :
    ```bash

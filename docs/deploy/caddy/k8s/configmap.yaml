@@ -6,7 +6,7 @@ data:
   Caddyfile: |
     {
       on_demand_tls {
-        ask {$CADDY_ASK_URL}
+        ask {$DOMAIN_CADDY_ASK_URL}
         interval 5m
         burst 10
       }
@@ -16,5 +16,5 @@ data:
       tls {
         on_demand
       }
-      reverse_proxy {$CADDY_UPSTREAM}
+      reverse_proxy {$DOMAIN_CADDY_UPSTREAM}
     }

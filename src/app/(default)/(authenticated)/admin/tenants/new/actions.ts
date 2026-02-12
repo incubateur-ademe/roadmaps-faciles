@@ -19,9 +19,9 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
 
   try {
     const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo);
-    const tenant = await useCase.execute(validated.data);
+    const result = await useCase.execute(validated.data);
     revalidatePath("/admin/tenants");
-    return { ok: true, data: { tenantId: tenant.id } };
+    return { ok: true, data: { tenantId: result.tenant.id } };
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }

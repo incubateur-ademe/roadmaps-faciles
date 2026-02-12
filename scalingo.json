@@ -61,9 +61,13 @@
     "NEXT_PUBLIC_SITE_URL": {
       "generator": "url"
     },
-    "SCALINGO_APP_ID": {
+    "DOMAIN_SCALINGO_APP_ID": {
       "generator": "template",
       "template": "%APP%"
+    },
+    "DNS_PROVIDER_TARGET": {
+      "generator": "template",
+      "template": "%APP%.%REGION_NAME%.scalingo.io."
     }
   }
 }

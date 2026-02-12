@@ -5,6 +5,7 @@ import { CaddyDomainProvider } from "./impl/CaddyDomainProvider";
 import { CleverCloudDomainProvider } from "./impl/CleverCloudDomainProvider";
 import { NoopDomainProvider } from "./impl/NoopDomainProvider";
 import { ScalingoDomainProvider } from "./impl/ScalingoDomainProvider";
+import { ScalingoWildcardDomainProvider } from "./impl/ScalingoWildcardDomainProvider";
 
 let instance: IDomainProvider | null = null;
 
@@ -14,6 +15,9 @@ export const getDomainProvider = (): IDomainProvider => {
   switch (config.domainProvider.type) {
     case "scalingo":
       instance = new ScalingoDomainProvider();
+      break;
+    case "scalingo-wildcard":
+      instance = new ScalingoWildcardDomainProvider();
       break;
     case "clevercloud":
       instance = new CleverCloudDomainProvider();
