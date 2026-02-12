@@ -20,7 +20,7 @@
     }
   ],
   "scripts": {
-    "first-deploy": "NODE_ENV=development yarn install --frozen-lockfile && NODE_ENV=production yarn prisma migrate reset --force && rm -rf node_modules"
+    "first-deploy": "npm install --prefix /tmp/prisma prisma @next/env && NODE_PATH=/tmp/prisma/node_modules /tmp/prisma/node_modules/.bin/prisma migrate reset --force && rm -rf /tmp/prisma"
   },
   "env": {
     "APP_ENV": {
@@ -60,6 +60,10 @@
     },
     "NEXT_PUBLIC_SITE_URL": {
       "generator": "url"
+    },
+    "SCALINGO_APP_ID": {
+      "generator": "template",
+      "template": "%APP%"
     }
   }
 }
