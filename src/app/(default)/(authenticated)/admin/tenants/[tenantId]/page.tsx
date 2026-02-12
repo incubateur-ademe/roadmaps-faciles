@@ -1,5 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -13,8 +14,6 @@ import { type NextServerPageProps } from "@/utils/next";
 
 import { RootMembersList } from "./RootMembersList";
 
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
-
 const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: string }>) => {
   await connection();
 
@@ -25,7 +24,12 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
   const tenant = await tenantRepo.findByIdWithSettings(tenantId);
   if (!tenant?.settings) notFound();
 
-  const session = await auth();
+  const [session, t, tc, locale] = await Promise.all([
+    auth(),
+    getTranslations("rootAdmin"),
+    getTranslations("common"),
+    getLocale(),
+  ]);
 
   const useCase = new ListUsersForTenant(userOnTenantRepo);
   const members = await useCase.execute({ tenantId: tenant.id });
@@ -35,6 +39,8 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
     .map(m => m.userId);
 
   const tenantUrl = `${config.host.replace("://", `://${tenant.settings.subdomain}.`)}`;
+
+  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
   return (
     <div>
@@ -53,12 +59,12 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
             buttonsSize="small"
             buttons={[
               {
-                children: "Admin du tenant",
+                children: t("tenantAdmin"),
                 priority: "tertiary",
                 linkProps: { href: `${tenantUrl}/admin`, target: "_blank" },
               },
               {
-                children: "Retour",
+                children: t("back"),
                 priority: "secondary",
                 linkProps: { href: "/admin/tenants" },
               },
@@ -68,30 +74,31 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
       </Grid>
 
       <div className={fr.cx("fr-mb-4w")}>
-        <h2>Informations</h2>
+        <h2>{t("information")}</h2>
         <dl>
           <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">ID :</dt> <dd className="inline">{tenant.id}</dd>
+            <dt className="font-bold inline">{t("id")} :</dt> <dd className="inline">{tenant.id}</dd>
           </div>
           <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">Sous-domaine :</dt> <dd className="inline">{tenant.settings.subdomain}</dd>
+            <dt className="font-bold inline">{t("subdomain")} :</dt>{" "}
+            <dd className="inline">{tenant.settings.subdomain}</dd>
           </div>
           <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">Domaine custom :</dt>{" "}
+            <dt className="font-bold inline">{t("customDomain")} :</dt>{" "}
             <dd className="inline">{tenant.settings.customDomain ?? "—"}</dd>
           </div>
           <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">Privé :</dt>{" "}
-            <dd className="inline">{tenant.settings.isPrivate ? "Oui" : "Non"}</dd>
+            <dt className="font-bold inline">{t("private")} :</dt>{" "}
+            <dd className="inline">{tenant.settings.isPrivate ? tc("yes") : tc("no")}</dd>
           </div>
           <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">Créé le :</dt>{" "}
+            <dt className="font-bold inline">{t("createdAt")} :</dt>{" "}
             <dd className="inline">{dateFormatter.format(new Date(tenant.createdAt))}</dd>
           </div>
         </dl>
       </div>
 
-      <h2>Membres</h2>
+      <h2>{t("members")}</h2>
       <RootMembersList
         currentUserId={session?.user.uuid ?? ""}
         members={members}

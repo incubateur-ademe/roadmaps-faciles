@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
 import { Container, Grid, GridCol } from "@/dsfr";
@@ -9,7 +10,7 @@ import { ProfileForm } from "./ProfileForm";
 
 const ProfilePage = async () => {
   await connection();
-  const session = await auth();
+  const [session, t] = await Promise.all([auth(), getTranslations("profile")]);
   const user = await userRepo.findById(session!.user.uuid);
 
   if (!user) return null;
@@ -17,7 +18,7 @@ const ProfilePage = async () => {
   return (
     <DsfrPage>
       <Container my="4w">
-        <h1>Mon profil</h1>
+        <h1>{t("title")}</h1>
         <Grid haveGutters>
           <GridCol md={6}>
             <ProfileForm

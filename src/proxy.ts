@@ -8,6 +8,12 @@ import { config as appConfig } from "./config";
 
 export function proxy(req: NextRequest) {
   const url = req.nextUrl;
+  const pathname = url.pathname;
+
+  // Skip proxy rewriting for auth API routes
+  if (pathname.startsWith("/api/auth")) {
+    return;
+  }
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
@@ -26,28 +32,17 @@ export function proxy(req: NextRequest) {
     });
   }
 
-  // special case for Vercel preview deployment URLs (should it be used for scalingo?)
-  // if (
-  //   hostname.includes("---") &&
-  //   hostname.endsWith(`.${process.env.NEXT_PUBLIC_VERCEL_DEPLOYMENT_SUFFIX}`)
-  // ) {
-  //   hostname = `${hostname.split("---")[0]}.${
-  //     appConfig.rootDomain
-  //   }`;
-  // }
-
-  const isDirtyDomain = pathnameDirtyCheck(url.pathname);
+  const isDirtyDomain = pathnameDirtyCheck(pathname);
   const searchParams = req.nextUrl.searchParams.toString();
-  // Get the pathname of the request
-  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
+  const path = `${pathname}${searchParams.length > 0 ? `?${searchParams}` : ""}`;
 
   // rewrites for app pages
   if (hostname == appConfig.rootDomain) {
     return responseWithAnonymousId(
       req,
-      NextResponse.rewrite(new URL(`${path === "/" ? "" : path}`, req.url), {
+      NextResponse.rewrite(new URL(path, req.url), {
         headers: {
-          [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(url.pathname) : "false",
+          [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(pathname) : "false",
         },
       }),
     );

@@ -8,6 +8,8 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { type Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SkeletonTheme } from "react-loading-skeleton";
 
 import { config } from "@/config";
@@ -36,9 +38,11 @@ export const metadata: Metadata = {
   },
 };
 
-const lang = "fr";
+const RootLayout = async ({ children }: LayoutProps<"/">) => {
+  const lang = await getLocale();
+  const messages = await getMessages();
+  const t = await getTranslations("skipLinks");
 
-const RootLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app, "snap-y")}>
       <head>
@@ -58,32 +62,34 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
       <body>
         <SessionProvider refetchOnWindowFocus>
           <AppRouterCacheProvider>
-            <DsfrProvider lang={lang}>
-              <MuiDsfrThemeProvider>
-                <SkeletonTheme
-                  baseColor={fr.colors.decisions.background.contrast.grey.default}
-                  highlightColor={fr.colors.decisions.background.contrast.grey.active}
-                  borderRadius={fr.spacing("1v")}
-                  duration={2}
-                >
-                  {/* <ConsentBannerAndConsentManagement /> */}
-                  <Display />
-                  <SkipLinks
-                    links={[
-                      {
-                        anchor: `#${contentId}`,
-                        label: "Contenu",
-                      },
-                      {
-                        anchor: `#${footerId}`,
-                        label: "Pied de page",
-                      },
-                    ]}
-                  />
-                  <div className={styles.app}>{children}</div>
-                </SkeletonTheme>
-              </MuiDsfrThemeProvider>
-            </DsfrProvider>
+            <NextIntlClientProvider messages={messages}>
+              <DsfrProvider lang={lang}>
+                <MuiDsfrThemeProvider>
+                  <SkeletonTheme
+                    baseColor={fr.colors.decisions.background.contrast.grey.default}
+                    highlightColor={fr.colors.decisions.background.contrast.grey.active}
+                    borderRadius={fr.spacing("1v")}
+                    duration={2}
+                  >
+                    {/* <ConsentBannerAndConsentManagement /> */}
+                    <Display />
+                    <SkipLinks
+                      links={[
+                        {
+                          anchor: `#${contentId}`,
+                          label: t("content"),
+                        },
+                        {
+                          anchor: `#${footerId}`,
+                          label: t("footer"),
+                        },
+                      ]}
+                    />
+                    <div className={styles.app}>{children}</div>
+                  </SkeletonTheme>
+                </MuiDsfrThemeProvider>
+              </DsfrProvider>
+            </NextIntlClientProvider>
           </AppRouterCacheProvider>
         </SessionProvider>
       </body>

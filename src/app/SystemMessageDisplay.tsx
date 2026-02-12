@@ -4,6 +4,7 @@ import artworkCalendarSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictogram
 import artworkSearchSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/search.svg";
 import artworkPadlockSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/padlock.svg";
 import artworkTechnicalErrorSvgUrl from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/technical-error.svg";
+import { getTranslations } from "next-intl/server";
 import { type LinkProps } from "next/link";
 import { type ReactNode } from "react";
 
@@ -18,92 +19,39 @@ export const normalizeArtwork = (pictogram: SimpleSrcImage | string): SimpleSrcI
   return pictogram;
 };
 
-const artworkMap = {
+export { artworkOvoidSvgUrl };
+
+export const artworkMap = {
   calendar: normalizeArtwork(artworkCalendarSvgUrl),
-  inProgress: artworkInProgressSvgUrl,
+  inProgress: normalizeArtwork(artworkInProgressSvgUrl),
   padlock: normalizeArtwork(artworkPadlockSvgUrl),
   technicalError: normalizeArtwork(artworkTechnicalErrorSvgUrl),
   search: normalizeArtwork(artworkSearchSvgUrl),
 };
 
-interface SystemCodeMap {
-  [key: string]: {
-    body: ReactNode;
-    headline: string;
-    pictogram: keyof typeof artworkMap | SimpleSrcImage;
-    title: string;
-  };
-}
+const SYSTEM_CODE_PICTOGRAMS: Record<string, SimpleSrcImage> = {
+  "401": artworkMap.padlock,
+  "403": artworkMap.padlock,
+  "404": artworkMap.search,
+  "500": artworkMap.technicalError,
+  construction: artworkMap.inProgress,
+  maintenance: artworkMap.inProgress,
+};
 
-export const systemCodes = {
-  "401": {
-    title: "Erreur de connexion",
-    headline: "Connexion non autorisée.",
-    body: (
-      <>
-        L'identifiant avec lequel vous avez tenté de vous connecter n'est pas autorisé (compte inconnu, inactif, ou
-        filtré). Si vous pensez qu'il s'agit d'une erreur, veuillez contacter un·e admin.
-      </>
-    ),
-    pictogram: artworkMap.padlock,
-  },
-  get unauthorized() {
-    return this["401"];
-  },
-  "403": {
-    title: "Accès refusé",
-    headline: "Opération non autorisée.",
-    body: (
-      <>
-        Vous n'avez pas les droits nécessaires pour accéder à cette page. Si vous pensez qu'il s'agit d'une erreur,
-        veuillez contacter un·e admin.
-      </>
-    ),
-    pictogram: artworkMap.padlock,
-  },
-  get forbidden() {
-    return this["403"];
-  },
-  "404": {
-    title: "Page non trouvée",
-    headline: "La page que vous cherchez est introuvable. Excusez-nous pour la gène occasionnée.",
-    body: (
-      <>
-        Si vous avez tapé l'adresse web dans le navigateur, vérifiez qu'elle est correcte. La page n’est peut-être plus
-        disponible.
-      </>
-    ),
-    pictogram: artworkMap.search,
-  },
-  get "not-found"() {
-    return this["404"];
-  },
-  "500": {
-    title: "Erreur inattendue",
-    headline:
-      "Désolé, le service rencontre un problème, nous travaillons pour le résoudre le plus rapidement possible.",
-    body: <>Essayez de rafraichir la page ou bien reessayez plus tard.</>,
-    pictogram: artworkMap.technicalError,
-  },
-  construction: {
-    title: "En construction",
-    headline: "Ce service est en cours de construction.",
-    body: <>Nous travaillons pour le rendre disponible le plus rapidement possible.</>,
-    pictogram: artworkMap.inProgress,
-  },
-  maintenance: {
-    title: "Maintenance",
-    headline: "Le service est actuellement en maintenance.",
-    body: <>Nous travaillons pour le rétablir le plus rapidement possible.</>,
-    pictogram: artworkMap.inProgress,
-  },
-  get "login-AuthorizedCallbackError"() {
-    return this["401"];
-  },
-  get "login-AccessDenied"() {
-    return this["401"];
-  },
-} satisfies SystemCodeMap;
+const SYSTEM_CODE_ALIASES: Record<string, string> = {
+  unauthorized: "401",
+  forbidden: "403",
+  "not-found": "404",
+  "login-AuthorizedCallbackError": "401",
+  "login-AccessDenied": "401",
+};
+
+export type SystemCode = keyof typeof SYSTEM_CODE_ALIASES;
+
+export const VALID_SYSTEM_CODES = new Set([
+  ...Object.keys(SYSTEM_CODE_PICTOGRAMS),
+  ...Object.keys(SYSTEM_CODE_ALIASES),
+]);
 
 export type SystemMessageDisplayProps = SystemMessageDisplayProps.WithCode & SystemMessageDisplayProps.WithRedirect;
 
@@ -130,14 +78,14 @@ namespace SystemMessageDisplayProps {
       }
     | {
         body?: never;
-        code: keyof typeof systemCodes;
+        code: SystemCode;
         headline?: never;
         pictogram?: never;
         title?: never;
       };
 }
 
-export const SystemMessageDisplay = ({
+export const SystemMessageDisplay = async ({
   code,
   noRedirect,
   body,
@@ -145,14 +93,23 @@ export const SystemMessageDisplay = ({
   title,
   pictogram = artworkMap.technicalError,
   redirectLink = "/",
-  redirectText = "Page d'accueil",
+  redirectText,
 }: SystemMessageDisplayProps) => {
+  const t = await getTranslations("errors");
+
   if (code !== "custom") {
-    if (!systemCodes[code]) throw new Error(`Unknown system code: ${code}`);
-    ({ body, headline, title, pictogram } = systemCodes[code]);
+    const resolvedCode = SYSTEM_CODE_ALIASES[code] ?? code;
+    body = t(`${resolvedCode}.body` as "401.body");
+    headline = t(`${resolvedCode}.headline` as "401.headline");
+    title = t(`${resolvedCode}.title` as "401.title");
+    pictogram = SYSTEM_CODE_PICTOGRAMS[resolvedCode] ?? artworkMap.technicalError;
+    code = resolvedCode;
   }
 
+  if (!redirectText) redirectText = t("homepage");
+
   if (typeof pictogram === "string") pictogram = artworkMap[pictogram];
+  const normalizedPictogram = normalizeArtwork(pictogram);
 
   return (
     <Container>
@@ -161,7 +118,7 @@ export const SystemMessageDisplay = ({
           <h1>{title}</h1>
           {!isNaN(+code) && (
             <Box as="p" className="fr-text--sm" mb="3w">
-              Erreur {code}
+              {t("errorCode", { code })}
             </Box>
           )}
           <Box as="p" className="fr-text--lead" mb="3w">
@@ -199,9 +156,9 @@ export const SystemMessageDisplay = ({
               href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-background`}
             ></use>
             <g transform="translate(40, 60)">
-              <use className="fr-artwork-decorative" href={`${pictogram.src}#artwork-decorative`}></use>
-              <use className="fr-artwork-minor" href={`${pictogram.src}#artwork-minor`}></use>
-              <use className="fr-artwork-major" href={`${pictogram.src}#artwork-major`}></use>
+              <use className="fr-artwork-decorative" href={`${normalizedPictogram.src}#artwork-decorative`}></use>
+              <use className="fr-artwork-minor" href={`${normalizedPictogram.src}#artwork-minor`}></use>
+              <use className="fr-artwork-major" href={`${normalizedPictogram.src}#artwork-major`}></use>
             </g>
           </svg>
         </GridCol>

@@ -3,6 +3,7 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import { ESPACE_MEMBRE_PROVIDER_ID } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
 import { AuthError } from "next-auth";
+import { getTranslations } from "next-intl/server";
 import { redirect, unstable_rethrow as rethrow } from "next/navigation";
 
 import { FormFieldset } from "@/dsfr";
@@ -17,7 +18,9 @@ export interface LoginFormProps {
 
 const loginValueKey = "login";
 
-export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
+export const LoginForm = async ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
+  const t = await getTranslations("auth");
+
   return (
     <form
       action={async data => {
@@ -41,18 +44,12 @@ export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
       }}
     >
       <FormFieldset
-        legend={
-          <h2>
-            {loginWithEmail
-              ? "Se connecter avec son adresse mail"
-              : "Se connecter avec son nom d'utilisateur beta gouv"}
-          </h2>
-        }
+        legend={<h2>{loginWithEmail ? t("loginWithEmail") : t("loginWithUsername")}</h2>}
         elements={[
           loginWithEmail ? (
             <Input
               key="email"
-              label="Email"
+              label={t("emailLabel")}
               nativeInputProps={{
                 type: "email",
                 required: true,
@@ -63,14 +60,13 @@ export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
           ) : (
             <Input
               key="username"
-              label="Identifiant"
+              label={t("usernameLabel")}
               nativeInputProps={{
                 type: "text",
                 required: true,
                 name: loginValueKey,
                 pattern: "^[A-Za-z.]+$",
-                title:
-                  "Votre identifiant doit être composé de lettres et de points. Il ne s'agit pas de votre adresse email Beta.",
+                title: t("usernameValidation"),
               }}
             />
           ),
@@ -82,7 +78,7 @@ export const LoginForm = ({ loginWithEmail, defaultEmail }: LoginFormProps) => {
                 key="buttons-group"
                 buttons={[
                   {
-                    children: "Se connecter",
+                    children: t("login"),
                     type: "submit",
                   },
                 ]}

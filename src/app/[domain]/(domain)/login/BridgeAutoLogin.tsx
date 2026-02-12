@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 import { bridgeSignIn } from "./bridgeSignIn";
@@ -9,16 +10,25 @@ export interface BridgeAutoLoginProps {
 }
 
 export const BridgeAutoLogin = ({ token }: BridgeAutoLoginProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
+  const t = useTranslations("auth");
+  const submitted = useRef(false);
 
   useEffect(() => {
-    formRef.current?.requestSubmit();
-  }, []);
+    if (submitted.current) return;
+    submitted.current = true;
 
-  return (
-    <form ref={formRef} action={bridgeSignIn}>
-      <input type="hidden" name="token" value={token} />
-      <p>Connexion en cours...</p>
-    </form>
-  );
+    const form = new FormData();
+    form.set("token", token);
+
+    void bridgeSignIn(form).then(result => {
+      if ("ok" in result) {
+        // Session cookie was set by signIn — navigate on current domain
+        window.location.href = "/";
+      } else {
+        window.location.href = `/login?error=${result.error}`;
+      }
+    });
+  }, [token]);
+
+  return <p>{t("bridgeLoggingIn")}</p>;
 };

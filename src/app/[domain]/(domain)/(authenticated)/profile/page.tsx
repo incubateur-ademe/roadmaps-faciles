@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { espaceMembreClient, getEmUserEmail } from "@/lib/espaceMembre";
@@ -8,7 +10,7 @@ import { ProfileForm } from "../../../../(default)/(authenticated)/profile/Profi
 import { DomainPageHOP } from "../../DomainPage";
 
 const TenantProfilePage = DomainPageHOP()(async () => {
-  const session = await auth();
+  const [session, t] = await Promise.all([auth(), getTranslations("profile")]);
   const user = await userRepo.findById(session!.user.uuid);
 
   if (!user) return <></>;
@@ -26,7 +28,7 @@ const TenantProfilePage = DomainPageHOP()(async () => {
   return (
     <DsfrPage>
       <Container my="4w">
-        <h1>Mon profil</h1>
+        <h1>{t("title")}</h1>
         <Grid haveGutters>
           <GridCol md={6}>
             <ProfileForm

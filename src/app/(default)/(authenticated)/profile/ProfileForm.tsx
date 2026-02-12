@@ -6,6 +6,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
@@ -22,13 +23,11 @@ const emptyToNull = z
   .transform(v => (v.trim() === "" ? null : v))
   .nullable();
 
-const formSchema = z.object({
-  email: z.string().email("Adresse e-mail invalide").optional(),
-  name: emptyToNull,
-  notificationsEnabled: z.boolean(),
-});
-
-type FormType = z.infer<typeof formSchema>;
+interface FormType {
+  email?: string;
+  name: null | string;
+  notificationsEnabled: boolean;
+}
 
 export interface ProfileFormUser {
   email: string;
@@ -45,10 +44,20 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
+  const t = useTranslations("profile");
+  const tc = useTranslations("common");
+  const te = useTranslations("errors");
+  const tv = useTranslations("validation");
   const [saveError, setSaveError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
   const [switchPending, setSwitchPending] = useState(false);
+
+  const formSchema = z.object({
+    email: z.string().email(tv("invalidEmail")).optional(),
+    name: emptyToNull,
+    notificationsEnabled: z.boolean(),
+  });
 
   const {
     register,
@@ -100,22 +109,22 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
   const showEmEmailHint = variant === "tenant" && user.isBetaGouvMember && user.emEmail != null;
 
   const getEmailHintText = () => {
-    if (variant === "root") return "Géré par l'Espace Membre";
+    if (variant === "root") return t("managedByEm");
     if (!showEmEmailHint) return undefined;
-    if (emailsAreSame) return "Identique à l'e-mail Espace Membre";
+    if (emailsAreSame) return t("sameAsEmEmail");
     return undefined;
   };
 
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
       <FormFieldset
-        legend="Identité"
+        legend={t("identity")}
         elements={[
           ...(variant === "tenant"
             ? [
                 <Input
                   key="name"
-                  label="Nom complet"
+                  label={t("fullName")}
                   nativeInputProps={{ ...register("name") }}
                   state={errors.name ? "error" : "default"}
                   stateRelatedMessage={errors.name?.message}
@@ -125,7 +134,7 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
           variant === "tenant" ? (
             <div key="email">
               <Input
-                label="Adresse e-mail"
+                label={t("emailAddress")}
                 nativeInputProps={{ type: "email", ...register("email") }}
                 state={errors.email ? "error" : "default"}
                 stateRelatedMessage={errors.email?.message}
@@ -133,7 +142,7 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
               />
               {showEmEmailHint && !emailsAreSame && (
                 <p className={fr.cx("fr-text--xs", "fr-mt-n2w", "fr-mb-2w")}>
-                  E-mail Espace Membre : <strong>{user.emEmail}</strong>{" "}
+                  {t("emEmailPrefix")} <strong>{user.emEmail}</strong>{" "}
                   <Button
                     type="button"
                     priority="tertiary no outline"
@@ -141,7 +150,7 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
                     disabled={switchPending}
                     onClick={() => void handleSwitchToEmEmail()}
                   >
-                    Utiliser cet e-mail
+                    {t("useThisEmail")}
                   </Button>
                 </p>
               )}
@@ -149,22 +158,22 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
           ) : (
             <Input
               key="email"
-              label="Adresse e-mail"
+              label={t("emailAddress")}
               disabled
               nativeInputProps={{ type: "email", value: user.email }}
-              hintText="Géré par l'Espace Membre"
+              hintText={t("managedByEm")}
             />
           ),
         ]}
       />
 
       <FormFieldset
-        legend="Notifications"
+        legend={t("notifications")}
         elements={[
           <ToggleSwitch
             key="notificationsEnabled"
-            label="Notifications par e-mail"
-            helperText="Recevoir des notifications par e-mail pour les mises à jour"
+            label={t("emailNotifications")}
+            helperText={t("emailNotificationsHelper")}
             checked={notificationsEnabled}
             onChange={checked => setValue("notificationsEnabled", checked, { shouldDirty: true })}
           />,
@@ -173,7 +182,7 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
 
       {variant === "tenant" && (
         <FormFieldset
-          legend="Espace Membre"
+          legend={t("espaceMembre")}
           elements={[
             <EspaceMembreSection key="em-section" isBetaGouvMember={user.isBetaGouvMember} username={user.username} />,
           ]}
@@ -182,19 +191,19 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
 
       <ClientAnimate>
         {saveError && (
-          <Alert className={fr.cx("fr-mb-2w")} severity="error" title="Erreur de sauvegarde" description={saveError} />
+          <Alert className={fr.cx("fr-mb-2w")} severity="error" title={te("saveError")} description={saveError} />
         )}
-        {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title="Sauvegarde réussie" />}
+        {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={tc("success")} />}
       </ClientAnimate>
 
       <Button type="submit" disabled={pending || !isDirty}>
-        Enregistrer les modifications
+        {t("saveChanges")}
       </Button>
 
       <hr className={fr.cx("fr-hr", "fr-mt-4w")} />
 
       <FormFieldset
-        legend="Zone de danger"
+        legend={t("dangerZone")}
         elements={[<DeleteAccountSection key="delete-account" deleteAccount={deleteAccount} />]}
       />
     </form>

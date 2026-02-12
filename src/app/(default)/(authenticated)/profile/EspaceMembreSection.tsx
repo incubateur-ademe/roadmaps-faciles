@@ -4,6 +4,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -16,6 +17,7 @@ interface EspaceMembreSectionProps {
 }
 
 export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembreSectionProps) => {
+  const t = useTranslations("profile");
   const [emLogin, setEmLogin] = useState("");
   const [pending, setPending] = useState(false);
   const [successMessage, setSuccessMessage] = useState<null | string>(null);
@@ -32,13 +34,13 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
     if (!result.ok) {
       setErrorMessage(result.error);
     } else {
-      setSuccessMessage(`Un e-mail de vérification a été envoyé à ${result.data.emEmail}`);
+      setSuccessMessage(t("emVerificationSent", { email: result.data.emEmail }));
     }
     setPending(false);
   };
 
   const handleUnlink = async () => {
-    if (!confirm("Voulez-vous vraiment dissocier votre compte de l'Espace Membre ?")) return;
+    if (!confirm(t("emUnlinkConfirm"))) return;
 
     setPending(true);
     setSuccessMessage(null);
@@ -48,7 +50,7 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
     if (!result.ok) {
       setErrorMessage(result.error);
     } else {
-      setSuccessMessage("Votre compte a été dissocié de l'Espace Membre.");
+      setSuccessMessage(t("emUnlinked"));
     }
     setPending(false);
   };
@@ -56,12 +58,7 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
   if (isBetaGouvMember && username) {
     return (
       <div>
-        <Alert
-          severity="success"
-          small
-          description={`Compte lié à l'Espace Membre : ${username}`}
-          className={fr.cx("fr-mb-2w")}
-        />
+        <Alert severity="success" small description={t("emLinked", { username })} className={fr.cx("fr-mb-2w")} />
         <ClientAnimate>
           {successMessage && (
             <Alert severity="success" small description={successMessage} className={fr.cx("fr-mb-2w")} />
@@ -69,7 +66,7 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
           {errorMessage && <Alert severity="error" small description={errorMessage} className={fr.cx("fr-mb-2w")} />}
         </ClientAnimate>
         <Button priority="tertiary" size="small" disabled={pending} onClick={() => void handleUnlink()}>
-          Dissocier mon compte
+          {t("emUnlink")}
         </Button>
       </div>
     );
@@ -77,16 +74,11 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
 
   return (
     <div>
-      <Alert
-        severity="info"
-        small
-        description="Vous pouvez lier votre compte à l'Espace Membre beta.gouv.fr pour synchroniser vos informations."
-        className={fr.cx("fr-mb-2w")}
-      />
+      <Alert severity="info" small description={t("emLinkDescription")} className={fr.cx("fr-mb-2w")} />
       <div className="flex items-end gap-4">
         <Input
-          label="Login Espace Membre"
-          hintText="Votre identifiant sur l'Espace Membre (ex: prenom.nom)"
+          label={t("emLoginLabel")}
+          hintText={t("emLoginHint")}
           nativeInputProps={{
             value: emLogin,
             onChange: e => setEmLogin(e.target.value),
@@ -102,7 +94,7 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
           disabled={pending || !emLogin.trim()}
           onClick={() => void handleRequestLink()}
         >
-          Lier mon compte
+          {t("emLink")}
         </Button>
       </div>
       <ClientAnimate>

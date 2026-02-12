@@ -2,6 +2,7 @@
 
 import createMDX from "@next/mdx";
 import { type NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json" with { type: "json" };
 
@@ -135,4 +136,6 @@ const withMDX = createMDX({
   },
 });
 
-export default withMDX(config);
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withMDX(withNextIntl(config));

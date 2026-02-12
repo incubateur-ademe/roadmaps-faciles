@@ -1,14 +1,16 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { config } from "@/config";
 import { Container } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
+import { Link } from "@/i18n/navigation";
 import { auth } from "@/lib/next-auth/auth";
 import { tenantRepo } from "@/lib/repo";
 import { ListTenantsForUser } from "@/useCases/tenant/ListTenantsForUser";
 
 const TenantPage = async () => {
   const session = (await auth())!;
+  const t = await getTranslations("tenant");
 
   const useCasse = new ListTenantsForUser(tenantRepo);
   const tenants = await useCasse.execute({
@@ -19,8 +21,8 @@ const TenantPage = async () => {
     return (
       <DsfrPage>
         <Container>
-          <h1>Mes espaces de travail</h1>
-          <p>Vous n'avez pas d'espaces de travail</p>
+          <h1>{t("myWorkspaces")}</h1>
+          <p>{t("noWorkspaces")}</p>
         </Container>
       </DsfrPage>
     );
@@ -29,8 +31,8 @@ const TenantPage = async () => {
   return (
     <DsfrPage>
       <Container>
-        <h1>Mes espaces de travail</h1>
-        <p>Voici la liste de mes espaces de travail</p>
+        <h1>{t("myWorkspaces")}</h1>
+        <p>{t("workspacesList")}</p>
         <ul>
           {tenants.map(tenant => (
             <li key={tenant.id}>
@@ -41,7 +43,7 @@ const TenantPage = async () => {
                   `${new URL(config.host).protocol}//${tenant.settings.subdomain}.${new URL(config.host).host}`
                 }
               >
-                Voir le dashboard
+                {t("viewDashboard")}
               </Link>
               )
             </li>

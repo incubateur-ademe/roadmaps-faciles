@@ -7,6 +7,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Card from "@codegouvfr/react-dsfr/Card";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import Avatar from "@mui/material/Avatar";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { type PropsWithChildren, startTransition, useState } from "react";
 import { MarkdownHooks } from "react-markdown";
@@ -16,7 +17,7 @@ import { Loader } from "@/components/utils/Loader";
 import { HighlightedTextarea } from "@/dsfr/base/client/HighlightedTextarea";
 import { Text } from "@/dsfr/base/Typography";
 import { type Comment, type User } from "@/prisma/client";
-import { toFrenchDateHour } from "@/utils/date";
+import { formatDateHour } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { getReplies } from "./actions";
@@ -292,6 +293,8 @@ export const ThreadEntity = ({
 );
 
 export const Reply = ({ reply }: { reply: { user: User } & Comment }) => {
+  const locale = useLocale();
+
   return (
     <Card
       shadow
@@ -313,7 +316,7 @@ export const Reply = ({ reply }: { reply: { user: User } & Comment }) => {
             </Text>
           </div>
           <Text inline variant={["xs", "light"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-            {toFrenchDateHour(reply.createdAt)}
+            {formatDateHour(reply.createdAt, locale)}
           </Text>
         </div>
       }

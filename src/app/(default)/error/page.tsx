@@ -1,4 +1,4 @@
-import { systemCodes, SystemMessageDisplay } from "../../SystemMessageDisplay";
+import { SystemMessageDisplay, VALID_SYSTEM_CODES } from "../../SystemMessageDisplay";
 
 interface ErrorPageProps {
   searchParams: Promise<{
@@ -8,7 +8,7 @@ interface ErrorPageProps {
 
 const Error = async ({ searchParams }: ErrorPageProps) => {
   const { source } = await searchParams;
-  return <SystemMessageDisplay code={source && source in systemCodes ? source : "500"} />;
+  return <SystemMessageDisplay code={source && VALID_SYSTEM_CODES.has(source) ? source : "500"} />;
 };
 
 export default Error;

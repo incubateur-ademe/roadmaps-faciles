@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { invitationRepo, tenantRepo, tenantSettingsRepo } from "@/lib/repo";
@@ -12,7 +13,8 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
 
   const validated = CreateNewTenantInput.safeParse(data);
   if (!validated.success) {
-    return { ok: false, error: "Données invalides." };
+    const t = await getTranslations("serverErrors");
+    return { ok: false, error: t("invalidData") };
   }
 
   try {

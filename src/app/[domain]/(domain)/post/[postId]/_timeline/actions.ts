@@ -1,5 +1,7 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
+
 import { prisma } from "@/lib/db/prisma";
 import { type Comment, type User } from "@/prisma/client";
 import { type ServerActionResponse } from "@/utils/next";
@@ -66,7 +68,8 @@ export async function sendComment({
   });
 
   if (!settings?.allowComments) {
-    return { ok: false, error: "Les commentaires sont désactivés." };
+    const t = await getTranslations("serverErrors");
+    return { ok: false, error: t("commentsDisabled") };
   }
 
   try {

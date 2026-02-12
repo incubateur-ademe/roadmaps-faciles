@@ -8,6 +8,7 @@ import Pagination from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "@/dsfr/base/Icon";
@@ -31,22 +32,6 @@ export interface MembersListProps extends MembersListActions {
   members: UserOnTenantWithUser[];
   superAdminIds?: string[];
 }
-
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  OWNER: "Propriétaire",
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  USER: "Utilisateur",
-  INHERITED: "Hérité",
-};
-
-const STATUS_LABELS: Record<UserStatus, string> = {
-  ACTIVE: "Actif",
-  BLOCKED: "Bloqué",
-  DELETED: "Supprimé",
-};
 
 const STATUS_BADGE_SEVERITY: Record<UserStatus, BadgeProps["severity"]> = {
   ACTIVE: "success",
@@ -87,6 +72,27 @@ export const MembersList = ({
   onUpdateStatus,
   onRemove,
 }: MembersListProps) => {
+  const t = useTranslations("domainAdmin.users");
+  const tr = useTranslations("roles");
+  const ts = useTranslations("memberStatus");
+  const tc = useTranslations("common");
+  const locale = useLocale();
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }), [locale]);
+
+  const ROLE_LABELS: Record<UserRole, string> = {
+    OWNER: tr("OWNER"),
+    ADMIN: tr("ADMIN"),
+    MODERATOR: tr("MODERATOR"),
+    USER: tr("USER"),
+    INHERITED: tr("INHERITED"),
+  };
+
+  const STATUS_LABELS: Record<UserStatus, string> = {
+    ACTIVE: ts("ACTIVE"),
+    BLOCKED: ts("BLOCKED"),
+    DELETED: ts("DELETED"),
+  };
+
   const [members, setMembers] = useState(initialMembers);
   const [error, setError] = useState<null | string>(null);
   const [loadingId, setLoadingId] = useState<null | string>(null);
@@ -192,7 +198,7 @@ export const MembersList = ({
   };
 
   const handleRemove = async (userId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir retirer ce membre ?")) return;
+    if (!confirm(t("removeConfirm"))) return;
     setLoadingId(userId);
     setError(null);
     const result = await onRemove({ userId });
@@ -218,7 +224,7 @@ export const MembersList = ({
         <Alert
           className={fr.cx("fr-mb-2w")}
           severity="error"
-          title="Erreur"
+          title={tc("error")}
           description={error}
           closable
           onClose={() => setError(null)}
@@ -227,15 +233,16 @@ export const MembersList = ({
 
       <div className={cx(fr.cx("fr-mb-2w"), "flex items-end justify-between flex-wrap gap-4")}>
         <p className={fr.cx("fr-mb-1v")}>
-          {filteredMembers.length === members.length
-            ? `${members.length} membre(s)`
-            : `${filteredMembers.length} / ${members.length} membre(s)`}
+          {t("memberCount", {
+            filtered: filteredMembers.length === members.length ? "same" : String(filteredMembers.length),
+            total: members.length,
+          })}
         </p>
         <div className="flex items-end flex-wrap gap-4 [&_.fr-select-group]:!mb-0">
           <Select
-            label="Rôle"
+            label={t("role")}
             options={[
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
               ...FILTERABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
             ]}
             nativeSelectProps={{
@@ -247,9 +254,9 @@ export const MembersList = ({
             }}
           />
           <Select
-            label="Statut"
+            label={t("status")}
             options={[
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
               ...Object.values(UserStatus).map(status => ({ value: status, label: STATUS_LABELS[status] })),
             ]}
             nativeSelectProps={{
@@ -262,10 +269,10 @@ export const MembersList = ({
           />
           <Select
             className="ml-auto"
-            label="Par page"
+            label={tc("perPage")}
             options={[
               ...PAGE_SIZE_OPTIONS.map(size => ({ value: String(size), label: String(size) })),
-              { value: "all", label: "Tous" },
+              { value: "all", label: tc("all") },
             ]}
             nativeSelectProps={{
               value: pageSize ? String(pageSize) : "all",
@@ -288,13 +295,13 @@ export const MembersList = ({
               "col-6": tableStyle.colShrink,
             }}
             header={[
-              { children: "ID" },
-              sortHeader("Nom", "name"),
-              sortHeader("Email", "email"),
-              sortHeader("Rôle", "role"),
-              sortHeader("Statut", "status"),
-              sortHeader("Date d'ajout", "joinedAt"),
-              { children: "Actions" },
+              { children: t("id") },
+              sortHeader(t("name"), "name"),
+              sortHeader(t("email"), "email"),
+              sortHeader(t("role"), "role"),
+              sortHeader(t("status"), "status"),
+              sortHeader(t("joinedAt"), "joinedAt"),
+              { children: tc("actions") },
             ]}
             body={paginatedMembers.map(member => [
               {
@@ -311,8 +318,8 @@ export const MembersList = ({
                 children: (
                   <span className="flex items-center gap-2">
                     {member.user.name ?? "—"}
-                    {isSelf(member) && <Tag small>Vous</Tag>}
-                    {superAdminIds.includes(member.userId) && <Tag small>Super Admin</Tag>}
+                    {isSelf(member) && <Tag small>{t("you")}</Tag>}
+                    {superAdminIds.includes(member.userId) && <Tag small>{t("superAdmin")}</Tag>}
                   </span>
                 ),
               },
@@ -326,14 +333,14 @@ export const MembersList = ({
                       </Badge>
                       {member.role === UserRole.INHERITED && (
                         <Badge as="span" small noIcon severity="new">
-                          Hérité
+                          {t("inherited")}
                         </Badge>
                       )}
                     </span>
                   ) : (
                     <Select
                       className="min-w-48"
-                      label={<span className="sr-only">Rôle</span>}
+                      label={<span className="sr-only">{t("role")}</span>}
                       options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
                       nativeSelectProps={{
                         value: member.role,
@@ -360,13 +367,13 @@ export const MembersList = ({
                       className="min-w-64"
                       buttons={[
                         {
-                          children: "Retirer",
+                          children: t("remove"),
                           priority: "secondary",
                           disabled: loadingId === member.userId,
                           onClick: () => void handleRemove(member.userId),
                         },
                         {
-                          children: member.status === UserStatus.BLOCKED ? "Débloquer" : "Bloquer",
+                          children: member.status === UserStatus.BLOCKED ? t("unblock") : t("block"),
                           priority: "tertiary",
                           disabled: loadingId === member.userId,
                           onClick: () => void handleToggleStatus(member.userId, member.status),
@@ -391,7 +398,7 @@ export const MembersList = ({
           />
         </>
       ) : (
-        <Alert severity="info" title="Aucun membre" description="Aucun membre dans ce tenant." small />
+        <Alert severity="info" title={t("noMembers")} description={t("noMembersDescription")} small />
       )}
     </>
   );

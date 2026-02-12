@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { userRepo } from "@/lib/repo";
@@ -17,18 +18,19 @@ interface UpdateUserData {
 }
 
 export const updateUser = async (data: { data: UpdateUserData; userId: string }): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const session = await assertAdmin();
 
   if (data.userId === session.user.uuid) {
-    return { ok: false, error: "Vous ne pouvez pas modifier votre propre compte." };
+    return { ok: false, error: t("cannotEditSelf") };
   }
 
   if (data.data.role && (data.data.role === UserRole.OWNER || data.data.role === UserRole.INHERITED)) {
-    return { ok: false, error: "Rôle cible non autorisé." };
+    return { ok: false, error: t("targetRoleForbidden") };
   }
 
   if (data.data.status && data.data.status === UserStatus.DELETED) {
-    return { ok: false, error: "Statut cible non autorisé." };
+    return { ok: false, error: t("targetStatusForbidden") };
   }
 
   try {

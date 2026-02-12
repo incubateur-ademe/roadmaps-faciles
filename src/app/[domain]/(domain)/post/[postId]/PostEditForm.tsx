@@ -5,6 +5,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -13,7 +14,7 @@ import { updatePost } from "./actions";
 
 const editSchema = z.object({
   postId: z.number(),
-  title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
+  title: z.string().min(3),
   description: z.string().optional(),
 });
 
@@ -30,6 +31,8 @@ interface PostEditFormProps {
 export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }: PostEditFormProps) => {
   const [error, setError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
+  const t = useTranslations("post");
+  const tc = useTranslations("common");
 
   const {
     register,
@@ -59,24 +62,24 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
       <Input
-        label="Titre"
+        label={t("editTitle")}
         nativeInputProps={register("title")}
         state={errors.title ? "error" : "default"}
         stateRelatedMessage={errors.title?.message}
       />
       <Input
         textArea
-        label="Description"
+        label={t("editDescription")}
         nativeTextAreaProps={register("description")}
         classes={{ nativeInputOrTextArea: "resize-y" }}
       />
-      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title="Erreur" description={error} />}
+      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
       <span className="flex gap-[1rem]">
         <Button type="submit" disabled={pending || !isDirty}>
-          Enregistrer
+          {t("savePost")}
         </Button>
         <Button type="button" priority="secondary" onClick={onCancel} disabled={pending}>
-          Annuler
+          {tc("cancel")}
         </Button>
       </span>
     </form>

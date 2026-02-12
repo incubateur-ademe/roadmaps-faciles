@@ -3,6 +3,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { useTranslations } from "next-intl";
 import { useCallback, useSyncExternalStore } from "react";
 
 import { WELCOME_DATA_PREVIEW } from "@/workflows/welcomeDataPreview";
@@ -14,6 +15,7 @@ interface SeedBannerProps {
 }
 
 export const SeedBanner = ({ tenantId }: SeedBannerProps) => {
+  const t = useTranslations("domainAdmin.general");
   const storageKey = `${STORAGE_KEY_PREFIX}${tenantId}`;
 
   const subscribe = useCallback(
@@ -45,15 +47,18 @@ export const SeedBanner = ({ tenantId }: SeedBannerProps) => {
       severity="info"
       closable
       onClose={handleClose}
-      title="Votre espace est vide"
+      title={t("seedBannerTitle")}
       description={
         <>
           <p className={fr.cx("fr-mb-1w")}>
-            Initialisez des données par défaut pour démarrer : {WELCOME_DATA_PREVIEW.boards.length} tableaux,{" "}
-            {WELCOME_DATA_PREVIEW.statuses.length} statuts, {WELCOME_DATA_PREVIEW.extras}.
+            {t("seedBannerDescription", {
+              boards: WELCOME_DATA_PREVIEW.boards.length,
+              statuses: WELCOME_DATA_PREVIEW.statuses.length,
+              extras: WELCOME_DATA_PREVIEW.extras,
+            })}
           </p>
           <Button priority="secondary" size="small" linkProps={{ href: "/admin/general#seed" }}>
-            Configurer dans les paramètres
+            {t("seedBannerCta")}
           </Button>
         </>
       }

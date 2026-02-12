@@ -3,16 +3,16 @@
   "description": "Roadmaps et product feedbacks, facilement.",
   "version": "0.0.1",
   "private": true,
-  "packageManager": "pnpm@10.29.2+sha512.bef43fa759d91fd2da4b319a5a0d13ef7a45bb985a3d7342058470f9d2051a3ba8674e629672654686ef9443ad13a82da2beb9eeb3e0221c87b8154fff9d74b8",
+  "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc",
   "engines": {
     "node": "^24"
   },
   "type": "module",
   "scripts": {
     "predev": "react-dsfr update-icons",
-    "prebuild": "react-dsfr update-icons && pnpm prisma generate",
+    "prebuild": "react-dsfr update-icons && prisma generate",
     "dev": "next dev",
-    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && (cp src/generated/prisma/*.node .next/standalone/node_modules/.prisma/client 2>/dev/null || true)",
+    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
     "prelint": "next typegen && pnpm prisma generate",
@@ -23,7 +23,8 @@
     "generateEnvDeclaration": "pnpm run-script scripts/generateEnvDeclaration.ts",
     "seed": "prisma db seed",
     "prisma:studio": "prisma studio -b none",
-    "prisma:reset": "prisma migrate reset --skip-seed --skip-generate"
+    "prisma:reset": "prisma migrate reset --skip-seed --skip-generate",
+    "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "resolutions": {
     "@auth/core": "^0.41.1"
@@ -58,11 +59,13 @@
     "lru-cache": "^11.2.5",
     "next": "^16.1.6",
     "next-auth": "5.0.0-beta.30",
+    "next-intl": "^4.8.2",
     "next-mdx-remote": "^5.0.0",
     "next-mdx-remote-client": "^2.1.7",
     "next-sitemap": "^4.2.3",
     "nodemailer": "^7.0.13",
     "pg": "^8.18.0",
+    "prisma": "^7.3.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.1",
@@ -117,7 +120,6 @@
     "postcss": "^8.5.6",
     "postcss-load-config": "^6.0.1",
     "prettier": "^3.8.1",
-    "prisma": "^7.3.0",
     "sass": "^1.97.3",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",

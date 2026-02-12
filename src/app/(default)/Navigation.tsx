@@ -2,10 +2,12 @@
 
 import { MainNavigation, type MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 export const Navigation = () => {
   const segment = useSelectedLayoutSegment("default");
+  const t = useTranslations("navigation");
 
   const { data: session, status } = useSession();
 
@@ -13,28 +15,28 @@ export const Navigation = () => {
     <MainNavigation
       items={[
         {
-          text: "Accueil",
+          text: t("home"),
           linkProps: {
             href: "/",
           },
           isActive: !segment,
         },
         {
-          text: "Groupes",
+          text: t("groups"),
           linkProps: {
             href: "/group",
           },
           isActive: segment === "group",
         },
         {
-          text: "Templates",
+          text: t("templates"),
           linkProps: {
             href: "/template",
           },
           isActive: segment === "template",
         },
         {
-          text: "Startups",
+          text: t("startups"),
           linkProps: {
             href: "/startup",
           },
@@ -43,7 +45,7 @@ export const Navigation = () => {
         ...(((status === "authenticated" &&
           session.user.isSuperAdmin && [
             {
-              text: "Admin",
+              text: t("admin"),
               linkProps: {
                 href: "/admin",
               },

@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
@@ -12,9 +13,10 @@ import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
 export const updatePost = async (data: unknown): Promise<ServerActionResponse> => {
+  const t = await getTranslations("serverErrors");
   const session = await auth();
   if (!session?.user) {
-    return { ok: false, error: "Non authentifié." };
+    return { ok: false, error: t("notAuthenticated") };
   }
 
   const validated = UpdatePostContentInput.safeParse(data);
@@ -35,7 +37,7 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
   ]);
 
   if (!post || post.tenantId !== tenant.id) {
-    return { ok: false, error: "Post introuvable." };
+    return { ok: false, error: t("postNotFound") };
   }
 
   const isAdmin =
@@ -47,7 +49,7 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
   const isAuthor = post.userId === session.user.uuid;
 
   if (!isAdmin && !(isAuthor && settings?.allowPostEdits)) {
-    return { ok: false, error: "Vous n'avez pas la permission de modifier ce post." };
+    return { ok: false, error: t("noPermissionToEdit") };
   }
 
   try {

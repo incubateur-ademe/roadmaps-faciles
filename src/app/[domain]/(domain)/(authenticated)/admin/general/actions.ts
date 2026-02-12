@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
@@ -74,8 +75,10 @@ export const seedDefaultData = async (): Promise<ServerActionResponse> => {
 
   const boards = await boardRepo.findAllForTenant(tenant.id);
   const statuses = await postStatusRepo.findAllForTenant(tenant.id);
+  const t = await getTranslations("serverErrors");
+
   if (boards.length > 0 || statuses.length > 0) {
-    return { ok: false, error: "Des données existent déjà pour ce tenant." };
+    return { ok: false, error: t("dataAlreadyExists") };
   }
 
   const owner = await prisma.userOnTenant.findFirst({
@@ -84,7 +87,7 @@ export const seedDefaultData = async (): Promise<ServerActionResponse> => {
   if (!owner) {
     return {
       ok: false,
-      error: "Aucun propriétaire actif trouvé pour ce tenant. L'initialisation nécessite un propriétaire.",
+      error: t("noActiveOwnerForSeed"),
     };
   }
 
@@ -130,8 +133,10 @@ export const checkDNS = async (customDomain: string): Promise<ServerActionRespon
   const domain = await getDomainFromHost();
   await assertTenantOwner(domain);
 
+  const t = await getTranslations("serverErrors");
+
   if (!customDomain) {
-    return { ok: false, error: "Aucun domaine personnalisé configuré." };
+    return { ok: false, error: t("noCustomDomain") };
   }
 
   const result = await verifyDNS(customDomain);

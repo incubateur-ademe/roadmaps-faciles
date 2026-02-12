@@ -6,6 +6,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -19,22 +20,23 @@ import { FormFieldset } from "@/dsfr/base/FormFieldset";
 import { searchUsers } from "../../actions";
 import { createTenant } from "./actions";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Le nom est requis."),
-  subdomain: z
-    .string()
-    .min(1, "Le sous-domaine est requis.")
-    .regex(/^[a-z0-9-]+$/, "Seuls les caractères minuscules, chiffres et tirets sont autorisés."),
-});
-
-type FormType = z.infer<typeof formSchema>;
-
 export const CreateTenantForm = () => {
   const router = useRouter();
+  const tv = useTranslations("validation");
   const [error, setError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [ownerEmails, setOwnerEmails] = useState<string[]>([]);
   const [emailError, setEmailError] = useState<null | string>(null);
+
+  const formSchema = z.object({
+    name: z.string().min(1, tv("nameRequired")),
+    subdomain: z
+      .string()
+      .min(1, tv("subdomainRequired"))
+      .regex(/^[a-z0-9-]+$/, tv("subdomainRegex")),
+  });
+
+  type FormType = z.infer<typeof formSchema>;
 
   const {
     register,

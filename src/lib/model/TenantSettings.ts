@@ -17,7 +17,6 @@ export const TenantSettings = z.object({
   subdomain: z.string(),
   customDomain: z.string().nullable(),
   locale: localeSchema,
-  useBrowserLocale: z.boolean().default(false),
   isPrivate: z.boolean(),
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
