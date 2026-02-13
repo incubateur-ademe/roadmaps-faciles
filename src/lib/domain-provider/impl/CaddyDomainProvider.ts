@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { logger } from "@/lib/logger";
 
 import { type DomainStatus, type DomainType, type IDomainProvider } from "../IDomainProvider";
 
@@ -10,13 +11,13 @@ export class CaddyDomainProvider implements IDomainProvider {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async addDomain(domain: string, type: DomainType): Promise<void> {
     // On-demand TLS handles certificate provisioning automatically via the `ask` endpoint.
-    console.log(`[CaddyDomainProvider] addDomain: ${domain} (${type}) — on-demand TLS, no action needed`);
+    logger.debug({ domain, type }, "CaddyDomainProvider addDomain — on-demand TLS, no action needed");
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async removeDomain(domain: string): Promise<void> {
     // Caddy's on-demand TLS will stop renewing once the `ask` endpoint returns 404.
-    console.log(`[CaddyDomainProvider] removeDomain: ${domain} — domain removed from DB, cert will not renew`);
+    logger.debug({ domain }, "CaddyDomainProvider removeDomain — domain removed from DB, cert will not renew");
   }
 
   public async checkStatus(domain: string): Promise<DomainStatus> {
@@ -25,10 +26,10 @@ export class CaddyDomainProvider implements IDomainProvider {
         signal: AbortSignal.timeout(5000),
       });
       if (response.ok) return "active";
-      console.warn(`[CaddyDomainProvider] checkStatus: Caddy returned ${response.status} for ${domain}`);
+      logger.warn({ domain, status: response.status }, "Caddy returned non-OK status");
       return "error";
     } catch (error) {
-      console.warn(`[CaddyDomainProvider] checkStatus: Caddy unreachable for ${domain}`, error);
+      logger.warn({ err: error, domain }, "Caddy unreachable");
       return "error";
     }
   }

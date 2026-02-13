@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 
+import { logger } from "@/lib/logger";
 import { Tenant } from "@/lib/model/Tenant";
 import { TenantSettings } from "@/lib/model/TenantSettings";
 import { tenantRepo, userOnTenantRepo } from "@/lib/repo";
@@ -73,7 +74,7 @@ export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<
       data: tenant,
     };
   } catch (error) {
-    console.error("Error saving tenant", error);
+    logger.error({ err: error }, "Error saving tenant");
     return {
       ok: false,
       error: (error as Error).message,

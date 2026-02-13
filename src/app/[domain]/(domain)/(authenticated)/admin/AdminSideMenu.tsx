@@ -134,6 +134,11 @@ export const AdminSideMenu = () => {
       linkProps: { href: `/admin/api` },
       isActive: currentPage === "api",
     },
+    {
+      text: t("auditLog"),
+      linkProps: { href: `/admin/audit-log` },
+      isActive: currentPage === "audit-log",
+    },
   ];
 
   return (

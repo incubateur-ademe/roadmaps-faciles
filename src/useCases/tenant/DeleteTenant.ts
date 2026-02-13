@@ -3,6 +3,7 @@ import { z } from "zod";
 import { config } from "@/config";
 import { getDnsProvider } from "@/lib/dns-provider";
 import { getDomainProvider } from "@/lib/domain-provider";
+import { logger } from "@/lib/logger";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole } from "@/prisma/enums";
@@ -47,7 +48,7 @@ export class DeleteTenant implements UseCase<DeleteTenantInput, DeleteTenantOutp
         const dnsProvider = getDnsProvider();
         await dnsProvider.removeRecord(tenant.settings.subdomain);
       } catch (error) {
-        console.warn("[DeleteTenant] DNS removal failed:", error);
+        logger.warn({ err: error }, "DNS removal failed");
       }
     }
   }

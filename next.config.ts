@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 
 import createMDX from "@next/mdx";
+import { withSentryConfig } from "@sentry/nextjs";
 import { type NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -24,6 +25,7 @@ const csp = {
   "connect-src": [
     "'self'",
     "https://*.gouv.fr",
+    process.env.NEXT_PUBLIC_SENTRY_DSN && "https://*.ingest.sentry.io",
     isDev && "http://localhost",
     isDev && localCustomDomains.map(domain => `http://${domain}`),
     isDev && localCustomDomains.map(domain => `ws://${domain}`),
@@ -67,7 +69,7 @@ const config: NextConfig = {
     turbopackFileSystemCacheForDev: true,
   },
   reactCompiler: true,
-  serverExternalPackages: ["@prisma/client"],
+  serverExternalPackages: ["@prisma/client", "pino", "pino-pretty"],
   env,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   images: {
@@ -138,4 +140,22 @@ const withMDX = createMDX({
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-export default withMDX(withNextIntl(config));
+const appEnv = process.env.APP_ENV || "dev";
+const enableSentrySourceMaps = appEnv === "prod" || appEnv === "staging";
+
+export default withSentryConfig(withMDX(withNextIntl(config)), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  sourcemaps: {
+    disable: !enableSentrySourceMaps,
+    deleteSourcemapsAfterUpload: true,
+  },
+  webpack: {
+    autoInstrumentServerFunctions: false,
+    autoInstrumentMiddleware: false,
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+});

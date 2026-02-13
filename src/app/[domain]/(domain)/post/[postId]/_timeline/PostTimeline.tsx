@@ -6,6 +6,7 @@ import TimelineSeparator from "@mui/lab/TimelineSeparator";
 
 import { ClientOnly } from "@/components/utils/ClientOnly";
 import { Icon } from "@/dsfr";
+import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
 import { type Activity } from "@/prisma/client";
 
@@ -42,7 +43,8 @@ export const PostTimeline = async ({ post }: PostTimelineProps) => {
             ) : isAggregateActivity(activity) ? (
               <AggregateItem activity={activity} />
             ) : (
-              (console.warn(`Unrecognized activity type: ${activity.type}`, activity), null)
+              (logger.warn({ activityType: activity.type, activityId: activity.id }, "Unrecognized activity type"),
+              null)
             )}
           </TimelineItem>
         ))}

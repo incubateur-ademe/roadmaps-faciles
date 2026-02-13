@@ -2,7 +2,9 @@
 
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
+import * as Sentry from "@sentry/nextjs";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 
 import { ErrorLayout } from "@/components/ErrorLayout";
 import { Container, Grid, GridCol } from "@/dsfr";
@@ -12,6 +14,10 @@ import { artworkMap, normalizeArtwork, artworkOvoidSvgUrl } from "./SystemMessag
 
 export default function Error({ error: _error, reset }: { error: Error; reset: () => void }) {
   const error = clientParseError(_error);
+
+  useEffect(() => {
+    Sentry.captureException(_error);
+  }, [_error]);
   const t = useTranslations("errors");
   const normalizedPictogram = artworkMap.technicalError;
 

@@ -197,7 +197,8 @@
       "users": "Users",
       "members": "Members",
       "invitations": "Invitations",
-      "api": "API"
+      "api": "API",
+      "auditLog": "Audit log"
     },
     "general": {
       "title": "General",
@@ -336,6 +337,24 @@
       "noMembers": "No members",
       "noMembersDescription": "No members in this tenant."
     },
+    "auditLog": {
+      "title": "Audit log",
+      "date": "Date",
+      "action": "Action",
+      "user": "User",
+      "target": "Target",
+      "status": "Status",
+      "ip": "IP",
+      "tenant": "Tenant",
+      "successLabel": "Success",
+      "errorLabel": "Error",
+      "filterAction": "Filter by action",
+      "allActions": "All actions",
+      "filterDateFrom": "Date from",
+      "filterDateTo": "Date to",
+      "resetFilters": "Reset",
+      "results": "result(s)"
+    },
     "invitations": {
       "title": "Invitations",
       "email": "Email",
@@ -451,6 +470,7 @@
     "tenants": "Tenants",
     "users": "Users",
     "prismaStudio": "Prisma Studio",
+    "auditLog": "Audit log",
     "tenantAdmin": "Tenant admin",
     "back": "Back",
     "information": "Information",

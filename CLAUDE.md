@@ -58,9 +58,22 @@
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
+- Audit log: fire-and-forget `audit()` in `src/lib/utils/audit.ts`
+  - Pattern in server actions: call `getRequestContext()` BEFORE try/catch and early returns, then `audit()` on success, catch, AND validation early returns. `RequestContext` includes `correlationId` (from proxy header).
+  - `AuditInput.metadata` accepts `Record<string, unknown>` — cast to `Prisma.InputJsonValue` happens internally in `audit()`
+  - TS interfaces lack implicit index signatures — use `{ ...obj }` spread to convert interface to `Record<string, unknown>`
+  - `AuditLog` Prisma model has no FK intentionally — logs survive user/tenant deletion; batch user lookup via Map in repo
+- Observability: Pino (structured logging) + Sentry (optional error tracking/tracing)
+  - Logger: `src/lib/logger.ts` — `server-only` singleton; `pino-pretty` in dev, JSON in prod
+  - Sentry: enabled by `SENTRY_DSN` env var; when empty, fully disabled (zero overhead)
+  - Sentry source maps: only uploaded in prod/staging (`APP_ENV` check in `next.config.ts`)
+  - Correlation ID: generated in `src/proxy.ts`, propagated via `x-correlation-id` header (request + response)
+  - Request logger: `createRequestLogger(reqCtx)` in `src/lib/utils/requestLogger.ts` — child logger with correlationId
+  - Health check: `/api/healthz` route handler (JSON, checks DB + Redis, 200/503)
+  - Server-side `console.*` → use `logger` from `@/lib/logger`; client-side `console.error` stays (Sentry captures automatically)
 - Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
-  - DNS errors are non-blocking in use cases (try/catch + `console.warn`)
+  - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
@@ -93,4 +106,8 @@
 - NextAuth `signIn()` uses `cookies().set()` internally — cannot be called during RSC render (read-only). Use a Server Action (form auto-submit pattern) instead
 - Route Handlers: use `NextResponse.redirect()`, not `redirect()` from `next/navigation` (which throws and is for RSC/Server Actions only)
 - Multi-tenant Route Handlers: never use `request.url` as base for root URLs — use `config.host` directly (request may reflect tenant domain)
+- `DomainPageHOP` generic param is for route Params only, not page props — access `searchParams` via cast: `(props as unknown as { searchParams: Promise<...> }).searchParams`
 - Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)
+- `pino` and `pino-pretty` must be in `serverExternalPackages` in `next.config.ts` — Turbopack cannot bundle them
+- `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
+- Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
