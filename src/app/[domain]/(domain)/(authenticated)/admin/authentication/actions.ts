@@ -29,6 +29,7 @@ export const saveAuthenticationSettings = async (data: {
         userId: session.user.uuid,
         tenantId: tenant.id,
         targetType: "TenantSettings",
+        targetId: String(settings.id),
         metadata: { policy: data.emailRegistrationPolicy },
       },
       reqCtx,
