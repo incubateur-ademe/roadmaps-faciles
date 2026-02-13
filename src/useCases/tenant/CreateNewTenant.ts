@@ -4,6 +4,7 @@ import { config } from "@/config";
 import { getDnsProvider } from "@/lib/dns-provider";
 import { type DnsProvisionResult } from "@/lib/dns-provider/IDnsProvider";
 import { getDomainProvider } from "@/lib/domain-provider";
+import { logger } from "@/lib/logger";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
@@ -51,7 +52,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantInput, CreateNewT
       const dnsProvider = getDnsProvider();
       dnsResult = await dnsProvider.addRecord(input.subdomain);
     } catch (error) {
-      console.warn("[CreateNewTenant] DNS provisioning failed:", error);
+      logger.warn({ err: error }, "DNS provisioning failed");
     }
 
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;

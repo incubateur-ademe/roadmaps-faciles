@@ -1,5 +1,6 @@
 import { LRUCache } from "lru-cache";
 
+import { logger } from "@/lib/logger";
 import { ensure } from "@/utils/function";
 import { type Any } from "@/utils/types";
 
@@ -49,13 +50,13 @@ export abstract class AbstractCachedUseCase<TRequest, TResponse extends object> 
     if (!hasValue) {
       const pResult = this.cachedExecute(request);
       if (status.has === "stale") {
-        if (this.debug) console.info(`[Cache][${this.cacheMasterKey}] Cache hit but stale`, request);
+        if (this.debug) logger.info({ cacheKey: this.cacheMasterKey, request }, "Cache hit but stale");
         void pResult.then(result => cache.set(cacheKey, result));
 
         return cache.get(cacheKey, { allowStale: true })!;
       }
 
-      if (this.debug) console.info(`[Cache][${this.cacheMasterKey}] Cache miss`, request);
+      if (this.debug) logger.info({ cacheKey: this.cacheMasterKey, request }, "Cache miss");
       return pResult.then(result => {
         cache.set(cacheKey, result);
         return result;
@@ -63,7 +64,7 @@ export abstract class AbstractCachedUseCase<TRequest, TResponse extends object> 
     }
 
     const result = cache.get(cacheKey)!;
-    if (this.debug) console.info(`[Cache][${this.cacheMasterKey}] Cache hit`, { request, result });
+    if (this.debug) logger.info({ cacheKey: this.cacheMasterKey, request, result }, "Cache hit");
     return result;
   }
 

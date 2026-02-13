@@ -29,6 +29,11 @@ export const AdminSideMenu = () => {
       linkProps: { href: "/admin/prisma" },
       isActive: currentPage === "prisma",
     },
+    {
+      text: t("auditLog"),
+      linkProps: { href: "/admin/audit-log" },
+      isActive: currentPage === "audit-log",
+    },
   ];
 
   return (

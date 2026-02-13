@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 
 import { prisma } from "@/lib/db/prisma";
+import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
 import { postRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
@@ -58,7 +59,7 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
     revalidatePath(`/${domain}/post/${validated.data.postId}`);
     return { ok: true };
   } catch (error) {
-    console.error("Error updating post", error);
+    logger.error({ err: error }, "Error updating post");
     return { ok: false, error: (error as Error).message };
   }
 };

@@ -83,7 +83,8 @@ const {
   const tenantSettings = tenant ? await getTenantSettings.execute({ tenantId: tenant.id }) : null;
 
   if (!url) {
-    console.error("Invalid request url");
+    const { logger } = await import("../logger");
+    logger.error("Invalid request url — protocol or host header missing");
     return { providers: [] };
   }
 

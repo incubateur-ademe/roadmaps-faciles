@@ -1,19 +1,21 @@
+import { logger } from "@/lib/logger";
+
 import { type DomainStatus, type DomainType, type IDomainProvider } from "../IDomainProvider";
 
 export class NoopDomainProvider implements IDomainProvider {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async addDomain(domain: string, type: DomainType): Promise<void> {
-    console.log(`[NoopDomainProvider] addDomain: ${domain} (${type})`);
+    logger.debug({ domain, type }, "NoopDomainProvider addDomain");
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async removeDomain(domain: string): Promise<void> {
-    console.log(`[NoopDomainProvider] removeDomain: ${domain}`);
+    logger.debug({ domain }, "NoopDomainProvider removeDomain");
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async checkStatus(domain: string): Promise<DomainStatus> {
-    console.log(`[NoopDomainProvider] checkStatus: ${domain}`);
+    logger.debug({ domain }, "NoopDomainProvider checkStatus");
     return "active";
   }
 }

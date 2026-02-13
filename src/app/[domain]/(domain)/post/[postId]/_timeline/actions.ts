@@ -3,6 +3,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { prisma } from "@/lib/db/prisma";
+import { logger } from "@/lib/logger";
 import { type Comment, type User } from "@/prisma/client";
 import { type ServerActionResponse } from "@/utils/next";
 
@@ -32,7 +33,7 @@ export async function getReplies(commentId: number): Promise<ServerActionRespons
       data: replies,
     };
   } catch (error) {
-    console.error("Error fetching replies:", error);
+    logger.error({ err: error }, "Error fetching replies");
     return {
       ok: false,
       error: "Failed to fetch replies",
@@ -91,7 +92,7 @@ export async function sendComment({
       data: newComment,
     };
   } catch (error) {
-    console.error("Error creating comment:", error);
+    logger.error({ err: error }, "Error creating comment");
     return {
       ok: false,
       error: "Failed to create comment",

@@ -482,3 +482,72 @@ model Webhook {
 
   @@index([tenantId])
 }
+
+enum AuditAction {
+  // Tenant-scoped — Boards
+  BOARD_CREATE
+  BOARD_DELETE
+  BOARD_REORDER
+  BOARD_UPDATE
+
+  // Tenant-scoped — Post statuses
+  POST_STATUS_CREATE
+  POST_STATUS_DELETE
+  POST_STATUS_REORDER
+  POST_STATUS_UPDATE
+
+  // Tenant-scoped — API keys
+  API_KEY_CREATE
+  API_KEY_DELETE
+
+  // Tenant-scoped — Webhooks
+  WEBHOOK_CREATE
+  WEBHOOK_DELETE
+
+  // Tenant-scoped — Members
+  MEMBER_REMOVE
+  MEMBER_ROLE_UPDATE
+  MEMBER_STATUS_UPDATE
+
+  // Tenant-scoped — Invitations
+  INVITATION_REVOKE
+  INVITATION_SEND
+
+  // Tenant-scoped — Settings
+  AUTHENTICATION_SETTINGS_UPDATE
+  ROADMAP_SETTINGS_UPDATE
+  TENANT_DELETE
+  TENANT_DOMAIN_UPDATE
+  TENANT_PURGE_DATA
+  TENANT_SEED_DATA
+  TENANT_SETTINGS_UPDATE
+
+  // Root-scoped
+  ROOT_MEMBER_REMOVE
+  ROOT_MEMBER_ROLE_UPDATE
+  ROOT_MEMBER_STATUS_UPDATE
+  ROOT_TENANT_CREATE
+  ROOT_USER_ROLE_UPDATE
+  ROOT_USER_STATUS_UPDATE
+  ROOT_USER_UPDATE
+}
+
+model AuditLog {
+  id         Int         @id @default(autoincrement())
+  action     AuditAction
+  success    Boolean     @default(true)
+  error      String?
+  userId     String?
+  tenantId   Int?
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
+}

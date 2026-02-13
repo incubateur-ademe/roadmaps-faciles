@@ -1,6 +1,7 @@
 import dns from "node:dns/promises";
 
 import { config } from "@/config";
+import { logger } from "@/lib/logger";
 
 import { type DnsProvisionResult, type DnsRecordStatus, type IDnsProvider } from "../IDnsProvider";
 
@@ -18,7 +19,7 @@ export class ManualDnsProvider implements IDnsProvider {
     const fqdn = `${subdomain}.${this.rootDomain}`;
     const record = { name: fqdn, target: this.target, type: "CNAME" as const };
 
-    console.log(`[ManualDnsProvider] Manual DNS record needed: ${fqdn} CNAME ${this.target}`);
+    logger.info({ fqdn, target: this.target }, "Manual DNS record needed");
 
     return {
       provisioned: false,
@@ -33,7 +34,7 @@ export class ManualDnsProvider implements IDnsProvider {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async removeRecord(subdomain: string): Promise<void> {
     const fqdn = `${subdomain}.${this.rootDomain}`;
-    console.log(`[ManualDnsProvider] Manual DNS removal needed: ${fqdn}`);
+    logger.info({ fqdn }, "Manual DNS removal needed");
   }
 
   public async checkRecord(subdomain: string): Promise<DnsRecordStatus> {

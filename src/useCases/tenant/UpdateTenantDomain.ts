@@ -4,6 +4,7 @@ import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
 import { getDnsProvider } from "@/lib/dns-provider";
 import { getDomainProvider } from "@/lib/domain-provider";
+import { logger } from "@/lib/logger";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 import { type TenantSettings } from "@/prisma/client";
 
@@ -69,7 +70,7 @@ export class UpdateTenantDomain implements UseCase<UpdateTenantDomainInput, Upda
         await dnsProvider.removeRecord(existing.subdomain);
         await dnsProvider.addRecord(input.subdomain);
       } catch (error) {
-        console.warn("[UpdateTenantDomain] DNS update failed:", error);
+        logger.warn({ err: error }, "DNS update failed");
       }
     }
 

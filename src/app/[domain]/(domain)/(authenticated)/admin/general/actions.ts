@@ -6,10 +6,12 @@ import z from "zod";
 
 import { prisma } from "@/lib/db/prisma";
 import { type DNSVerificationResult, verifyDNS } from "@/lib/domain-provider/dns";
+import { logger } from "@/lib/logger";
 import { boardRepo, postStatusRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo } from "@/lib/repo";
 import { DeleteTenant } from "@/useCases/tenant/DeleteTenant";
 import { SaveTenantWithSettings, SaveTenantWithSettingsInput } from "@/useCases/tenant/SaveTenantWithSettings";
 import { UpdateTenantDomain, UpdateTenantDomainInput } from "@/useCases/tenant/UpdateTenantDomain";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertTenantAdmin, assertTenantOwner } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
@@ -17,7 +19,9 @@ import { CreateWelcomeEntitiesWorkflow } from "@/workflows/CreateWelcomeEntities
 
 export const saveTenantSettings = async (data: unknown): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  await assertTenantAdmin(domain);
+  const session = await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   const validated = SaveTenantWithSettingsInput.safeParse(data);
   if (!validated.success) {
@@ -27,10 +31,29 @@ export const saveTenantSettings = async (data: unknown): Promise<ServerActionRes
   try {
     const useCase = new SaveTenantWithSettings(tenantSettingsRepo);
     await useCase.execute(validated.data);
+    audit(
+      {
+        action: AuditAction.TENANT_SETTINGS_UPDATE,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "TenantSettings",
+      },
+      reqCtx,
+    );
     revalidatePath("/admin/general");
     return { ok: true };
   } catch (error) {
-    console.error("Error saving tenant settings", error);
+    logger.error({ err: error }, "Error saving tenant settings");
+    audit(
+      {
+        action: AuditAction.TENANT_SETTINGS_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
@@ -39,19 +62,42 @@ export const deleteTenant = async (): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
   const session = await assertTenantOwner(domain);
   const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   try {
     const useCase = new DeleteTenant(tenantRepo, userOnTenantRepo);
     await useCase.execute({ tenantId: tenant.id, userId: session.user.uuid });
+    audit(
+      {
+        action: AuditAction.TENANT_DELETE,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Tenant",
+        targetId: String(tenant.id),
+      },
+      reqCtx,
+    );
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.TENANT_DELETE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
 
 export const updateTenantDomain = async (data: unknown): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  await assertTenantOwner(domain);
+  const session = await assertTenantOwner(domain);
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   const validated = UpdateTenantDomainInput.safeParse(data);
   if (!validated.success) {
@@ -61,17 +107,38 @@ export const updateTenantDomain = async (data: unknown): Promise<ServerActionRes
   try {
     const useCase = new UpdateTenantDomain(tenantSettingsRepo);
     await useCase.execute(validated.data);
+    audit(
+      {
+        action: AuditAction.TENANT_DOMAIN_UPDATE,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "TenantSettings",
+        metadata: validated.data,
+      },
+      reqCtx,
+    );
     revalidatePath("/admin/general");
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.TENANT_DOMAIN_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
 
 export const seedDefaultData = async (): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  await assertTenantAdmin(domain);
+  const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   const boards = await boardRepo.findAllForTenant(tenant.id);
   const statuses = await postStatusRepo.findAllForTenant(tenant.id);
@@ -91,19 +158,58 @@ export const seedDefaultData = async (): Promise<ServerActionResponse> => {
     };
   }
 
+  const auditActionMap = {
+    "board.create": AuditAction.BOARD_CREATE,
+    "post-status.create": AuditAction.POST_STATUS_CREATE,
+    "roadmap-settings.update": AuditAction.ROADMAP_SETTINGS_UPDATE,
+  } as const;
+
   try {
-    const workflow = new CreateWelcomeEntitiesWorkflow(tenant.id);
+    const workflow = new CreateWelcomeEntitiesWorkflow(tenant.id, step => {
+      audit(
+        {
+          action: auditActionMap[step.type],
+          userId: session.user.uuid,
+          tenantId: tenant.id,
+          targetType: step.targetType,
+          targetId: step.targetId,
+          metadata: step.metadata,
+        },
+        reqCtx,
+      );
+    });
     await workflow.run();
+    audit(
+      {
+        action: AuditAction.TENANT_SEED_DATA,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Tenant",
+        targetId: String(tenant.id),
+      },
+      reqCtx,
+    );
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.TENANT_SEED_DATA,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
 
 export const purgeTenantData = async (): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  await assertTenantOwner(domain);
+  const session = await assertTenantOwner(domain);
   const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   try {
     const boardIds = (await boardRepo.findAllForTenant(tenant.id)).map(b => b.id);
@@ -123,8 +229,28 @@ export const purgeTenantData = async (): Promise<ServerActionResponse> => {
       prisma.board.deleteMany({ where: { tenantId: tenant.id } }),
     ]);
 
+    audit(
+      {
+        action: AuditAction.TENANT_PURGE_DATA,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Tenant",
+        targetId: String(tenant.id),
+      },
+      reqCtx,
+    );
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.TENANT_PURGE_DATA,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };

@@ -9,6 +9,7 @@ import { type Invitation } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
 import { type InvitationRole, SendInvitation } from "@/useCases/invitations/SendInvitation";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertTenantAdmin, assertTenantOwner } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
@@ -19,13 +20,10 @@ export const sendInvitation = async (data: {
 }): Promise<ServerActionResponse<Invitation>> => {
   const domain = await getDomainFromHost();
 
-  if (data.role === "OWNER") {
-    await assertTenantOwner(domain);
-  } else {
-    await assertTenantAdmin(domain);
-  }
+  const session = data.role === "OWNER" ? await assertTenantOwner(domain) : await assertTenantAdmin(domain);
 
   const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   try {
     const useCase = new SendInvitation(invitationRepo);
@@ -39,9 +37,31 @@ export const sendInvitation = async (data: {
       tenantUrl,
       role: data.role ?? UserRole.USER,
     });
+    audit(
+      {
+        action: AuditAction.INVITATION_SEND,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Invitation",
+        targetId: String(invitation.id),
+        metadata: { email: data.email, role: data.role },
+      },
+      reqCtx,
+    );
     revalidatePath("/admin/users/invitations");
     return { ok: true, data: invitation };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.INVITATION_SEND,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        metadata: { email: data.email },
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
@@ -56,14 +76,38 @@ export const searchUsersForInvitation = async (query: string): Promise<UserEmail
 
 export const revokeInvitation = async (data: { id: number }): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
-  await assertTenantAdmin(domain);
+  const session = await assertTenantAdmin(domain);
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
 
   try {
     const useCase = new RevokeInvitation(invitationRepo);
     await useCase.execute(data);
+    audit(
+      {
+        action: AuditAction.INVITATION_REVOKE,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Invitation",
+        targetId: String(data.id),
+      },
+      reqCtx,
+    );
     revalidatePath("/admin/users/invitations");
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.INVITATION_REVOKE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Invitation",
+        targetId: String(data.id),
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
