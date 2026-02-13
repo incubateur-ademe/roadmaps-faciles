@@ -1,18 +1,38 @@
-- passkey / webauthn https://github.com/nextauthjs/next-auth-webauthn/blob/main/components/login.tsx
-- refresh token https://github.com/nextauthjs/next-auth-refresh-token-example
-- route /api/stats
-- page /stats (nombre de tenants (Northstar), nombre d'utilisateurs, nombre de boards, nombre de cartes, nombre de commentaires, nombre de votes)
+## Idées / Backlog
+
 - page /budget (?)
-- page /roadmap
 
 ## TODO
-- [ ] gérer les custom domains avec l'api Scalingo
 
-## Produit
-- [ ] récupérer les insights, les commentaires, les réponses, depuis l'admin (ou en tant qu'admin)
+- [ ] route /api/stats (#7)
+- [ ] page /stats — nombre de tenants (Northstar), utilisateurs, boards, cartes, commentaires, votes (#7)
+- [ ] page /roadmap (#14)
+- [ ] Insights & analytics : dashboards tenant, root et utilisateur (#45)
+- [ ] Responsive : support mobile et tablette (#46)
+- [ ] Tests : unit, intégration et e2e (#47)
+- [ ] Vue liste compacte des posts, style GitHub Issues (#48)
+- [ ] Page /roadmap : dogfooding (#49)
+- [ ] Mode light embarquable : iframe / widget (#50)
+- [ ] Fix : checkbox dark/light theme non cochée (#51)
+- [ ] Éditeur Markdown riche + upload image (#52)
+- [ ] Templates GitHub : issues et PR (#53)
+- [ ] S3 Service (#8)
+- [ ] Github Link + Github Project (#9)
+- [ ] Auth améliorée : passkey, refresh token, providers SSO tenants (#11)
+- [ ] Système de clefs d'api (#13)
+- [ ] Webhooks sortants (#17)
+- [ ] New user onboarding (#22)
 
-## Login
+## Fait
+
+- [x] gérer les custom domains avec l'api Scalingo (#12)
 - [x] ne sont autorisés au root login que les utilisateurs beta gouv
 - [x] tenant login avec un utilisateur existant => ajout d'un nouveau UserOnTenant
 - [x] tenant login avec un utilisateur inexistant mais betagouv => ajout utilisateur avec "isBetaGouvMember = true" + UserOnTenant
 - [x] tenant login avec un utilisateur inexistant et non betagouv => ajout utilisateur normal + UserOnTenant
+- [x] Tenant Admin Page (#10)
+- [x] Création de card / posts anonymes + modération (#16, PR #32)
+- [x] Audit log + observability (PR #23)
+- [x] Internationalisation next-intl fr/en (PR #21)
+- [x] Admin root, profil utilisateur, SSO bridge, custom domains (PR #20)
+- [x] Doc sous-domaine seed local dev (#15)
