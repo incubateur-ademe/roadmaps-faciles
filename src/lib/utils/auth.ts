@@ -6,6 +6,7 @@ import { type TenantSettings } from "@/lib/model/TenantSettings";
 import { UserRole, type UserStatus } from "@/prisma/enums";
 import { getTenantFromDomain } from "@/utils/tenant";
 
+import { logger } from "../logger";
 import { auth } from "../next-auth/auth";
 import { userOnTenantRepo, userRepo } from "../repo";
 import { JsonifiedError, UnexpectedSessionError } from "./error";
@@ -61,7 +62,7 @@ function isAssertObj<T>(val: AssertParam<T> | undefined): val is { check: T; mes
 function fail(useForbidden: boolean, message: string): never {
   if (useForbidden) forbidden();
   const error = new JsonifiedError(new UnexpectedSessionError(message));
-  console.log("SERVER ERROR", error);
+  logger.error({ err: error }, "Auth failure");
   throw error;
 }
 

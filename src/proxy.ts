@@ -6,13 +6,28 @@ import { getDomainPathname, pathnameDirtyCheck } from "@/utils/dirtyDomain/pathn
 
 import { config as appConfig } from "./config";
 
+const CORRELATION_ID_HEADER = "x-correlation-id";
+
+function withCorrelationId(req: NextRequest, response: NextResponse): NextResponse {
+  const correlationId = req.headers.get(CORRELATION_ID_HEADER) || crypto.randomUUID();
+  response.headers.set(CORRELATION_ID_HEADER, correlationId);
+  response.headers.set("x-request-id", correlationId);
+  return response;
+}
+
 export function proxy(req: NextRequest) {
   const url = req.nextUrl;
   const pathname = url.pathname;
 
+  // Ensure correlation ID is present on the incoming request headers for downstream consumers
+  const correlationId = req.headers.get(CORRELATION_ID_HEADER) || crypto.randomUUID();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set(CORRELATION_ID_HEADER, correlationId);
+
   // Skip proxy rewriting for auth API routes
   if (pathname.startsWith("/api/auth")) {
-    return;
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    return withCorrelationId(req, response);
   }
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
@@ -20,7 +35,6 @@ export function proxy(req: NextRequest) {
 
   // experimental: support for Chrome DevTools
   if (req.url.includes("/.well-known/appspecific/com.chrome.devtools.json") && appConfig.env === "dev") {
-    console.log("Serving Chrome DevTools configuration");
     return NextResponse.json({
       workspace: {
         root: import.meta.url.replace("file://", "").replace("src/proxy.ts", ""),
@@ -38,13 +52,15 @@ export function proxy(req: NextRequest) {
 
   // rewrites for app pages
   if (hostname == appConfig.rootDomain) {
-    return responseWithAnonymousId(
+    requestHeaders.set(DIRTY_DOMAIN_HEADER, isDirtyDomain ? getDomainPathname(pathname) : "false");
+    return withCorrelationId(
       req,
-      NextResponse.rewrite(new URL(path, req.url), {
-        headers: {
-          [DIRTY_DOMAIN_HEADER]: isDirtyDomain ? getDomainPathname(pathname) : "false",
-        },
-      }),
+      responseWithAnonymousId(
+        req,
+        NextResponse.rewrite(new URL(path, req.url), {
+          request: { headers: requestHeaders },
+        }),
+      ),
     );
   }
 
@@ -55,7 +71,15 @@ export function proxy(req: NextRequest) {
   }
 
   // rewrite everything else to `/[domain] dynamic route
-  return responseWithAnonymousId(req, NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url)));
+  return withCorrelationId(
+    req,
+    responseWithAnonymousId(
+      req,
+      NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url), {
+        request: { headers: requestHeaders },
+      }),
+    ),
+  );
 }
 
 export const config = {

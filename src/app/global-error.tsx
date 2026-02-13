@@ -1,13 +1,18 @@
 "use client"; // Error boundaries must be Client Components
 
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
 interface GlobalErrorProps {
   error: { digest?: string } & Error;
   reset: () => void;
 }
 
-// TODO : better error handling
-export default function GlobalError({ error, reset, ...rest }: GlobalErrorProps) {
-  console.log("GLOBAL ERROR", { error, reset, rest });
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     // global-error must include html and body tags
     <html>

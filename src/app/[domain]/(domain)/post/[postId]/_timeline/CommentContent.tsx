@@ -7,6 +7,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Card from "@codegouvfr/react-dsfr/Card";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import Avatar from "@mui/material/Avatar";
+import * as Sentry from "@sentry/nextjs";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { type PropsWithChildren, startTransition, useState } from "react";
@@ -69,10 +70,10 @@ export const CommentContent = ({ activity, userId }: { activity: CommentActivity
           setFirstOpen(false);
           setShowReplies(true);
         } else {
-          console.error("Failed to fetch replies:", response.error);
+          Sentry.captureMessage(`Failed to fetch replies: ${response.error}`, "error");
         }
       } catch (error) {
-        console.error("Error fetching replies:", error);
+        Sentry.captureException(error);
         setLoading(false);
       }
       setLoading(false);

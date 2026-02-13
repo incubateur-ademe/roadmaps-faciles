@@ -114,6 +114,22 @@ export const config = {
       adminUrl: ensureApiEnvVar(process.env.DOMAIN_CADDY_ADMIN_URL, "http://localhost:2019"),
     },
   },
+  observability: {
+    sentryDsn: ensureNextEnvVar(process.env.NEXT_PUBLIC_SENTRY_DSN, ""),
+    sentryServerDsn: ensureApiEnvVar(process.env.SENTRY_DSN, ""),
+    sentryOrg: ensureApiEnvVar(process.env.SENTRY_ORG, ""),
+    sentryProject: ensureApiEnvVar(process.env.SENTRY_PROJECT, ""),
+    logLevel: ensureApiEnvVar<"debug" | "error" | "fatal" | "info" | "silent" | "trace" | "warn">(
+      process.env.LOG_LEVEL,
+      "debug",
+    ),
+    get sentryEnabled() {
+      return !!(this.sentryDsn || this.sentryServerDsn);
+    },
+    get effectiveSentryDsn() {
+      return this.sentryServerDsn || this.sentryDsn;
+    },
+  },
   dnsProvider: {
     type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
     target: ensureApiEnvVar(process.env.DNS_PROVIDER_TARGET, ""),

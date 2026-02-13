@@ -3,8 +3,18 @@ import { getSeedTenant } from "@/lib/seedContext";
 
 import { type IWorkflow } from "./IWorkflow";
 
+export type WelcomeAuditCallback = (step: {
+  metadata?: Record<string, unknown>;
+  targetId: string;
+  targetType: string;
+  type: "board.create" | "post-status.create" | "roadmap-settings.update";
+}) => void;
+
 export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
-  constructor(private readonly tenantId?: number) {}
+  constructor(
+    private readonly tenantId?: number,
+    private readonly onAudit?: WelcomeAuditCallback,
+  ) {}
 
   public async run() {
     const tenantId = this.tenantId ?? getSeedTenant().id;
@@ -30,6 +40,13 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         tenantId,
       },
     });
+    this.onAudit?.({
+      type: "board.create",
+      targetType: "Board",
+      targetId: String(featureBoard.id),
+      metadata: { name: featureBoard.name, source: "welcome-workflow" },
+    });
+
     const bugBoard = await prisma.board.create({
       data: {
         name: "Bug Reports",
@@ -38,6 +55,12 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         order: 1,
         tenantId,
       },
+    });
+    this.onAudit?.({
+      type: "board.create",
+      targetType: "Board",
+      targetId: String(bugBoard.id),
+      metadata: { name: bugBoard.name, source: "welcome-workflow" },
     });
 
     // Create some Post Statuses
@@ -50,6 +73,13 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
+    this.onAudit?.({
+      type: "post-status.create",
+      targetType: "PostStatus",
+      targetId: String(plannedPostStatus.id),
+      metadata: { name: plannedPostStatus.name, color: plannedPostStatus.color, source: "welcome-workflow" },
+    });
+
     const _inProgressPostStatus = await prisma.postStatus.create({
       data: {
         name: "En cours",
@@ -59,6 +89,13 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
+    this.onAudit?.({
+      type: "post-status.create",
+      targetType: "PostStatus",
+      targetId: String(_inProgressPostStatus.id),
+      metadata: { name: _inProgressPostStatus.name, color: _inProgressPostStatus.color, source: "welcome-workflow" },
+    });
+
     const _completedPostStatus = await prisma.postStatus.create({
       data: {
         name: "Complété",
@@ -68,6 +105,13 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         showInRoadmap: true,
       },
     });
+    this.onAudit?.({
+      type: "post-status.create",
+      targetType: "PostStatus",
+      targetId: String(_completedPostStatus.id),
+      metadata: { name: _completedPostStatus.name, color: _completedPostStatus.color, source: "welcome-workflow" },
+    });
+
     const _rejectedPostStatus = await prisma.postStatus.create({
       data: {
         name: "Rejetté",
@@ -76,6 +120,12 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
         tenantId,
         showInRoadmap: false,
       },
+    });
+    this.onAudit?.({
+      type: "post-status.create",
+      targetType: "PostStatus",
+      targetId: String(_rejectedPostStatus.id),
+      metadata: { name: _rejectedPostStatus.name, color: _rejectedPostStatus.color, source: "welcome-workflow" },
     });
 
     // Create some Posts
@@ -135,6 +185,12 @@ export class CreateWelcomeEntitiesWorkflow implements IWorkflow {
       data: {
         rootBoardId: featureBoard.id,
       },
+    });
+    this.onAudit?.({
+      type: "roadmap-settings.update",
+      targetType: "TenantSettings",
+      targetId: String(tenantId),
+      metadata: { rootBoardId: featureBoard.id, source: "welcome-workflow" },
     });
   }
 }

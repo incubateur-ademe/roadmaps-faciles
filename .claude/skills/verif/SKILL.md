@@ -9,7 +9,7 @@ Effectue les verifications suivantes dans l'ordre :
 
 ## 1. ESLint
 
-Lance `pnpm lint --fix` pour corriger automatiquement les erreurs de formatage et de tri des imports, puis verifie qu'il n'y a plus d'erreurs.
+Lance `pnpm lint --fix` pour corriger automatiquement les erreurs de formatage et de tri des imports, puis verifie qu'il n'y a plus d'erreurs. Sauf evidement si il est passé litéralement juste avant.
 
 Si des erreurs persistent apres le `--fix`, corrige-les manuellement.
 

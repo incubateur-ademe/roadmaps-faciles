@@ -1,6 +1,7 @@
 "use client";
 
 import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
+import * as Sentry from "@sentry/nextjs";
 import { type PropsWithChildren, startTransition, useState } from "react";
 
 import { likePost } from "./actions";
@@ -43,7 +44,7 @@ export const LikeButton = ({
         }
       })
       .catch(error => {
-        console.error("Error toggling like:", error);
+        Sentry.captureException(error);
 
         // Rollback the optimistic update if the request fails
         startTransition(() => {

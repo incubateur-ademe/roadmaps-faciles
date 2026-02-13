@@ -79,3 +79,7 @@ Pour chaque commentaire, affiche :
 ## 6. Verification
 
 Lance le skill `verif` pour valider que les corrections n'introduisent pas de regressions.
+
+## 7. Finalisation
+- Une fois un commentaire adressé, "resolve" le commentaire sur GitHub pour indiquer qu'il a été traité avec un commentaire de suivi indiquant la correction effectuée ou la raison de l'ignorance.
+- Si copilot, tag le pour qu'il apprenne de ses erreurs ou de ses suggestions pertinentes. Précise lui qu'il ne faut absolument pas créer de PR !

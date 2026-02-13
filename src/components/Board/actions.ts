@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import z from "zod";
 
 import { prisma } from "@/lib/db/prisma";
+import { logger } from "@/lib/logger";
 import { likeRepo } from "@/lib/repo";
 import { LikePost, type LikePostInput, LikePostInputBase, type LikePostOutput } from "@/useCases/likes/LikePost";
 import { UnlikePost, type UnlikePostOutput } from "@/useCases/likes/UnlikePost";
@@ -73,7 +74,7 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
       ok: true,
     };
   } catch (error) {
-    console.error("Error liking post", error);
+    logger.error({ err: error }, "Error liking post");
     return {
       ok: false,
       error: (error as Error).message,
