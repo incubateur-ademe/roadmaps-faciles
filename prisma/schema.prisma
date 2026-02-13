@@ -187,15 +187,19 @@ model Post {
   boardId        Int
   postStatusId   Int?
   tenantId       Int
-  userId         String
+  userId         String?
+  anonymousId    String?
   slug           String?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+  editedAt       DateTime?
+  editedById     String?
   approvalStatus PostApprovalStatus @default(APPROVED)
   tags           String[]
 
   board      Board            @relation(fields: [boardId], references: [id])
-  user       User             @relation(fields: [userId], references: [id])
+  user       User?            @relation(fields: [userId], references: [id])
+  editedBy   User?            @relation("PostEditor", fields: [editedById], references: [id])
   postStatus PostStatus?      @relation(fields: [postStatusId], references: [id])
   comments   Comment[]
   follows    Follow[]
@@ -215,6 +219,7 @@ model Post {
   @@index([boardId])
   @@index([postStatusId])
   @@index([tenantId])
+  @@index([anonymousId])
   @@index([userId])
   @@index([tags])
 }
@@ -314,8 +319,10 @@ model TenantSettings {
   allowComments           Boolean                 @default(true)
   allowAnonymousVoting    Boolean                 @default(true)
   allowPostEdits          Boolean                 @default(false)
+  allowPostDeletion       Boolean                 @default(false)
   showRoadmapInHeader     Boolean                 @default(false)
   allowAnonymousFeedback  Boolean                 @default(true)
+  requirePostApproval     Boolean                 @default(false)
   emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
   allowedEmailDomains     String[]
   createdAt               DateTime                @default(now())
@@ -377,6 +384,7 @@ model User {
   isBetaGouvMember           Boolean    @default(false)
 
   posts          Post[]
+  editedPosts    Post[]         @relation("PostEditor")
   apiKeys        ApiKey[]
   comments       Comment[]
   follows        Follow[]
@@ -495,6 +503,13 @@ enum AuditAction {
   POST_STATUS_DELETE
   POST_STATUS_REORDER
   POST_STATUS_UPDATE
+
+  // Tenant-scoped — Posts
+  POST_CREATE
+  POST_APPROVE
+  POST_REJECT
+  POST_DELETE
+  POST_EDIT
 
   // Tenant-scoped — API keys
   API_KEY_CREATE

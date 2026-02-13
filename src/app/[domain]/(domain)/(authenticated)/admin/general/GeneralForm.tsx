@@ -35,10 +35,12 @@ const formSchema = z.object({
   isPrivate: z.boolean(),
   allowAnonymousFeedback: z.boolean(),
   allowPostEdits: z.boolean(),
+  allowPostDeletion: z.boolean(),
   showRoadmapInHeader: z.boolean(),
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
+  requirePostApproval: z.boolean(),
 });
 
 type FormType = z.infer<typeof formSchema>;
@@ -79,6 +81,16 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
         name: "allowPostEdits",
         label: t("allowPostEdits"),
         helperText: t("allowPostEditsHelper"),
+      },
+      {
+        name: "allowPostDeletion",
+        label: t("allowPostDeletion"),
+        helperText: t("allowPostDeletionHelper"),
+      },
+      {
+        name: "requirePostApproval",
+        label: t("requirePostApproval"),
+        helperText: t("requirePostApprovalHelper"),
       },
     ],
   },
@@ -148,10 +160,12 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
       isPrivate: tenantSettings.isPrivate,
       allowAnonymousFeedback: tenantSettings.allowAnonymousFeedback,
       allowPostEdits: tenantSettings.allowPostEdits,
+      allowPostDeletion: tenantSettings.allowPostDeletion,
       showRoadmapInHeader: tenantSettings.showRoadmapInHeader,
       allowVoting: tenantSettings.allowVoting,
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
+      requirePostApproval: tenantSettings.requirePostApproval,
     },
   });
 

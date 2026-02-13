@@ -291,7 +291,7 @@ pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans 
 /src/app/(default)          # Site principal
 /src/app/[domain]           # Multi-tenant
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
-/src/lib/useCases           # Logique métier (use cases DDD)
+/src/useCases               # Logique métier (use cases DDD)
 /src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
 ```
 

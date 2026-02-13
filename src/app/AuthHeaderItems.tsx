@@ -1,6 +1,7 @@
 "use client";
 
 import { fr, type FrIconClassName } from "@codegouvfr/react-dsfr";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { cx, type CxArg } from "@codegouvfr/react-dsfr/tools/cx";
@@ -17,7 +18,13 @@ import { Icon } from "@/dsfr";
 import { Link } from "@/i18n/navigation";
 import { USER_ROLE } from "@/lib/model/User";
 
-export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "tenant" }) => {
+export const UserHeaderItem = ({
+  variant = "tenant",
+  pendingModerationCount = 0,
+}: {
+  pendingModerationCount?: number;
+  variant?: "root" | "tenant";
+}) => {
   const session = useSession();
   const segments = useSelectedLayoutSegments();
   const t = useTranslations("auth");
@@ -50,12 +57,40 @@ export const UserHeaderItem = ({ variant = "tenant" }: { variant?: "root" | "ten
         });
       }
 
+      const isModerator = isAdmin || user.currentTenantRole === USER_ROLE.MODERATOR;
+
+      if (isModerator && variant === "tenant") {
+        items.push({
+          label:
+            pendingModerationCount > 0 ? (
+              <>
+                {t("moderation")}{" "}
+                <Badge as="span" small noIcon severity="new">
+                  {t("moderationNewCount", { count: pendingModerationCount })}
+                </Badge>
+              </>
+            ) : (
+              t("moderation")
+            ),
+          iconId: "fr-icon-shield-line",
+          linkProps: { href: "/moderation" },
+          isCurrent: segments.includes("moderation"),
+        });
+      }
+
       return (
         <UserMenuHeaderItem
           showLogout
           showUserInfo
           withOutline
           buttonLabel={t("mySpace")}
+          notification={
+            pendingModerationCount > 0 ? (
+              <Badge as="span" small noIcon severity="new" className="ml-1">
+                {t("new")}
+              </Badge>
+            ) : undefined
+          }
           userName={
             <>
               {user.name}
@@ -126,6 +161,7 @@ export interface UserMenuHeaderItemProps {
   className?: CxArg;
   items: UserMenuItem[];
   logoutHref?: string;
+  notification?: ReactNode;
   onLogout?: () => void;
   showLogout?: boolean;
   showUserInfo?: boolean;
@@ -143,6 +179,7 @@ export function UserMenuHeaderItem({
   userEmail,
   items,
   className,
+  notification,
   onLogout,
   logoutHref = "/logout",
 }: UserMenuHeaderItemProps) {
@@ -178,7 +215,12 @@ export function UserMenuHeaderItem({
           <Icon
             className={`${componentClass}__btn-label`}
             icon="fr-icon-arrow-down-s-line"
-            text={label}
+            text={
+              <>
+                {label}
+                {notification}
+              </>
+            }
             iconPosition="right"
           />
         </Button>

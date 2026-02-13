@@ -11,6 +11,7 @@ import { MarkdownAsync } from "react-markdown";
 import { LikeButton } from "@/components/Board/LikeButton";
 import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
+import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { type Activity, type Board } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
@@ -46,6 +47,7 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
         },
         include: {
           board: true,
+          editedBy: true,
           likes: true,
           postStatus: true,
           user: true,
@@ -98,28 +100,46 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       notFound();
     }
 
+    // Check membership once — used for both approval access and edit permissions
+    const membership = session?.user
+      ? await prisma.userOnTenant.findUnique({
+          where: { userId_tenantId: { userId: session.user.uuid, tenantId: tenant.id } },
+          select: { role: true },
+        })
+      : null;
+
+    const isAdmin =
+      session?.user?.isSuperAdmin ||
+      (membership &&
+        (membership.role === UserRole.ADMIN ||
+          membership.role === UserRole.OWNER ||
+          membership.role === UserRole.MODERATOR));
+
+    // Non-approved posts are only visible to admins/moderators and the post author
+    if (post.approvalStatus !== POST_APPROVAL_STATUS.APPROVED) {
+      const isAuthor =
+        (session?.user && post.userId && post.userId === session.user.uuid) ||
+        (post.anonymousId && post.anonymousId === anonymousId);
+      if (!isAdmin && !isAuthor) {
+        notFound();
+      }
+    }
+
     const alreadyLiked = post.likes.some(like => session?.user.id === like.userId || like.anonymousId === anonymousId);
 
     let canEdit = false;
+    let canDelete = false;
     if (session?.user) {
-      const isAuthor = post.userId === session.user.uuid;
+      const isAuthor = post.userId && post.userId === session.user.uuid;
       if (isAuthor && settings.allowPostEdits) {
         canEdit = true;
-      } else if (session.user.isSuperAdmin) {
+      } else if (isAdmin) {
         canEdit = true;
-      } else {
-        const membership = await prisma.userOnTenant.findUnique({
-          where: { userId_tenantId: { userId: session.user.uuid, tenantId: tenant.id } },
-          select: { role: true },
-        });
-        if (
-          membership &&
-          (membership.role === UserRole.ADMIN ||
-            membership.role === UserRole.OWNER ||
-            membership.role === UserRole.MODERATOR)
-        ) {
-          canEdit = true;
-        }
+      }
+      if (isAdmin) {
+        canDelete = true;
+      } else if (isAuthor && settings.allowPostDeletion) {
+        canDelete = true;
       }
     }
 
@@ -129,6 +149,8 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       anonymousId,
       alreadyLiked,
       canEdit,
+      canDelete,
+      boardSlug: post.board.slug ?? "",
       allowVoting: settings.allowVoting,
       allowAnonymousVoting: settings.allowAnonymousVoting,
       allowComments: settings.allowComments,
@@ -141,14 +163,16 @@ export interface PostPageComponentProps {
   allowVoting: boolean;
   alreadyLiked: boolean;
   anonymousId: string;
+  boardSlug: string;
+  canDelete: boolean;
   canEdit: boolean;
   isModal?: boolean;
-  post: { activities: Activity[]; board: Board } & EnrichedPost;
+  post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;
 }
 
 export const PostPageComponent = async (props: PostPageComponentProps) => {
-  const { post, allowComments, canEdit } = props;
+  const { post, allowComments, canEdit, canDelete, boardSlug, isModal } = props;
   const [t, locale] = await Promise.all([getTranslations("post"), getLocale()]);
 
   return (
@@ -168,12 +192,28 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
       </span>
       <Text mt="2w">
         {t.rich("addedBy", {
-          author: post.user.name ?? "",
-          date: formatDate(post.user.createdAt, locale),
+          author: post.user?.name ?? t("anonymous"),
+          date: formatDate(post.createdAt, locale),
           b: chunks => <b>{chunks}</b>,
         })}
+        {post.editedAt && (
+          <>
+            {" "}
+            <span className={fr.cx("fr-text--sm", "fr-text--light")}>
+              {post.editedBy?.name ? t("editedBy", { editor: post.editedBy.name }) : t("edited")}
+            </span>
+          </>
+        )}
       </Text>
-      <PostEditToggle canEdit={canEdit} postId={post.id} title={post.title} description={post.description}>
+      <PostEditToggle
+        canEdit={canEdit}
+        canDelete={canDelete}
+        boardSlug={boardSlug}
+        isModal={isModal}
+        postId={post.id}
+        title={post.title}
+        description={post.description}
+      >
         <Text mt="2w" variant="lg">
           <MarkdownAsync {...reactMarkdownConfig}>{post.description}</MarkdownAsync>
         </Text>
@@ -185,9 +225,10 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
           classes={{
             nativeInputOrTextArea: "resize-y",
           }}
+          className={fr.cx("fr-mt-2w")}
         />
       )}
-      {props.isModal ? (
+      {isModal ? (
         <>
           {post._count.comments > 0 && (
             <Tag as="span" iconId="fr-icon-discuss-line" small>
