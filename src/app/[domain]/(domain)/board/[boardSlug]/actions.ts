@@ -1,8 +1,20 @@
 "use server";
 
-import { prisma } from "@/lib/db/prisma";
-import { type Like, type Post, type PostStatus, type PostWithHotness, type Prisma, type User } from "@/prisma/client";
+import { getTranslations } from "next-intl/server";
+import { revalidatePath } from "next/cache";
 
+import { prisma } from "@/lib/db/prisma";
+import { logger } from "@/lib/logger";
+import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
+import { auth } from "@/lib/next-auth/auth";
+import { postRepo } from "@/lib/repo";
+import { type Like, type Post, type PostStatus, type PostWithHotness, type Prisma, type User } from "@/prisma/client";
+import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
+import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
+
+import { SubmitPost, SubmitPostInput } from "../../../../../useCases/posts/SubmitPost";
 import { type Order } from "./types";
 
 const LOAD_LIMIT = 50;
@@ -11,7 +23,7 @@ export type EnrichedPost = {
   _count: Prisma.PostCountOutputType;
   likes: Like[];
   postStatus: null | PostStatus;
-  user: User;
+  user: null | User;
 } & Post;
 const cleanFullTextSearch = (text: string) => {
   if (!text) return text;
@@ -60,6 +72,7 @@ export async function fetchPostsForBoard<
     prisma.post.count({
       where: {
         boardId,
+        approvalStatus: POST_APPROVAL_STATUS.APPROVED,
         ...searchWhere,
       },
     }),
@@ -69,9 +82,9 @@ export async function fetchPostsForBoard<
             boardId,
             ...(search
               ? {
-                  post: searchWhere,
+                  post: { approvalStatus: POST_APPROVAL_STATUS.APPROVED, ...searchWhere },
                 }
-              : {}),
+              : { post: { approvalStatus: POST_APPROVAL_STATUS.APPROVED } }),
           },
           orderBy: {
             hotness: "desc",
@@ -98,6 +111,7 @@ export async function fetchPostsForBoard<
       : prisma.post.findMany({
           where: {
             boardId,
+            approvalStatus: POST_APPROVAL_STATUS.APPROVED,
             ...searchWhere,
           },
           take: LOAD_LIMIT,
@@ -132,4 +146,81 @@ export async function fetchPostsForBoard<
       : (posts as EnrichedPost[])) as R,
     filteredCount: count,
   };
+}
+
+export async function submitPost(data: {
+  boardId: number;
+  description?: string;
+  title: string;
+}): Promise<ServerActionResponse<{ pending: boolean }>> {
+  const domain = await getDomainFromHost();
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
+
+  const settings = await prisma.tenantSettings.findUniqueOrThrow({
+    where: { tenantId: tenant.id },
+  });
+
+  const session = await auth();
+  const t = await getTranslations("serverErrors");
+
+  if (!session && !settings.allowAnonymousFeedback) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+
+  let anonymousId: string | undefined;
+  if (!session) {
+    try {
+      anonymousId = await getAnonymousId();
+    } catch {
+      return { ok: false, error: t("notAuthenticated") };
+    }
+  }
+
+  const validated = SubmitPostInput.safeParse({
+    title: data.title,
+    description: data.description,
+    boardId: data.boardId,
+    tenantId: tenant.id,
+    userId: session?.user.uuid,
+    anonymousId,
+    requirePostApproval: settings.requirePostApproval,
+  });
+
+  if (!validated.success) {
+    return { ok: false, error: t("invalidData") };
+  }
+
+  try {
+    const useCase = new SubmitPost(postRepo);
+    const post = await useCase.execute(validated.data);
+
+    audit(
+      {
+        action: AuditAction.POST_CREATE,
+        userId: session?.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Post",
+        targetId: String(post.id),
+        metadata: { ...data, anonymousId },
+      },
+      reqCtx,
+    );
+
+    revalidatePath(`/board`);
+    return { ok: true, data: { pending: settings.requirePostApproval } };
+  } catch (error) {
+    logger.error({ err: error }, "Error submitting post");
+    audit(
+      {
+        action: AuditAction.POST_CREATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session?.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: (error as Error).message };
+  }
 }

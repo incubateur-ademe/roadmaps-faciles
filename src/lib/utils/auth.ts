@@ -221,11 +221,21 @@ export const assertSession = async ({
 };
 
 /**
- * Spécialisation d’`assertSession` pour vérifier que l’utilisateur courant est admin du tenant.
+ * Spécialisation d'`assertSession` pour vérifier que l'utilisateur courant est modérateur du tenant.
  *
- * @param useForbidden - Si `true`, exécute `forbidden()` en cas d’échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `true`.
- * @returns La `Session` si l’utilisateur est admin du tenant.
- * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l’utilisateur n’est pas admin du tenant.
+ * @param useForbidden - Si `true`, exécute `forbidden()` en cas d'échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `true`.
+ * @returns La `Session` si l'utilisateur est au moins modérateur du tenant.
+ * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l'utilisateur n'est pas modérateur du tenant.
+ */
+export const assertTenantModerator = async (domain: string, useForbidden = true): Promise<Session> =>
+  assertSession({ tenantUser: { check: { role: { min: UserRole.MODERATOR }, domain } }, useForbidden });
+
+/**
+ * Spécialisation d'`assertSession` pour vérifier que l'utilisateur courant est admin du tenant.
+ *
+ * @param useForbidden - Si `true`, exécute `forbidden()` en cas d'échec. Sinon, lève `UnexpectedSessionError`. Par défaut : `true`.
+ * @returns La `Session` si l'utilisateur est admin du tenant.
+ * @throws `UnexpectedSessionError` ou exécute `forbidden()` si l'utilisateur n'est pas admin du tenant.
  */
 export const assertTenantAdmin = async (domain: string, useForbidden = true): Promise<Session> =>
   assertSession({ tenantUser: { check: { role: { min: UserRole.ADMIN }, domain } }, useForbidden });

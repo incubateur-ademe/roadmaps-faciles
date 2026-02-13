@@ -6,6 +6,7 @@ import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
 import { prisma } from "@/lib/db/prisma";
+import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { type Tenant } from "@/lib/model/Tenant";
 import { type TenantSettings } from "@/prisma/client";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
@@ -54,6 +55,10 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     notFound();
   }
 
+  const pendingModerationCount = await prisma.post.count({
+    where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING },
+  });
+
   return (
     <>
       <Header
@@ -64,7 +69,10 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
           title: tenantSettings.name,
         }}
         serviceTitle={tenantSettings.name}
-        quickAccessItems={[<LanguageSelectClient key="hqai-lang" />, <UserHeaderItem key="hqai-user" />]}
+        quickAccessItems={[
+          <LanguageSelectClient key="hqai-lang" />,
+          <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
+        ]}
       />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}

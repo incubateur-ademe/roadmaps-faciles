@@ -1,18 +1,23 @@
 import { z } from "zod";
 
-import { Post, type Post as PostModel } from "@/lib/model/Post";
+import { POST_APPROVAL_STATUS, type Post as PostModel } from "@/lib/model/Post";
 import { type IPostRepo } from "@/lib/repo/IPostRepo";
 
 import { type UseCase } from "../types";
 
-export const SubmitPostInput = z.object({
-  title: z.string().min(3),
-  description: z.string().optional(),
-  boardId: z.number(),
-  postStatusId: z.number(),
-  tenantId: z.number(),
-  userId: z.string(),
-});
+export const SubmitPostInput = z
+  .object({
+    title: z.string().min(3),
+    description: z.string().optional(),
+    boardId: z.number(),
+    tenantId: z.number(),
+    userId: z.string().optional(),
+    anonymousId: z.string().optional(),
+    requirePostApproval: z.boolean(),
+  })
+  .refine(data => data.userId || data.anonymousId, {
+    message: "Either userId or anonymousId must be provided",
+  });
 
 export type SubmitPostInput = z.infer<typeof SubmitPostInput>;
 export type SubmitPostOutput = PostModel;
@@ -21,21 +26,18 @@ export class SubmitPost implements UseCase<SubmitPostInput, SubmitPostOutput> {
   constructor(private readonly postRepo: IPostRepo) {}
 
   public async execute(input: SubmitPostInput): Promise<SubmitPostOutput> {
+    const approvalStatus = input.requirePostApproval ? POST_APPROVAL_STATUS.PENDING : POST_APPROVAL_STATUS.APPROVED;
+
     const post = await this.postRepo.create({
       title: input.title,
       description: input.description ?? null,
       boardId: input.boardId,
-      postStatusId: input.postStatusId,
       tenantId: input.tenantId,
-      userId: input.userId,
+      userId: input.userId ?? null,
+      anonymousId: input.anonymousId ?? null,
+      approvalStatus,
     });
 
-    return Post.parse({
-      ...post,
-      likesCount: 0,
-      commentsCount: 0,
-      hotness: 0,
-      liked: false,
-    });
+    return post as SubmitPostOutput;
   }
 }

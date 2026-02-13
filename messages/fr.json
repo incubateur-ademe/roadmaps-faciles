@@ -70,6 +70,9 @@
     "myProfile": "Mon profil utilisateur",
     "administration": "Administration",
     "tenantAdmin": "Admin du tenant",
+    "moderation": "Modération",
+    "new": "Nouveau",
+    "moderationNewCount": "{count, plural, one {# nouveau} other {# nouveaux}}",
     "loginWithEmail": "Se connecter avec son adresse mail",
     "loginWithUsername": "Se connecter avec son nom d'utilisateur beta gouv",
     "emailLabel": "Email",
@@ -218,6 +221,10 @@
       "moderationTitle": "Modération",
       "allowPostEdits": "Modification des posts autorisée",
       "allowPostEditsHelper": "Les auteurs peuvent modifier leurs posts après publication",
+      "requirePostApproval": "Approbation des posts requise",
+      "requirePostApprovalHelper": "Les nouveaux posts doivent être approuvés par un modérateur avant d'être visibles",
+      "allowPostDeletion": "Suppression des posts autorisée",
+      "allowPostDeletionHelper": "Les auteurs peuvent supprimer leurs posts",
       "headerTitle": "En-tête",
       "showRoadmapInHeader": "Feuille de route dans l'en-tête",
       "showRoadmapInHeaderHelper": "Un lien vers la roadmap apparaît dans la navigation principale",
@@ -377,6 +384,10 @@
     "title": "Titre",
     "description": "Description",
     "boardNotFound": "Board non trouvé",
+    "anonymous": "Anonyme",
+    "postSubmitted": "Suggestion soumise avec succès !",
+    "postSubmittedPending": "Suggestion soumise. Elle sera visible après approbation par un modérateur.",
+    "titleMinLength": "Le titre doit contenir au moins 3 caractères",
     "sortBy": "Trier par",
     "trending": "Tendance",
     "top": "Top",
@@ -386,13 +397,18 @@
   "post": {
     "unclassified": "Non classé",
     "addedBy": "Ajouté par <b>{author}</b> le {date}",
+    "editedBy": "(modifié par {editor})",
+    "edited": "(modifié)",
     "addComment": "Ajouter un commentaire",
     "comment": "{count, plural, one {<b>1</b> commentaire} other {<b>#</b> commentaires}}",
     "activityFeed": "Flux d'activité",
     "editTitle": "Titre",
     "editDescription": "Description",
     "titleMinLength": "Le titre doit contenir au moins 3 caractères",
-    "savePost": "Enregistrer"
+    "savePost": "Enregistrer",
+    "anonymous": "Anonyme",
+    "deletePost": "Supprimer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible."
   },
   "roadmap": {
     "title": "Feuille de route",
@@ -424,6 +440,7 @@
     "commentsDisabled": "Les commentaires sont désactivés.",
     "postNotFound": "Post introuvable.",
     "noPermissionToEdit": "Vous n'avez pas la permission de modifier ce post.",
+    "noPermissionToDelete": "Vous n'avez pas la permission de supprimer ce post.",
     "dataAlreadyExists": "Des données existent déjà pour ce tenant.",
     "noActiveOwnerForSeed": "Aucun propriétaire actif trouvé pour ce tenant. L'initialisation nécessite un propriétaire.",
     "noCustomDomain": "Aucun domaine personnalisé configuré.",
@@ -492,5 +509,29 @@
       "expiry": "Ce lien expire dans 1 heure.",
       "closing": "Cordialement,"
     }
+  },
+  "moderation": {
+    "sideMenu": {
+      "title": "Modération",
+      "pendingPosts": "Posts en attente",
+      "rejectedPosts": "Posts rejetés"
+    },
+    "title": "Modération",
+    "pendingTitle": "Posts en attente de modération",
+    "rejectedTitle": "Posts rejetés",
+    "noPendingPosts": "Aucun post en attente de modération.",
+    "noRejectedPosts": "Aucun post rejeté.",
+    "postTitle": "Titre",
+    "board": "Board",
+    "author": "Auteur",
+    "date": "Date",
+    "actions": "Actions",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "delete": "Supprimer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.",
+    "anonymous": "Anonyme",
+    "description": "Description",
+    "noDescription": "—"
   }
 }

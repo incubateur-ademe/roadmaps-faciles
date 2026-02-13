@@ -44,7 +44,10 @@ export const BoardPost = ({
       titleAs="h3"
       endDetail={
         <span className="flex justify-between items-center w-full">
-          <span>{post.user.name}</span>
+          <span>
+            {post.user?.name ?? "Anonyme"}
+            {post.editedAt && <span className="fr-text--xs fr-text--light ml-1">(modifié)</span>}
+          </span>
           {post._count.comments > 0 && (
             <Tag
               className="cursor-pointer"

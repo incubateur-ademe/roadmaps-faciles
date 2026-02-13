@@ -57,7 +57,7 @@ export const PostTimeline = async ({ post }: PostTimelineProps) => {
 
           <TimelineContent className="flex flex-col gap-[.5rem]">
             <ItemDate activity={{ id: post.id, startTime: post.createdAt } as Activity} />
-            {post.user.name} a créé le post
+            {post.user?.name ?? "Anonyme"} a créé le post
           </TimelineContent>
         </TimelineItem>
       </Timeline>

@@ -10,10 +10,12 @@ export const SaveTenantWithSettingsInput = z.object({
   isPrivate: z.boolean(),
   allowAnonymousFeedback: z.boolean(),
   allowPostEdits: z.boolean(),
+  allowPostDeletion: z.boolean(),
   showRoadmapInHeader: z.boolean(),
   allowVoting: z.boolean(),
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
+  requirePostApproval: z.boolean(),
 });
 export type SaveTenantWithSettingsInput = z.infer<typeof SaveTenantWithSettingsInput>;
 export type SaveTenantWithSettingsOutput = TenantSettings;
@@ -26,10 +28,12 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
       isPrivate: tenantSettings.isPrivate,
       allowAnonymousFeedback: tenantSettings.allowAnonymousFeedback,
       allowPostEdits: tenantSettings.allowPostEdits,
+      allowPostDeletion: tenantSettings.allowPostDeletion,
       showRoadmapInHeader: tenantSettings.showRoadmapInHeader,
       allowVoting: tenantSettings.allowVoting,
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
+      requirePostApproval: tenantSettings.requirePostApproval,
     });
 
     return updatedTenantSetting;

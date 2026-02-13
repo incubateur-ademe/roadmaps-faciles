@@ -9,7 +9,9 @@ import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
 import { postRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
+import { DeletePost, DeletePostInput } from "@/useCases/posts/DeletePost";
 import { UpdatePostContent, UpdatePostContentInput } from "@/useCases/posts/UpdatePostContent";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
 import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 
@@ -20,13 +22,18 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
     return { ok: false, error: t("notAuthenticated") };
   }
 
-  const validated = UpdatePostContentInput.safeParse(data);
+  const domain = await getDomainFromHost();
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
+
+  const validated = UpdatePostContentInput.safeParse({
+    ...(data as Record<string, unknown>),
+    editedById: session.user.uuid,
+    tenantId: tenant.id,
+  });
   if (!validated.success) {
     return { ok: false, error: z.prettifyError(validated.error) };
   }
-
-  const domain = await getDomainFromHost();
-  const tenant = await getTenantFromDomain(domain);
 
   const [post, settings, membership] = await Promise.all([
     prisma.post.findUnique({ where: { id: validated.data.postId }, select: { userId: true, tenantId: true } }),
@@ -56,10 +63,113 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
   try {
     const useCase = new UpdatePostContent(postRepo);
     await useCase.execute(validated.data);
+
+    audit(
+      {
+        action: AuditAction.POST_EDIT,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Post",
+        targetId: String(validated.data.postId),
+      },
+      reqCtx,
+    );
+
     revalidatePath(`/${domain}/post/${validated.data.postId}`);
     return { ok: true };
   } catch (error) {
     logger.error({ err: error }, "Error updating post");
+    audit(
+      {
+        action: AuditAction.POST_EDIT,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: (error as Error).message };
+  }
+};
+
+export const deletePost = async (data: unknown): Promise<ServerActionResponse<{ boardSlug: string }>> => {
+  const t = await getTranslations("serverErrors");
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+
+  const domain = await getDomainFromHost();
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
+
+  const validated = DeletePostInput.safeParse({
+    ...(data as Record<string, unknown>),
+    tenantId: tenant.id,
+  });
+  if (!validated.success) {
+    return { ok: false, error: z.prettifyError(validated.error) };
+  }
+
+  const [post, settings, membership] = await Promise.all([
+    prisma.post.findUnique({
+      where: { id: validated.data.postId },
+      select: { userId: true, tenantId: true, board: { select: { slug: true } } },
+    }),
+    prisma.tenantSettings.findUnique({ where: { tenantId: tenant.id }, select: { allowPostDeletion: true } }),
+    prisma.userOnTenant.findUnique({
+      where: { userId_tenantId: { userId: session.user.uuid, tenantId: tenant.id } },
+      select: { role: true },
+    }),
+  ]);
+
+  if (!post || post.tenantId !== tenant.id) {
+    return { ok: false, error: t("postNotFound") };
+  }
+
+  const isAdmin =
+    session.user.isSuperAdmin ||
+    (membership &&
+      (membership.role === UserRole.ADMIN ||
+        membership.role === UserRole.OWNER ||
+        membership.role === UserRole.MODERATOR));
+  const isAuthor = post.userId === session.user.uuid;
+
+  if (!isAdmin && !(isAuthor && settings?.allowPostDeletion)) {
+    return { ok: false, error: t("noPermissionToDelete") };
+  }
+
+  try {
+    const useCase = new DeletePost(postRepo);
+    await useCase.execute(validated.data);
+
+    audit(
+      {
+        action: AuditAction.POST_DELETE,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        targetType: "Post",
+        targetId: String(validated.data.postId),
+      },
+      reqCtx,
+    );
+
+    const boardSlug = post.board?.slug ?? "";
+    revalidatePath(`/${domain}/board/${boardSlug}`);
+    return { ok: true, data: { boardSlug } };
+  } catch (error) {
+    logger.error({ err: error }, "Error deleting post");
+    audit(
+      {
+        action: AuditAction.POST_DELETE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };

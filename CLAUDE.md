@@ -41,6 +41,8 @@
   - "use client" function props: rename non-action callbacks to end with `Action` (e.g., `onSelectAction`) to avoid Next.js TS 71007 warning
   - DSFR badge colors: use `POST_STATUS_COLOR_MAP` to convert camelCase → kebab-case; avoid `fr.cx()` with dynamic template literals
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
+  - react-dsfr `ButtonsGroup`: `buttons` prop is typed as `[ButtonProps, ...ButtonProps[]]` tuple — conditional spreads break TypeScript; use separate renders for different button sets
+  - react-dsfr `createModal`: use `createModal({ id, isOpenedByDefault: false })` at module level for DSFR-compliant modals; call `.open()` imperatively, render `<modal.Component>`
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
   - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
 - Styling preference: Tailwind for simple, SCSS modules for complex — never inline styles (`style={{...}}`)
@@ -54,6 +56,7 @@
   - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
   - `EmptyObject` type: import from `@/utils/types` (not `react-hook-form`)
   - Auth: `assertTenantAdmin(domain)` takes domain explicitly — type `TenantAccessCheck = { domain: string } & AccessCheck` in `src/lib/utils/auth.ts`
+  - Auth: `assertTenantModerator(domain)` — same pattern, min role MODERATOR. Used by `/moderation` section (separate from `/admin`)
   - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
@@ -75,6 +78,8 @@
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
+- Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
+  - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
 - i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
@@ -92,6 +97,7 @@
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
+- Use cases operating on tenant-scoped resources must validate `tenantId` matches the caller's tenant (auth checks role, not resource ownership)
 
 ## Gotchas
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
@@ -111,3 +117,5 @@
 - `pino` and `pino-pretty` must be in `serverExternalPackages` in `next.config.ts` — Turbopack cannot bundle them
 - `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
 - Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
+- DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
+- Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
