@@ -353,6 +353,8 @@
       "filterDateFrom": "Date début",
       "filterDateTo": "Date fin",
       "resetFilters": "Réinitialiser",
+      "export": "Exporter",
+      "exporting": "Export…",
       "results": "résultat(s)"
     },
     "invitations": {

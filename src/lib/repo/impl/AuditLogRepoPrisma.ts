@@ -8,11 +8,7 @@ export class AuditLogRepoPrisma implements IAuditLogRepo {
     return prisma.auditLog.create({ data });
   }
 
-  public async findPaginated(
-    filter: AuditLogFilter,
-    page: number,
-    pageSize: number,
-  ): Promise<{ items: AuditLogWithUser[]; total: number }> {
+  private buildWhere(filter: AuditLogFilter): Prisma.AuditLogWhereInput {
     const where: Prisma.AuditLogWhereInput = {};
 
     if (filter.tenantId !== undefined) {
@@ -31,17 +27,10 @@ export class AuditLogRepoPrisma implements IAuditLogRepo {
       };
     }
 
-    const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      prisma.auditLog.count({ where }),
-    ]);
+    return where;
+  }
 
-    // Batch lookup users
+  private async hydrateLogs(logs: AuditLog[]): Promise<AuditLogWithUser[]> {
     const userIds = [...new Set(logs.map(l => l.userId).filter(Boolean))] as string[];
     const users =
       userIds.length > 0
@@ -52,10 +41,42 @@ export class AuditLogRepoPrisma implements IAuditLogRepo {
         : [];
     const userMap = new Map(users.map(u => [u.id, { name: u.name, email: u.email }]));
 
-    const items: AuditLogWithUser[] = logs.map(log => ({
+    return logs.map(log => ({
       ...log,
       user: log.userId ? (userMap.get(log.userId) ?? null) : null,
     }));
+  }
+
+  public async findAll(filter: AuditLogFilter): Promise<AuditLogWithUser[]> {
+    const where = this.buildWhere(filter);
+
+    const logs = await prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 10000,
+    });
+
+    return this.hydrateLogs(logs);
+  }
+
+  public async findPaginated(
+    filter: AuditLogFilter,
+    page: number,
+    pageSize: number,
+  ): Promise<{ items: AuditLogWithUser[]; total: number }> {
+    const where = this.buildWhere(filter);
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    const items = await this.hydrateLogs(logs);
 
     return { items, total };
   }

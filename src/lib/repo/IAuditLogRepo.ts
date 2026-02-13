@@ -15,6 +15,7 @@ export type AuditLogFilter = {
 
 export interface IAuditLogRepo {
   create(data: Prisma.AuditLogCreateInput): Promise<AuditLog>;
+  findAll(filter: AuditLogFilter): Promise<AuditLogWithUser[]>;
   findPaginated(
     filter: AuditLogFilter,
     page: number,
