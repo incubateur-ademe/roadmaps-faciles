@@ -13,7 +13,7 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SkeletonTheme } from "react-loading-skeleton";
 
 import { config } from "@/config";
-import { DsfrProvider } from "@/dsfr-bootstrap";
+import { DsfrProvider, StartDsfrOnHydration } from "@/dsfr-bootstrap";
 import { DsfrHead, getHtmlAttributes } from "@/dsfr-bootstrap/server-only-index";
 
 import styles from "./root.module.scss";
@@ -72,6 +72,7 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
                     duration={2}
                   >
                     {/* <ConsentBannerAndConsentManagement /> */}
+                    <StartDsfrOnHydration />
                     <Display />
                     <SkipLinks
                       links={[
