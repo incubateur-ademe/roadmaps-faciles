@@ -66,8 +66,8 @@
       "template": "%APP%"
     },
     "DNS_PROVIDER_TARGET": {
-      "generator": "template",
-      "template": "%APP%.%REGION_NAME%.scalingo.io."
+      "generator": "url",
+      "template": "%URL%"
     }
   }
 }

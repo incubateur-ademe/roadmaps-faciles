@@ -132,7 +132,19 @@ export const config = {
   },
   dnsProvider: {
     type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
-    target: ensureApiEnvVar(process.env.DNS_PROVIDER_TARGET, ""),
+    get target() {
+      const target = ensureApiEnvVar(process.env.DNS_PROVIDER_TARGET, "")
+        .replace("http://", "")
+        .replace("https://", "");
+
+      if (target.endsWith("/")) {
+        return target.slice(0, -1);
+      }
+      if (!target.endsWith(".")) {
+        return target + ".";
+      }
+      return target;
+    },
     ovh: {
       endpoint: ensureApiEnvVar<"ovh-ca" | "ovh-eu">(process.env.DNS_OVH_ENDPOINT, "ovh-eu"),
       applicationKey: ensureApiEnvVar(process.env.DNS_OVH_APPLICATION_KEY, ""),

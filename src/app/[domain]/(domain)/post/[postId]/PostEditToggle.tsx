@@ -42,8 +42,10 @@ export const PostEditToggle = ({
         if (isModal) {
           router.back();
         } else {
-          router.push(`/board/${boardSlug}`);
+          router.push(boardSlug ? `/board/${boardSlug}` : "/");
         }
+      } else {
+        alert(result.error);
       }
     });
   };

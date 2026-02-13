@@ -155,9 +155,13 @@ export const deletePost = async (data: unknown): Promise<ServerActionResponse<{ 
       reqCtx,
     );
 
-    const boardSlug = post.board?.slug ?? "";
-    revalidatePath(`/${domain}/board/${boardSlug}`);
-    return { ok: true, data: { boardSlug } };
+    const boardSlug = post.board?.slug;
+    if (boardSlug) {
+      revalidatePath(`/${domain}/board/${boardSlug}`);
+    } else {
+      revalidatePath(`/${domain}`);
+    }
+    return { ok: true, data: { boardSlug: boardSlug ?? "" } };
   } catch (error) {
     logger.error({ err: error }, "Error deleting post");
     audit(
