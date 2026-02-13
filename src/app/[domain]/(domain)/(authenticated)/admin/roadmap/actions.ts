@@ -30,6 +30,7 @@ export const saveRoadmapSettings = async (data: { rootBoardId: null | number }):
         userId: session.user.uuid,
         tenantId: tenant.id,
         targetType: "TenantSettings",
+        targetId: String(settings.id),
         metadata: { rootBoardId: data.rootBoardId },
       },
       reqCtx,

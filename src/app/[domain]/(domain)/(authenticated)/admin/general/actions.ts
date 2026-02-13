@@ -37,6 +37,7 @@ export const saveTenantSettings = async (data: unknown): Promise<ServerActionRes
         userId: session.user.uuid,
         tenantId: tenant.id,
         targetType: "TenantSettings",
+        targetId: String(tenant.id),
       },
       reqCtx,
     );
