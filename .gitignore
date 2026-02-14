@@ -70,6 +70,9 @@ certificates
 /src/generated/*
 !/src/generated/.gitattributes
 
+# fumadocs generated
+/.source/
+
 # claude local files
 /.claude.local/
 /.claude/**/*.local.json

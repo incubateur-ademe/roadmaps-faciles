@@ -1,7 +1,8 @@
+import defaultMdxComponents from "fumadocs-ui/mdx";
 import { type MDXComponents } from "mdx/types";
 import { Fragment, type PropsWithChildren } from "react";
 
-// import { MdxLink } from "@/components/mdx/Link";
+import { dsfrMdxComponents } from "@/app/doc/mdx-dsfr";
 import { getLabelFromChildren } from "@/utils/react";
 import { slugify } from "@/utils/string";
 
@@ -26,9 +27,16 @@ export const paragraphContentMDXComponents: MDXComponents = {
   p: Fragment,
 };
 
+export function getMDXComponents(components?: MDXComponents): MDXComponents {
+  return {
+    ...defaultMdxComponents,
+    ...dsfrMdxComponents,
+    ...components,
+  };
+}
+
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
-    // a: MdxLink,
   };
 }

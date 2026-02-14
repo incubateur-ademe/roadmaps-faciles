@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 
-import createMDX from "@next/mdx";
 import { withSentryConfig } from "@sentry/nextjs";
+import { createMDX } from "fumadocs-mdx/next";
 import { type NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -131,12 +131,7 @@ const config: NextConfig = {
   },
 };
 
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-  options: {
-    remarkPlugins: ["remark-frontmatter", "remark-gfm", ["remark-mdx-frontmatter", { name: "metadata" }]],
-  },
-});
+const withMDX = createMDX();
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 

@@ -1,0 +1,55 @@
+/* Fumadocs DSFR Theme Override
+ * Maps DSFR design tokens to Fumadocs CSS custom properties
+ * so the documentation section matches the DSFR design system.
+ */
+
+/* Light mode (default DSFR) */
+:root {
+  --color-fd-background: var(--background-default-grey);
+  --color-fd-foreground: var(--text-default-grey);
+  --color-fd-card: var(--background-alt-grey);
+  --color-fd-card-foreground: var(--text-default-grey);
+  --color-fd-popover: var(--background-lifted-grey);
+  --color-fd-popover-foreground: var(--text-default-grey);
+  --color-fd-primary: var(--background-action-high-blue-france);
+  --color-fd-primary-foreground: var(--text-inverted-blue-france);
+  --color-fd-secondary: var(--background-contrast-grey);
+  --color-fd-secondary-foreground: var(--text-action-high-blue-france);
+  --color-fd-accent: var(--background-open-blue-france);
+  --color-fd-accent-foreground: var(--text-action-high-blue-france);
+  --color-fd-muted: var(--background-contrast-grey);
+  --color-fd-muted-foreground: var(--text-mention-grey);
+  --color-fd-border: var(--border-default-grey);
+  --color-fd-ring: var(--border-action-high-blue-france);
+
+  /* Semantic callout colors */
+  --color-fd-info: var(--background-flat-info);
+  --color-fd-warning: var(--background-flat-warning);
+  --color-fd-error: var(--background-flat-error);
+  --color-fd-success: var(--background-flat-success);
+
+  /* Typography */
+  --font-sans: "Marianne", system-ui, sans-serif;
+  --font-mono: "Fira Code", "Fira Mono", ui-monospace, monospace;
+}
+
+/* Dark mode (DSFR dark scheme) */
+.dark,
+:root[data-fr-scheme="dark"] {
+  --color-fd-background: var(--background-default-grey);
+  --color-fd-foreground: var(--text-default-grey);
+  --color-fd-card: var(--background-alt-grey);
+  --color-fd-card-foreground: var(--text-default-grey);
+  --color-fd-popover: var(--background-lifted-grey);
+  --color-fd-popover-foreground: var(--text-default-grey);
+  --color-fd-primary: var(--background-action-high-blue-france);
+  --color-fd-primary-foreground: var(--text-inverted-blue-france);
+  --color-fd-secondary: var(--background-contrast-grey);
+  --color-fd-secondary-foreground: var(--text-action-high-blue-france);
+  --color-fd-accent: var(--background-open-blue-france);
+  --color-fd-accent-foreground: var(--text-action-high-blue-france);
+  --color-fd-muted: var(--background-contrast-grey);
+  --color-fd-muted-foreground: var(--text-mention-grey);
+  --color-fd-border: var(--border-default-grey);
+  --color-fd-ring: var(--border-action-high-blue-france);
+}

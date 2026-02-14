@@ -5,6 +5,9 @@
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
+      "fumadocs-mdx:collections/*": [
+        ".source/*"
+      ],
       "@/config": [
         "src/config.ts"
       ],

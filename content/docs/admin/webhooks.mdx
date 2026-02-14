@@ -1,0 +1,32 @@
+---
+title: Webhooks
+description: Recevez des notifications automatiques lors d'événements sur votre espace.
+---
+
+Les **webhooks** permettent d'envoyer des requêtes HTTP automatiques vers une URL externe lorsqu'un événement se produit sur votre espace.
+
+## Événements disponibles
+
+| Événement | Déclencheur |
+|-----------|-------------|
+| **Post créé** | Un nouveau post est soumis sur un board. |
+| **Statut modifié** | Le statut d'un post est changé par un administrateur. |
+| **Commentaire ajouté** | Un commentaire est publié sur un post. |
+| **Vote ajouté** | Un utilisateur vote pour un post. |
+| **Invitation acceptée** | Un membre invité rejoint l'espace. |
+
+## Configurer un webhook
+
+1. Rendez-vous dans **Administration > Webhooks**.
+2. Cliquez sur **Créer un webhook**.
+3. Entrez l'**URL cible** (endpoint qui recevra les notifications).
+4. Sélectionnez les **événements** à déclencher.
+5. Validez.
+
+## Payload
+
+Chaque webhook envoie une requête `POST` avec un payload JSON contenant les détails de l'événement et les données associées.
+
+## Supprimer un webhook
+
+Cliquez sur le bouton de suppression à côté du webhook à retirer.
