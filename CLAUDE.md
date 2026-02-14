@@ -80,6 +80,7 @@
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
+- Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
 - Caching: Redis via ioredis + unstorage
 - Email: Nodemailer (maildev in dev)
 - i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
@@ -92,12 +93,29 @@
   - Date formatting: `formatDateHour(date, locale)` / `formatRelativeDate(date, locale)` in `src/lib/utils/date.ts`
   - Language switch: DSFR `LanguageSelect` + cookie set + `window.location.reload()` in `src/app/LanguageSelectClient.tsx`
 
+## Workflow
+- Always run `pnpm lint --fix` first, then `pnpm build` to catch type errors, BEFORE committing
+- Fix all lint errors and TypeScript errors before committing — do not leave unused variables, dead imports, or type errors
+- When asked to implement a feature, produce working code — not just a plan. Only produce a plan if explicitly asked for planning/architecture discussion
+- If a task is too large for one session, implement as much as possible and clearly list remaining items
+
+## Git conventions
+- Use `git add .` before committing (no need to selectively stage files)
+- Do not add `Co-Authored-By` trailers to commits
+- Follow conventional commit format: `feat`/`fix`/`chore`/`docs`(`scope`): description
+- Do not add "Generated with Claude Code" footer in PR descriptions
+
+## GitHub
+- NEVER mention `@copilot-pull-request-reviewer` or any bot handle in PR comments or review replies — this triggers automated bot actions (unwanted PRs, review loops)
+
 ## Testing
 - No test framework configured — no unit/integration/e2e tests in the project currently
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
 - Use cases operating on tenant-scoped resources must validate `tenantId` matches the caller's tenant (auth checks role, not resource ownership)
+- Role checks: use `USER_ROLE` enum for comparisons — never magic strings or boolean helpers like `isSuperAdmin` unless the logic truly requires super-admin only
+- Tenant-level roles come from tenant membership, NOT from the global user role — always check the correct scope
 
 ## Gotchas
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
@@ -119,3 +137,5 @@
 - Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
 - DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
 - Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
+- Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
+- Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
