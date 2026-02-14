@@ -42,3 +42,26 @@
 .boardSubTiltle {
     font-weight: unset;
 }
+
+.compactList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border-default-grey);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.compactItem {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-default-grey);
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: var(--background-alt-grey);
+    }
+}

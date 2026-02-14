@@ -4,7 +4,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { BoardPost } from "@/components/Board/Post";
 import { Loader } from "@/components/utils/Loader";
@@ -14,6 +14,7 @@ import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import { type Order } from "./types";
 
 const MARKER = "-------";
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export interface PostListProps {
   allowAnonymousVoting?: boolean;
@@ -40,7 +41,7 @@ export const PostList = ({
   search,
   boardSlug,
 }: PostListProps) => {
-  const [posts, setPosts] = useState<EnrichedPost[]>([]);
+  const [posts, setPosts] = useState<EnrichedPost[]>(initialPosts);
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const pathname = usePathname();
@@ -49,15 +50,12 @@ export const PostList = ({
 
   const handleLoadMore = () => {
     startTransition(async () => {
-      const { posts: newPosts } = await fetchPostsForBoard(page, order, boardId, search);
+      const nextPage = page + 1;
+      const { posts: newPosts } = await fetchPostsForBoard(nextPage, order, boardId, search);
       setPosts(prevPosts => [...prevPosts, ...(newPosts as EnrichedPost[])]);
-      setPage(prevPage => prevPage + 1);
+      setPage(nextPage);
     });
   };
-
-  useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
 
   return (
     <>
@@ -65,7 +63,7 @@ export const PostList = ({
         const alreadyLiked = post.likes.some(like => userId === like.userId || like.anonymousId === anonymousId);
         const title = search
           ? post.title
-              .replace(new RegExp(search, "gi"), match => `${MARKER}${match}${MARKER}`)
+              .replace(new RegExp(escapeRegExp(search), "gi"), match => `${MARKER}${match}${MARKER}`)
               .split(MARKER)
               .filter(Boolean)
               .filter(item => item !== MARKER)
@@ -75,7 +73,7 @@ export const PostList = ({
               })
           : post.title;
         const description = search
-          ? post.description?.replace(new RegExp(search, "gi"), match => `\n::search-mark[${match}]{}\n`)
+          ? post.description?.replace(new RegExp(escapeRegExp(search), "gi"), match => `\n::search-mark[${match}]{}\n`)
           : post.description;
         return (
           <BoardPost

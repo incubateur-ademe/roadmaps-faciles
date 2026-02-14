@@ -392,7 +392,12 @@
     "trending": "Tendance",
     "top": "Top",
     "new": "Nouveau",
-    "filterComing": "Arrive prochainement"
+    "filterComing": "Arrive prochainement",
+    "viewCards": "Vue cartes",
+    "viewList": "Vue liste",
+    "commentCount": "{count, plural, one {# commentaire} other {# commentaires}}",
+    "voteCount": "{count, plural, one {# vote} other {# votes}}",
+    "edited": "(modifié)"
   },
   "post": {
     "unclassified": "Non classé",

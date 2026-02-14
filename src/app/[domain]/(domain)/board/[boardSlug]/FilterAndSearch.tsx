@@ -8,14 +8,15 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { defaultOrder, type Order, ORDER_OPTIONS } from "./types";
+import { defaultOrder, defaultView, type Order, ORDER_OPTIONS, type View } from "./types";
 
 export interface FilterAndSearchProps {
   order: Order;
   search?: string;
+  view: View;
 }
 
-export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
+export const FilterAndSearch = ({ order, search, view }: FilterAndSearchProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -37,6 +38,16 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
       params.set("search", currentSearch);
     } else {
       params.delete("search");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const handleViewChange = (selectedView: View) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedView === defaultView) {
+      params.delete("view");
+    } else {
+      params.set("view", selectedView);
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -73,6 +84,24 @@ export const FilterAndSearch = ({ order, search }: FilterAndSearchProps) => {
       <div className="flex gap-[1rem] justify-between">
         <Button disabled title={t("filterComing")} iconId="fr-icon-filter-line" priority="secondary" />
         <SearchBar className="grow" allowEmptySearch onButtonClick={handleSearch} defaultValue={search} />
+        <div className="flex">
+          <Button
+            title={t("viewCards")}
+            iconId="fr-icon-layout-grid-line"
+            priority={view === "cards" ? "secondary" : "tertiary no outline"}
+            size="small"
+            onClick={() => handleViewChange("cards")}
+            nativeButtonProps={{ "aria-pressed": view === "cards" }}
+          />
+          <Button
+            title={t("viewList")}
+            iconId="fr-icon-list-unordered"
+            priority={view === "list" ? "secondary" : "tertiary no outline"}
+            size="small"
+            onClick={() => handleViewChange("list")}
+            nativeButtonProps={{ "aria-pressed": view === "list" }}
+          />
+        </div>
       </div>
     </>
   );
