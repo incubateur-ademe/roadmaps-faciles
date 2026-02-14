@@ -8,7 +8,7 @@ import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { LikeButton } from "@/components/Board/LikeButton";
 import { Loader } from "@/components/utils/Loader";
@@ -45,7 +45,7 @@ export const PostListCompact = ({
   boardId,
   search,
 }: PostListCompactProps) => {
-  const [posts, setPosts] = useState<EnrichedPost[]>([]);
+  const [posts, setPosts] = useState<EnrichedPost[]>(initialPosts);
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const pathname = usePathname();
@@ -62,14 +62,12 @@ export const PostListCompact = ({
     });
   };
 
-  useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const highlightTitle = (title: string) => {
     if (!search) return title;
     return title
-      .replace(new RegExp(search, "gi"), match => `${MARKER}${match}${MARKER}`)
+      .replace(new RegExp(escapeRegExp(search), "gi"), match => `${MARKER}${match}${MARKER}`)
       .split(MARKER)
       .filter(Boolean)
       .filter(item => item !== MARKER)

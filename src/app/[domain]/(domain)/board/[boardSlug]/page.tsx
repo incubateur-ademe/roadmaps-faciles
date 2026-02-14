@@ -110,7 +110,7 @@ const BoardPage = withValidation({
             <ClientAnimate className={cx("flex flex-col gap-[1rem]", style.postList)}>
               {validatedView === "list" ? (
                 <PostListCompact
-                  key={`postListCompact_${board.id}`}
+                  key={`postListCompact_${board.id}_${validatedOrder}_${search ?? ""}`}
                   allowAnonymousVoting={_data.settings.allowAnonymousVoting}
                   allowVoting={_data.settings.allowVoting}
                   anonymousId={anonymousId}
@@ -123,7 +123,7 @@ const BoardPage = withValidation({
                 />
               ) : (
                 <PostList
-                  key={`postList_${board.id}`}
+                  key={`postList_${board.id}_${validatedOrder}_${search ?? ""}`}
                   allowAnonymousVoting={_data.settings.allowAnonymousVoting}
                   allowVoting={_data.settings.allowVoting}
                   anonymousId={anonymousId}

@@ -91,6 +91,7 @@ export const FilterAndSearch = ({ order, search, view }: FilterAndSearchProps) =
             priority={view === "cards" ? "secondary" : "tertiary no outline"}
             size="small"
             onClick={() => handleViewChange("cards")}
+            nativeButtonProps={{ "aria-pressed": view === "cards" }}
           />
           <Button
             title={t("viewList")}
@@ -98,6 +99,7 @@ export const FilterAndSearch = ({ order, search, view }: FilterAndSearchProps) =
             priority={view === "list" ? "secondary" : "tertiary no outline"}
             size="small"
             onClick={() => handleViewChange("list")}
+            nativeButtonProps={{ "aria-pressed": view === "list" }}
           />
         </div>
       </div>
