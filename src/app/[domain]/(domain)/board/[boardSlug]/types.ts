@@ -24,3 +24,10 @@ export const ORDER_OPTIONS = {
 } as const satisfies Record<Order, { default: boolean; icon: FrIconClassName; label: string }>;
 export const defaultOrder = Object.keys(ORDER_OPTIONS).find(key => ORDER_OPTIONS[key as Order].default) as Order;
 export type Order = keyof typeof ORDER_ENUM;
+
+export const VIEW_ENUM = {
+  cards: "cards",
+  list: "list",
+} as const;
+export type View = keyof typeof VIEW_ENUM;
+export const defaultView: View = "cards";

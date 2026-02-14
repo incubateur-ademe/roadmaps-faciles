@@ -49,9 +49,10 @@ export const PostList = ({
 
   const handleLoadMore = () => {
     startTransition(async () => {
-      const { posts: newPosts } = await fetchPostsForBoard(page, order, boardId, search);
+      const nextPage = page + 1;
+      const { posts: newPosts } = await fetchPostsForBoard(nextPage, order, boardId, search);
       setPosts(prevPosts => [...prevPosts, ...(newPosts as EnrichedPost[])]);
-      setPage(prevPage => prevPage + 1);
+      setPage(nextPage);
     });
   };
 

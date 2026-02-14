@@ -18,8 +18,9 @@ import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
 import { FilterAndSearch } from "./FilterAndSearch";
 import { PostList } from "./PostList";
+import { PostListCompact } from "./PostListCompact";
 import { SubmitPostForm } from "./SubmitPostForm";
-import { defaultOrder, ORDER_ENUM } from "./types";
+import { defaultOrder, defaultView, ORDER_ENUM, VIEW_ENUM } from "./types";
 
 export interface BoardPageParams {
   boardSlug: string;
@@ -28,17 +29,19 @@ export interface BoardPageParams {
 const searchParamsSchema = z.object({
   order: z.enum(ORDER_ENUM).default(defaultOrder),
   search: z.string().optional(),
+  view: z.enum(VIEW_ENUM).default(defaultView),
 });
 
 const BoardPage = withValidation({
   searchParamsSchema,
 })(async ({ searchParams, searchParamsError, ...rest }) => {
   const { _data, params } = rest as DomainPageCombinedProps<BoardPageParams>;
-  const { order, search } = await searchParams;
+  const { order, search, view } = await searchParams;
 
   await assertPublicAccess(_data.settings, _data.dirtyDomainFixer("/login"));
 
   const validatedOrder = searchParamsError?.properties?.order?.errors.length ? defaultOrder : order;
+  const validatedView = searchParamsError?.properties?.view?.errors.length ? defaultView : view;
   const { boardSlug } = await params;
 
   // Parallelize independent data fetches for better performance
@@ -95,7 +98,7 @@ const BoardPage = withValidation({
                 )}
               </GridCol>
               <GridCol base={4} className={style.actions}>
-                <FilterAndSearch order={validatedOrder} search={search} />
+                <FilterAndSearch order={validatedOrder} search={search} view={validatedView} />
               </GridCol>
               <GridCol base={12} className={cx(fr.cx("fr-hint-text"))}>
                 {t("common.result", { count: filteredCount })}
@@ -105,19 +108,34 @@ const BoardPage = withValidation({
               </GridCol>
             </Grid>
             <ClientAnimate className={cx("flex flex-col gap-[1rem]", style.postList)}>
-              <PostList
-                key={`postList_${board.id}`}
-                allowAnonymousVoting={_data.settings.allowAnonymousVoting}
-                allowVoting={_data.settings.allowVoting}
-                anonymousId={anonymousId}
-                initialPosts={posts as EnrichedPost[]}
-                totalCount={filteredCount}
-                userId={session?.user.id}
-                order={validatedOrder}
-                boardId={board.id}
-                search={search}
-                boardSlug={boardSlug}
-              />
+              {validatedView === "list" ? (
+                <PostListCompact
+                  key={`postListCompact_${board.id}`}
+                  allowAnonymousVoting={_data.settings.allowAnonymousVoting}
+                  allowVoting={_data.settings.allowVoting}
+                  anonymousId={anonymousId}
+                  initialPosts={posts as EnrichedPost[]}
+                  totalCount={filteredCount}
+                  userId={session?.user.id}
+                  order={validatedOrder}
+                  boardId={board.id}
+                  search={search}
+                />
+              ) : (
+                <PostList
+                  key={`postList_${board.id}`}
+                  allowAnonymousVoting={_data.settings.allowAnonymousVoting}
+                  allowVoting={_data.settings.allowVoting}
+                  anonymousId={anonymousId}
+                  initialPosts={posts as EnrichedPost[]}
+                  totalCount={filteredCount}
+                  userId={session?.user.id}
+                  order={validatedOrder}
+                  boardId={board.id}
+                  search={search}
+                  boardSlug={boardSlug}
+                />
+              )}
             </ClientAnimate>
           </GridCol>
         </Grid>
