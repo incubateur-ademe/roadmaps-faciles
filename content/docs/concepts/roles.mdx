@@ -1,0 +1,38 @@
+---
+title: Rôles et permissions
+description: Comprendre les différents rôles et leurs permissions dans un espace de travail.
+---
+
+Chaque membre d'un espace de travail se voit attribuer un **rôle** qui détermine ses permissions.
+
+## Hiérarchie des rôles
+
+| Rôle | Description |
+|------|-------------|
+| **Propriétaire** | Contrôle total sur l'espace, y compris sa suppression. Un seul propriétaire par espace. |
+| **Administrateur** | Gestion des paramètres, boards, statuts, membres et modération. |
+| **Modérateur** | Approbation/rejet des posts, suppression de contenu. Pas d'accès aux paramètres de l'espace. |
+| **Utilisateur** | Création de posts, votes et commentaires. Rôle par défaut. |
+
+## Matrice des permissions
+
+| Action | Propriétaire | Admin | Modérateur | Utilisateur |
+|--------|:---:|:---:|:---:|:---:|
+| Créer des posts | ✓ | ✓ | ✓ | ✓ |
+| Voter | ✓ | ✓ | ✓ | ✓ |
+| Commenter | ✓ | ✓ | ✓ | ✓ |
+| Modifier ses propres posts | ✓ | ✓ | ✓ | ✓* |
+| Supprimer ses propres posts | ✓ | ✓ | ✓ | ✓* |
+| Changer le statut d'un post | ✓ | ✓ | ✗ | ✗ |
+| Approuver/rejeter les posts | ✓ | ✓ | ✓ | ✗ |
+| Gérer les boards | ✓ | ✓ | ✗ | ✗ |
+| Gérer les statuts | ✓ | ✓ | ✗ | ✗ |
+| Gérer les membres | ✓ | ✓ | ✗ | ✗ |
+| Paramètres de l'espace | ✓ | ✓ | ✗ | ✗ |
+| Supprimer l'espace | ✓ | ✗ | ✗ | ✗ |
+
+*\* Sous réserve que l'option soit activée dans les paramètres de l'espace.*
+
+## Rôle global
+
+En dehors des espaces de travail, les **super-administrateurs** de la plateforme ont accès à une interface d'administration globale permettant de gérer tous les espaces et utilisateurs.

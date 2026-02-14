@@ -1,0 +1,4 @@
+{
+  "title": "Administration",
+  "pages": ["index", "general-settings", "boards-management", "statuses-management", "members", "authentication", "webhooks", "api-keys", "audit-log"]
+}
