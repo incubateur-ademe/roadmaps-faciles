@@ -1,7 +1,6 @@
 import "./globals.scss";
 import "react-loading-skeleton/dist/skeleton.css";
 import { fr } from "@codegouvfr/react-dsfr";
-import Display from "@codegouvfr/react-dsfr/Display/Display";
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
@@ -73,7 +72,6 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
                   >
                     {/* <ConsentBannerAndConsentManagement /> */}
                     <StartDsfrOnHydration />
-                    <Display />
                     <SkipLinks
                       links={[
                         {
