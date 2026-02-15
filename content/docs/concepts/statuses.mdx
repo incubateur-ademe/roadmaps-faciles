@@ -1,9 +1,9 @@
 ---
 title: Statuts
-description: Les statuts permettent de suivre l'avancement des posts dans votre workflow.
+description: Les statuts permettent de suivre l'avancement des contributions dans votre workflow.
 ---
 
-Les **statuts** représentent les étapes de votre workflow produit. Ils permettent de communiquer visuellement l'état d'avancement de chaque post à vos utilisateurs.
+Les **statuts** représentent les étapes de votre workflow produit. Ils permettent de communiquer visuellement l'état d'avancement de chaque contribution à vos utilisateurs.
 
 ## Exemples de statuts
 
@@ -15,20 +15,28 @@ Un workflow typique pourrait inclure :
 - Terminé
 - Refusé
 
-## Configuration
+Vous êtes libre de définir autant de statuts que nécessaire et de les nommer comme vous le souhaitez.
 
-Chaque statut possède :
+## Propriétés d'un statut
 
-- **Nom** — Le libellé affiché (ex. : "En cours").
-- **Couleur** — Une couleur du système de design (palette DSFR) pour distinguer visuellement les statuts.
-- **Visibilité roadmap** — Indique si les posts avec ce statut apparaissent dans la vue roadmap.
+Chaque statut possède trois propriétés :
 
-## Roadmap
+| Propriété | Description |
+|-----------|-------------|
+| **Nom** | Le libellé affiché sur les contributions (ex. : "En cours"). |
+| **Couleur** | Une couleur choisie parmi la palette du système de design (DSFR) pour distinguer visuellement les statuts. |
+| **Visibilité roadmap** | Indique si les contributions avec ce statut apparaissent dans la feuille de route. |
 
-La **roadmap** est une vue Kanban qui organise les posts par colonnes de statut. Seuls les statuts marqués comme "visibles dans la roadmap" y apparaissent.
+## Statuts et feuille de route
+
+La **feuille de route** (roadmap) est une vue Kanban qui organise les contributions par colonnes de statut. Seuls les statuts marqués comme "visibles dans la roadmap" y apparaissent.
 
 Cela permet de montrer publiquement l'avancement de votre produit tout en gardant certains statuts internes (ex. : "Refusé" ou "À trier") hors de la vue publique.
 
 ## Ordonnancement
 
-Les statuts peuvent être réordonnés pour refléter la progression naturelle de votre workflow. L'ordre défini dans l'administration est utilisé pour les colonnes de la roadmap.
+Les statuts peuvent être réordonnés pour refléter la progression naturelle de votre workflow. L'ordre défini dans l'administration est utilisé pour :
+- Les colonnes de la feuille de route
+- L'affichage des badges de statut
+
+La gestion des statuts se fait dans [Administration > Statuts](/doc/admin/statuses-management).

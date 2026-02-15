@@ -3,30 +3,48 @@ title: Webhooks
 description: Recevez des notifications automatiques lors d'événements sur votre espace.
 ---
 
-Les **webhooks** permettent d'envoyer des requêtes HTTP automatiques vers une URL externe lorsqu'un événement se produit sur votre espace.
+Les **webhooks** permettent d'envoyer des requêtes HTTP automatiques vers une URL externe lorsqu'un événement se produit sur votre espace. C'est utile pour intégrer Roadmaps Faciles avec d'autres outils (Slack, Mattermost, outils internes, etc.).
+
+![Configuration des webhooks](/doc/screenshots/admin-webhooks.png)
 
 ## Configurer un webhook
 
 1. Rendez-vous dans **Administration > Webhooks**.
 2. Cliquez sur **Créer un webhook**.
-3. Entrez l'**URL cible** (endpoint qui recevra les notifications).
-4. Sélectionnez les **événements** à déclencher.
+3. Entrez l'**URL cible** (l'endpoint qui recevra les notifications).
+4. Sélectionnez le ou les **événements** à déclencher.
 5. Validez.
 
-### Payload
-
-Chaque webhook envoie une requête `POST` avec un payload JSON contenant les détails de l'événement et les données associées.
-
-### Événements disponibles
+## Événements disponibles
 
 | Événement | Déclencheur |
 |-----------|-------------|
-| **Post créé** | Un nouveau post est soumis sur un board. |
-| **Statut modifié** | Le statut d'un post est changé par un administrateur. |
-| **Commentaire ajouté** | Un commentaire est publié sur un post. |
-| **Vote ajouté** | Un utilisateur vote pour un post. |
+| **Contribution créée** | Une nouvelle contribution est soumise sur un tableau. |
+| **Statut modifié** | Le statut d'une contribution est changé par un administrateur. |
+| **Commentaire ajouté** | Un commentaire est publié sur une contribution. |
+| **Vote ajouté** | Un utilisateur vote pour une contribution. |
 | **Invitation acceptée** | Un membre invité rejoint l'espace. |
 
 ## Supprimer un webhook
 
-Cliquez sur le bouton de suppression à côté du webhook à retirer.
+Cliquez sur le bouton de suppression à côté du webhook à retirer. La suppression est immédiate.
+
+<Callout type="info" title="Section technique">
+Les détails ci-dessous concernent l'intégration technique des webhooks.
+</Callout>
+
+## Format du payload
+
+Chaque webhook envoie une requête **POST** avec un payload JSON. La requête inclut un en-tête `Content-Type: application/json`.
+
+Le payload contient les informations de l'événement et les données associées (contribution, commentaire, utilisateur...). Le format exact dépend du type d'événement.
+
+## Sécurité
+
+Les webhooks sont signés avec le **secret webhook** configuré sur l'instance. Vérifiez la signature dans l'en-tête de la requête pour vous assurer que la notification provient bien de Roadmaps Faciles.
+
+## Bonnes pratiques
+
+- **Répondez rapidement** — Votre endpoint doit répondre avec un code HTTP `2xx` dans un délai raisonnable. Les webhooks sont envoyés de façon "fire-and-forget" (pas de retry en cas d'échec).
+- **Utilisez HTTPS** — Configurez toujours une URL en HTTPS pour protéger les données transmises.
+- **Filtrez les événements** — Ne vous abonnez qu'aux événements dont vous avez besoin pour réduire le bruit.

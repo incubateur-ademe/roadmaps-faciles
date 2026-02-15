@@ -3,46 +3,58 @@ title: Paramètres généraux
 description: Configurez les options principales de votre espace de travail.
 ---
 
-Les paramètres généraux contrôlent le comportement global de votre espace de travail.
+Les paramètres généraux contrôlent le comportement global de votre espace de travail. Accédez-y via **Administration > Général**.
+
+![Paramètres généraux](/doc/screenshots/admin-general.png)
 
 ## Identité
 
-- **Nom de l'espace** — Le nom affiché dans l'en-tête et les métadonnées.
-- **Sous-domaine** — L'identifiant unique utilisé dans l'URL (non modifiable après création).
-- **Domaine personnalisé** — Associez votre propre nom de domaine.
-- **Langue** — Langue par défaut de l'interface (français ou anglais).
+| Paramètre | Description |
+|-----------|-------------|
+| **Nom de l'espace** | Le nom affiché dans l'en-tête et les métadonnées. |
+| **Sous-domaine** | L'identifiant unique utilisé dans l'URL. Non modifiable après création. |
+| **Domaine personnalisé** | Associez votre propre nom de domaine. Voir [Domaines personnalisés](/doc/admin/custom-domains). |
+| **Langue** | Langue par défaut de l'interface (français ou anglais). |
 
 ## Visibilité et accès
 
 | Option | Description |
 |--------|-------------|
-| **Espace privé** | Seuls les membres invités peuvent accéder au contenu. |
-| **Feedback anonyme** | Les visiteurs non-connectés peuvent soumettre des posts. |
+| **Espace privé** | Seuls les membres invités peuvent accéder au contenu. Les visiteurs sont redirigés vers la page de connexion. |
+| **Feedback anonyme** | Les visiteurs non-connectés peuvent soumettre des contributions sans compte. |
 
 ## Options de feedback
 
-| Option | Description | Défaut |
-|--------|-------------|--------|
+Ces options permettent de contrôler finement les interactions sur votre espace :
+
+| Option | Description | Par défaut |
+|--------|-------------|:--------:|
 | **Votes** | Activer/désactiver le système de vote. | Activé |
-| **Commentaires** | Activer/désactiver les commentaires sur les posts. | Activé |
+| **Commentaires** | Activer/désactiver les commentaires sur les contributions. | Activé |
 | **Vote anonyme** | Les visiteurs non-connectés peuvent voter. | Activé |
-| **Modification des posts** | Les auteurs peuvent modifier leurs posts après publication. | Désactivé |
-| **Suppression des posts** | Les auteurs peuvent supprimer leurs propres posts. | Désactivé |
-| **Modération préalable** | Les posts doivent être approuvés par un modérateur. | Désactivé |
+| **Modification des contributions** | Les auteurs peuvent modifier leurs contributions après publication. | Désactivé |
+| **Suppression des contributions** | Les auteurs peuvent supprimer leurs propres contributions. | Désactivé |
+| **Modération préalable** | Les contributions doivent être approuvées par un modérateur avant publication. Voir [Approbation](/doc/moderation/post-approval). | Désactivé |
 
 ## Navigation
 
-- **Roadmap dans l'en-tête** — Affiche un lien vers la roadmap dans le menu principal.
+- **Feuille de route dans l'en-tête** — Affiche un lien vers la feuille de route dans le menu principal de l'espace.
 
 ## Données initiales
 
-Pour un espace vide, vous pouvez initialiser des boards et statuts par défaut en un clic.
+Pour un espace fraîchement créé, vous pouvez **initialiser des données par défaut** en un clic. Cela crée :
+- Un tableau "Feature Requests" avec une description d'accueil
+- Des statuts prédéfinis (Planifié, En cours, Complété, Rejetté)
+
+Cette option n'est disponible que si l'espace ne contient pas encore de tableaux ni de statuts.
 
 ## Zone de danger
 
 <Callout type="warn">
-  Les actions suivantes sont irréversibles.
+  Les actions de cette section sont irréversibles. Lisez attentivement avant de confirmer.
 </Callout>
 
-- **Purger les données** — Supprime tous les posts, votes et commentaires de l'espace. Les boards, statuts et membres sont conservés.
-- **Supprimer l'espace** — Supprime définitivement l'espace et toutes ses données.
+| Action | Description |
+|--------|-------------|
+| **Purger les données** | Supprime toutes les contributions, votes et commentaires de l'espace. Les tableaux, statuts et membres sont conservés. Utile pour repartir de zéro sans recréer l'espace. |
+| **Supprimer l'espace** | Supprime définitivement l'espace et toutes ses données (tableaux, contributions, membres, paramètres). Réservé au **propriétaire**. |

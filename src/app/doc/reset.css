@@ -12,7 +12,7 @@
  */
 #nd-docs-layout {
     --fd-sidebar-width: 220px !important;
-    --fd-toc-width: -100px !important;
+    --fd-toc-width: 200px !important;
 }
 
 /* Links: neutralize DSFR underline (background-image trick + custom props) */
