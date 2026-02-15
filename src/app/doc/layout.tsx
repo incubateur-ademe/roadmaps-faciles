@@ -10,13 +10,17 @@ import "./docs.css";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <RootProvider>
+    <RootProvider theme={{ enabled: false }} search={{ enabled: false }}>
       <DocHeader />
       <DocsLayout
         tree={docsSource.pageTree}
         nav={{ enabled: false }}
         sidebar={{
           collapsible: true,
+        }}
+        themeSwitch={{ enabled: false }}
+        searchToggle={{
+          enabled: true,
         }}
       >
         {children}

@@ -1,0 +1,83 @@
+/*
+ * Reset DSFR global styles scoped to Fumadocs layout container.
+ * DSFR injects global rules (underlines, heading sizes, list resets, etc.)
+ * that conflict with Fumadocs Tailwind-based styling. We revert them here
+ * so Fumadocs classes take precedence, then re-activate DSFR inside .fr-* containers.
+ */
+
+/*
+ * Sidebar & TOC width reduction.
+ * Fumadocs sets --fd-sidebar-width via Tailwind utility class (in @layer utilities),
+ * so we need !important to override from outside the layer.
+ */
+#nd-docs-layout {
+    --fd-sidebar-width: 220px !important;
+    --fd-toc-width: -100px !important;
+}
+
+/* Links: neutralize DSFR underline (background-image trick + custom props) */
+#nd-docs-layout a:not([class*="fr-"]),
+#nd-docs-layout [href]:not([class*="fr-"]) {
+    background-image: revert;
+    background: revert;
+    --underline-img: revert;
+    --underline-hover-img: revert;
+}
+
+/* Headings: neutralize DSFR font-size, line-height, margin, color */
+#nd-docs-layout :is(h1, h2, h3, h4, h5, h6):not([class*="fr-"]) {
+    font-size: revert;
+    line-height: revert;
+    margin: revert;
+    color: revert;
+}
+
+/* Paragraphs */
+#nd-docs-layout p:not([class*="fr-"]) {
+    font-size: revert;
+    line-height: revert;
+    margin: revert;
+}
+
+/* Lists */
+#nd-docs-layout :is(ul, ol):not([class*="fr-"]) {
+    list-style: revert;
+    padding: revert;
+    margin: revert;
+    counter-reset: revert;
+}
+
+#nd-docs-layout :is(ul, ol):not([class*="fr-"])>li {
+    list-style: revert;
+}
+
+#nd-docs-layout :is(ul, ol):not([class*="fr-"])>li::marker {
+    all: revert;
+}
+
+/*
+ * Code blocks: neutralize globals.scss DSFR code styling.
+ * globals.scss sets background, color, padding, box-shadow, filter on `code`.
+ * We unset these specific properties so Shiki syntax highlighting works,
+ * without using `all: revert` which breaks Fumadocs/Shiki styling too.
+ */
+#nd-docs-layout code:not([class*="fr-"]) {
+    background-color: unset;
+    color: unset;
+    padding: unset;
+    border-radius: unset;
+    font-size: unset;
+    box-shadow: none;
+    filter: none;
+    white-space: unset;
+    word-break: unset;
+}
+
+#nd-docs-layout code:not([class*="fr-"]):hover {
+    background-color: unset;
+}
+
+/* Re-activate DSFR inside .fr-* containers (Alert, Badge, Table, etc.) */
+#nd-docs-layout [class*="fr-"] {
+    all: revert-layer;
+}
