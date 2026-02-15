@@ -6,13 +6,15 @@
  */
 
 /*
- * Sidebar & TOC width reduction.
- * Fumadocs sets --fd-sidebar-width via Tailwind utility class (in @layer utilities),
- * so we need !important to override from outside the layer.
+ * Sidebar & TOC column sizing.
+ * Fumadocs defaults: columns 1 and 3 both use `1fr`, sharing extra space equally.
+ * Override: both sidebars shrink-wrap (min-content), main content takes all remaining space (1fr).
+ * Sidebar/TOC content widths are still controlled by --fd-sidebar-width / --fd-toc-width.
  */
 #nd-docs-layout {
     --fd-sidebar-width: 220px !important;
     --fd-toc-width: 200px !important;
+    grid-template-columns: var(--fd-sidebar-width) 1fr min-content !important;
 }
 
 /* Links: neutralize DSFR underline (background-image trick + custom props) */
