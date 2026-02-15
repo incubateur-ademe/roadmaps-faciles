@@ -292,6 +292,7 @@ pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans 
 /src/app/[domain]           # Multi-tenant
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
 /src/useCases               # Logique métier (use cases DDD)
+/src/emails                 # Templates email react-email (DSFR Mail)
 /src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
 ```
 
