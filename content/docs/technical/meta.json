@@ -1,4 +1,4 @@
 {
   "title": "Technique",
-  "pages": ["index", "dns", "deployment", "security"]
+  "pages": ["index", "dns", "deployment", "self-hosting", "security"]
 }
