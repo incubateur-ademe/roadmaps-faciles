@@ -5,14 +5,18 @@ import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Credentials from "next-auth/providers/credentials";
 import Nodemailer from "next-auth/providers/nodemailer";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { cache } from "react";
 
 import { config } from "@/config";
+import { getEmailTranslations } from "@/emails/getEmailTranslations";
+import { renderMagicLinkEmail } from "@/emails/renderEmails";
 import { verifyBridgeToken } from "@/lib/authBridge";
+import { createMailTransporter } from "@/lib/mailer";
 import { type UserRole, type UserStatus } from "@/prisma/enums";
 import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings";
 import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
+import { type Locale } from "@/utils/i18n";
 
 import { prisma } from "../db/prisma";
 import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
@@ -58,6 +62,31 @@ const nodemailerProvider = Nodemailer({
     },
   },
   from: config.mailer.from,
+  async sendVerificationRequest({ identifier, url, provider }) {
+    const cookieStore = await cookies();
+    const locale = (cookieStore.get("NEXT_LOCALE")?.value as Locale) || "fr";
+
+    const [t, tFooter] = await Promise.all([
+      getEmailTranslations(locale, "emails.magicLink", ["subject", "title", "body", "button", "expiry", "ignore"]),
+      getEmailTranslations(locale, "emails", ["footer"]),
+    ]);
+
+    const html = await renderMagicLinkEmail({
+      baseUrl: config.host,
+      locale,
+      translations: { ...t, footer: tFooter.footer },
+      url,
+    });
+
+    const transporter = createMailTransporter();
+    await transporter.sendMail({
+      from: provider.from,
+      to: identifier,
+      subject: t.subject,
+      html,
+      text: `${t.body}\n\n${url}\n\n${t.expiry}`,
+    });
+  },
 });
 
 export interface GetAuthMethodsProps {

@@ -511,9 +511,28 @@
       "greeting": "Hello,",
       "body": "You have requested to link your account to Espace Membre ({username}).",
       "clickToConfirm": "Click the following link to confirm:",
+      "button": "Confirm link",
       "expiry": "This link expires in 1 hour.",
       "closing": "Best regards,"
-    }
+    },
+    "magicLink": {
+      "subject": "Sign in to Roadmaps Faciles",
+      "title": "Sign in to your account",
+      "body": "Click the button below to sign in to Roadmaps Faciles.",
+      "button": "Sign in",
+      "expiry": "This link is valid for 24 hours.",
+      "ignore": "If you did not request this email, you can safely ignore it."
+    },
+    "invitation": {
+      "subjectOwner": "You are invited as workspace owner",
+      "subjectUser": "You are invited to join a workspace",
+      "title": "Invitation to join a workspace",
+      "body": "You have been invited to join a workspace{roleText}.",
+      "roleOwner": " as owner",
+      "button": "Accept invitation",
+      "ignore": "If you were not expecting this invitation, you can ignore this email."
+    },
+    "footer": "Roadmaps Faciles — ADEME"
   },
   "moderation": {
     "sideMenu": {
