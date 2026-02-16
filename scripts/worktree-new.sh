@@ -56,6 +56,20 @@ fi
 
 cd "$WORKTREE_DIR"
 
+# --- Copie des fichiers de config locale (gitignored) ---
+echo "📋 Copie des fichiers de config locale..."
+LOCAL_CONFIG_FILES=(
+  ".claude/settings.local.json"
+  ".claude.local.md"
+)
+for file in "${LOCAL_CONFIG_FILES[@]}"; do
+  if [ -f "$REPO_ROOT/$file" ]; then
+    mkdir -p "$(dirname "$file")"
+    cp "$REPO_ROOT/$file" "$file"
+    echo "   Copié: $file"
+  fi
+done
+
 # --- .env.development.local ---
 echo "⚙️  Configuration de l'environnement..."
 cat > .env.development.local <<EOF
