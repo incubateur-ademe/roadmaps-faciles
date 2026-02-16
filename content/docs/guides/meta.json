@@ -1,4 +1,15 @@
 {
   "title": "Guide utilisateur",
-  "pages": ["index", "submit-post", "vote-and-comment", "roadmap"]
+  "icon": "fr-icon-book-2-line",
+  "pages": [
+    "index",
+    "create-account",
+    "submit-post",
+    "vote-and-comment",
+    "search-and-filter",
+    "board-views",
+    "roadmap",
+    "profile",
+    "language"
+  ]
 }

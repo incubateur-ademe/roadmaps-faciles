@@ -3,7 +3,8 @@ import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { docsSource } from "@/lib/source";
-import { getMDXComponents } from "@/mdx-components";
+
+import { getDocMDXComponents } from "../mdx-components";
 
 const Page = async (props: { params: Promise<{ slug?: string[] }> }) => {
   const params = await props.params;
@@ -13,11 +14,11 @@ const Page = async (props: { params: Promise<{ slug?: string[] }> }) => {
   const MDX = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc}>
+    <DocsPage toc={page.data.toc ?? []} tableOfContent={{ style: "clerk" }} tableOfContentPopover={{ style: "clerk" }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={getMDXComponents()} />
+        <MDX components={getDocMDXComponents()} />
       </DocsBody>
     </DocsPage>
   );

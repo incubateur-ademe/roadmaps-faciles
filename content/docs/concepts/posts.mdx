@@ -1,39 +1,65 @@
 ---
-title: Posts
-description: Les posts sont les unités de feedback — suggestions, idées ou bugs remontés par les utilisateurs.
+title: Contributions
+description: Les contributions sont les unités de feedback — suggestions, idées ou bugs remontés par les utilisateurs.
 ---
 
-Un **post** est une contribution soumise par un utilisateur sur un board. Il représente une idée, une suggestion, un bug ou toute autre forme de retour.
+Une **contribution** (post) est un retour soumis par un utilisateur sur un tableau. Il peut s'agir d'une idée, d'une suggestion, d'un bug ou de toute autre forme de feedback.
 
-## Contenu d'un post
+## Contenu d'une contribution
 
 - **Titre** — Résumé court de la proposition (minimum 3 caractères).
-- **Description** — Détails de la proposition (Markdown supporté, optionnel).
-- **Board** — Le board auquel le post est rattaché.
-- **Statut** — L'état d'avancement attribué par un administrateur.
-- **Tags** — Étiquettes personnalisées pour catégoriser le post.
+- **Description** — Détails de la proposition. Le format Markdown est supporté pour la mise en forme (gras, italique, listes, liens...).
+- **Tableau** — Le tableau auquel la contribution est rattachée.
+- **Statut** — L'état d'avancement, attribué par un administrateur.
+- **Tags** — Étiquettes pour catégoriser et retrouver la contribution.
 
 ## Interactions
 
 ### Votes
 
-Les utilisateurs peuvent voter pour les posts qui les intéressent. Chaque utilisateur ne peut voter qu'une seule fois par post. Le vote est un mécanisme de priorisation : plus un post a de votes, plus il est considéré comme important.
+Les utilisateurs peuvent voter pour les contributions qui les intéressent. C'est le mécanisme principal de priorisation : plus une contribution a de votes, plus elle remonte dans le classement.
+
+- Chaque utilisateur ne peut voter **qu'une seule fois** par contribution.
+- Un vote peut être retiré en cliquant à nouveau sur le bouton.
 
 ### Commentaires
 
-Si les commentaires sont activés, les utilisateurs peuvent discuter autour d'un post. Les commentaires apparaissent dans la timeline d'activité du post.
+Si les commentaires sont activés sur l'espace, les utilisateurs peuvent discuter autour d'une contribution. Les commentaires apparaissent dans la timeline d'activité.
 
 ### Timeline d'activité
 
-Chaque post dispose d'une timeline qui retrace :
+Chaque contribution dispose d'une timeline qui retrace chronologiquement :
+- La création de la contribution
 - Les changements de statut
 - Les commentaires ajoutés
 - Les votes agrégés
 
-## Posts anonymes
+![Page de détail d'une contribution](/doc/screenshots/post-detail.png)
 
-Si l'espace autorise le feedback anonyme, un post peut être soumis sans compte utilisateur. L'auteur apparaît alors comme "Anonyme".
+## Contributions anonymes
 
-## Approbation
+Si l'espace autorise le **feedback anonyme**, une contribution peut être soumise sans compte utilisateur. L'auteur apparaît alors comme "Anonyme".
 
-Si la **modération préalable** est activée sur l'espace, les nouveaux posts sont créés avec le statut "En attente" et doivent être approuvés par un modérateur avant d'apparaître publiquement sur le board.
+Le vote anonyme fonctionne de la même façon : les visiteurs non-connectés peuvent voter si l'option est activée.
+
+## Contributions épinglées
+
+Un administrateur peut **épingler** une contribution en haut d'un tableau. Cela permet de mettre en avant une contribution importante, indépendamment du tri sélectionné.
+
+## Workflow d'approbation
+
+Si la **modération préalable** est activée sur l'espace, les nouvelles contributions passent par un workflow d'approbation :
+
+1. La contribution est créée avec le statut **En attente**.
+2. Un modérateur examine le contenu.
+3. La contribution est **approuvée** (visible sur le tableau) ou **rejetée** (masquée).
+
+Les contributions existantes avant l'activation de la modération restent visibles.
+
+Pour en savoir plus, consultez le [guide de modération](/doc/moderation/post-approval).
+
+## Modification et suppression
+
+Selon les paramètres de l'espace, les auteurs peuvent modifier ou supprimer leurs propres contributions. Ces options sont désactivées par défaut et peuvent être activées par un administrateur dans les [paramètres généraux](/doc/admin/general-settings).
+
+Les modérateurs et administrateurs peuvent toujours modifier ou supprimer n'importe quelle contribution, indépendamment de ces options.

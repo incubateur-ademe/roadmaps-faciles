@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db/prisma";
 import { type Prisma, type UserOnTenant } from "@/prisma/client";
 
-import { type IUserOnTenantRepo, type UserOnTenantWithTenant, type UserOnTenantWithUser } from "../IUserOnTenantRepo";
+import {
+  type IUserOnTenantRepo,
+  type UserOnTenantWithTenant,
+  type UserOnTenantWithTenantSettings,
+  type UserOnTenantWithUser,
+} from "../IUserOnTenantRepo";
 
 export class UserOnTenantRepoPrisma implements IUserOnTenantRepo {
   public countOwners(tenantId: number): Promise<number> {
@@ -10,6 +15,14 @@ export class UserOnTenantRepoPrisma implements IUserOnTenantRepo {
 
   public findByUserId(userId: string): Promise<UserOnTenantWithTenant[]> {
     return prisma.userOnTenant.findMany({ where: { userId }, include: { tenant: true } });
+  }
+
+  public async findByUserIdWithSettings(userId: string): Promise<UserOnTenantWithTenantSettings[]> {
+    const results = await prisma.userOnTenant.findMany({
+      where: { userId, status: "ACTIVE" },
+      include: { tenant: { include: { settings: true } } },
+    });
+    return results.filter(r => r.tenant.settings !== null) as UserOnTenantWithTenantSettings[];
   }
 
   public findByTenantId(tenantId: number): Promise<UserOnTenantWithUser[]> {

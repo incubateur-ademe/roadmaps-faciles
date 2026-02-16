@@ -1,33 +1,47 @@
 ---
-title: Approbation des posts
-description: Gérez le flux d'approbation des posts soumis.
+title: Approbation des contributions
+description: Gérez le flux d'approbation des contributions soumises.
 ---
 
-Lorsque l'option **Modération préalable** est activée dans les paramètres de l'espace, tous les nouveaux posts sont créés avec le statut **En attente** et doivent être approuvés avant d'apparaître sur le board.
+Lorsque l'option **Modération préalable** est activée dans les [paramètres de l'espace](/doc/admin/general-settings), toutes les nouvelles contributions sont créées avec le statut **En attente** et doivent être approuvées avant d'apparaître sur le tableau.
+
+## Fonctionnement du workflow
+
+```
+Nouvelle contribution
+      │
+      ▼
+  En attente ──────► Approuvée (visible sur le tableau)
+      │
+      └──────────► Rejetée (masquée, consultable dans l'onglet "Rejetés")
+```
+
+Les contributions soumises **avant l'activation** de la modération restent visibles — elles ne sont pas rétroactivement placées en attente.
 
 ## Interface de modération
 
-Accédez à la section **Modération** depuis le menu de l'espace. Vous y trouverez :
+Accédez à la section **Modération** depuis le menu de l'espace (visible uniquement pour les modérateurs, administrateurs et le propriétaire).
 
-### Posts en attente
+### Contributions en attente
 
-La liste des posts soumis et en attente de validation. Pour chaque post, vous pouvez :
+La liste des contributions soumises et en attente de validation. Pour chaque contribution, vous pouvez :
 
-- **Approuver** — Le post devient visible sur le board.
-- **Rejeter** — Le post est masqué. Il reste accessible dans l'onglet "Rejetés".
-- **Supprimer** — Le post est définitivement supprimé.
+- **Approuver** — La contribution devient visible sur le tableau.
+- **Rejeter** — La contribution est masquée du tableau public. Elle reste accessible dans l'onglet "Rejetés".
+- **Supprimer** — La contribution est définitivement supprimée.
 
-Cliquez sur un post pour prévisualiser son contenu complet avant de prendre une décision.
+Cliquez sur le titre d'une contribution pour **prévisualiser** son contenu complet avant de prendre votre décision.
 
-### Posts rejetés
+### Contributions rejetées
 
-La liste des posts précédemment rejetés. Vous pouvez :
+La liste des contributions précédemment rejetées. Depuis cet onglet, vous pouvez :
 
-- **Ré-approuver** un post rejeté pour le rendre visible.
-- **Supprimer** définitivement un post rejeté.
+- **Ré-approuver** une contribution rejetée pour la rendre visible sur le tableau.
+- **Supprimer** définitivement une contribution rejetée.
 
 ## Bonnes pratiques
 
-- Vérifiez le contenu et le ton du post avant approbation.
-- Utilisez le rejet plutôt que la suppression pour garder une trace.
-- Communiquez les règles de contribution à vos utilisateurs pour limiter les rejets.
+- **Préférez le rejet à la suppression** — Un rejet est réversible et garde une trace. La suppression est irréversible.
+- **Vérifiez le contenu et le ton** avant approbation — assurez-vous que la contribution est pertinente et respectueuse.
+- **Communiquez les règles** à vos utilisateurs — Un message d'accueil ou une description de tableau peut expliquer les critères de publication, ce qui réduit le nombre de rejets.
+- **Soyez réactif** — Les contributions en attente créent de la frustration chez les utilisateurs. Essayez de traiter la file d'attente régulièrement.

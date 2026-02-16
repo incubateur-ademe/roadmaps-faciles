@@ -22,25 +22,18 @@ export const Navigation = () => {
           isActive: !segment,
         },
         {
-          text: t("groups"),
+          text: t("workspaces"),
           linkProps: {
-            href: "/group",
+            href: "/tenant",
           },
-          isActive: segment === "group",
+          isActive: segment === "tenant",
         },
         {
-          text: t("templates"),
+          text: t("doc"),
           linkProps: {
-            href: "/template",
+            href: "/doc",
           },
-          isActive: segment === "template",
-        },
-        {
-          text: t("startups"),
-          linkProps: {
-            href: "/startup",
-          },
-          isActive: segment === "startup",
+          isActive: false,
         },
         ...(((status === "authenticated" &&
           session.user.isSuperAdmin && [

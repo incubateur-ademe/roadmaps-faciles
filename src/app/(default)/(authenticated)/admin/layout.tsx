@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
@@ -6,6 +8,7 @@ import { assertAdmin } from "@/utils/auth";
 import { AdminSideMenu } from "./AdminSideMenu";
 
 const AdminLayout = async ({ children }: LayoutProps<"/admin">) => {
+  await connection();
   await assertAdmin();
 
   return (

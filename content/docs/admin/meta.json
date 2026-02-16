@@ -1,4 +1,16 @@
 {
   "title": "Administration",
-  "pages": ["index", "general-settings", "boards-management", "statuses-management", "members", "authentication", "webhooks", "api-keys", "audit-log"]
+  "icon": "fr-icon-settings-5-line",
+  "pages": [
+    "index",
+    "general-settings",
+    "boards-management",
+    "statuses-management",
+    "members",
+    "authentication",
+    "custom-domains",
+    "webhooks",
+    "api-keys",
+    "audit-log"
+  ]
 }

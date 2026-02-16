@@ -1,0 +1,74 @@
+---
+title: Sécurité
+description: Modèle de sécurité, isolation des données et mécanismes de protection.
+---
+
+<Callout type="info" title="Section technique">
+Cette page s'adresse aux administrateurs techniques et aux équipes sécurité. Elle décrit les mécanismes de sécurité implémentés dans Roadmaps Faciles.
+</Callout>
+
+## Isolation multi-tenant
+
+Chaque espace de travail est un **tenant isolé**. L'isolation est garantie à plusieurs niveaux :
+
+- **Base de données** — Toutes les requêtes incluent un filtre `tenantId`. Les données d'un tenant ne sont jamais accessibles depuis un autre.
+- **Authentification** — Les sessions sont liées à un domaine spécifique (cookie par sous-domaine). Un utilisateur connecté sur un espace n'est pas automatiquement connecté sur un autre.
+- **Autorisation** — Les rôles sont vérifiés par tenant. Un administrateur sur l'espace A n'a aucun privilège sur l'espace B.
+
+## Authentification
+
+### Magic links
+
+L'authentification par email utilise des **magic links** (liens à usage unique) :
+
+- Le lien est envoyé par email à l'adresse saisie.
+- Il est valable pour une seule utilisation.
+- Aucun mot de passe n'est stocké — la boîte email fait office de facteur d'authentification.
+
+### Pont SSO (Bridge)
+
+Le transfert de session entre le domaine racine et un espace de travail utilise un **token HMAC-SHA256** :
+
+- Le token est signé avec le secret de l'instance (`SECURITY_JWT_SECRET`).
+- Il expire après **5 minutes**.
+- La protection contre les redirections ouvertes (open redirect) vérifie le protocole et l'hôte de la cible.
+
+### Invitations
+
+Les invitations utilisent un **token aléatoire** de 32 octets :
+
+- Seul le **condensé SHA-256** du token est stocké en base.
+- Le token en clair est envoyé par email et ne transite que via le lien d'invitation.
+- L'acceptation est atomique (condition `acceptedAt: null`) pour éviter les double-acceptations.
+
+## Contrôle d'accès
+
+Le contrôle d'accès utilise une approche **RBAC** (Role-Based Access Control) :
+
+- Les rôles sont hiérarchiques : Propriétaire > Administrateur > Modérateur > Utilisateur.
+- Les vérifications utilisent une fonction `assertSession()` unifiée qui supporte les modes `min` (hiérarchique) et `only` (strict).
+- Les use cases valident à la fois le rôle **et** l'appartenance au tenant (le rôle ne suffit pas — la ressource doit appartenir au bon tenant).
+
+## Clés API
+
+Les clés API sont stockées de manière sécurisée :
+
+- La clé en clair n'est affichée qu'une seule fois à la création.
+- Seul un **condensé cryptographique** (digest) est stocké en base.
+- Chaque clé est scopée à un tenant spécifique.
+
+## Journal d'audit
+
+Le journal d'audit fournit une **traçabilité complète** :
+
+- Toutes les actions administratives sont enregistrées.
+- Les logs incluent l'adresse IP, le User-Agent et un identifiant de corrélation.
+- Les entrées du journal n'ont **pas de clé étrangère** vers les entités — elles survivent à la suppression des utilisateurs et des ressources.
+- L'audit est **fire-and-forget** : il n'impacte pas les performances des opérations.
+
+## Bonnes pratiques pour les administrateurs
+
+- **Choisissez un secret JWT robuste** — Le `SECURITY_JWT_SECRET` doit être aléatoire et suffisamment long (32+ caractères).
+- **Activez Sentry en production** — Le suivi d'erreurs permet de détecter rapidement les anomalies.
+- **Consultez régulièrement le journal d'audit** — Les actions inhabituelles (changements de rôle, suppressions massives) peuvent indiquer un problème.
+- **Limitez les super-administrateurs** — Seules les personnes qui en ont besoin doivent être listées dans la variable `ADMINS`.
