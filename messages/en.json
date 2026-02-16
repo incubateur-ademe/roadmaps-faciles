@@ -57,9 +57,8 @@
   },
   "navigation": {
     "home": "Home",
-    "groups": "Groups",
-    "templates": "Templates",
-    "startups": "Startups",
+    "workspaces": "My workspaces",
+    "doc": "Documentation",
     "admin": "Admin",
     "roadmap": "Roadmap"
   },

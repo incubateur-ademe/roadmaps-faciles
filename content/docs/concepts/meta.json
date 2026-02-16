@@ -1,4 +1,5 @@
 {
   "title": "Concepts",
-  "pages": ["index", "workspaces", "boards", "posts", "statuses", "roles"]
+  "icon": "fr-icon-lightbulb-line",
+  "pages": ["index", "workspaces", "boards", "posts", "statuses", "roles", "glossary"]
 }

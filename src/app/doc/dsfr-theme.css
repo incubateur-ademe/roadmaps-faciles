@@ -33,9 +33,40 @@
   --font-mono: "Fira Code", "Fira Mono", ui-monospace, monospace;
 }
 
-/* Dark mode (DSFR dark scheme) */
+/*
+ * Prose overrides — fix Fumadocs prose variables that default to fd-foreground.
+ * Only link color needs correction: DSFR expects blue action links, not grey text.
+ */
+.prose {
+  --tw-prose-links: var(--text-action-high-blue-france);
+}
+
+/*
+ * Dark mode activation.
+ * DSFR uses `data-fr-theme` (resolved theme: "light" or "dark") which works for both
+ * explicit dark mode (`data-fr-scheme="dark"`) and system dark mode
+ * (`data-fr-scheme="system"` + OS dark preference).
+ */
+:root[data-fr-theme="dark"] {
+  color-scheme: dark;
+}
+
+/*
+ * Shiki syntax highlighting dark mode.
+ * Fumadocs uses `.dark .shiki code span { color: var(--shiki-dark) }` but DSFR
+ * doesn't add a `.dark` class. We mirror the Shiki rules using data-fr-theme.
+ */
+:root[data-fr-theme="dark"] .shiki:not(.not-fumadocs-codeblock *) {
+  background-color: var(--shiki-dark-bg);
+}
+
+:root[data-fr-theme="dark"] .shiki:not(.not-fumadocs-codeblock *) code span {
+  color: var(--shiki-dark);
+}
+
+/* Dark mode (DSFR dark scheme) — Fumadocs token overrides */
 .dark,
-:root[data-fr-scheme="dark"] {
+:root[data-fr-theme="dark"] {
   --color-fd-background: var(--background-default-grey);
   --color-fd-foreground: var(--text-default-grey);
   --color-fd-card: var(--background-alt-grey);

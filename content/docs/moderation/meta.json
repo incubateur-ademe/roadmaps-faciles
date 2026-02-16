@@ -1,4 +1,5 @@
 {
   "title": "Modération",
+  "icon": "fr-icon-shield-line",
   "pages": ["index", "post-approval", "content-moderation"]
 }
