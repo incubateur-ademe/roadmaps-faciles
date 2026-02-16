@@ -24,8 +24,13 @@ export function proxy(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set(CORRELATION_ID_HEADER, correlationId);
 
-  // Skip proxy rewriting for auth API routes
-  if (pathname.startsWith("/api/auth")) {
+  // Skip proxy rewriting for auth and 2FA API routes
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/webauthn") ||
+    pathname.startsWith("/api/otp") ||
+    pathname.startsWith("/api/2fa")
+  ) {
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     return withCorrelationId(req, response);
   }
@@ -93,7 +98,10 @@ export const config = {
      */
     // "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
     "/((?!api|_next/|_static|img/).*)",
-    // include api/auth for next-auth
+    // include api/auth for next-auth and 2FA API routes
     "/api/auth/:path*",
+    "/api/webauthn/:path*",
+    "/api/otp/:path*",
+    "/api/2fa/:path*",
   ],
 };

@@ -73,6 +73,21 @@ export const config = {
     // TODO: change
     from: ensureApiEnvVar(process.env.MAILER_FROM_EMAIL, "Roadmaps <noreply@roadmap.beta.gouv.fr>"),
   },
+  oauth: {
+    github: {
+      clientId: ensureApiEnvVar(process.env.GITHUB_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.GITHUB_CLIENT_SECRET, ""),
+    },
+    google: {
+      clientId: ensureApiEnvVar(process.env.GOOGLE_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.GOOGLE_CLIENT_SECRET, ""),
+    },
+    proconnect: {
+      clientId: ensureApiEnvVar(process.env.PROCONNECT_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.PROCONNECT_CLIENT_SECRET, ""),
+      issuer: ensureApiEnvVar(process.env.PROCONNECT_ISSUER, ""),
+    },
+  },
   security: {
     auth: {
       secret: ensureApiEnvVar(process.env.SECURITY_JWT_SECRET, "secret"),

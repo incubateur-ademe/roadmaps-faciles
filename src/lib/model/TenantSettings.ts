@@ -28,6 +28,8 @@ export const TenantSettings = z.object({
   requirePostApproval: z.boolean(),
   emailRegistrationPolicy: emailRegistrationPolicyEnum,
   allowedEmailDomains: z.string().array(),
+  force2FA: z.boolean(),
+  force2FAGraceDays: z.number(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   rootBoardId: z.number().nullable(),

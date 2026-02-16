@@ -325,6 +325,8 @@ model TenantSettings {
   requirePostApproval     Boolean                 @default(false)
   emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
   allowedEmailDomains     String[]
+  force2FA                Boolean                 @default(false)
+  force2FAGraceDays       Int                     @default(5)
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
   rootBoardId             Int?                    @unique
@@ -336,6 +338,14 @@ model TenantSettings {
   @@unique([subdomain])
   @@index([tenantId])
   @@index([rootBoardId])
+}
+
+model AppSettings {
+  id                Int      @id @default(0)
+  force2FA          Boolean  @default(false)
+  force2FAGraceDays Int      @default(5)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model TenantDefaultOAuth {
@@ -382,6 +392,11 @@ model User {
   createdAt                  DateTime   @default(now())
   updatedAt                  DateTime   @updatedAt
   isBetaGouvMember           Boolean    @default(false)
+  otpSecret                  String?
+  otpVerifiedAt              DateTime?
+  emailTwoFactorEnabled      Boolean    @default(false)
+  twoFactorEnabled           Boolean    @default(false)
+  twoFactorDeadline          DateTime?
 
   posts          Post[]
   editedPosts    Post[]         @relation("PostEditor")
@@ -537,6 +552,9 @@ enum AuditAction {
   TENANT_SEED_DATA
   TENANT_SETTINGS_UPDATE
 
+  // Tenant-scoped — Security
+  SECURITY_SETTINGS_UPDATE
+
   // Root-scoped
   ROOT_MEMBER_REMOVE
   ROOT_MEMBER_ROLE_UPDATE
@@ -545,6 +563,7 @@ enum AuditAction {
   ROOT_USER_ROLE_UPDATE
   ROOT_USER_STATUS_UPDATE
   ROOT_USER_UPDATE
+  ROOT_SECURITY_SETTINGS_UPDATE
 }
 
 model AuditLog {

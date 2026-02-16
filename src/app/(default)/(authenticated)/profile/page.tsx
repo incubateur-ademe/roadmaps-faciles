@@ -1,3 +1,4 @@
+import Button from "@codegouvfr/react-dsfr/Button";
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
@@ -34,6 +35,12 @@ const ProfilePage = async () => {
             />
           </GridCol>
         </Grid>
+        <hr className="fr-mt-4w fr-pb-2w" />
+        <h2>{t("securityTitle")}</h2>
+        <p>{t("securityDescription")}</p>
+        <Button linkProps={{ href: "/profile/security" }} priority="secondary">
+          {t("securityLink")}
+        </Button>
       </Container>
     </DsfrPage>
   );

@@ -12,7 +12,25 @@ export class TenantDefaultOAuthRepoPrisma implements ITenantDefaultOAuthRepo {
     return prisma.tenantDefaultOAuth.findUnique({ where: { id } });
   }
 
+  public findByTenantId(tenantId: number): Promise<TenantDefaultOAuth[]> {
+    return prisma.tenantDefaultOAuth.findMany({ where: { tenantId } });
+  }
+
   public create(data: Prisma.TenantDefaultOAuthUncheckedCreateInput): Promise<TenantDefaultOAuth> {
     return prisma.tenantDefaultOAuth.create({ data });
+  }
+
+  public async deleteByTenantIdAndProvider(tenantId: number, provider: string): Promise<void> {
+    await prisma.tenantDefaultOAuth.delete({
+      where: { tenantId_provider: { tenantId, provider } },
+    });
+  }
+
+  public upsertByTenantIdAndProvider(tenantId: number, provider: string): Promise<TenantDefaultOAuth> {
+    return prisma.tenantDefaultOAuth.upsert({
+      where: { tenantId_provider: { tenantId, provider } },
+      create: { tenantId, provider },
+      update: {},
+    });
   }
 }

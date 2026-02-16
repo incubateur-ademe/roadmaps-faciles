@@ -1,4 +1,5 @@
 import { type IApiKeyRepo } from "./IApiKeyRepo";
+import { type IAppSettingsRepo } from "./IAppSettingsRepo";
 import { type IAuditLogRepo } from "./IAuditLogRepo";
 import { type IBoardRepo } from "./IBoardRepo";
 import { type ICommentRepo } from "./ICommentRepo";
@@ -6,6 +7,7 @@ import { type IFollowRepo } from "./IFollowRepo";
 import { type IInvitationRepo } from "./IInvitationRepo";
 import { type ILikeRepo } from "./ILikeRepo";
 import { ApiKeyRepoPrisma } from "./impl/ApiKeyRepoPrisma";
+import { AppSettingsRepoPrisma } from "./impl/AppSettingsRepoPrisma";
 import { AuditLogRepoPrisma } from "./impl/AuditLogRepoPrisma";
 import { BoardRepoPrisma } from "./impl/BoardRepoPrisma";
 import { CommentRepoPrisma } from "./impl/CommentRepoPrisma";
@@ -33,6 +35,7 @@ import { type IUserOnTenantRepo } from "./IUserOnTenantRepo";
 import { type IUserRepo } from "./IUserRepo";
 import { type IWebhookRepo } from "./IWebhookRepo";
 
+export const appSettingsRepo: IAppSettingsRepo = new AppSettingsRepoPrisma();
 export const auditLogRepo: IAuditLogRepo = new AuditLogRepoPrisma();
 export const postRepo: IPostRepo = new PostRepoPrisma();
 export const boardRepo: IBoardRepo = new BoardRepoPrisma();

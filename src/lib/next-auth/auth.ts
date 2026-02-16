@@ -4,6 +4,8 @@ import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-au
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -15,7 +17,15 @@ import { GetTenantSettings } from "@/useCases/tenant_settings/GetTenantSettings"
 import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 
 import { prisma } from "../db/prisma";
-import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
+import {
+  appSettingsRepo,
+  tenantDefaultOAuthRepo,
+  tenantRepo,
+  tenantSettingsRepo,
+  userOnTenantRepo,
+  userRepo,
+} from "../repo";
+import { refreshAccessToken } from "./refresh";
 
 type CustomUser = {
   currentTenantRole?: UserRole;
@@ -23,17 +33,28 @@ type CustomUser = {
   isSuperAdmin?: boolean;
   role: UserRole;
   status: UserStatus;
+  twoFactorEnabled: boolean;
   uuid: string;
 } & AdapterUser;
 
 declare module "next-auth" {
   interface Session {
+    twoFactorRequired: boolean;
+    twoFactorVerified: boolean;
     user: CustomUser;
   }
 }
 
 declare module "@auth/core/jwt" {
   interface JWT {
+    accessToken?: string;
+    accessTokenExpires?: number;
+    error?: string;
+    provider?: string;
+    refreshToken?: string;
+    sessionRefreshAt?: number;
+    twoFactorRequired: boolean;
+    twoFactorVerified: boolean;
     user: CustomUser;
   }
 }
@@ -63,6 +84,47 @@ const nodemailerProvider = Nodemailer({
 export interface GetAuthMethodsProps {
   domain?: string;
 }
+
+// Build OAuth providers conditionally based on config
+function buildOAuthProviders() {
+  const providers = [];
+
+  if (config.oauth.github.clientId) {
+    providers.push(
+      GitHub({
+        clientId: config.oauth.github.clientId,
+        clientSecret: config.oauth.github.clientSecret,
+        authorization: { params: { scope: "read:user user:email" } },
+      }),
+    );
+  }
+
+  if (config.oauth.google.clientId) {
+    providers.push(
+      Google({
+        clientId: config.oauth.google.clientId,
+        clientSecret: config.oauth.google.clientSecret,
+        authorization: { params: { access_type: "offline", prompt: "consent" } },
+      }),
+    );
+  }
+
+  if (config.oauth.proconnect.clientId) {
+    providers.push({
+      id: "proconnect",
+      name: "ProConnect",
+      type: "oidc" as const,
+      issuer: config.oauth.proconnect.issuer,
+      clientId: config.oauth.proconnect.clientId,
+      clientSecret: config.oauth.proconnect.clientSecret,
+    });
+  }
+
+  return providers;
+}
+
+// Session sliding window: 30 minutes
+const SESSION_MAX_AGE = 30 * 60 * 1000;
 
 const {
   auth: authCore,
@@ -102,9 +164,6 @@ const {
       strategy: "jwt",
     },
     adapter: espaceMembreProvider.AdapterWrapper(PrismaAdapter(prisma)),
-    // experimental: {
-    //   enableWebAuthn: true,
-    // },
     providers: [
       nodemailerProvider,
       espaceMembreProvider.ProviderWrapper(nodemailerProvider),
@@ -124,11 +183,7 @@ const {
           }
         },
       }),
-      // TODO
-      // WebAuthn,
-      // Passkey({
-      //   registrationOptions: {},
-      // }),
+      ...buildOAuthProviders(),
     ],
     callbacks: espaceMembreProvider.CallbacksWrapper({
       redirect() {
@@ -200,10 +255,6 @@ const {
                   });
                 }
 
-                // should be checked on layouts
-                // if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
-                //   return false;
-                // }
                 params.user = dbUser;
               }
             } catch (error: unknown) {
@@ -213,6 +264,41 @@ const {
               return false;
             }
           }
+        }
+
+        // OAuth provider on tenant — verify it's enabled for this tenant
+        if (
+          (params.account?.type === "oauth" || params.account?.type === "oidc") &&
+          tenant &&
+          params.account.provider !== "nodemailer"
+        ) {
+          const enabledProviders = await tenantDefaultOAuthRepo.findByTenantId(tenant.id);
+          if (!enabledProviders.some(p => p.provider === params.account!.provider)) {
+            return false; // Provider not enabled for this tenant
+          }
+
+          // Auto-create UserOnTenant membership if needed
+          const userId = params.user.id;
+          if (userId) {
+            const existing = await userOnTenantRepo.findMembership(userId, tenant.id);
+            if (!existing) {
+              await userOnTenantRepo.create({
+                userId,
+                tenantId: tenant.id,
+                role: "INHERITED",
+                status: "ACTIVE",
+              });
+            }
+          }
+        }
+
+        // OAuth on root domain — block (OAuth is tenant-only)
+        if (
+          (params.account?.type === "oauth" || params.account?.type === "oidc") &&
+          !tenant &&
+          params.account.provider !== "nodemailer"
+        ) {
+          return false;
         }
 
         // Bridge provider — create UserOnTenant membership if needed
@@ -267,7 +353,14 @@ const {
 
         return true;
       },
-      async jwt({ token, trigger, espaceMembreMember }) {
+      async jwt({ token, trigger, account, espaceMembreMember }) {
+        // Handle client-side session.update() calls for 2FA verification
+        if (trigger === "update") {
+          // The client calls update({ twoFactorVerified: true }) after successful 2FA
+          token.twoFactorVerified = true;
+          return token;
+        }
+
         if (trigger === "signIn" || !token.user) {
           const now = new Date();
           const dbUser = espaceMembreMember
@@ -278,8 +371,27 @@ const {
             throw new Error("User not found in database");
           }
 
+          // Determine if 2FA is required for this context
+          let twoFactorRequired = false;
+          if (dbUser.twoFactorEnabled) {
+            twoFactorRequired = true;
+          } else {
+            // Check force 2FA settings
+            if (tenant && tenantSettings?.force2FA) {
+              twoFactorRequired = true;
+            }
+            if (!tenant) {
+              const appSettings = await appSettingsRepo.get();
+              if (appSettings.force2FA) {
+                twoFactorRequired = true;
+              }
+            }
+          }
+
           token = {
             ...token,
+            twoFactorVerified: !twoFactorRequired, // If no 2FA required, mark as verified
+            twoFactorRequired,
             user: {
               id: dbUser.id,
               email: dbUser.email,
@@ -292,9 +404,21 @@ const {
               isBetaGouvMember: dbUser.isBetaGouvMember,
               role: dbUser.role,
               status: dbUser.status,
+              twoFactorEnabled: dbUser.twoFactorEnabled,
             },
           };
           token.sub = dbUser.username || dbUser.id;
+
+          // Store OAuth tokens for refresh
+          if (account && (account.type === "oauth" || account.type === "oidc")) {
+            token.accessToken = account.access_token ?? undefined;
+            token.refreshToken = account.refresh_token ?? undefined;
+            token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined;
+            token.provider = account.provider;
+          }
+
+          // Set session sliding window
+          token.sessionRefreshAt = Date.now() + SESSION_MAX_AGE;
 
           if (trigger === "signIn") {
             await userRepo.update(dbUser.id, {
@@ -303,6 +427,16 @@ const {
               currentSignInAt: now,
             });
           }
+        }
+
+        // Refresh OAuth access token if expired
+        if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
+          token = await refreshAccessToken(token);
+        }
+
+        // Sliding window session refresh
+        if (token.sessionRefreshAt && Date.now() > token.sessionRefreshAt) {
+          token.sessionRefreshAt = Date.now() + SESSION_MAX_AGE;
         }
 
         // Resolve current tenant role on every request
@@ -317,6 +451,8 @@ const {
       },
       session({ session, token }) {
         session.user = token.user;
+        session.twoFactorVerified = token.twoFactorVerified;
+        session.twoFactorRequired = token.twoFactorRequired;
         return session;
       },
     }),

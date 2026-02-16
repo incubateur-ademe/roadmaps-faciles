@@ -48,6 +48,13 @@ async function main() {
   });
   console.log("🌱 UserOnTenant créé : ", admin.name);
 
+  await prisma.appSettings.upsert({
+    where: { id: 0 },
+    create: { id: 0 },
+    update: {},
+  });
+  console.log("🌱 AppSettings singleton créé.");
+
   console.log("🌱 Création des entités de bienvenue...");
   await new CreateWelcomeEntitiesWorkflow().run();
   console.log("🌱 Entités de bienvenue créées.");

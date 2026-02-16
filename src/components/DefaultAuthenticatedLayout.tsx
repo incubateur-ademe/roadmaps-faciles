@@ -9,5 +9,15 @@ export const DefaultAuthenticatedLayout = async ({ children }: LayoutProps<"/">)
     redirect("/login");
   }
 
+  // Redirect to 2FA verification if required but not yet verified
+  if (session.twoFactorRequired && !session.twoFactorVerified) {
+    redirect("/2fa");
+  }
+
+  // Redirect to 2FA setup if force 2FA is active but user has no 2FA methods
+  if (session.twoFactorRequired && !session.user.twoFactorEnabled) {
+    redirect("/profile/security");
+  }
+
   return children;
 };
