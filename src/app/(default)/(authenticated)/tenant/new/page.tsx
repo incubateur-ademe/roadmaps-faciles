@@ -1,11 +1,21 @@
+import { getTranslations } from "next-intl/server";
+
+import { Container } from "@/dsfr";
+import { DsfrPage } from "@/dsfr/layout/DsfrPage";
+
 import { NewTenantForm } from "./NewTenantForm";
 
-const NewTenantPage = () => {
+const NewTenantPage = async () => {
+  const t = await getTranslations("tenant");
+
   return (
-    <div>
-      <h1>Créer un nouveau tenant</h1>
-      <NewTenantForm />
-    </div>
+    <DsfrPage>
+      <Container>
+        <h1>{t("newTitle")}</h1>
+        <p>{t("newDescription")}</p>
+        <NewTenantForm />
+      </Container>
+    </DsfrPage>
   );
 };
 

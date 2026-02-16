@@ -154,7 +154,19 @@
     "localeLabel": "Langue",
     "selectLocale": "Sélectionner une langue",
     "validationError": "Erreur de validation",
-    "saveSuccess": "Sauvegarde réussie"
+    "saveSuccess": "Sauvegarde réussie",
+    "managedWorkspaces": "Espaces que j'administre",
+    "memberWorkspaces": "Espaces où je suis inscrit",
+    "newWorkspace": "Créer un espace",
+    "viewRoadmap": "Voir la roadmap",
+    "configure": "Configurer",
+    "newTitle": "Créer un espace",
+    "newDescription": "Créez votre propre espace de roadmap",
+    "nameLabel2": "Nom de l'espace",
+    "nameHint2": "Le nom de votre espace. Il peut être modifié ultérieurement.",
+    "subdomainPreview": "URL : {url}",
+    "subdomainPlaceholder": "mon-espace",
+    "createError": "Erreur lors de la création"
   },
   "adminTenants": {
     "title": "Tenants",

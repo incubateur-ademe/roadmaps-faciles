@@ -154,7 +154,19 @@
     "localeLabel": "Language",
     "selectLocale": "Select a language",
     "validationError": "Validation error",
-    "saveSuccess": "Saved successfully"
+    "saveSuccess": "Saved successfully",
+    "managedWorkspaces": "Workspaces I manage",
+    "memberWorkspaces": "Workspaces I'm part of",
+    "newWorkspace": "Create workspace",
+    "viewRoadmap": "View roadmap",
+    "configure": "Configure",
+    "newTitle": "Create a workspace",
+    "newDescription": "Create your own roadmap workspace",
+    "nameLabel2": "Workspace name",
+    "nameHint2": "The name of your workspace. It can be changed later.",
+    "subdomainPreview": "URL: {url}",
+    "subdomainPlaceholder": "my-workspace",
+    "createError": "Error creating workspace"
   },
   "adminTenants": {
     "title": "Tenants",
