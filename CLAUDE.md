@@ -99,6 +99,15 @@
 - When asked to implement a feature, produce working code — not just a plan. Only produce a plan if explicitly asked for planning/architecture discussion
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
 
+## Worktrees (multi-Claude en parallèle)
+- Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
+- Le worktree DOIT être créé AVANT de lancer Claude (`scripts/worktree-new.sh <branch> [port]`) et Claude DOIT être lancé depuis le worktree (`cd <worktree-dir> && claude`)
+- Après compaction, le hook `SessionStart(compact)` injecte la liste des worktrees — Claude DOIT alors utiliser `AskUserQuestion` pour confirmer le worktree actif avec l'utilisateur
+- Le skill `/worktree-guard` peut être invoqué manuellement pour re-confirmer le worktree actif à tout moment
+- Chaque worktree a son propre `.env.development.local` (port + DB dédiés), ses propres `node_modules`, et son propre `src/generated/prisma/`
+- Nettoyage après merge : `scripts/worktree-clean.sh <branch> [--drop-db]`
+- Convention de nommage : `<repo>-<short-branch-name>` (ex: `kokatsuna-auth-2fa` pour `feat/auth-2fa`)
+
 ## Git conventions
 - Use `git add .` before committing (no need to selectively stage files)
 - Do not add `Co-Authored-By` trailers to commits
