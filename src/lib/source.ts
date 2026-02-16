@@ -1,5 +1,6 @@
 import { type FrIconClassName } from "@codegouvfr/react-dsfr";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { type Node } from "fumadocs-core/page-tree";
 import { loader, type LoaderPlugin } from "fumadocs-core/source";
 import { docs } from "fumadocs-mdx:collections/server";
 import { createElement } from "react";
@@ -21,11 +22,12 @@ const _usedDocIcons: FrIconClassName[] = [
  * into rendered DSFR icon spans.
  */
 function dsfrIconPlugin(): LoaderPlugin {
-  function replaceIcon<T extends { icon?: React.ReactNode | string }>(node: T): T {
+  function replaceIcon<T extends Node>(node: T): T {
     if (typeof node.icon === "string") {
       node.icon = createElement("span", {
         className: cx(node.icon as FrIconClassName, "nd-dsfr-icon"),
         "aria-hidden": "true",
+        key: `dsfr-icon-${node.$id}`,
       });
     }
     return node;
