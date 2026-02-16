@@ -57,11 +57,10 @@
   },
   "navigation": {
     "home": "Accueil",
-    "groups": "Groupes",
-    "templates": "Templates",
-    "startups": "Startups",
+    "workspaces": "Mes espaces de travail",
+    "doc": "Documentation",
     "admin": "Admin",
-    "roadmap": "Roadmap"
+    "roadmap": "Feuille de route"
   },
   "auth": {
     "login": "Se connecter",
