@@ -47,6 +47,8 @@
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "@prisma/studio-core": "^0.8.2",
+    "@react-email/components": "^1.0.7",
+    "@react-email/render": "^2.0.4",
     "@sentry/nextjs": "^10.39.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@simplewebauthn/server": "^13.2.2",

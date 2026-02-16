@@ -174,7 +174,19 @@
     "localeLabel": "Langue",
     "selectLocale": "Sélectionner une langue",
     "validationError": "Erreur de validation",
-    "saveSuccess": "Sauvegarde réussie"
+    "saveSuccess": "Sauvegarde réussie",
+    "managedWorkspaces": "Espaces que j'administre",
+    "memberWorkspaces": "Espaces où je suis inscrit",
+    "newWorkspace": "Créer un espace",
+    "viewRoadmap": "Voir la roadmap",
+    "configure": "Configurer",
+    "newTitle": "Créer un espace",
+    "newDescription": "Créez votre propre espace de roadmap",
+    "nameLabel2": "Nom de l'espace",
+    "nameHint2": "Le nom de votre espace. Il peut être modifié ultérieurement.",
+    "subdomainPreview": "URL : {url}",
+    "subdomainPlaceholder": "mon-espace",
+    "createError": "Erreur lors de la création"
   },
   "adminTenants": {
     "title": "Tenants",
@@ -579,9 +591,28 @@
       "greeting": "Bonjour,",
       "body": "Vous avez demandé à lier votre compte à l'Espace Membre ({username}).",
       "clickToConfirm": "Cliquez sur le lien suivant pour confirmer :",
+      "button": "Confirmer la liaison",
       "expiry": "Ce lien expire dans 1 heure.",
       "closing": "Cordialement,"
-    }
+    },
+    "magicLink": {
+      "subject": "Connexion à Roadmaps Faciles",
+      "title": "Connexion à votre compte",
+      "body": "Cliquez sur le bouton ci-dessous pour vous connecter à Roadmaps Faciles.",
+      "button": "Se connecter",
+      "expiry": "Ce lien est valide pendant 24 heures.",
+      "ignore": "Si vous n'avez pas demandé cet email, vous pouvez l'ignorer en toute sécurité."
+    },
+    "invitation": {
+      "subjectOwner": "Vous êtes invité en tant que propriétaire d'un espace",
+      "subjectUser": "Vous êtes invité à rejoindre un espace",
+      "title": "Invitation à rejoindre un espace",
+      "body": "Vous avez été invité à rejoindre un espace{roleText}.",
+      "roleOwner": " en tant que propriétaire",
+      "button": "Accepter l'invitation",
+      "ignore": "Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet email."
+    },
+    "footer": "Roadmaps Faciles — ADEME"
   },
   "moderation": {
     "sideMenu": {

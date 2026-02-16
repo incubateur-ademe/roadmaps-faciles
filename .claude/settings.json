@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/worktree-guard.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

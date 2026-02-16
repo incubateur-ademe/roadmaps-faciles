@@ -1,15 +1,16 @@
 "use server";
 
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import crypto from "node:crypto";
-import nodemailer from "nodemailer";
 
 import { config } from "@/config";
+import { renderEmLinkConfirmEmail } from "@/emails/renderEmails";
 import { prisma } from "@/lib/db/prisma";
 import { createEmLinkToken, espaceMembreClient, getEmUserEmail } from "@/lib/espaceMembre";
+import { sendEmail } from "@/lib/mailer";
 import { userRepo } from "@/lib/repo";
 import { PrismaClientKnownRequestError } from "@/prisma/internal/prismaNamespace";
 import { UpdateUser } from "@/useCases/users/UpdateUser";
@@ -18,9 +19,6 @@ import { type ServerActionResponse } from "@/utils/next";
 
 const isUniqueConstraintError = (error: unknown): boolean =>
   error instanceof PrismaClientKnownRequestError && error.code === "P2002";
-
-const escapeHtml = (str: string) =>
-  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 interface UpdateProfileData {
   email?: string;
@@ -77,25 +75,29 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
     const token = createEmLinkToken(session.user.uuid, username, redirectUrl);
     const confirmUrl = `${config.host}/api/confirm-em-link?token=${token}`;
 
-    const transporter = nodemailer.createTransport({
-      host: config.mailer.host,
-      port: config.mailer.smtp.port,
-      secure: config.mailer.smtp.ssl,
-      auth:
-        config.mailer.smtp.login && config.mailer.smtp.password
-          ? {
-              user: config.mailer.smtp.login,
-              pass: config.mailer.smtp.password,
-            }
-          : undefined,
+    const locale = await getLocale();
+    const tFooter = await getTranslations("emails");
+
+    const html = await renderEmLinkConfirmEmail({
+      baseUrl: config.host,
+      confirmUrl,
+      locale,
+      translations: {
+        title: tEmail("subject"),
+        greeting: tEmail("greeting"),
+        body: tEmail("body", { username }),
+        button: tEmail("button"),
+        expiry: tEmail("expiry"),
+        closing: tEmail("closing"),
+        footer: tFooter("footer"),
+      },
     });
 
-    await transporter.sendMail({
-      from: config.mailer.from,
+    await sendEmail({
       to: emEmail,
       subject: tEmail("subject"),
-      text: `${tEmail("greeting")}\n\n${tEmail("body", { username })}\n\n${tEmail("clickToConfirm")}\n\n${confirmUrl}\n\n${tEmail("expiry")}\n\n${tEmail("closing")}`,
-      html: `<p>${tEmail("greeting")}</p><p>${tEmail("body", { username: `<strong>${escapeHtml(username)}</strong>` })}</p><p>${tEmail("clickToConfirm")}</p><p><a href="${confirmUrl}">${confirmUrl}</a></p><p>${tEmail("expiry")}</p><p>${tEmail("closing")}</p>`,
+      html,
+      text: `${tEmail("greeting")}\n\n${tEmail("body", { username })}\n\n${confirmUrl}\n\n${tEmail("expiry")}\n\n${tEmail("closing")}`,
     });
 
     // Mask email: show first 3 chars + domain

@@ -82,7 +82,11 @@
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
 - Caching: Redis via ioredis + unstorage
-- Email: Nodemailer (maildev in dev)
+- Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
+  - Layout DSFR Mail: `DsfrEmailLayout` (header/footer Marianne, dark mode, responsive 600px)
+  - Composants helpers: `DsfrButton`, `DsfrText`, `DsfrHeading`, `DsfrSpacer` in `src/emails/components.tsx`
+  - Render facade: `src/emails/renderEmails.tsx` — fonctions `renderXxxEmail()` (keeps JSX out of `.ts` files)
+  - i18n: `getEmailTranslations()` in `src/emails/getEmailTranslations.ts` — standalone (loads JSON directly, no next-intl server context dependency)
 - i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
   - Config: `src/i18n/request.ts` (reads `NEXT_LOCALE` cookie), utils/types in `src/lib/utils/i18n.ts`
   - Messages: `messages/fr.json` + `messages/en.json` — 23 namespaces, ICU plural syntax supported
@@ -98,6 +102,15 @@
 - Fix all lint errors and TypeScript errors before committing — do not leave unused variables, dead imports, or type errors
 - When asked to implement a feature, produce working code — not just a plan. Only produce a plan if explicitly asked for planning/architecture discussion
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
+
+## Worktrees (multi-Claude en parallèle)
+- Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
+- Le worktree DOIT être créé AVANT de lancer Claude (`scripts/worktree-new.sh <branch> [port]`) et Claude DOIT être lancé depuis le worktree (`cd <worktree-dir> && claude`)
+- Après compaction, le hook `SessionStart(compact)` injecte la liste des worktrees — Claude DOIT alors utiliser `AskUserQuestion` pour confirmer le worktree actif avec l'utilisateur
+- Le skill `/worktree-guard` peut être invoqué manuellement pour re-confirmer le worktree actif à tout moment
+- Chaque worktree a son propre `.env.development.local` (port + DB dédiés), ses propres `node_modules`, et son propre `src/generated/prisma/`
+- Nettoyage après merge : `scripts/worktree-clean.sh <branch> [--drop-db]`
+- Convention de nommage : `<repo>-<short-branch-name>` (ex: `kokatsuna-auth-2fa` pour `feat/auth-2fa`)
 
 ## Git conventions
 - Use `git add .` before committing (no need to selectively stage files)
@@ -138,4 +151,5 @@
 - DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
 - Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
 - Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
+- Email templates (`src/emails/`): inline `style={{...}}` is required — email clients don't support external CSS/Tailwind; this is the exception to the "no inline styles" rule
 - Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
