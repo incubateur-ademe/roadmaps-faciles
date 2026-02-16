@@ -33,8 +33,8 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.2.4))
       '@incubateur-ademe/next-auth-espace-membre-provider':
-        specifier: ^0.3.1
-        version: 0.3.1(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.2)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))
+        specifier: ^0.3.3
+        version: 0.3.3(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.2)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))
       '@mdx-js/react':
         specifier: ^3.1.1
         version: 3.1.1(@types/react@19.2.14)(react@19.2.4)
@@ -965,8 +965,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@incubateur-ademe/next-auth-espace-membre-provider@0.3.1':
-    resolution: {integrity: sha512-fMDSDaU3gEmFlR80vikkBWLwTp4n733vXbHVCwaw1lVltZo9B2l/rcmdz6ZZYnFCm800T+RJaPstDg58bCibMw==}
+  '@incubateur-ademe/next-auth-espace-membre-provider@0.3.3':
+    resolution: {integrity: sha512-VFgyBC22FaZrmQsfT0FZjX0bK1qtkPCrOAkjfJrI/kIF0rg0VWTVBg1AkeXryH1QAGGHkI012CHaPPjN0MzexQ==}
     peerDependencies:
       next-auth: '>=5.0.0-0'
 
@@ -2353,6 +2353,9 @@ packages:
 
   '@schummar/icu-type-parser@1.21.5':
     resolution: {integrity: sha512-bXHSaW5jRTmke9Vd0h5P7BtWZG9Znqb8gSDxZnxaGSJnGwPLDPfS+3g0BKzeWqzgZPsIVZkM7m2tbo18cm5HBw==}
+
+  '@scure/base@2.0.0':
+    resolution: {integrity: sha512-3E1kpuZginKkek01ovG8krQ0Z44E3DHPjc5S2rjJw9lZn3KSQOs8S7wqikF/AH7iRanHypj85uGyxk0XAyC37w==}
 
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
@@ -6997,7 +7000,7 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@incubateur-ademe/next-auth-espace-membre-provider@0.3.1(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.2)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))':
+  '@incubateur-ademe/next-auth-espace-membre-provider@0.3.3(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.2)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))':
     dependencies:
       next-auth: 5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.2)(next@16.1.6(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4)
 
@@ -8384,6 +8387,8 @@ snapshots:
   '@rtsao/scc@1.1.0': {}
 
   '@schummar/icu-type-parser@1.21.5': {}
+
+  '@scure/base@2.0.0': {}
 
   '@selderee/plugin-htmlparser2@0.11.0':
     dependencies:

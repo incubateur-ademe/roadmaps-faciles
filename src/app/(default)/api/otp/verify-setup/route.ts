@@ -28,13 +28,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid code" }, { status: 400 });
   }
 
-  // Store secret in DB and mark OTP as verified
+  // Store secret in DB, mark OTP as verified, and clear grace period deadline
   await prisma.user.update({
     where: { id: userId },
     data: {
       otpSecret: secret,
       otpVerifiedAt: new Date(),
       twoFactorEnabled: true,
+      twoFactorDeadline: null,
     },
   });
 

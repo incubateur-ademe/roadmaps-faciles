@@ -43,6 +43,7 @@ type CustomUser = {
 
 declare module "next-auth" {
   interface Session {
+    twoFactorDeadline?: string;
     twoFactorRequired: boolean;
     twoFactorVerified: boolean;
     user: CustomUser;
@@ -57,6 +58,7 @@ declare module "@auth/core/jwt" {
     provider?: string;
     refreshToken?: string;
     sessionRefreshAt?: number;
+    twoFactorDeadline?: string;
     twoFactorRequired: boolean;
     twoFactorVerified: boolean;
     user: CustomUser;
@@ -385,8 +387,16 @@ const {
       async jwt({ token, trigger, account, espaceMembreMember }) {
         // Handle client-side session.update() calls for 2FA verification
         if (trigger === "update") {
-          // The client calls update({ twoFactorVerified: true }) after successful 2FA
-          token.twoFactorVerified = true;
+          // Validate server-side proof before marking as verified
+          const { redis } = await import("../db/redis/storage");
+          const userId = token.user?.uuid;
+          if (userId) {
+            const proof = await redis.getItem<string>(`2fa:proof:${userId}`);
+            if (proof) {
+              await redis.removeItem(`2fa:proof:${userId}`);
+              token.twoFactorVerified = true;
+            }
+          }
           return token;
         }
 
@@ -402,23 +412,46 @@ const {
 
           // Determine if 2FA is required for this context
           let twoFactorRequired = false;
+          let graceDays = 0;
           if (dbUser.twoFactorEnabled) {
             twoFactorRequired = true;
           } else {
             // Check force 2FA settings
             if (tenant && tenantSettings?.force2FA) {
               twoFactorRequired = true;
+              graceDays = tenantSettings.force2FAGraceDays;
             }
             if (!tenant) {
               const appSettings = await appSettingsRepo.get();
               if (appSettings.force2FA) {
                 twoFactorRequired = true;
+                graceDays = appSettings.force2FAGraceDays;
               }
+            }
+          }
+
+          // Handle grace period for forced 2FA (only for users without 2FA enabled)
+          let twoFactorDeadline: string | undefined;
+          if (twoFactorRequired && !dbUser.twoFactorEnabled && graceDays > 0) {
+            if (!dbUser.twoFactorDeadline) {
+              // Set deadline for the first time
+              const deadline = new Date();
+              deadline.setDate(deadline.getDate() + graceDays);
+              await userRepo.update(dbUser.id, { twoFactorDeadline: deadline });
+              twoFactorDeadline = deadline.toISOString();
+            } else {
+              twoFactorDeadline = dbUser.twoFactorDeadline.toISOString();
+            }
+
+            // If within grace period, don't require 2FA yet
+            if (twoFactorDeadline && new Date(twoFactorDeadline) > now) {
+              twoFactorRequired = false;
             }
           }
 
           token = {
             ...token,
+            twoFactorDeadline,
             twoFactorVerified: !twoFactorRequired, // If no 2FA required, mark as verified
             twoFactorRequired,
             user: {
@@ -482,6 +515,7 @@ const {
         session.user = token.user;
         session.twoFactorVerified = token.twoFactorVerified;
         session.twoFactorRequired = token.twoFactorRequired;
+        session.twoFactorDeadline = token.twoFactorDeadline;
         return session;
       },
     }),

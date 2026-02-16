@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { prisma } from "@/lib/db/prisma";
 import { tenantDefaultOAuthRepo, tenantSettingsRepo } from "@/lib/repo";
 import { type EmailRegistrationPolicy } from "@/prisma/enums";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
@@ -69,6 +70,23 @@ export const saveForce2FASettings = async (data: {
       force2FAGraceDays: Math.min(Math.max(data.force2FAGraceDays, 0), 5),
     });
 
+    // When force2FA is disabled, clear all pending grace period deadlines for tenant users
+    if (!data.force2FA) {
+      const tenantMembers = await prisma.userOnTenant.findMany({
+        where: { tenantId: tenant.id },
+        select: { userId: true },
+      });
+      if (tenantMembers.length > 0) {
+        await prisma.user.updateMany({
+          where: {
+            id: { in: tenantMembers.map(m => m.userId) },
+            twoFactorDeadline: { not: null },
+          },
+          data: { twoFactorDeadline: null },
+        });
+      }
+    }
+
     audit(
       {
         action: AuditAction.SECURITY_SETTINGS_UPDATE,
@@ -97,6 +115,8 @@ export const saveForce2FASettings = async (data: {
   }
 };
 
+const VALID_OAUTH_PROVIDERS = ["github", "google", "proconnect"] as const;
+
 export const saveOAuthProviders = async (data: { providers: string[] }): Promise<ServerActionResponse> => {
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
@@ -104,17 +124,22 @@ export const saveOAuthProviders = async (data: { providers: string[] }): Promise
   const reqCtx = await getRequestContext();
 
   try {
+    // Validate providers against whitelist
+    const validProviders = data.providers.filter((p): p is (typeof VALID_OAUTH_PROVIDERS)[number] =>
+      (VALID_OAUTH_PROVIDERS as readonly string[]).includes(p),
+    );
+
     const currentProviders = await tenantDefaultOAuthRepo.findByTenantId(tenant.id);
     const currentProviderNames = currentProviders.map(p => p.provider);
 
     // Add new providers
-    const toAdd = data.providers.filter(p => !currentProviderNames.includes(p));
+    const toAdd = validProviders.filter(p => !currentProviderNames.includes(p));
     for (const provider of toAdd) {
       await tenantDefaultOAuthRepo.upsertByTenantIdAndProvider(tenant.id, provider);
     }
 
     // Remove deselected providers
-    const toRemove = currentProviderNames.filter(p => !data.providers.includes(p));
+    const toRemove = currentProviderNames.filter(p => !(validProviders as string[]).includes(p));
     for (const provider of toRemove) {
       await tenantDefaultOAuthRepo.deleteByTenantIdAndProvider(tenant.id, provider);
     }
@@ -125,7 +150,7 @@ export const saveOAuthProviders = async (data: { providers: string[] }): Promise
         userId: session.user.uuid,
         tenantId: tenant.id,
         targetType: "TenantDefaultOAuth",
-        metadata: { providers: data.providers },
+        metadata: { providers: validProviders },
       },
       reqCtx,
     );

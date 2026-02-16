@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { verifySync } from "otplib";
 
 import { prisma } from "@/lib/db/prisma";
+import { redis } from "@/lib/db/redis/storage";
 import { auth } from "@/lib/next-auth/auth";
 
 export async function POST(req: NextRequest) {
@@ -30,6 +31,9 @@ export async function POST(req: NextRequest) {
   if (!result.valid) {
     return NextResponse.json({ error: "Invalid code" }, { status: 400 });
   }
+
+  // Store server-side 2FA proof
+  await redis.setItem(`2fa:proof:${userId}`, "1", { ttl: 60 });
 
   return NextResponse.json({ verified: true });
 }

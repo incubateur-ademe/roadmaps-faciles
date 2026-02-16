@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid code" }, { status: 400 });
   }
 
-  // Clean up code
+  // Clean up code and store server-side 2FA proof
   await redis.removeItem(`2fa:email:${userId}`);
+  await redis.setItem(`2fa:proof:${userId}`, "1", { ttl: 60 });
 
   return NextResponse.json({ verified: true });
 }

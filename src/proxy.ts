@@ -23,6 +23,12 @@ export function proxy(req: NextRequest) {
   const correlationId = req.headers.get(CORRELATION_ID_HEADER) || crypto.randomUUID();
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set(CORRELATION_ID_HEADER, correlationId);
+  requestHeaders.set("x-pathname", pathname);
+
+  // Ensure x-forwarded-proto is set (missing in local dev without reverse proxy)
+  if (!requestHeaders.has("x-forwarded-proto")) {
+    requestHeaders.set("x-forwarded-proto", url.protocol.replace(":", ""));
+  }
 
   // Skip proxy rewriting for auth and 2FA API routes
   if (

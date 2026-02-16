@@ -113,6 +113,7 @@ LOCAL_CONFIG_FILES=(
   ".claude/settings.local.json"
   ".claude.local.md"
   ".env.development.local"
+  ".env.production.local"
 )
 for file in "${LOCAL_CONFIG_FILES[@]}"; do
   if [ -f "$REPO_ROOT/$file" ]; then

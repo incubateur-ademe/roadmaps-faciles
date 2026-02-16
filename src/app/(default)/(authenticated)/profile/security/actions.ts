@@ -33,6 +33,7 @@ export const toggleEmailTwoFactor = async (): Promise<ServerActionResponse> => {
     data: {
       emailTwoFactorEnabled: newValue,
       twoFactorEnabled: willHaveAny2FA,
+      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
     },
   });
 
@@ -65,6 +66,7 @@ export const removeOtp = async (): Promise<ServerActionResponse> => {
       otpSecret: null,
       otpVerifiedAt: null,
       twoFactorEnabled: willHaveAny2FA,
+      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
     },
   });
 
@@ -101,7 +103,10 @@ export const removePasskey = async (credentialId: string): Promise<ServerActionR
 
   await prisma.user.update({
     where: { id: userId },
-    data: { twoFactorEnabled: willHaveAny2FA },
+    data: {
+      twoFactorEnabled: willHaveAny2FA,
+      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
+    },
   });
 
   return { ok: true };

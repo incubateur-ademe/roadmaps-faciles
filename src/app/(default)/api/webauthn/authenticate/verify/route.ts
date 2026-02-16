@@ -55,8 +55,9 @@ export async function POST(req: NextRequest) {
       data: { counter: verification.authenticationInfo.newCounter },
     });
 
-    // Clean up challenge
+    // Clean up challenge and store server-side 2FA proof
     await redis.removeItem(`webauthn:auth-challenge:${userId}`);
+    await redis.setItem(`2fa:proof:${userId}`, "1", { ttl: 60 });
 
     return NextResponse.json({ verified: true });
   } catch {

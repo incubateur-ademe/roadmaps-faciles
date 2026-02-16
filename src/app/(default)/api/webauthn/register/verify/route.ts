@@ -50,10 +50,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update user's twoFactorEnabled flag
+    // Update user's twoFactorEnabled flag and clear grace period deadline
     await prisma.user.update({
       where: { id: userId },
-      data: { twoFactorEnabled: true },
+      data: { twoFactorEnabled: true, twoFactorDeadline: null },
     });
 
     // Clean up challenge
