@@ -1,9 +1,11 @@
 import crypto from "node:crypto";
-import nodemailer from "nodemailer";
 import { z } from "zod";
 
 import { config } from "@/config";
+import { getEmailTranslations, interpolate } from "@/emails/getEmailTranslations";
+import { renderInvitationEmail } from "@/emails/renderEmails";
 import { prisma } from "@/lib/db/prisma";
+import { sendEmail } from "@/lib/mailer";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type Invitation } from "@/prisma/client";
 
@@ -78,31 +80,45 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
 
     const invitationLink = `${input.tenantUrl}/login?invitation=${token}`;
 
-    const transporter = nodemailer.createTransport({
-      host: config.mailer.host,
-      port: config.mailer.smtp.port,
-      secure: config.mailer.smtp.ssl,
-      auth:
-        config.mailer.smtp.login && config.mailer.smtp.password
-          ? {
-              user: config.mailer.smtp.login,
-              pass: config.mailer.smtp.password,
-            }
-          : undefined,
+    // TODO: resolve recipient locale if possible
+    const locale = "fr";
+    const isOwnerInvite = input.role === "OWNER";
+
+    const [t, tFooter] = await Promise.all([
+      getEmailTranslations(locale, "emails.invitation", [
+        "subjectOwner",
+        "subjectUser",
+        "title",
+        "body",
+        "roleOwner",
+        "button",
+        "ignore",
+      ]),
+      getEmailTranslations(locale, "emails", ["footer"]),
+    ]);
+
+    const subject = isOwnerInvite ? t.subjectOwner : t.subjectUser;
+    const roleText = isOwnerInvite ? t.roleOwner : "";
+    const bodyText = interpolate(t.body, { roleText });
+
+    const html = await renderInvitationEmail({
+      baseUrl: config.host,
+      invitationLink,
+      locale,
+      translations: {
+        title: t.title,
+        body: bodyText,
+        button: t.button,
+        ignore: t.ignore,
+        footer: tFooter.footer,
+      },
     });
 
-    const isOwnerInvite = input.role === "OWNER";
-    const subject = isOwnerInvite
-      ? "Vous êtes invité en tant que propriétaire d'un espace"
-      : "Vous êtes invité à rejoindre un espace";
-    const roleText = isOwnerInvite ? " en tant que propriétaire" : "";
-
-    await transporter.sendMail({
-      from: config.mailer.from,
+    await sendEmail({
       to: input.email,
       subject,
-      text: `Bonjour,\n\nVous avez été invité à rejoindre un espace${roleText}. Cliquez sur le lien suivant pour accepter l'invitation :\n\n${invitationLink}\n\nCordialement,`,
-      html: `<p>Bonjour,</p><p>Vous avez été invité à rejoindre un espace${roleText}. Cliquez sur le lien suivant pour accepter l'invitation :</p><p><a href="${invitationLink}">${invitationLink}</a></p><p>Cordialement,</p>`,
+      html,
+      text: `${bodyText}\n\n${invitationLink}\n\n${t.ignore}`,
     });
 
     return invitation;
