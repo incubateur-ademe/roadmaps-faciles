@@ -61,6 +61,7 @@ echo "📋 Copie des fichiers de config locale..."
 LOCAL_CONFIG_FILES=(
   ".claude/settings.local.json"
   ".claude.local.md"
+  ".env.development.local"
 )
 for file in "${LOCAL_CONFIG_FILES[@]}"; do
   if [ -f "$REPO_ROOT/$file" ]; then
@@ -70,15 +71,26 @@ for file in "${LOCAL_CONFIG_FILES[@]}"; do
   fi
 done
 
-# --- .env.development.local ---
-echo "⚙️  Configuration de l'environnement..."
-cat > .env.development.local <<EOF
+# --- .env.development.local : surcharge port + DB ---
+echo "⚙️  Configuration de l'environnement (port=${PORT}, db=${DB_NAME})..."
+if [ -f .env.development.local ]; then
+  # Remplacer les lignes existantes
+  sed -i '' "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"|" .env.development.local
+  sed -i '' "s|^PORT=.*|PORT=${PORT}|" .env.development.local
+  sed -i '' "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}|" .env.development.local
+  # Ajouter les lignes si elles n'existent pas encore
+  grep -q "^DATABASE_URL=" .env.development.local || echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"" >> .env.development.local
+  grep -q "^PORT=" .env.development.local || echo "PORT=${PORT}" >> .env.development.local
+  grep -q "^NEXT_PUBLIC_SITE_URL=" .env.development.local || echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}" >> .env.development.local
+else
+  # Pas de fichier source — créer un minimal
+  cat > .env.development.local <<EOF
 # Worktree: $BRANCH
-# Généré par scripts/worktree-new.sh
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/${DB_NAME}"
 PORT=${PORT}
 NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}
 EOF
+fi
 
 # --- Base de données ---
 echo "🗄️  Préparation de la base de données..."
