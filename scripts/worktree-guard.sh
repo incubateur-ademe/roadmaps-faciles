@@ -10,7 +10,14 @@
 
 set -euo pipefail
 
-WORKTREE_COUNT=$(git worktree list 2>/dev/null | wc -l | tr -d ' ')
+# Vérifier que git est disponible et qu'on est dans un repo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "⚠️ COMPACTION DÉTECTÉE — Impossible de vérifier le worktree (pas dans un dépôt git)."
+  echo "INSTRUCTION : Demande à l'utilisateur de confirmer le répertoire de travail actif."
+  exit 0
+fi
+
+WORKTREE_COUNT=$(git worktree list | wc -l | tr -d ' ')
 
 # Pas de worktrees secondaires → rien à signaler
 if [ "$WORKTREE_COUNT" -le 1 ]; then

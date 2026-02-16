@@ -25,7 +25,11 @@ BRANCH="${1:?Usage: $0 <branch-name> [port]}"
 PORT="${2:-3000}"
 
 # --- Chemins ---
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "❌ Ce script doit être exécuté depuis un dépôt git."
+  exit 1
+fi
+REPO_ROOT=$(git rev-parse --show-toplevel)
 REPO_NAME=$(basename "$REPO_ROOT")
 # Extraire un nom court depuis le nom de branche (feat/auth-2fa → auth-2fa)
 SHORT_NAME=$(echo "$BRANCH" | sed 's|.*/||')
@@ -40,9 +44,10 @@ if [ -d "$WORKTREE_DIR" ]; then
 fi
 
 # Vérifier que la branche n'est pas déjà checked out dans un autre worktree
-if git worktree list | grep -q "\[$BRANCH\]"; then
+if git worktree list --porcelain | awk -v b="$BRANCH" \
+  '$1 == "branch" && $2 == ("refs/heads/" b) { found = 1 } END { exit found ? 0 : 1 }'; then
   echo "❌ La branche $BRANCH est déjà utilisée dans un worktree :"
-  git worktree list | grep "\[$BRANCH\]"
+  git worktree list
   exit 1
 fi
 

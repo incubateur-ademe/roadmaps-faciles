@@ -17,7 +17,11 @@ BRANCH="${1:?Usage: $0 <branch-name> [--drop-db]}"
 DROP_DB="${2:-}"
 
 # --- Chemins ---
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "❌ Ce script doit être exécuté depuis un dépôt git." >&2
+  exit 1
+fi
+REPO_ROOT=$(git rev-parse --show-toplevel)
 REPO_NAME=$(basename "$REPO_ROOT")
 SHORT_NAME=$(echo "$BRANCH" | sed 's|.*/||')
 WORKTREE_DIR="$(dirname "$REPO_ROOT")/${REPO_NAME}-${SHORT_NAME}"
@@ -37,7 +41,7 @@ echo "🗑️  Suppression du worktree $WORKTREE_DIR..."
 git worktree remove "$WORKTREE_DIR" --force
 
 # Nettoyer la branche locale si elle a été mergée
-if git branch --merged dev 2>/dev/null | grep -q "$BRANCH"; then
+if git branch --merged dev --format='%(refname:short)' 2>/dev/null | grep -Fxq "$BRANCH"; then
   echo "🌿 La branche $BRANCH est mergée dans dev, suppression..."
   git branch -d "$BRANCH" 2>/dev/null || true
 else
