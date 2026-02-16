@@ -4,25 +4,71 @@
 # Crée un git worktree isolé pour travailler en parallèle avec Claude Code.
 #
 # Usage :
-#   scripts/worktree-new.sh <branch-name> [port]
+#   scripts/worktree-new.sh <branch-name> [options]
+#
+# Options :
+#   --port <port>    Port custom (modifie PORT + NEXT_PUBLIC_SITE_URL)
+#   --db             Crée une DB dédiée + prisma db push + seed
+#   --from <branch>  Branche de base (défaut: dev)
 #
 # Exemples :
-#   scripts/worktree-new.sh feat/auth-2fa 3001
-#   scripts/worktree-new.sh fix/login-bug        # port par défaut: 3000
+#   scripts/worktree-new.sh feat/auth-2fa              # léger : DB partagée, port 3000
+#   scripts/worktree-new.sh feat/auth-2fa --db          # DB dédiée, port 3000
+#   scripts/worktree-new.sh feat/auth-2fa --port 3001   # DB partagée, port 3001
+#   scripts/worktree-new.sh feat/auth-2fa --db --port 3001  # tout isolé
+#   scripts/worktree-new.sh fix/hotfix --from main      # worktree depuis main
 #
-# Ce script :
-#   1. Crée le worktree depuis dev
-#   2. Installe les dépendances (pnpm install)
-#   3. Génère le client Prisma
-#   4. Crée un .env.development.local avec port + DB dédiés
-#   5. Crée la DB dédiée si elle n'existe pas
-#   6. Affiche la commande pour lancer Claude dedans
+# Par défaut le worktree partage la DB et le port du repo principal.
+# Utilise --db et/ou --port pour isoler quand nécessaire (sessions parallèles,
+# migrations en cours, etc.).
 
 set -euo pipefail
 
-# --- Arguments ---
-BRANCH="${1:?Usage: $0 <branch-name> [port]}"
-PORT="${2:-3000}"
+# --- Parse arguments ---
+BRANCH=""
+PORT=""
+ISOLATED_DB=false
+BASE_BRANCH="dev"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --port)
+      PORT="${2:?--port nécessite une valeur}"
+      shift 2
+      ;;
+    --db)
+      ISOLATED_DB=true
+      shift
+      ;;
+    --from)
+      BASE_BRANCH="${2:?--from nécessite une valeur}"
+      shift 2
+      ;;
+    -h|--help)
+      sed -n '2,/^$/p' "$0" | sed 's/^# \?//'
+      exit 0
+      ;;
+    -*)
+      echo "❌ Option inconnue : $1" >&2
+      echo "   Utilise --help pour voir les options disponibles." >&2
+      exit 1
+      ;;
+    *)
+      if [ -z "$BRANCH" ]; then
+        BRANCH="$1"
+      else
+        echo "❌ Argument inattendu : $1" >&2
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$BRANCH" ]; then
+  echo "Usage: $0 <branch-name> [--port <port>] [--db] [--from <branch>]" >&2
+  exit 1
+fi
 
 # --- Chemins ---
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -52,11 +98,11 @@ if git worktree list --porcelain | awk -v b="$BRANCH" \
 fi
 
 # --- Création du worktree ---
-echo "📁 Création du worktree..."
+echo "📁 Création du worktree depuis ${BASE_BRANCH}..."
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   git worktree add "$WORKTREE_DIR" "$BRANCH"
 else
-  git worktree add -b "$BRANCH" "$WORKTREE_DIR" dev
+  git worktree add -b "$BRANCH" "$WORKTREE_DIR" "$BASE_BRANCH"
 fi
 
 cd "$WORKTREE_DIR"
@@ -76,33 +122,44 @@ for file in "${LOCAL_CONFIG_FILES[@]}"; do
   fi
 done
 
-# --- .env.development.local : surcharge port + DB ---
-echo "⚙️  Configuration de l'environnement (port=${PORT}, db=${DB_NAME})..."
-if [ -f .env.development.local ]; then
-  # Remplacer les lignes existantes
-  sed -i '' "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"|" .env.development.local
-  sed -i '' "s|^PORT=.*|PORT=${PORT}|" .env.development.local
-  sed -i '' "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}|" .env.development.local
-  # Ajouter les lignes si elles n'existent pas encore
-  grep -q "^DATABASE_URL=" .env.development.local || echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"" >> .env.development.local
-  grep -q "^PORT=" .env.development.local || echo "PORT=${PORT}" >> .env.development.local
-  grep -q "^NEXT_PUBLIC_SITE_URL=" .env.development.local || echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}" >> .env.development.local
-else
-  # Pas de fichier source — créer un minimal
-  cat > .env.development.local <<EOF
-# Worktree: $BRANCH
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/${DB_NAME}"
-PORT=${PORT}
-NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}
-EOF
+# --- .env.development.local : surcharge port + DB si demandé ---
+if [ -n "$PORT" ] || [ "$ISOLATED_DB" = true ]; then
+  echo -n "⚙️  Configuration de l'environnement ("
+  [ -n "$PORT" ] && echo -n "port=${PORT}"
+  [ -n "$PORT" ] && [ "$ISOLATED_DB" = true ] && echo -n ", "
+  [ "$ISOLATED_DB" = true ] && echo -n "db=${DB_NAME}"
+  echo ")..."
+
+  if [ -f .env.development.local ]; then
+    if [ "$ISOLATED_DB" = true ]; then
+      sed -i '' "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"|" .env.development.local
+      grep -q "^DATABASE_URL=" .env.development.local || echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\"" >> .env.development.local
+    fi
+    if [ -n "$PORT" ]; then
+      sed -i '' "s|^PORT=.*|PORT=${PORT}|" .env.development.local
+      sed -i '' "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}|" .env.development.local
+      grep -q "^PORT=" .env.development.local || echo "PORT=${PORT}" >> .env.development.local
+      grep -q "^NEXT_PUBLIC_SITE_URL=" .env.development.local || echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}" >> .env.development.local
+    fi
+  else
+    # Pas de fichier source — créer un minimal
+    {
+      echo "# Worktree: $BRANCH"
+      [ "$ISOLATED_DB" = true ] && echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\""
+      [ -n "$PORT" ] && echo "PORT=${PORT}"
+      [ -n "$PORT" ] && echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}"
+    } > .env.development.local
+  fi
 fi
 
-# --- Base de données ---
-echo "🗄️  Préparation de la base de données..."
-if psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
-  echo "   DB $DB_NAME existe déjà, skip."
-else
-  createdb -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME créée." || echo "   ⚠️  Impossible de créer la DB $DB_NAME. Crée-la manuellement."
+# --- Base de données (seulement si --db) ---
+if [ "$ISOLATED_DB" = true ]; then
+  echo "🗄️  Préparation de la base de données..."
+  if psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
+    echo "   DB $DB_NAME existe déjà, skip."
+  else
+    createdb -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME créée." || echo "   ⚠️  Impossible de créer la DB $DB_NAME. Crée-la manuellement."
+  fi
 fi
 
 # --- Dépendances ---
@@ -112,20 +169,30 @@ pnpm install --frozen-lockfile
 # --- Prisma ---
 echo "🔧 Génération du client Prisma..."
 pnpm prisma generate
-pnpm prisma db push --skip-generate 2>/dev/null || echo "   ⚠️  prisma db push a échoué — lance-le manuellement si le schéma a changé."
 
-# --- Seed (optionnel) ---
-echo "🌱 Seed de la base..."
-pnpm prisma db seed 2>/dev/null || echo "   ⚠️  Seed a échoué — lance 'pnpm prisma db seed' manuellement si nécessaire."
+if [ "$ISOLATED_DB" = true ]; then
+  echo "🔧 Prisma db push..."
+  pnpm prisma db push --skip-generate 2>/dev/null || echo "   ⚠️  prisma db push a échoué — lance-le manuellement si le schéma a changé."
+  echo "🌱 Seed de la base..."
+  pnpm prisma db seed 2>/dev/null || echo "   ⚠️  Seed a échoué — lance 'pnpm prisma db seed' manuellement si nécessaire."
+fi
 
 # --- Résumé ---
 echo ""
 echo "✅ Worktree prêt !"
 echo ""
 echo "   Répertoire : $WORKTREE_DIR"
-echo "   Branche    : $BRANCH"
-echo "   Port       : $PORT"
-echo "   Base       : $DB_NAME"
+echo "   Branche    : $BRANCH (depuis ${BASE_BRANCH})"
+if [ -n "$PORT" ]; then
+  echo "   Port       : $PORT"
+else
+  echo "   Port       : 3000 (partagé)"
+fi
+if [ "$ISOLATED_DB" = true ]; then
+  echo "   Base       : $DB_NAME (dédiée)"
+else
+  echo "   Base       : partagée avec le repo principal"
+fi
 echo ""
 echo "👉 Pour lancer Claude dedans :"
 echo ""
