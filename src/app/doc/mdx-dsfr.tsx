@@ -1,5 +1,3 @@
-"use client";
-
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import DsfrButton from "@codegouvfr/react-dsfr/Button";

@@ -78,8 +78,3 @@
 #nd-docs-layout code:not([class*="fr-"]):hover {
     background-color: unset;
 }
-
-/* Re-activate DSFR inside .fr-* containers (Alert, Badge, Table, etc.) */
-#nd-docs-layout [class*="fr-"] {
-    all: revert-layer;
-}
