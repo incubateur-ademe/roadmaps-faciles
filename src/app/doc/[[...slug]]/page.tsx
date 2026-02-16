@@ -14,7 +14,7 @@ const Page = async (props: { params: Promise<{ slug?: string[] }> }) => {
   const MDX = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc} tableOfContent={{ style: "clerk" }} tableOfContentPopover={{ style: "clerk" }}>
+    <DocsPage toc={page.data.toc ?? []} tableOfContent={{ style: "clerk" }} tableOfContentPopover={{ style: "clerk" }}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>

@@ -26,6 +26,27 @@
     --underline-hover-img: revert;
 }
 
+/*
+ * Sidebar: neutralize DSFR styles on links & buttons.
+ * DSFR applies global hover/color/background rules that override Fumadocs Tailwind classes.
+ * We reset specific properties so Fumadocs hover effects work (bg-fd-accent/50, text colors).
+ */
+#nd-sidebar a,
+#nd-sidebar button {
+    background-image: revert-layer;
+    background-color: revert-layer;
+    color: revert-layer;
+    --underline-img: revert-layer;
+    --underline-hover-img: revert-layer;
+}
+
+#nd-sidebar a:hover,
+#nd-sidebar button:hover {
+    background-image: revert-layer;
+    background-color: revert-layer;
+    color: revert-layer;
+}
+
 /* Headings: neutralize DSFR font-size, line-height, margin, color */
 #nd-docs-layout :is(h1, h2, h3, h4, h5, h6):not([class*="fr-"]) {
     font-size: revert;
@@ -77,4 +98,8 @@
 
 #nd-docs-layout code:not([class*="fr-"]):hover {
     background-color: unset;
+}
+
+.nd-dsfr-icon::before {
+    --icon-size: 1.25rem !important;
 }

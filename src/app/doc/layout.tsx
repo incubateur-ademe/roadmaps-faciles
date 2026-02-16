@@ -11,7 +11,7 @@ import { CustomSeparator } from "./layout.client";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <RootProvider theme={{ enabled: false }} search={{ enabled: false }}>
+    <RootProvider theme={{ enabled: false }}>
       <DocHeader />
       <DocsLayout
         tree={docsSource.pageTree}
