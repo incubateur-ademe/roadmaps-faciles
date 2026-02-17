@@ -92,6 +92,10 @@
       "google": "Se connecter avec Google",
       "proconnect": "Se connecter avec ProConnect"
     },
+    "preLoginOtp": {
+      "title": "Vérification OTP requise",
+      "description": "Un code de votre application d'authentification est requis avant l'envoi du lien de connexion."
+    },
     "twoFactor": {
       "title": "Vérification en deux étapes",
       "description": "Une vérification supplémentaire est nécessaire pour accéder à votre compte.",

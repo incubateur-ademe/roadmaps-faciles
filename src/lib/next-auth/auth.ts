@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { EspaceMembreProvider } from "@incubateur-ademe/next-auth-espace-membre-provider";
+import { EspaceMembreProvider, ESPACE_MEMBRE_PROVIDER_ID } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
@@ -221,6 +221,30 @@ const {
         return `${protocol}://${host}/`;
       },
       async signIn(params) {
+        // Pre-login OTP check: block magic link if user has OTP configured but no pre-login proof
+        const isEmailProvider =
+          params.account?.provider === "nodemailer" || params.account?.provider === ESPACE_MEMBRE_PROVIDER_ID;
+        if (isEmailProvider && params.email?.verificationRequest) {
+          // For EM provider, user.email has been resolved by the wrapper (real email, not username)
+          // Lookup user to check OTP configuration
+          const email = params.user.email;
+          if (email) {
+            const otpUser = await prisma.user.findFirst({
+              where: { email },
+              select: { id: true, otpSecret: true, otpVerifiedAt: true },
+            });
+            if (otpUser?.otpSecret && otpUser.otpVerifiedAt) {
+              // User has OTP configured — require pre-login proof
+              const { redis } = await import("../db/redis/storage");
+              const proof = await redis.getItem<string>(`otp:pre-login:${otpUser.id}`);
+              if (!proof) {
+                return false; // Block magic link — no OTP proof
+              }
+              // Don't consume proof here — consumed in JWT callback on signIn
+            }
+          }
+        }
+
         if (params.account?.provider === "nodemailer" && params.email?.verificationRequest) {
           // Phase 1: User entered email — decide if we send the verification email
           if (!params.user.email || !tenantSettings || !tenant) {
@@ -449,10 +473,21 @@ const {
             }
           }
 
+          // Check for pre-login OTP proof — if present, mark 2FA as already verified
+          let preLoginOtpVerified = false;
+          if (twoFactorRequired && dbUser.twoFactorEnabled) {
+            const { redis } = await import("../db/redis/storage");
+            const preLoginProof = await redis.getItem<string>(`otp:pre-login:${dbUser.id}`);
+            if (preLoginProof) {
+              await redis.removeItem(`otp:pre-login:${dbUser.id}`);
+              preLoginOtpVerified = true;
+            }
+          }
+
           token = {
             ...token,
             twoFactorDeadline,
-            twoFactorVerified: !twoFactorRequired, // If no 2FA required, mark as verified
+            twoFactorVerified: !twoFactorRequired || preLoginOtpVerified,
             twoFactorRequired,
             user: {
               id: dbUser.id,

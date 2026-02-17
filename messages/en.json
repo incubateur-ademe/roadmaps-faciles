@@ -92,6 +92,10 @@
       "google": "Sign in with Google",
       "proconnect": "Sign in with ProConnect"
     },
+    "preLoginOtp": {
+      "title": "OTP verification required",
+      "description": "A code from your authenticator app is required before the sign-in link is sent."
+    },
     "twoFactor": {
       "title": "Two-factor verification",
       "description": "Additional verification is required to access your account.",
