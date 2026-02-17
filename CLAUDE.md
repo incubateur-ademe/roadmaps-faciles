@@ -60,6 +60,11 @@
   - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
+  - OAuth SSO: GitHub, Google, ProConnect — tenant-only, configured via `OAUTH_*` env vars in `src/config.ts`, activated per tenant in admin UI
+  - 2FA: passkey (WebAuthn), OTP (TOTP), email — APIs in `src/app/(default)/api/{webauthn,otp,2fa}/`
+  - 2FA verification: Redis proof (`2fa:proof:{userId}`, TTL 60s) — endpoint stores proof on success, JWT callback consumes it on `session.update()`
+  - Force 2FA: admin toggle (root + tenant level) with grace period (0–5 days), deadline stored in `User.twoFactorDeadline`
+  - `DefaultAuthenticatedLayout`: reads `x-pathname` header (set in `src/proxy.ts`) for redirect loop prevention (2FA setup vs verify)
 - Data layer: Prisma repos in `src/lib/repo/`, services in `src/lib/services/`, use cases in `src/useCases/`
 - Audit log: fire-and-forget `audit()` in `src/lib/utils/audit.ts`
   - Pattern in server actions: call `getRequestContext()` BEFORE try/catch and early returns, then `audit()` on success, catch, AND validation early returns. `RequestContext` includes `correlationId` (from proxy header).
@@ -159,3 +164,5 @@
 - Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
 - Email templates (`src/emails/`): inline `style={{...}}` is required — email clients don't support external CSS/Tailwind; this is the exception to the "no inline styles" rule
 - Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
+- `@auth/core` provider merge: `Nodemailer()` stores user config in `options` field; `parseProviders()` does `merge(defaults, userOptions)` which overrides top-level keys with `options.*` — the espace-membre-provider wrapper must flatten `options` into the base config (fixed in v0.3.3)
+- OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`

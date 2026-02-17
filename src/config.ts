@@ -75,17 +75,17 @@ export const config = {
   },
   oauth: {
     github: {
-      clientId: ensureApiEnvVar(process.env.GITHUB_CLIENT_ID, ""),
-      clientSecret: ensureApiEnvVar(process.env.GITHUB_CLIENT_SECRET, ""),
+      clientId: ensureApiEnvVar(process.env.OAUTH_GITHUB_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.OAUTH_GITHUB_CLIENT_SECRET, ""),
     },
     google: {
-      clientId: ensureApiEnvVar(process.env.GOOGLE_CLIENT_ID, ""),
-      clientSecret: ensureApiEnvVar(process.env.GOOGLE_CLIENT_SECRET, ""),
+      clientId: ensureApiEnvVar(process.env.OAUTH_GOOGLE_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.OAUTH_GOOGLE_CLIENT_SECRET, ""),
     },
     proconnect: {
-      clientId: ensureApiEnvVar(process.env.PROCONNECT_CLIENT_ID, ""),
-      clientSecret: ensureApiEnvVar(process.env.PROCONNECT_CLIENT_SECRET, ""),
-      issuer: ensureApiEnvVar(process.env.PROCONNECT_ISSUER, ""),
+      clientId: ensureApiEnvVar(process.env.OAUTH_PROCONNECT_CLIENT_ID, ""),
+      clientSecret: ensureApiEnvVar(process.env.OAUTH_PROCONNECT_CLIENT_SECRET, ""),
+      issuer: ensureApiEnvVar(process.env.OAUTH_PROCONNECT_ISSUER, ""),
     },
   },
   security: {

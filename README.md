@@ -82,6 +82,20 @@ Créer `.env.development.local` à partir de `.env.development` et renseigner si
 | `ESPACE_MEMBRE_API_KEY` | Clé API Espace Membre beta.gouv.fr | — |
 | `ESPACE_MEMBRE_URL` | URL de l'Espace Membre | `https://espace-membre.incubateur.net` |
 
+#### OAuth (SSO par tenant)
+
+Fournisseurs d'authentification OAuth, activables par tenant. Laisser vide pour désactiver.
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `OAUTH_GITHUB_CLIENT_ID` | Client ID GitHub OAuth | — |
+| `OAUTH_GITHUB_CLIENT_SECRET` | Client Secret GitHub OAuth | — |
+| `OAUTH_GOOGLE_CLIENT_ID` | Client ID Google OAuth | — |
+| `OAUTH_GOOGLE_CLIENT_SECRET` | Client Secret Google OAuth | — |
+| `OAUTH_PROCONNECT_CLIENT_ID` | Client ID ProConnect (OIDC) | — |
+| `OAUTH_PROCONNECT_CLIENT_SECRET` | Client Secret ProConnect | — |
+| `OAUTH_PROCONNECT_ISSUER` | URL de l'issuer ProConnect | — |
+
 #### Brand (DSFR)
 
 | Variable | Description | Défaut |
