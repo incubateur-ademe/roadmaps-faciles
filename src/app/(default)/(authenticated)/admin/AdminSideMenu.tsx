@@ -25,6 +25,11 @@ export const AdminSideMenu = () => {
       isActive: currentPage === "users",
     },
     {
+      text: t("security.menu"),
+      linkProps: { href: "/admin/security" },
+      isActive: currentPage === "security",
+    },
+    {
       text: t("prismaStudio"),
       linkProps: { href: "/admin/prisma" },
       isActive: currentPage === "prisma",

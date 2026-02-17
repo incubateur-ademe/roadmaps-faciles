@@ -23,9 +23,20 @@ export function proxy(req: NextRequest) {
   const correlationId = req.headers.get(CORRELATION_ID_HEADER) || crypto.randomUUID();
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set(CORRELATION_ID_HEADER, correlationId);
+  requestHeaders.set("x-pathname", pathname);
 
-  // Skip proxy rewriting for auth API routes
-  if (pathname.startsWith("/api/auth")) {
+  // Ensure x-forwarded-proto is set (missing in local dev without reverse proxy)
+  if (!requestHeaders.has("x-forwarded-proto")) {
+    requestHeaders.set("x-forwarded-proto", url.protocol.replace(":", ""));
+  }
+
+  // Skip proxy rewriting for auth and 2FA API routes
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/webauthn") ||
+    pathname.startsWith("/api/otp") ||
+    pathname.startsWith("/api/2fa")
+  ) {
     const response = NextResponse.next({ request: { headers: requestHeaders } });
     return withCorrelationId(req, response);
   }
@@ -93,7 +104,10 @@ export const config = {
      */
     // "/((?!api|_next/|_static|[\\w-]+\\.\\w+).*)",
     "/((?!api|_next/|_static|img/).*)",
-    // include api/auth for next-auth
+    // include api/auth for next-auth and 2FA API routes
     "/api/auth/:path*",
+    "/api/webauthn/:path*",
+    "/api/otp/:path*",
+    "/api/2fa/:path*",
   ],
 };

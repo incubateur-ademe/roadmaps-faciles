@@ -8,9 +8,11 @@ import { config } from "@/config";
 import { Box, Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
+import { tenantDefaultOAuthRepo } from "@/lib/repo";
 
 import { DomainPageHOP } from "../DomainPage";
 import { BridgeAutoLogin } from "./BridgeAutoLogin";
+import { OAuthButtons } from "./OAuthButtons";
 
 const TenantLoginPage = DomainPageHOP()(async props => {
   const t = await getTranslations("auth");
@@ -60,6 +62,10 @@ const TenantLoginPage = DomainPageHOP()(async props => {
   const currentLoginUrl = `${protocol}://${host}/login`;
   const bridgeUrl = `${config.host}/api/auth-bridge?redirect=${encodeURIComponent(currentLoginUrl)}`;
 
+  // Fetch enabled OAuth providers for this tenant
+  const enabledOAuthProviders = await tenantDefaultOAuthRepo.findByTenantId(props._data.tenant.id);
+  const providerNames = enabledOAuthProviders.map(p => p.provider);
+
   return (
     <DsfrPage>
       <Container ptmd="14v" mbmd="14v" fluid>
@@ -72,6 +78,13 @@ const TenantLoginPage = DomainPageHOP()(async props => {
                   <Box>
                     <LoginForm loginWithEmail defaultEmail={invitationEmail} />
                   </Box>
+                  {providerNames.length > 0 && (
+                    <>
+                      <hr className="fr-mt-4w fr-pb-2w" />
+                      <p className="fr-text--sm">{t("oauthPrompt")}</p>
+                      <OAuthButtons providers={providerNames} />
+                    </>
+                  )}
                   <hr className="fr-mt-4w fr-pb-2w" />
                   <p className="fr-text--sm">
                     {t("bridgePrompt", { brand: config.brand.name })}{" "}

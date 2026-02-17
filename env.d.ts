@@ -119,12 +119,47 @@ Française`
          */
         MAILER_FROM_EMAIL?: string;
         /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_GITHUB_CLIENT_ID?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_GITHUB_CLIENT_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_GOOGLE_CLIENT_ID?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_GOOGLE_CLIENT_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_PROCONNECT_CLIENT_ID?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_PROCONNECT_CLIENT_SECRET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        OAUTH_PROCONNECT_ISSUER?: string;
+        /**
          * Dist: `sikretfordevonly`  
          * {@link [Local Env Dist](.env.development)}
          */
         SECURITY_JWT_SECRET?: string;
         /**
-         * Dist: `="sikretfordevonly"`  
+         * Dist: `sikretfordevonly`  
          * {@link [Local Env Dist](.env.development)}
          */
         SECURITY_WEBHOOK_SECRET?: string;
@@ -249,7 +284,7 @@ Française`
          */
         NEXT_PUBLIC_APP_VERSION_COMMIT?: string;
         /**
-         * Dist: `http://default.localhost:3000/api/auth`  
+         * Dist: `http://localhost:3000/api/auth`  
          * {@link [Local Env Dist](.env.development)}
          */
         AUTH_URL?: string;
@@ -344,6 +379,46 @@ Française`
          */
         DNS_CLOUDFLARE_API_KEY?: string;
         /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        NEXT_PUBLIC_SENTRY_DSN?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SENTRY_DSN?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SENTRY_AUTH_TOKEN?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SENTRY_ORG?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SENTRY_PROJECT?: string;
+        /**
+         * Dist: `1.0`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        SENTRY_TRACES_SAMPLE_RATE?: string;
+        /**
+         * Dist: `1.0`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE?: string;
+        /**
+         * Dist: `debug`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        LOG_LEVEL?: string;
+        /**
          * Dist: `localhost`  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -419,6 +494,13 @@ declare type ProcessEnvCustomKeys =
     | 'MAILER_SMTP_LOGIN'
     | 'MAILER_SMTP_SSL'
     | 'MAILER_FROM_EMAIL'
+    | 'OAUTH_GITHUB_CLIENT_ID'
+    | 'OAUTH_GITHUB_CLIENT_SECRET'
+    | 'OAUTH_GOOGLE_CLIENT_ID'
+    | 'OAUTH_GOOGLE_CLIENT_SECRET'
+    | 'OAUTH_PROCONNECT_CLIENT_ID'
+    | 'OAUTH_PROCONNECT_CLIENT_SECRET'
+    | 'OAUTH_PROCONNECT_ISSUER'
     | 'SECURITY_JWT_SECRET'
     | 'SECURITY_WEBHOOK_SECRET'
     | 'REDIS_BASE'
@@ -464,6 +546,14 @@ declare type ProcessEnvCustomKeys =
     | 'DNS_OVH_CONSUMER_KEY'
     | 'DNS_CLOUDFLARE_EMAIL'
     | 'DNS_CLOUDFLARE_API_KEY'
+    | 'NEXT_PUBLIC_SENTRY_DSN'
+    | 'SENTRY_DSN'
+    | 'SENTRY_AUTH_TOKEN'
+    | 'SENTRY_ORG'
+    | 'SENTRY_PROJECT'
+    | 'SENTRY_TRACES_SAMPLE_RATE'
+    | 'NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE'
+    | 'LOG_LEVEL'
     | 'HOSTNAME'
     | 'PORT'
     | 'CONTAINER_VERSION'

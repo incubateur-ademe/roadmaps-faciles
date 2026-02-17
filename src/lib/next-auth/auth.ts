@@ -1,9 +1,11 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { EspaceMembreProvider } from "@incubateur-ademe/next-auth-espace-membre-provider";
+import { EspaceMembreProvider, ESPACE_MEMBRE_PROVIDER_ID } from "@incubateur-ademe/next-auth-espace-membre-provider";
 import { EspaceMembreClientMemberNotFoundError } from "@incubateur-ademe/next-auth-espace-membre-provider/EspaceMembreClient";
 import NextAuth from "next-auth";
 import { type AdapterUser } from "next-auth/adapters";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { cookies, headers } from "next/headers";
 import { cache } from "react";
@@ -19,7 +21,15 @@ import { GetTenantForDomain } from "@/useCases/tenant/GetTenantForDomain";
 import { type Locale } from "@/utils/i18n";
 
 import { prisma } from "../db/prisma";
-import { tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "../repo";
+import {
+  appSettingsRepo,
+  tenantDefaultOAuthRepo,
+  tenantRepo,
+  tenantSettingsRepo,
+  userOnTenantRepo,
+  userRepo,
+} from "../repo";
+import { refreshAccessToken } from "./refresh";
 
 type CustomUser = {
   currentTenantRole?: UserRole;
@@ -27,17 +37,30 @@ type CustomUser = {
   isSuperAdmin?: boolean;
   role: UserRole;
   status: UserStatus;
+  twoFactorEnabled: boolean;
   uuid: string;
 } & AdapterUser;
 
 declare module "next-auth" {
   interface Session {
+    twoFactorDeadline?: string;
+    twoFactorRequired: boolean;
+    twoFactorVerified: boolean;
     user: CustomUser;
   }
 }
 
 declare module "@auth/core/jwt" {
   interface JWT {
+    accessToken?: string;
+    accessTokenExpires?: number;
+    error?: string;
+    provider?: string;
+    refreshToken?: string;
+    sessionRefreshAt?: number;
+    twoFactorDeadline?: string;
+    twoFactorRequired: boolean;
+    twoFactorVerified: boolean;
     user: CustomUser;
   }
 }
@@ -93,6 +116,47 @@ export interface GetAuthMethodsProps {
   domain?: string;
 }
 
+// Build OAuth providers conditionally based on config
+function buildOAuthProviders() {
+  const providers = [];
+
+  if (config.oauth.github.clientId) {
+    providers.push(
+      GitHub({
+        clientId: config.oauth.github.clientId,
+        clientSecret: config.oauth.github.clientSecret,
+        authorization: { params: { scope: "read:user user:email" } },
+      }),
+    );
+  }
+
+  if (config.oauth.google.clientId) {
+    providers.push(
+      Google({
+        clientId: config.oauth.google.clientId,
+        clientSecret: config.oauth.google.clientSecret,
+        authorization: { params: { access_type: "offline", prompt: "consent" } },
+      }),
+    );
+  }
+
+  if (config.oauth.proconnect.clientId) {
+    providers.push({
+      id: "proconnect",
+      name: "ProConnect",
+      type: "oidc" as const,
+      issuer: config.oauth.proconnect.issuer,
+      clientId: config.oauth.proconnect.clientId,
+      clientSecret: config.oauth.proconnect.clientSecret,
+    });
+  }
+
+  return providers;
+}
+
+// Session sliding window: 30 minutes
+const SESSION_MAX_AGE = 30 * 60 * 1000;
+
 const {
   auth: authCore,
   signIn,
@@ -131,9 +195,6 @@ const {
       strategy: "jwt",
     },
     adapter: espaceMembreProvider.AdapterWrapper(PrismaAdapter(prisma)),
-    // experimental: {
-    //   enableWebAuthn: true,
-    // },
     providers: [
       nodemailerProvider,
       espaceMembreProvider.ProviderWrapper(nodemailerProvider),
@@ -153,17 +214,37 @@ const {
           }
         },
       }),
-      // TODO
-      // WebAuthn,
-      // Passkey({
-      //   registrationOptions: {},
-      // }),
+      ...buildOAuthProviders(),
     ],
     callbacks: espaceMembreProvider.CallbacksWrapper({
       redirect() {
         return `${protocol}://${host}/`;
       },
       async signIn(params) {
+        // Pre-login OTP check: block magic link if user has OTP configured but no pre-login proof
+        const isEmailProvider =
+          params.account?.provider === "nodemailer" || params.account?.provider === ESPACE_MEMBRE_PROVIDER_ID;
+        if (isEmailProvider && params.email?.verificationRequest) {
+          // For EM provider, user.email has been resolved by the wrapper (real email, not username)
+          // Lookup user to check OTP configuration
+          const email = params.user.email;
+          if (email) {
+            const otpUser = await prisma.user.findFirst({
+              where: { email },
+              select: { id: true, otpSecret: true, otpVerifiedAt: true },
+            });
+            if (otpUser?.otpSecret && otpUser.otpVerifiedAt) {
+              // User has OTP configured — require pre-login proof
+              const { redis } = await import("../db/redis/storage");
+              const proof = await redis.getItem<string>(`otp:pre-login:${otpUser.id}`);
+              if (!proof) {
+                return false; // Block magic link — no OTP proof
+              }
+              // Don't consume proof here — consumed in JWT callback on signIn
+            }
+          }
+        }
+
         if (params.account?.provider === "nodemailer" && params.email?.verificationRequest) {
           // Phase 1: User entered email — decide if we send the verification email
           if (!params.user.email || !tenantSettings || !tenant) {
@@ -229,10 +310,6 @@ const {
                   });
                 }
 
-                // should be checked on layouts
-                // if (dbUser.status !== "ACTIVE" || userInTenant?.status !== "ACTIVE") {
-                //   return false;
-                // }
                 params.user = dbUser;
               }
             } catch (error: unknown) {
@@ -242,6 +319,41 @@ const {
               return false;
             }
           }
+        }
+
+        // OAuth provider on tenant — verify it's enabled for this tenant
+        if (
+          (params.account?.type === "oauth" || params.account?.type === "oidc") &&
+          tenant &&
+          params.account.provider !== "nodemailer"
+        ) {
+          const enabledProviders = await tenantDefaultOAuthRepo.findByTenantId(tenant.id);
+          if (!enabledProviders.some(p => p.provider === params.account!.provider)) {
+            return false; // Provider not enabled for this tenant
+          }
+
+          // Auto-create UserOnTenant membership if needed
+          const userId = params.user.id;
+          if (userId) {
+            const existing = await userOnTenantRepo.findMembership(userId, tenant.id);
+            if (!existing) {
+              await userOnTenantRepo.create({
+                userId,
+                tenantId: tenant.id,
+                role: "INHERITED",
+                status: "ACTIVE",
+              });
+            }
+          }
+        }
+
+        // OAuth on root domain — block (OAuth is tenant-only)
+        if (
+          (params.account?.type === "oauth" || params.account?.type === "oidc") &&
+          !tenant &&
+          params.account.provider !== "nodemailer"
+        ) {
+          return false;
         }
 
         // Bridge provider — create UserOnTenant membership if needed
@@ -296,7 +408,22 @@ const {
 
         return true;
       },
-      async jwt({ token, trigger, espaceMembreMember }) {
+      async jwt({ token, trigger, account, espaceMembreMember }) {
+        // Handle client-side session.update() calls for 2FA verification
+        if (trigger === "update") {
+          // Validate server-side proof before marking as verified
+          const { redis } = await import("../db/redis/storage");
+          const userId = token.user?.uuid;
+          if (userId) {
+            const proof = await redis.getItem<string>(`2fa:proof:${userId}`);
+            if (proof) {
+              await redis.removeItem(`2fa:proof:${userId}`);
+              token.twoFactorVerified = true;
+            }
+          }
+          return token;
+        }
+
         if (trigger === "signIn" || !token.user) {
           const now = new Date();
           const dbUser = espaceMembreMember
@@ -307,8 +434,61 @@ const {
             throw new Error("User not found in database");
           }
 
+          // Determine if 2FA is required for this context
+          let twoFactorRequired = false;
+          let graceDays = 0;
+          if (dbUser.twoFactorEnabled) {
+            twoFactorRequired = true;
+          } else {
+            // Check force 2FA settings
+            if (tenant && tenantSettings?.force2FA) {
+              twoFactorRequired = true;
+              graceDays = tenantSettings.force2FAGraceDays;
+            }
+            if (!tenant) {
+              const appSettings = await appSettingsRepo.get();
+              if (appSettings.force2FA) {
+                twoFactorRequired = true;
+                graceDays = appSettings.force2FAGraceDays;
+              }
+            }
+          }
+
+          // Handle grace period for forced 2FA (only for users without 2FA enabled)
+          let twoFactorDeadline: string | undefined;
+          if (twoFactorRequired && !dbUser.twoFactorEnabled && graceDays > 0) {
+            if (!dbUser.twoFactorDeadline) {
+              // Set deadline for the first time
+              const deadline = new Date();
+              deadline.setDate(deadline.getDate() + graceDays);
+              await userRepo.update(dbUser.id, { twoFactorDeadline: deadline });
+              twoFactorDeadline = deadline.toISOString();
+            } else {
+              twoFactorDeadline = dbUser.twoFactorDeadline.toISOString();
+            }
+
+            // If within grace period, don't require 2FA yet
+            if (twoFactorDeadline && new Date(twoFactorDeadline) > now) {
+              twoFactorRequired = false;
+            }
+          }
+
+          // Check for pre-login OTP proof — if present, mark 2FA as already verified
+          let preLoginOtpVerified = false;
+          if (twoFactorRequired && dbUser.twoFactorEnabled) {
+            const { redis } = await import("../db/redis/storage");
+            const preLoginProof = await redis.getItem<string>(`otp:pre-login:${dbUser.id}`);
+            if (preLoginProof) {
+              await redis.removeItem(`otp:pre-login:${dbUser.id}`);
+              preLoginOtpVerified = true;
+            }
+          }
+
           token = {
             ...token,
+            twoFactorDeadline,
+            twoFactorVerified: !twoFactorRequired || preLoginOtpVerified,
+            twoFactorRequired,
             user: {
               id: dbUser.id,
               email: dbUser.email,
@@ -321,9 +501,21 @@ const {
               isBetaGouvMember: dbUser.isBetaGouvMember,
               role: dbUser.role,
               status: dbUser.status,
+              twoFactorEnabled: dbUser.twoFactorEnabled,
             },
           };
           token.sub = dbUser.username || dbUser.id;
+
+          // Store OAuth tokens for refresh
+          if (account && (account.type === "oauth" || account.type === "oidc")) {
+            token.accessToken = account.access_token ?? undefined;
+            token.refreshToken = account.refresh_token ?? undefined;
+            token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined;
+            token.provider = account.provider;
+          }
+
+          // Set session sliding window
+          token.sessionRefreshAt = Date.now() + SESSION_MAX_AGE;
 
           if (trigger === "signIn") {
             await userRepo.update(dbUser.id, {
@@ -332,6 +524,16 @@ const {
               currentSignInAt: now,
             });
           }
+        }
+
+        // Refresh OAuth access token if expired
+        if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
+          token = await refreshAccessToken(token);
+        }
+
+        // Sliding window session refresh
+        if (token.sessionRefreshAt && Date.now() > token.sessionRefreshAt) {
+          token.sessionRefreshAt = Date.now() + SESSION_MAX_AGE;
         }
 
         // Resolve current tenant role on every request
@@ -346,6 +548,9 @@ const {
       },
       session({ session, token }) {
         session.user = token.user;
+        session.twoFactorVerified = token.twoFactorVerified;
+        session.twoFactorRequired = token.twoFactorRequired;
+        session.twoFactorDeadline = token.twoFactorDeadline;
         return session;
       },
     }),

@@ -1,0 +1,66 @@
+import { type RegistrationResponseJSON, verifyRegistrationResponse } from "@simplewebauthn/server";
+import { type NextRequest, NextResponse } from "next/server";
+
+import { config } from "@/config";
+import { prisma } from "@/lib/db/prisma";
+import { redis } from "@/lib/db/redis/storage";
+import { auth } from "@/lib/next-auth/auth";
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.uuid;
+  const rpID = config.rootDomain.replace(/:\d+$/, "");
+  const origin = config.host;
+
+  const body = (await req.json()) as RegistrationResponseJSON;
+
+  const expectedChallenge = await redis.getItem<string>(`webauthn:challenge:${userId}`);
+  if (!expectedChallenge) {
+    return NextResponse.json({ error: "Challenge expired" }, { status: 400 });
+  }
+
+  try {
+    const verification = await verifyRegistrationResponse({
+      response: body,
+      expectedChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+    });
+
+    if (!verification.verified || !verification.registrationInfo) {
+      return NextResponse.json({ error: "Verification failed" }, { status: 400 });
+    }
+
+    const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+
+    await prisma.authenticator.create({
+      data: {
+        credentialID: credential.id,
+        userId,
+        providerAccountId: userId,
+        credentialPublicKey: Buffer.from(credential.publicKey).toString("base64url"),
+        counter: credential.counter,
+        credentialDeviceType,
+        credentialBackedUp,
+        transports: body.response.transports?.join(",") ?? null,
+      },
+    });
+
+    // Update user's twoFactorEnabled flag and clear grace period deadline
+    await prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true, twoFactorDeadline: null },
+    });
+
+    // Clean up challenge
+    await redis.removeItem(`webauthn:challenge:${userId}`);
+
+    return NextResponse.json({ verified: true });
+  } catch {
+    return NextResponse.json({ error: "Verification failed" }, { status: 400 });
+  }
+}

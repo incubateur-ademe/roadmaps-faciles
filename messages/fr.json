@@ -85,7 +85,31 @@
     "tenantLogin": "Connexion espace : {name}",
     "bridgePrompt": "Vous avez un compte sur {brand} ?",
     "bridgeLink": "Se connecter via {brand}",
-    "bridgeLoggingIn": "Connexion en cours..."
+    "bridgeLoggingIn": "Connexion en cours...",
+    "oauthPrompt": "Ou connectez-vous avec un fournisseur externe :",
+    "provider": {
+      "github": "Se connecter avec GitHub",
+      "google": "Se connecter avec Google",
+      "proconnect": "Se connecter avec ProConnect"
+    },
+    "preLoginOtp": {
+      "title": "Vérification OTP requise",
+      "description": "Un code de votre application d'authentification est requis avant l'envoi du lien de connexion."
+    },
+    "twoFactor": {
+      "title": "Vérification en deux étapes",
+      "description": "Une vérification supplémentaire est nécessaire pour accéder à votre compte.",
+      "usePasskey": "Utiliser ma passkey",
+      "useOtp": "Utiliser mon application d'authentification",
+      "useEmail": "Envoyer un code par email",
+      "otpLabel": "Code de l'application",
+      "emailLabel": "Code reçu par email",
+      "emailSent": "Un code de vérification a été envoyé à votre adresse email.",
+      "verify": "Vérifier",
+      "back": "Retour",
+      "error": "Erreur lors de la vérification. Veuillez réessayer.",
+      "invalidCode": "Code invalide. Veuillez réessayer."
+    }
   },
   "errors": {
     "401": {
@@ -309,7 +333,19 @@
       "policyDomains": "Domaines autorisés",
       "allowedDomains": "Domaines autorisés",
       "removeDomain": "Retirer ce domaine",
-      "addDomain": "Ajouter un domaine"
+      "addDomain": "Ajouter un domaine",
+      "force2FATitle": "Double authentification",
+      "force2FAToggle": "Forcer la 2FA pour tous les membres",
+      "gracePeriod": "Délai de grâce",
+      "immediate": "Immédiat",
+      "days": "{count, plural, one {# jour} other {# jours}}",
+      "oauthTitle": "Fournisseurs SSO",
+      "oauthDescription": "Activez les fournisseurs de connexion externe pour ce tenant.",
+      "provider": {
+        "github": "GitHub",
+        "google": "Google",
+        "proconnect": "ProConnect"
+      }
     },
     "api": {
       "title": "Clés API",
@@ -498,7 +534,35 @@
     "deleteConfirmPrompt": "Pour confirmer la suppression, tapez \"{text}\" ci-dessous.",
     "deleteConfirmationWord": "SUPPRIMER",
     "confirmation": "Confirmation",
-    "confirmDelete": "Confirmer la suppression"
+    "confirmDelete": "Confirmer la suppression",
+    "securityTitle": "Sécurité",
+    "securityDescription": "Gérez vos méthodes de double authentification (2FA).",
+    "securityLink": "Gérer la sécurité",
+    "security": {
+      "title": "Double authentification",
+      "description": "Ajoutez des méthodes de vérification supplémentaires pour sécuriser votre compte.",
+      "emailTitle": "Email",
+      "emailDescription": "Recevez un code de vérification par email à chaque connexion.",
+      "emailToggle": "Activer la 2FA par email",
+      "otpTitle": "Application d'authentification (TOTP)",
+      "otpDescription": "Utilisez une application comme Google Authenticator ou Authy.",
+      "otpSetup": "Configurer",
+      "otpSetupError": "Erreur lors de la configuration de l'OTP.",
+      "otpInvalidCode": "Code invalide. Vérifiez et réessayez.",
+      "otpScanQr": "Scannez ce QR code avec votre application d'authentification :",
+      "otpManualKey": "Clé manuelle",
+      "otpVerifyLabel": "Entrez le code affiché dans l'application",
+      "passkeyTitle": "Passkeys",
+      "passkeyDescription": "Utilisez une clé de sécurité physique ou biométrique.",
+      "passkeyAdd": "Ajouter une passkey",
+      "passkeyError": "Erreur lors de l'ajout de la passkey.",
+      "active": "Actif",
+      "synced": "Multi-appareil",
+      "device": "Appareil unique",
+      "remove": "Supprimer",
+      "verify": "Vérifier",
+      "cancel": "Annuler"
+    }
   },
   "rootAdmin": {
     "sideMenu": "Administration",
@@ -514,7 +578,16 @@
     "customDomain": "Domaine custom",
     "private": "Privé",
     "createdAt": "Créé le",
-    "members": "Membres"
+    "members": "Membres",
+    "security": {
+      "menu": "Sécurité",
+      "title": "Sécurité",
+      "description": "Configurez les paramètres de sécurité pour les utilisateurs de la plateforme.",
+      "force2FAToggle": "Forcer la double authentification pour tous les utilisateurs",
+      "gracePeriod": "Délai de grâce",
+      "immediate": "Immédiat",
+      "days": "{count, plural, one {# jour} other {# jours}}"
+    }
   },
   "emails": {
     "emLinkConfirm": {

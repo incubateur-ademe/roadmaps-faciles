@@ -85,7 +85,31 @@
     "tenantLogin": "Sign in to: {name}",
     "bridgePrompt": "Have an account on {brand}?",
     "bridgeLink": "Sign in via {brand}",
-    "bridgeLoggingIn": "Signing in..."
+    "bridgeLoggingIn": "Signing in...",
+    "oauthPrompt": "Or sign in with an external provider:",
+    "provider": {
+      "github": "Sign in with GitHub",
+      "google": "Sign in with Google",
+      "proconnect": "Sign in with ProConnect"
+    },
+    "preLoginOtp": {
+      "title": "OTP verification required",
+      "description": "A code from your authenticator app is required before the sign-in link is sent."
+    },
+    "twoFactor": {
+      "title": "Two-factor verification",
+      "description": "Additional verification is required to access your account.",
+      "usePasskey": "Use my passkey",
+      "useOtp": "Use my authenticator app",
+      "useEmail": "Send a code by email",
+      "otpLabel": "Authenticator app code",
+      "emailLabel": "Code received by email",
+      "emailSent": "A verification code has been sent to your email address.",
+      "verify": "Verify",
+      "back": "Back",
+      "error": "Verification failed. Please try again.",
+      "invalidCode": "Invalid code. Please try again."
+    }
   },
   "errors": {
     "401": {
@@ -309,7 +333,19 @@
       "policyDomains": "Allowed domains",
       "allowedDomains": "Allowed domains",
       "removeDomain": "Remove this domain",
-      "addDomain": "Add a domain"
+      "addDomain": "Add a domain",
+      "force2FATitle": "Two-factor authentication",
+      "force2FAToggle": "Force 2FA for all members",
+      "gracePeriod": "Grace period",
+      "immediate": "Immediate",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "oauthTitle": "SSO Providers",
+      "oauthDescription": "Enable external sign-in providers for this tenant.",
+      "provider": {
+        "github": "GitHub",
+        "google": "Google",
+        "proconnect": "ProConnect"
+      }
     },
     "api": {
       "title": "API Keys",
@@ -498,7 +534,35 @@
     "deleteConfirmPrompt": "To confirm deletion, type \"{text}\" below.",
     "deleteConfirmationWord": "DELETE",
     "confirmation": "Confirmation",
-    "confirmDelete": "Confirm deletion"
+    "confirmDelete": "Confirm deletion",
+    "securityTitle": "Security",
+    "securityDescription": "Manage your two-factor authentication (2FA) methods.",
+    "securityLink": "Manage security",
+    "security": {
+      "title": "Two-factor authentication",
+      "description": "Add additional verification methods to secure your account.",
+      "emailTitle": "Email",
+      "emailDescription": "Receive a verification code by email on each sign-in.",
+      "emailToggle": "Enable email 2FA",
+      "otpTitle": "Authenticator app (TOTP)",
+      "otpDescription": "Use an app like Google Authenticator or Authy.",
+      "otpSetup": "Set up",
+      "otpSetupError": "Error setting up OTP.",
+      "otpInvalidCode": "Invalid code. Check and try again.",
+      "otpScanQr": "Scan this QR code with your authenticator app:",
+      "otpManualKey": "Manual key",
+      "otpVerifyLabel": "Enter the code displayed in the app",
+      "passkeyTitle": "Passkeys",
+      "passkeyDescription": "Use a physical security key or biometric authentication.",
+      "passkeyAdd": "Add a passkey",
+      "passkeyError": "Error adding passkey.",
+      "active": "Active",
+      "synced": "Multi-device",
+      "device": "Single device",
+      "remove": "Remove",
+      "verify": "Verify",
+      "cancel": "Cancel"
+    }
   },
   "rootAdmin": {
     "sideMenu": "Administration",
@@ -514,7 +578,16 @@
     "customDomain": "Custom domain",
     "private": "Private",
     "createdAt": "Created on",
-    "members": "Members"
+    "members": "Members",
+    "security": {
+      "menu": "Security",
+      "title": "Security",
+      "description": "Configure security settings for platform users.",
+      "force2FAToggle": "Force two-factor authentication for all users",
+      "gracePeriod": "Grace period",
+      "immediate": "Immediate",
+      "days": "{count, plural, one {# day} other {# days}}"
+    }
   },
   "emails": {
     "emLinkConfirm": {
