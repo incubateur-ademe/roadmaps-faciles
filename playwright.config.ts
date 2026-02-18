@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const AUTH_DIR = "tests/teste2e/.auth";
+
 export default defineConfig({
   testDir: "./tests/teste2e",
   fullyParallel: true,
@@ -13,30 +15,76 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
+    // --- Setup: creates 3 auth states ---
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
     },
+
+    // --- Root (no tenant header) ---
     {
-      name: "desktop-chrome",
+      name: "root-auth",
       use: {
         ...devices["Desktop Chrome"],
-        storageState: "tests/teste2e/.auth/user.json",
+        storageState: `${AUTH_DIR}/admin.json`,
       },
       dependencies: ["setup"],
+      testMatch: /\b(root-admin|profile)\.spec\.ts/,
     },
+
+    // --- Tenant: admin ---
     {
-      name: "mobile-chrome",
+      name: "tenant-admin",
       use: {
-        ...devices["Pixel 5"],
-        storageState: "tests/teste2e/.auth/user.json",
+        ...devices["Desktop Chrome"],
+        storageState: `${AUTH_DIR}/admin.json`,
+        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
       },
       dependencies: ["setup"],
+      testMatch: /\b(tenant-admin|tenant-admin-extras|board|moderation)\.spec\.ts/,
     },
+
+    // --- Tenant: moderator ---
+    {
+      name: "tenant-mod",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: `${AUTH_DIR}/mod.json`,
+        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+      },
+      dependencies: ["setup"],
+      testMatch: /\bmoderation\.spec\.ts/,
+    },
+
+    // --- Tenant: user ---
+    {
+      name: "tenant-user",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: `${AUTH_DIR}/user.json`,
+        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+      },
+      dependencies: ["setup"],
+      testMatch: /\b(post|search|i18n)\.spec\.ts/,
+    },
+
+    // --- Unauthenticated ---
     {
       name: "unauthenticated",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /\b(health|home)\.spec\.ts/,
+      testMatch: /\b(health|home|auth|routing|api)\.spec\.ts/,
+    },
+
+    // --- Mobile ---
+    {
+      name: "mobile",
+      use: {
+        ...devices["Pixel 5"],
+        storageState: `${AUTH_DIR}/user.json`,
+        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+      },
+      dependencies: ["setup"],
+      testMatch: /\b(home|board|post)\.spec\.ts/,
     },
   ],
   webServer: {
