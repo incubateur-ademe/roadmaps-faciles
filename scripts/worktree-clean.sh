@@ -38,7 +38,13 @@ fi
 
 # --- Suppression du worktree ---
 echo "🗑️  Suppression du worktree $WORKTREE_DIR..."
-git worktree remove "$WORKTREE_DIR" --force
+# --force seul ne supprime pas les fichiers ignorés (node_modules, .next, generated…)
+# On tente d'abord proprement, puis on supprime le répertoire manuellement si besoin
+if ! git worktree remove "$WORKTREE_DIR" --force 2>/dev/null; then
+  echo "   ⚠️  git worktree remove a échoué (fichiers non trackés), suppression manuelle..."
+  rm -rf "$WORKTREE_DIR"
+  git worktree prune
+fi
 
 # Nettoyer la branche locale si elle a été mergée
 if git branch --merged dev --format='%(refname:short)' 2>/dev/null | grep -Fxq "$BRANCH"; then
