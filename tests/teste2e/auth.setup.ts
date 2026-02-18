@@ -1,13 +1,19 @@
 import { expect, test as setup } from "@playwright/test";
 
-const authFile = "tests/teste2e/.auth/user.json";
+const AUTH_DIR = "tests/teste2e/.auth";
 
-setup("authenticate test user", async ({ request }) => {
-  const response = await request.post("/api/test-auth", {
-    data: { email: "test-admin@test.local" },
+for (const { name, email } of [
+  { name: "admin", email: "test-admin@test.local" },
+  { name: "mod", email: "test-mod@test.local" },
+  { name: "user", email: "test-user@test.local" },
+]) {
+  setup(`authenticate ${name}`, async ({ request }) => {
+    const response = await request.post("/api/test-auth", {
+      data: { email },
+    });
+
+    expect(response.ok()).toBeTruthy();
+
+    await request.storageState({ path: `${AUTH_DIR}/${name}.json` });
   });
-
-  expect(response.ok()).toBeTruthy();
-
-  await request.storageState({ path: authFile });
-});
+}
