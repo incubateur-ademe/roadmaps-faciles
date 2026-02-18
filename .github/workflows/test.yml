@@ -123,7 +123,7 @@ jobs:
 
       - run: pnpm prisma generate && pnpm prisma migrate deploy
 
-      - run: pnpm run-script prisma/test-seed.ts
+      - run: pnpm run run-script -- prisma/test-seed.ts
 
       - run: npx playwright install --with-deps chromium
 
