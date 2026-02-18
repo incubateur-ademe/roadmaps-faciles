@@ -19,7 +19,7 @@ describe("GetTenantForDomain", () => {
     mockTenantRepo = createMockTenantRepo();
     useCase = new GetTenantForDomain(mockTenantRepo);
     // Clear the global cache between tests
-    GetTenantForDomain.revalidate("GetTenantForDomain");
+    GetTenantForDomain.revalidate("GetTenantForDomain" as never);
   });
 
   it("resolves tenant by subdomain", async () => {

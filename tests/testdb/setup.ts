@@ -6,8 +6,8 @@ async function cleanDatabase() {
   `;
 
   const tables = tablenames
+    .filter(({ tablename }) => tablename !== "_prisma_migrations")
     .map(({ tablename }) => `"${tablename}"`)
-    .filter(name => !name.includes("_prisma_migrations"))
     .join(", ");
 
   if (tables) {
@@ -20,5 +20,5 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await prisma.$disconnect();
+  await cleanDatabase();
 });

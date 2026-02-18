@@ -20,6 +20,7 @@ export function createMockPostRepo(): MockRepo<IPostRepo> {
     create: vi.fn(),
     delete: vi.fn(),
     findAll: vi.fn(),
+    findByBoardId: vi.fn(),
     findById: vi.fn(),
     update: vi.fn(),
   };
@@ -225,7 +226,7 @@ export function fakePostStatus(overrides = {}) {
     id: faker.number.int({ min: 1, max: 10000 }),
     tenantId: 1,
     name: faker.lorem.word(),
-    color: "BLUE",
+    color: "blueFrance",
     order: 0,
     showInRoadmap: true,
     createdAt: new Date(),
