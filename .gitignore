@@ -81,4 +81,4 @@ certificates
 /.claude/**/*.local.json
 /.claude/.worktree-monitor-root
 /next-env.d.ts
-.claude.local.md
+CLAUDE.local.md

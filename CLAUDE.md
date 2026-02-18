@@ -1,4 +1,8 @@
-# CLAUDE.md — Kokatsuna / Roadmaps Faciles
+# CLAUDE.md — Roadmaps Faciles
+
+## First things first
+- Read this entire document before starting to code
+- Read CLAUDE.local.md for local development setup instructions (if you find it)
 
 ## Tooling & environment
 - `pnpm` is the package manager; lock file is `pnpm-lock.yaml`

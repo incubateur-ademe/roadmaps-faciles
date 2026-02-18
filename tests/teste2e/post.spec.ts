@@ -21,7 +21,8 @@ test.describe("Post Lifecycle", () => {
     await page.getByRole("link", { name: "Test Post" }).first().click();
     await page.waitForURL(/\/post\/\d+/);
 
-    await expect(page.getByRole("heading", { level: 1 }).last()).toContainText("Test Post");
+    // Post title is h2 in modal (SimpleModal uses h2 for semantic correctness)
+    await expect(page.getByRole("heading", { level: 2 })).toContainText("Test Post");
     await expect(page.getByText("A test post for E2E tests").first()).toBeVisible();
   });
 
@@ -73,6 +74,6 @@ test.describe("Post Lifecycle", () => {
     await page.getByRole("link", { name: "Anonymous Post" }).first().click();
     await page.waitForURL(/\/post\/\d+/);
 
-    await expect(page.getByRole("heading", { level: 1 }).last()).toContainText("Anonymous Post");
+    await expect(page.getByRole("heading", { level: 2 })).toContainText("Anonymous Post");
   });
 });

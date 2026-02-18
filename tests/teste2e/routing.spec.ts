@@ -4,8 +4,8 @@ test.describe("Routing & Pages", () => {
   test("tenant home is accessible via subdomain", async ({ page }) => {
     await page.goto(`${E2E_TENANT_URL}/`);
 
-    // Should show tenant content (not root home) — 2 <main> elements exist, use first
-    await expect(page.locator("main").first()).toBeVisible();
+    // Should show tenant content (not root home)
+    await expect(page.locator("main")).toBeVisible();
   });
 
   test("stats page is accessible", async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe("Routing & Pages", () => {
   test("roadmap page is accessible on tenant", async ({ page }) => {
     await page.goto(`${E2E_TENANT_URL}/roadmap`);
 
-    await expect(page.locator("main").first()).toBeVisible();
+    await expect(page.locator("main")).toBeVisible();
   });
 
   test("error page displays content", async ({ page }) => {

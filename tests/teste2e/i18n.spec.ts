@@ -14,10 +14,16 @@ test.describe("Internationalization", () => {
     await page.goto("/board/test-board");
     await page.waitForLoadState("networkidle");
 
+    // Board page has scroll-snap (snap-y on <html>) that pushes header out of viewport.
+    // Disable snap temporarily so Playwright can scroll to the language button.
+    await page.evaluate(() => {
+      document.documentElement.style.scrollSnapType = "none";
+    });
+
     const langButton = page.getByRole("button", { name: /fr|langue|language/i });
 
     if (await langButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await langButton.dispatchEvent("click");
+      await langButton.click();
 
       const enOption = page.getByRole("link", { name: /english|en/i });
       if (await enOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
