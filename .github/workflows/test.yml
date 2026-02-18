@@ -121,7 +121,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm prisma generate && pnpm prisma db push
+      - run: pnpm prisma generate && pnpm prisma migrate deploy
 
       - run: pnpm run-script prisma/test-seed.ts
 
