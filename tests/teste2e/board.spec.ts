@@ -1,10 +1,31 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
-test.describe("Board Page (authenticated)", () => {
-  test("dashboard is accessible after auth", async ({ page }) => {
-    await page.goto("/");
+test.describe("Board Page", () => {
+  test("displays approved posts and hides pending ones", async ({ page }) => {
+    await page.goto("/board/test-board");
 
-    // Authenticated user should see something other than the login page
-    await expect(page.getByRole("link", { name: /connexion|login|se connecter/i })).not.toBeVisible();
+    await expect(page.getByText("Test Post")).toBeVisible();
+    await expect(page.getByText("Anonymous Post")).toBeVisible();
+    await expect(page.getByText("Pending Post")).not.toBeVisible();
+  });
+
+  test("toggles between cards and list views", async ({ page }) => {
+    await page.goto("/board/test-board");
+
+    await page.goto("/board/test-board?view=list");
+    await expect(page).toHaveURL(/view=list/);
+    await expect(page.getByText("Test Post")).toBeVisible();
+
+    await page.goto("/board/test-board?view=cards");
+    await expect(page).toHaveURL(/view=cards/);
+    await expect(page.getByText("Test Post")).toBeVisible();
+  });
+
+  test("navigates between boards", async ({ page }) => {
+    await page.goto("/board/test-board");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Test Board");
+
+    await page.goto("/board/second-board");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Second Board");
   });
 });
