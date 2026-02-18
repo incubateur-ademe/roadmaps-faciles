@@ -111,8 +111,9 @@
 ## Worktrees (multi-Claude en parallèle)
 - Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
 - Le worktree DOIT être créé AVANT de lancer Claude et Claude DOIT être lancé depuis le worktree (`cd <worktree-dir> && claude`)
-- Après compaction, le hook `SessionStart(compact)` injecte la liste des worktrees — Claude DOIT alors utiliser `AskUserQuestion` pour confirmer le worktree actif avec l'utilisateur
-- Le skill `/worktree-guard` peut être invoqué manuellement pour re-confirmer le worktree actif à tout moment
+- Après compaction, le hook global `SessionStart(compact)` (plugin `worktree-monitor`) injecte la liste des worktrees — Claude DOIT alors utiliser `AskUserQuestion` pour confirmer le worktree actif avec l'utilisateur
+- Le skill `/worktree-monitor:set` peut être invoqué manuellement pour re-confirmer/changer le worktree actif
+- Le skill `/worktree-monitor:setup` configure les hooks et la status line dans les settings globaux
 - Chaque worktree a son propre `.env.development.local`, ses propres `node_modules`, et son propre `src/generated/prisma/`
 - Par défaut le worktree partage la DB et le port du repo principal (cas courant sans conflit)
 - Création : `scripts/worktree-new.sh <branch> [--port <port>] [--db] [--from <branch>]`
