@@ -44,6 +44,7 @@ const config = [
       "dist/**",
       "coverage/**",
       "public/**",
+      "prisma/**",
     ],
   },
 
@@ -244,6 +245,8 @@ const config = [
       "eslint.config.ts",
       "prisma.config.ts",
       "tailwind.config.ts",
+      "vitest.config.ts",
+      "playwright.config.ts",
       "next-sitemap.config.js",
       "postcss.config.js",
     ],
@@ -260,6 +263,36 @@ const config = [
         project: "./scripts/tsconfig.json",
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+
+  // ─── Tests — tsconfig séparé + globals vitest ──────────────────────────────
+  {
+    files: ["tests/**/*.ts", "vitest.setup.ts"],
+    languageOptions: {
+      globals: {
+        afterAll: "readonly",
+        afterEach: "readonly",
+        beforeAll: "readonly",
+        beforeEach: "readonly",
+        describe: "readonly",
+        expect: "readonly",
+        it: "readonly",
+        test: "readonly",
+        vi: "readonly",
+      },
+      parserOptions: {
+        project: "./tests/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "import/no-default-export": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/require-await": "off",
     },
   },
 
