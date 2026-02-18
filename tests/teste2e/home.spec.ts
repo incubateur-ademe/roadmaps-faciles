@@ -13,4 +13,11 @@ test.describe("Home Page", () => {
     const loginLink = page.getByRole("link", { name: /connexion|login|se connecter/i });
     await expect(loginLink).toBeVisible();
   });
+
+  test("has a DSFR footer", async ({ page }) => {
+    await page.goto("/");
+
+    const footer = page.locator("footer");
+    await expect(footer).toBeVisible();
+  });
 });

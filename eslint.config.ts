@@ -246,6 +246,7 @@ const config = [
       "prisma.config.ts",
       "tailwind.config.ts",
       "vitest.config.ts",
+      "vitest.config.db.ts",
       "playwright.config.ts",
       "next-sitemap.config.js",
       "postcss.config.js",

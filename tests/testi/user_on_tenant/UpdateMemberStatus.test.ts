@@ -1,9 +1,9 @@
 import { UserRole } from "@/prisma/enums";
-import { UpdateMemberRole } from "@/useCases/user_on_tenant/UpdateMemberRole";
+import { UpdateMemberStatus } from "@/useCases/user_on_tenant/UpdateMemberStatus";
 
 import { type createMockUserOnTenantRepo as CreateMockUserOnTenantRepo, createMockUserOnTenantRepo } from "../helpers";
 
-// Mock prisma for the $transaction used in OWNER demotion
+// Mock prisma for the $transaction used in OWNER blocking
 const mockTransaction = vi.fn();
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
@@ -11,17 +11,17 @@ vi.mock("@/lib/db/prisma", () => ({
   },
 }));
 
-describe("UpdateMemberRole", () => {
+describe("UpdateMemberStatus", () => {
   let mockRepo: ReturnType<typeof CreateMockUserOnTenantRepo>;
-  let useCase: UpdateMemberRole;
+  let useCase: UpdateMemberStatus;
 
   beforeEach(() => {
     mockRepo = createMockUserOnTenantRepo();
-    useCase = new UpdateMemberRole(mockRepo);
+    useCase = new UpdateMemberStatus(mockRepo);
     mockTransaction.mockReset();
   });
 
-  it("updates member role successfully", async () => {
+  it("updates member status successfully", async () => {
     mockRepo.findMembership.mockResolvedValue({
       userId: "user-1",
       tenantId: 1,
@@ -30,20 +30,20 @@ describe("UpdateMemberRole", () => {
     });
     mockRepo.update.mockResolvedValue({});
 
-    await useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.ADMIN });
+    await useCase.execute({ userId: "user-1", tenantId: 1, status: "BLOCKED" });
 
-    expect(mockRepo.update).toHaveBeenCalledWith("user-1", 1, { role: UserRole.ADMIN });
+    expect(mockRepo.update).toHaveBeenCalledWith("user-1", 1, { status: "BLOCKED" });
   });
 
   it("throws when member is not found", async () => {
     mockRepo.findMembership.mockResolvedValue(null);
 
-    await expect(useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.ADMIN })).rejects.toThrow(
+    await expect(useCase.execute({ userId: "user-1", tenantId: 1, status: "BLOCKED" })).rejects.toThrow(
       "Membre introuvable.",
     );
   });
 
-  it("throws when target role is INHERITED", async () => {
+  it("throws when target status is DELETED", async () => {
     mockRepo.findMembership.mockResolvedValue({
       userId: "user-1",
       tenantId: 1,
@@ -51,25 +51,12 @@ describe("UpdateMemberRole", () => {
       status: "ACTIVE",
     });
 
-    await expect(useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.INHERITED })).rejects.toThrow(
-      "Rôle cible non autorisé.",
+    await expect(useCase.execute({ userId: "user-1", tenantId: 1, status: "DELETED" })).rejects.toThrow(
+      "Statut cible non autorisé. Utilisez la suppression de membre.",
     );
   });
 
-  it("throws when target role is OWNER", async () => {
-    mockRepo.findMembership.mockResolvedValue({
-      userId: "user-1",
-      tenantId: 1,
-      role: UserRole.USER,
-      status: "ACTIVE",
-    });
-
-    await expect(useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.OWNER })).rejects.toThrow(
-      "Rôle cible non autorisé.",
-    );
-  });
-
-  it("uses transaction when demoting an OWNER", async () => {
+  it("uses transaction when blocking an OWNER", async () => {
     mockRepo.findMembership.mockResolvedValue({
       userId: "user-1",
       tenantId: 1,
@@ -87,13 +74,13 @@ describe("UpdateMemberRole", () => {
       return fn(tx);
     });
 
-    await useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.ADMIN });
+    await useCase.execute({ userId: "user-1", tenantId: 1, status: "BLOCKED" });
 
     expect(mockTransaction).toHaveBeenCalled();
     expect(mockRepo.update).not.toHaveBeenCalled();
   });
 
-  it("throws when trying to remove the last OWNER", async () => {
+  it("throws when trying to block the last OWNER", async () => {
     mockRepo.findMembership.mockResolvedValue({
       userId: "user-1",
       tenantId: 1,
@@ -111,8 +98,23 @@ describe("UpdateMemberRole", () => {
       return fn(tx);
     });
 
-    await expect(useCase.execute({ userId: "user-1", tenantId: 1, role: UserRole.ADMIN })).rejects.toThrow(
-      "Impossible de retirer le dernier propriétaire.",
+    await expect(useCase.execute({ userId: "user-1", tenantId: 1, status: "BLOCKED" })).rejects.toThrow(
+      "Impossible de bloquer le dernier propriétaire.",
     );
+  });
+
+  it("does not use transaction for non-OWNER members", async () => {
+    mockRepo.findMembership.mockResolvedValue({
+      userId: "user-1",
+      tenantId: 1,
+      role: UserRole.ADMIN,
+      status: "ACTIVE",
+    });
+    mockRepo.update.mockResolvedValue({});
+
+    await useCase.execute({ userId: "user-1", tenantId: 1, status: "BLOCKED" });
+
+    expect(mockTransaction).not.toHaveBeenCalled();
+    expect(mockRepo.update).toHaveBeenCalledWith("user-1", 1, { status: "BLOCKED" });
   });
 });

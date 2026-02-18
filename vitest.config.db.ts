@@ -16,19 +16,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["tests/testu/**/*.test.ts", "tests/testi/**/*.test.ts"],
-    exclude: ["node_modules", ".next", "src/generated/**", "tests/teste2e/**"],
-    setupFiles: ["./vitest.setup.ts"],
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      include: ["src/useCases/**", "src/lib/utils/**", "src/lib/model/**"],
-      thresholds: {
-        statements: 50,
-        branches: 50,
-        functions: 35,
-        lines: 50,
-      },
+    include: ["tests/testdb/**/*.test.ts"],
+    setupFiles: ["./vitest.setup.ts", "./tests/testdb/setup.ts"],
+    pool: "forks",
+    fileParallelism: false,
+    testTimeout: 10000,
+    env: {
+      DATABASE_URL:
+        process.env.DATABASE_URL_TEST || "postgresql://postgres:postgres@localhost:5432/roadmaps-faciles-test",
     },
   },
 });

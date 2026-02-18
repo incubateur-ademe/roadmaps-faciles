@@ -37,6 +37,44 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  db-tests:
+    name: DB Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: roadmaps-faciles-test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/roadmaps-faciles-test
+      DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:5432/roadmaps-faciles-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm prisma generate
+
+      - run: pnpm prisma migrate deploy
+
+      - run: pnpm test:db
+
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest

@@ -28,7 +28,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:db": "vitest run --config vitest.config.db.ts",
+    "test:db:setup": "DATABASE_URL=${DATABASE_URL_TEST:-postgresql://postgres:postgres@localhost:5432/roadmaps-faciles-test} pnpm prisma migrate deploy"
   },
   "resolutions": {
     "@auth/core": "^0.41.1"

@@ -1,15 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Board Page", () => {
-  // Ce test nécessite un tenant seedé avec au moins un board
-  // En CI, le test-seed doit être exécuté avant
-  test.skip(({ browserName }) => browserName !== "chromium", "Board tests only run on chromium");
+test.describe("Board Page (authenticated)", () => {
+  test("dashboard is accessible after auth", async ({ page }) => {
+    await page.goto("/");
 
-  test("board page is accessible on default tenant", async ({ page }) => {
-    // Accède au tenant par défaut via le subdomain
-    // En local, utilise la redirection du domaine racine
-    const response = await page.goto("/");
-
-    expect(response?.ok()).toBe(true);
+    // Authenticated user should see something other than the login page
+    await expect(page.getByRole("link", { name: /connexion|login|se connecter/i })).not.toBeVisible();
   });
 });
