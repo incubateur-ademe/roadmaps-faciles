@@ -10,15 +10,25 @@ async function main() {
   console.log("Test seed en cours...");
 
   // ---------------------------------------------------------------------------
-  // 1. Cleanup — FK-safe order
+  // 1. Cleanup — FK-safe order (all models that reference Post, User, Tenant)
   // ---------------------------------------------------------------------------
   await prisma.like.deleteMany();
+  await prisma.follow.deleteMany();
   await prisma.comment.deleteMany();
+  await prisma.pin.deleteMany();
+  await prisma.postStatusChange.deleteMany();
   await prisma.post.deleteMany();
   await prisma.postStatus.deleteMany();
   await prisma.invitation.deleteMany();
+  await prisma.webhook.deleteMany();
+  await prisma.apiKey.deleteMany();
+  await prisma.oAuth.deleteMany();
+  await prisma.authenticator.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.account.deleteMany();
   await prisma.userOnTenant.deleteMany();
   await prisma.board.deleteMany();
+  await prisma.tenantDefaultOAuth.deleteMany();
   await prisma.tenantSettings.deleteMany();
   await prisma.tenant.deleteMany();
   await prisma.auditLog.deleteMany();

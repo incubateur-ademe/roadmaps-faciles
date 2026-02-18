@@ -7,11 +7,11 @@ test.describe("Home Page", () => {
     await expect(page).toHaveTitle(/.+/);
   });
 
-  test("contains a login link", async ({ page }) => {
+  test("contains a call-to-action link", async ({ page }) => {
     await page.goto("/");
 
-    const loginLink = page.getByRole("link", { name: /connexion|login|se connecter/i });
-    await expect(loginLink).toBeVisible();
+    const ctaLink = page.getByRole("link", { name: /commencer/i });
+    await expect(ctaLink).toBeVisible();
   });
 
   test("has a DSFR footer", async ({ page }) => {

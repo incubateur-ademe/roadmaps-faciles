@@ -4,7 +4,7 @@ test.describe("User Profile", () => {
   test("profile page shows user information", async ({ page }) => {
     await page.goto("/profile");
 
-    await expect(page.getByText("test-admin@test.local")).toBeVisible();
+    await expect(page.getByRole("textbox", { name: /e-mail/i })).toHaveValue("test-admin@test.local");
   });
 
   test("security page shows 2FA options", async ({ page }) => {

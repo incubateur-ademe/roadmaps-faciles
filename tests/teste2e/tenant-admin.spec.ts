@@ -10,7 +10,7 @@ test.describe("Tenant Admin", () => {
     const createButton = page.getByRole("button", { name: /créer|create/i });
     await createButton.click();
 
-    await expect(page.getByText("E2E Created Board")).toBeVisible();
+    await expect(page.getByText("E2E Created Board").first()).toBeVisible();
   });
 
   test("displays post statuses", async ({ page }) => {
@@ -31,7 +31,14 @@ test.describe("Tenant Admin", () => {
   test("member role badges are displayed", async ({ page }) => {
     await page.goto("/admin/users");
 
-    await expect(page.getByText(/owner/i).first()).toBeVisible();
+    // French locale: role labels are "Propriétaire", "Modérateur", "Utilisateur"
+    // Target table cell (not hidden <option> inside <select>)
+    await expect(
+      page
+        .locator("td")
+        .filter({ hasText: /propriétaire/i })
+        .first(),
+    ).toBeVisible();
   });
 
   test("shows invitation list with pending invitation", async ({ page }) => {

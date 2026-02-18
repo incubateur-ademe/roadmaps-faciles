@@ -16,13 +16,15 @@ test.describe("Root Admin", () => {
   test("users list shows test users", async ({ page }) => {
     await page.goto("/admin/users");
 
-    await expect(page.getByText("test-admin@test.local")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "test-admin@test.local" }).first()).toBeVisible();
   });
 
   test("audit log shows entries", async ({ page }) => {
     await page.goto("/admin/audit-log");
 
-    await expect(page.getByText("ROOT_TENANT_CREATE")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/audit/i);
+    await expect(page.locator("table")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "ROOT_TENANT_CREATE" })).toBeVisible();
   });
 
   test("security page is accessible", async ({ page }) => {

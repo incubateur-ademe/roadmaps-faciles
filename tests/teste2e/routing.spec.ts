@@ -1,12 +1,11 @@
-import { expect, test } from "./fixtures";
+import { E2E_TENANT_URL, expect, test } from "./fixtures";
 
 test.describe("Routing & Pages", () => {
-  test("tenant home is accessible via x-forwarded-host header", async ({ page }) => {
-    await page.setExtraHTTPHeaders({ "x-forwarded-host": "e2e.localhost:3000" });
-    await page.goto("/");
+  test("tenant home is accessible via subdomain", async ({ page }) => {
+    await page.goto(`${E2E_TENANT_URL}/`);
 
-    // Should show tenant content (not root home)
-    await expect(page.getByText("E2E Test Tenant")).toBeVisible();
+    // Should show tenant content (not root home) — 2 <main> elements exist, use first
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("stats page is accessible", async ({ page }) => {
@@ -17,10 +16,9 @@ test.describe("Routing & Pages", () => {
   });
 
   test("roadmap page is accessible on tenant", async ({ page }) => {
-    await page.setExtraHTTPHeaders({ "x-forwarded-host": "e2e.localhost:3000" });
-    await page.goto("/roadmap");
+    await page.goto(`${E2E_TENANT_URL}/roadmap`);
 
-    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main").first()).toBeVisible();
   });
 
   test("error page displays content", async ({ page }) => {

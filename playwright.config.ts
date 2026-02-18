@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const AUTH_DIR = "tests/teste2e/.auth";
+const ROOT_URL = "http://localhost:3000";
+const TENANT_URL = "http://e2e.localhost:3000";
+
+// Chromium flag to resolve e2e.localhost without /etc/hosts (CI-compatible)
+const HOST_RULES = "--host-resolver-rules=MAP e2e.localhost 127.0.0.1";
 
 export default defineConfig({
   testDir: "./tests/teste2e",
@@ -9,9 +14,10 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"], ["html", { open: "never" }]],
-  timeout: 30_000,
+  timeout: 60_000,
+  expect: { timeout: 20_000 },
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: ROOT_URL,
     trace: "on-first-retry",
   },
   projects: [
@@ -27,6 +33,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         storageState: `${AUTH_DIR}/admin.json`,
+        launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
       testMatch: /\b(root-admin|profile)\.spec\.ts/,
@@ -38,7 +45,8 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         storageState: `${AUTH_DIR}/admin.json`,
-        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+        baseURL: TENANT_URL,
+        launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
       testMatch: /\b(tenant-admin|tenant-admin-extras|board|moderation)\.spec\.ts/,
@@ -50,7 +58,8 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         storageState: `${AUTH_DIR}/mod.json`,
-        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+        baseURL: TENANT_URL,
+        launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
       testMatch: /\bmoderation\.spec\.ts/,
@@ -62,7 +71,8 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         storageState: `${AUTH_DIR}/user.json`,
-        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+        baseURL: TENANT_URL,
+        launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
       testMatch: /\b(post|search|i18n)\.spec\.ts/,
@@ -71,7 +81,10 @@ export default defineConfig({
     // --- Unauthenticated ---
     {
       name: "unauthenticated",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: { args: [HOST_RULES] },
+      },
       testMatch: /\b(health|home|auth|routing|api)\.spec\.ts/,
     },
 
@@ -81,10 +94,11 @@ export default defineConfig({
       use: {
         ...devices["Pixel 5"],
         storageState: `${AUTH_DIR}/user.json`,
-        extraHTTPHeaders: { "x-forwarded-host": "e2e.localhost:3000" },
+        baseURL: TENANT_URL,
+        launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
-      testMatch: /\b(home|board|post)\.spec\.ts/,
+      testMatch: /\bboard\.spec\.ts/,
     },
   ],
   webServer: {

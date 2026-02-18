@@ -8,5 +8,5 @@ export { expect } from "@playwright/test";
  */
 export const test = base;
 
-/** Tenant host for E2E tests — injected via x-forwarded-host header in Playwright projects */
-export const E2E_TENANT_HOST = "e2e.localhost:3000";
+/** Tenant base URL for E2E tests — used as baseURL in tenant Playwright projects */
+export const E2E_TENANT_URL = "http://e2e.localhost:3000";
