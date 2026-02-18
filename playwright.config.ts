@@ -2,10 +2,11 @@ import { defineConfig, devices } from "@playwright/test";
 
 const AUTH_DIR = "tests/teste2e/.auth";
 const ROOT_URL = "http://localhost:3000";
-const TENANT_URL = "http://e2e.localhost:3000";
+const E2E_HOST = "e2e.localhost";
+const TENANT_URL = `http://${E2E_HOST}:3000`;
 
 // Chromium flag to resolve e2e.localhost without /etc/hosts (CI-compatible)
-const HOST_RULES = "--host-resolver-rules=MAP e2e.localhost 127.0.0.1";
+const HOST_RULES = `--host-resolver-rules=MAP ${E2E_HOST} 127.0.0.1`;
 
 export default defineConfig({
   testDir: "./tests/teste2e",
