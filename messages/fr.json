@@ -469,7 +469,11 @@
   },
   "roadmap": {
     "title": "Feuille de route",
-    "emptyColumn": "Partagez vos retours et revenez plus tard pour découvrir les nouveautés !"
+    "description": "Découvrez les fonctionnalités en cours et à venir. Vous pouvez soumettre vos idées et voter pour les propositions qui vous intéressent.",
+    "emptyColumn": "Partagez vos retours et revenez plus tard pour découvrir les nouveautés !",
+    "empty": "La feuille de route n'est pas encore disponible.",
+    "submitFeedback": "Proposer une idée",
+    "notConfigured": "La feuille de route n'est pas configurée."
   },
   "embed": {
     "privateTenant": "Ce contenu est privé.",

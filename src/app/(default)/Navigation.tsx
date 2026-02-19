@@ -29,6 +29,13 @@ export const Navigation = () => {
           isActive: segment === "tenant",
         },
         {
+          text: t("roadmap"),
+          linkProps: {
+            href: "/roadmap",
+          },
+          isActive: segment === "roadmap",
+        },
+        {
           text: t("doc"),
           linkProps: {
             href: "/doc",
