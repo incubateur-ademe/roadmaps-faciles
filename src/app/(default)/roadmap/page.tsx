@@ -43,79 +43,61 @@ const RoadmapPageInner = async () => {
 
   const [t, tc] = await Promise.all([getTranslations("roadmap"), getTranslations("common")]);
 
-  const subdomain = config.roadmap.tenantSubdomain;
+  const notConfigured = (
+    <DsfrPage>
+      <Container my="4w">
+        <Text>{t("notConfigured")}</Text>
+      </Container>
+    </DsfrPage>
+  );
 
-  if (!subdomain) {
-    return (
-      <DsfrPage>
-        <Container my="4w">
-          <Text>{t("notConfigured")}</Text>
-        </Container>
-      </DsfrPage>
-    );
-  }
+  const subdomain = config.roadmap.tenantSubdomain;
+  if (!subdomain) return notConfigured;
 
   const tenant = await tenantRepo.findBySubdomain(subdomain);
-
-  if (!tenant) {
-    return (
-      <DsfrPage>
-        <Container my="4w">
-          <Text>{t("notConfigured")}</Text>
-        </Container>
-      </DsfrPage>
-    );
-  }
+  if (!tenant) return notConfigured;
 
   const tenantSettings = await prisma.tenantSettings.findFirst({
     where: { tenantId: tenant.id },
   });
-
-  if (!tenantSettings) {
-    return (
-      <DsfrPage>
-        <Container my="4w">
-          <Text>{t("notConfigured")}</Text>
-        </Container>
-      </DsfrPage>
-    );
-  }
+  if (!tenantSettings || tenantSettings.isPrivate) return notConfigured;
 
   const tenantUrl = getTenantUrl(tenantSettings.subdomain, tenantSettings.customDomain);
 
-  const postStatuses = await prisma.postStatus.findMany({
-    where: {
-      tenantId: tenant.id,
-      showInRoadmap: true,
-    },
-    orderBy: {
-      order: "asc",
-    },
-  });
-
-  const posts = await prisma.post.findMany({
-    where: {
-      tenantId: tenant.id,
-      postStatusId: {
-        not: null,
+  const [postStatuses, posts] = await Promise.all([
+    prisma.postStatus.findMany({
+      where: {
+        tenantId: tenant.id,
+        showInRoadmap: true,
       },
-      approvalStatus: POST_APPROVAL_STATUS.APPROVED,
-    },
-    orderBy: {
-      likes: {
-        _count: "desc",
+      orderBy: {
+        order: "asc",
       },
-    },
-    include: {
-      postStatus: true,
-      board: true,
-      _count: {
-        select: {
-          likes: true,
+    }),
+    prisma.post.findMany({
+      where: {
+        tenantId: tenant.id,
+        postStatusId: {
+          not: null,
+        },
+        approvalStatus: POST_APPROVAL_STATUS.APPROVED,
+      },
+      orderBy: {
+        likes: {
+          _count: "desc",
         },
       },
-    },
-  });
+      include: {
+        postStatus: true,
+        board: true,
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
+      },
+    }),
+  ]);
 
   return (
     <DsfrPage>
@@ -167,7 +149,7 @@ const RoadmapPageInner = async () => {
                         linkProps={{
                           href: `${tenantUrl}/post/${post.id}`,
                           target: "_blank",
-                          rel: "noopener",
+                          rel: "noopener noreferrer",
                         }}
                         size="small"
                         horizontal
