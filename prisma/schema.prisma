@@ -323,6 +323,7 @@ model TenantSettings {
   showRoadmapInHeader     Boolean                 @default(false)
   allowAnonymousFeedback  Boolean                 @default(true)
   requirePostApproval     Boolean                 @default(false)
+  allowEmbedding          Boolean                 @default(false)
   emailRegistrationPolicy EmailRegistrationPolicy @default(ANYONE)
   allowedEmailDomains     String[]
   force2FA                Boolean                 @default(false)

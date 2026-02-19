@@ -26,6 +26,7 @@ export const TenantSettings = z.object({
   showRoadmapInHeader: z.boolean(),
   allowAnonymousFeedback: z.boolean(),
   requirePostApproval: z.boolean(),
+  allowEmbedding: z.boolean(),
   emailRegistrationPolicy: emailRegistrationPolicyEnum,
   allowedEmailDomains: z.string().array(),
   force2FA: z.boolean(),

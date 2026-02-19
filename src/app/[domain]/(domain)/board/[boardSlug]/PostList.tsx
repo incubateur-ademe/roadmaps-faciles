@@ -23,6 +23,7 @@ export interface PostListProps {
   boardId: number;
   boardSlug: string;
   initialPosts: EnrichedPost[];
+  linkTarget?: string;
   order: Order;
   search?: string;
   totalCount: number;
@@ -40,6 +41,7 @@ export const PostList = ({
   boardId,
   search,
   boardSlug,
+  linkTarget,
 }: PostListProps) => {
   const [posts, setPosts] = useState<EnrichedPost[]>(initialPosts);
   const [isPending, startTransition] = useTransition();
@@ -90,6 +92,7 @@ export const PostList = ({
             userId={userId}
             boardSlug={boardSlug}
             dirtyDomainFixer={dirtyDomainFixer}
+            linkTarget={linkTarget}
           />
         );
       })}

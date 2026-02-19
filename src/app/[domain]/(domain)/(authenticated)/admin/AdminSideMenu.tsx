@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/dsfr";
 
-const GENERAL_SECTION_IDS = ["privacy", "localization", "moderation", "header", "visibility"];
+const GENERAL_SECTION_IDS = ["privacy", "localization", "moderation", "header", "visibility", "embedding"];
 
 export const AdminSideMenu = () => {
   const pathname = usePathname();
@@ -83,6 +83,11 @@ export const AdminSideMenu = () => {
           linkProps: { href: `/admin/general#visibility` },
           text: t("visibility"),
           isActive: currentPage === "general" && currentSection === "visibility",
+        },
+        {
+          linkProps: { href: `/admin/general#embedding` },
+          text: t("embedding"),
+          isActive: currentPage === "general" && currentSection === "embedding",
         },
       ],
     },

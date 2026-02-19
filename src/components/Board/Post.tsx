@@ -19,6 +19,7 @@ export interface BoardPostProps {
   boardSlug: string;
   dirtyDomainFixer: (pathname: string) => string;
   first?: boolean;
+  linkTarget?: string;
   post: EnrichedPost;
   userId?: string;
 }
@@ -31,6 +32,7 @@ export const BoardPost = ({
   userId,
   first,
   dirtyDomainFixer,
+  linkTarget,
 }: BoardPostProps) => {
   const { isDark } = useIsDark();
   return (
@@ -40,6 +42,7 @@ export const BoardPost = ({
       title={post.title}
       linkProps={{
         href: dirtyDomainFixer(`/post/${post.id}`),
+        ...(linkTarget && { target: linkTarget }),
       }}
       titleAs="h3"
       endDetail={
@@ -56,7 +59,11 @@ export const BoardPost = ({
               small
               nativeSpanProps={{
                 onClick: () => {
-                  location.href = dirtyDomainFixer(`/post/${post.id}`);
+                  if (linkTarget) {
+                    window.open(dirtyDomainFixer(`/post/${post.id}`), linkTarget);
+                  } else {
+                    location.href = dirtyDomainFixer(`/post/${post.id}`);
+                  }
                 },
               }}
             >
