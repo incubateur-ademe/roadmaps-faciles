@@ -15,6 +15,7 @@ import { config } from "@/config";
 import { Box, Container } from "@/dsfr";
 import { Heading, Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
+import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
@@ -98,6 +99,7 @@ const EmbedRoadmapPageInner = async ({ params, searchParams }: EmbedRoadmapPageP
       postStatusId: {
         not: null,
       },
+      approvalStatus: POST_APPROVAL_STATUS.APPROVED,
     },
     orderBy: {
       likes: {

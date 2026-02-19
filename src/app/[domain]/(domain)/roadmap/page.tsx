@@ -10,6 +10,7 @@ import { Box, Container } from "@/dsfr";
 import { Heading, Text } from "@/dsfr/base/Typography";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
+import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
@@ -40,6 +41,7 @@ const RoadmapPage = DomainPageHOP()(async props => {
       postStatusId: {
         not: null,
       },
+      approvalStatus: POST_APPROVAL_STATUS.APPROVED,
     },
     orderBy: {
       likes: {

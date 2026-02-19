@@ -53,6 +53,7 @@ async function main() {
       allowAnonymousVoting: true,
       allowPostEdits: true,
       allowPostDeletion: true,
+      allowEmbedding: true,
     },
   });
 
@@ -214,6 +215,7 @@ async function main() {
       userId: admin.id,
       approvalStatus: $Enums.PostApprovalStatus.APPROVED,
       slug: "test-post",
+      postStatusId: statusEnCours.id,
     },
   });
 

@@ -55,6 +55,7 @@ export const LikeButton = ({
 
   return (
     <Button
+      data-testid="like-button"
       title="Vote"
       iconId={liked ? "fr-icon-thumb-up-fill" : "fr-icon-thumb-up-line"}
       priority={liked ? "secondary" : "tertiary no outline"}
