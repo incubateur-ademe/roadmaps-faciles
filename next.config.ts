@@ -117,29 +117,9 @@ const config: NextConfig = {
   },
 
   async headers() {
+    // Order matters: Next.js merges ALL matching rules, last wins for duplicate keys.
+    // Catch-all first, then embed override (so embed's relaxed headers take precedence).
     return [
-      {
-        source: "/:path*/embed/:rest*",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: EmbedContentSecurityPolicy,
-          },
-          {
-            key: "X-Frame-Options",
-            value: "",
-          },
-          {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "unsafe-none",
-          },
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "unsafe-none",
-          },
-          ...commonSecurityHeaders,
-        ],
-      },
       {
         source: "/(.*)",
         headers: [
@@ -158,6 +138,28 @@ const config: NextConfig = {
           {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
+          },
+          ...commonSecurityHeaders,
+        ],
+      },
+      {
+        source: "/:path*/embed/:rest*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: EmbedContentSecurityPolicy,
+          },
+          {
+            key: "X-Frame-Options",
+            value: "",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "unsafe-none",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "unsafe-none",
           },
           ...commonSecurityHeaders,
         ],

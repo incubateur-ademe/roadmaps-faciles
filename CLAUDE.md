@@ -194,4 +194,4 @@
 - Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
 - `@auth/core` provider merge: `Nodemailer()` stores user config in `options` field; `parseProviders()` does `merge(defaults, userOptions)` which overrides top-level keys with `options.*` — the espace-membre-provider wrapper must flatten `options` into the base config (fixed in v0.3.3)
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
-- Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). More specific `source` patterns take precedence over catch-all `/(.*)*` for duplicate header keys
+- Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
