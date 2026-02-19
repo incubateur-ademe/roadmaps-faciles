@@ -46,6 +46,19 @@ La plateforme peut automatiser la gestion des enregistrements DNS pour les sous-
 | **OVH** | `DNS_PROVIDER=ovh` | API OVH (authentification HMAC-SHA1). |
 | **Cloudflare** | `DNS_PROVIDER=cloudflare` | API Cloudflare v4 (cache de zone ID). |
 
+### Zone DNS configurable
+
+Par défaut, les fournisseurs DNS utilisent le domaine racine de l'instance comme zone DNS. Si votre domaine racine est un sous-domaine d'une zone DNS plus large, configurez la variable `DNS_ZONE_NAME` :
+
+```text
+# Exemple : domaine racine = roadmaps.site.fr, zone DNS = site.fr
+DNS_ZONE_NAME=site.fr
+```
+
+Avec cette configuration, un espace ayant le sous-domaine `mon-produit` verra son enregistrement DNS créé comme `mon-produit.roadmaps` dans la zone `site.fr`, résultant en `mon-produit.roadmaps.site.fr`.
+
+Si `DNS_ZONE_NAME` n'est pas définie ou correspond au domaine racine, le sous-domaine est utilisé tel quel dans la zone.
+
 ## Vérification DNS
 
 La plateforme vérifie la configuration DNS en résolvant l'enregistrement CNAME du domaine personnalisé. La vérification :

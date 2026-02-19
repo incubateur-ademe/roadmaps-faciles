@@ -130,6 +130,7 @@ L'apparence de l'instance est personnalisable via les variables `NEXT_PUBLIC_BRA
 | `DOMAIN_PROVIDER` | Fournisseur de domaine : `noop`, `scalingo`, `scalingo-wildcard`, `clevercloud`, `caddy` |
 | `DNS_PROVIDER` | Fournisseur DNS : `noop`, `manual`, `ovh`, `cloudflare` |
 | `DNS_PROVIDER_TARGET` | Domaine cible pour les enregistrements CNAME des sous-domaines |
+| `DNS_ZONE_NAME` | Zone DNS si différente du domaine racine (sous-domaines imbriqués, ex. : `site.fr` pour un rootDomain `roadmaps.site.fr`) |
 
 Les variables spécifiques à chaque fournisseur sont documentées dans le fichier `.env.development`.
 
