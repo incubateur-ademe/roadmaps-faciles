@@ -22,6 +22,9 @@ export const config = {
     maxRepliesPerComment: ensureApiEnvVar(process.env.SEED_MAX_REPLIES_PER_COMMENT, Number, 8),
   },
   maintenance: ensureApiEnvVar(process.env.MAINTENANCE_MODE, isTruthy, false),
+  roadmap: {
+    tenantSubdomain: ensureApiEnvVar(process.env.ROADMAP_TENANT_SUBDOMAIN, ""),
+  },
   host: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
   get rootDomain() {
     return this.host.replace(/^(https?:\/\/)?(www\.)?/, "");

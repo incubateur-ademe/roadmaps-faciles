@@ -469,7 +469,11 @@
   },
   "roadmap": {
     "title": "Roadmap",
-    "emptyColumn": "Share your feedback and come back later to discover what's new!"
+    "description": "Discover current and upcoming features. You can submit your ideas and vote for the proposals that interest you.",
+    "emptyColumn": "Share your feedback and come back later to discover what's new!",
+    "empty": "The roadmap is not yet available.",
+    "submitFeedback": "Submit an idea",
+    "notConfigured": "The roadmap is not configured."
   },
   "embed": {
     "privateTenant": "This content is private.",
