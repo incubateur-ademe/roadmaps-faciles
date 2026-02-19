@@ -29,13 +29,6 @@ body:
     validations:
       required: true
   - type: textarea
-    id: actual
-    attributes:
-      label: Comportement actuel
-      description: Que se passe-t-il réellement ?
-    validations:
-      required: true
-  - type: textarea
     id: screenshots
     attributes:
       label: Captures d'écran
