@@ -21,6 +21,19 @@ describe("CreateNewTenantInput schema", () => {
     expect(data.ownerEmails).toHaveLength(2);
   });
 
+  it("accepts empty ownerEmails array", () => {
+    expectZodSuccess(CreateNewTenantInput, { ...valid, ownerEmails: [] });
+  });
+
+  it("does not include creatorId in schema (server-derived)", () => {
+    const result = CreateNewTenantInput.safeParse({ ...valid, creatorId: "user-uuid" });
+    expect(result.success).toBe(true);
+    // creatorId should be stripped by Zod (not in schema)
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("creatorId");
+    }
+  });
+
   it("rejects empty name", () => {
     expectZodFailure(CreateNewTenantInput, { ...valid, name: "" });
   });
@@ -43,10 +56,6 @@ describe("CreateNewTenantInput schema", () => {
 
   it("accepts subdomain with hyphens and numbers", () => {
     expectZodSuccess(CreateNewTenantInput, { ...valid, subdomain: "my-tenant-123" });
-  });
-
-  it("rejects empty ownerEmails array", () => {
-    expectZodFailure(CreateNewTenantInput, { ...valid, ownerEmails: [] });
   });
 
   it("rejects invalid email in ownerEmails", () => {

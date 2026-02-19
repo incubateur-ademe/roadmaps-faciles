@@ -19,6 +19,13 @@ Utilise l'outil `mcp__ide__getDiagnostics` sur chaque fichier modifie ou cree da
 
 Si tu ne connais pas les fichiers modifies, lance les diagnostics sans URI pour obtenir tous les diagnostics du projet.
 
+### Faux positifs IDE (cache ESLint stale)
+
+Si des erreurs ESLint apparaissent dans les diagnostics IDE mais que `pnpm lint` passe en CLI, c'est probablement un cache stale du serveur ESLint de VS Code (typique après création de nouveaux fichiers). Dans ce cas :
+1. Confirme que l'erreur ne se reproduit pas en CLI (`pnpm eslint <fichier>`)
+2. Signale a l'utilisateur de relancer le serveur ESLint : `Cmd+Shift+P` → "ESLint: Restart ESLint Server"
+3. Ne compte pas ces faux positifs comme des erreurs dans le résumé
+
 ## 3. Vérification post-implementation
 
 Fais une revue approfondie de l'implementation pour verifier que les changements sont conformes aux attentes, que les fonctionnalités sont bien implementées, et que le code est propre et maintenable. Tu peux uiliser le MCP `feature-dev:code-reviewer` (et d'autres si besoin) pour t'assister dans cette revue, en incluant un build de contrôle à la fin pour verifier que le projet compile correctement.

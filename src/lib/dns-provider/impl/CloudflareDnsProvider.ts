@@ -1,5 +1,6 @@
 import { config } from "@/config";
 
+import { computeDnsNames } from "../dnsUtils";
 import { type DnsProvisionResult, type DnsRecordStatus, type IDnsProvider } from "../IDnsProvider";
 
 const CLOUDFLARE_BASE_URL = "https://api.cloudflare.com/client/v4";
@@ -23,10 +24,6 @@ interface CloudflareZone {
 
 export class CloudflareDnsProvider implements IDnsProvider {
   private cachedZoneId: null | string = null;
-
-  private get rootDomain() {
-    return config.rootDomain.replace(/:\d+$/, "");
-  }
 
   private get target() {
     return config.dnsProvider.target;
@@ -59,16 +56,16 @@ export class CloudflareDnsProvider implements IDnsProvider {
     return response.json() as Promise<T>;
   }
 
-  private async getZoneId(): Promise<string> {
+  private async getZoneId(zone: string): Promise<string> {
     if (this.cachedZoneId) return this.cachedZoneId;
 
     const data = await this.request<CloudflareListResponse<CloudflareZone>>(
       "GET",
-      `/zones?name=${encodeURIComponent(this.rootDomain)}`,
+      `/zones?name=${encodeURIComponent(zone)}`,
     );
 
     if (!data.result.length) {
-      throw new Error(`Cloudflare zone not found for domain: ${this.rootDomain}`);
+      throw new Error(`Cloudflare zone not found for domain: ${zone}`);
     }
 
     this.cachedZoneId = data.result[0].id;
@@ -76,8 +73,9 @@ export class CloudflareDnsProvider implements IDnsProvider {
   }
 
   public async addRecord(subdomain: string): Promise<DnsProvisionResult> {
-    const zoneId = await this.getZoneId();
-    const fqdn = `${subdomain}.${this.rootDomain}`;
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const zoneId = await this.getZoneId(zone);
+    const fqdn = `${zoneSubdomain}.${zone}`;
 
     const existing = await this.findRecord(zoneId, fqdn);
     if (existing) {
@@ -97,8 +95,9 @@ export class CloudflareDnsProvider implements IDnsProvider {
   }
 
   public async removeRecord(subdomain: string): Promise<void> {
-    const zoneId = await this.getZoneId();
-    const fqdn = `${subdomain}.${this.rootDomain}`;
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const zoneId = await this.getZoneId(zone);
+    const fqdn = `${zoneSubdomain}.${zone}`;
 
     const record = await this.findRecord(zoneId, fqdn);
     if (!record) return;
@@ -107,8 +106,9 @@ export class CloudflareDnsProvider implements IDnsProvider {
   }
 
   public async checkRecord(subdomain: string): Promise<DnsRecordStatus> {
-    const zoneId = await this.getZoneId();
-    const fqdn = `${subdomain}.${this.rootDomain}`;
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const zoneId = await this.getZoneId(zone);
+    const fqdn = `${zoneSubdomain}.${zone}`;
 
     const record = await this.findRecord(zoneId, fqdn);
     if (!record) return "pending";
