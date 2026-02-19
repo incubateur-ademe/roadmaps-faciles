@@ -111,7 +111,7 @@ cd "$WORKTREE_DIR"
 echo "📋 Copie des fichiers de config locale..."
 LOCAL_CONFIG_FILES=(
   ".claude/settings.local.json"
-  ".claude.local.md"
+  "CLAUDE.local.md"
   ".env.development.local"
   ".env.production.local"
 )

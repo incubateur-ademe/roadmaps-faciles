@@ -24,11 +24,11 @@ export class UpdateMemberRole implements UseCase<UpdateMemberRoleInput, UpdateMe
       throw new Error("Membre introuvable.");
     }
 
-    if (input.role === UserRole.INHERITED) {
+    if (input.role === UserRole.INHERITED || input.role === UserRole.OWNER) {
       throw new Error("Rôle cible non autorisé.");
     }
 
-    if (membership.role === UserRole.OWNER && input.role !== UserRole.OWNER) {
+    if (membership.role === UserRole.OWNER) {
       // Transaction pour éviter une race condition TOCTOU
       await prisma.$transaction(async tx => {
         const ownerCount = await tx.userOnTenant.count({

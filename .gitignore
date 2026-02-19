@@ -7,6 +7,9 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
+tests/teste2e/.auth/*.json
 
 # next.js
 /.next/
@@ -76,5 +79,6 @@ certificates
 # claude local files
 /.claude.local/
 /.claude/**/*.local.json
+/.claude/.worktree-monitor-root
 /next-env.d.ts
-.claude.local.md
+CLAUDE.local.md

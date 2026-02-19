@@ -28,6 +28,9 @@
       "@/utils/*": [
         "../src/lib/utils/*"
       ],
+      "@/prisma/*": [
+        "../src/generated/prisma/*"
+      ],
       "@/*": [
         "../src/*"
       ]
