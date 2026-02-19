@@ -1,0 +1,75 @@
+# Filtres partagés pour dorny/paths-filter
+# Utilisé par build.yml, lint.yml et test.yml
+# Docs: https://github.com/dorny/paths-filter
+
+# --- Build ---
+
+should-build:
+  - 'package.json'
+  - 'pnpm-lock.yaml'
+  - 'tsconfig.json'
+  - '.nvmrc'
+  - 'src/**'
+  - 'prisma/schema.prisma'
+  - 'prisma/migrations/**'
+  - 'prisma/views/**'
+  - 'messages/**'
+  - 'public/**'
+  - 'next.config.ts'
+  - 'postcss.config.js'
+  - 'tailwind.config.ts'
+  - 'sentry.*.config.ts'
+  - '.github/workflows/build.yml'
+
+# --- Lint ---
+
+should-lint:
+  - 'package.json'
+  - 'pnpm-lock.yaml'
+  - 'tsconfig.json'
+  - '.nvmrc'
+  - 'src/**'
+  - 'tests/**'
+  - 'eslint.config.ts'
+  - '.github/workflows/lint.yml'
+
+# --- Tests ---
+
+test-unit:
+  - 'src/useCases/**'
+  - 'src/lib/utils/**'
+  - 'src/lib/model/**'
+  - 'src/lib/repo/I*.ts'
+  - 'src/lib/repo/index.ts'
+  - 'src/lib/services/**'
+  - 'src/config.ts'
+  - 'tests/testu/**'
+  - 'tests/testi/**'
+  - 'vitest.config.ts'
+  - 'vitest.setup.ts'
+
+test-db:
+  - 'src/lib/repo/impl/**'
+  - 'src/lib/db/**'
+  - 'prisma/schema.prisma'
+  - 'prisma/migrations/**'
+  - 'prisma/views/**'
+  - 'tests/testdb/**'
+  - 'vitest.config.db.ts'
+  - 'vitest.setup.ts'
+
+test-e2e:
+  - 'src/**'
+  - 'prisma/**'
+  - 'messages/**'
+  - 'public/**'
+  - 'tests/teste2e/**'
+  - 'playwright.config.ts'
+  - 'next.config.ts'
+
+test-config:
+  - 'package.json'
+  - 'pnpm-lock.yaml'
+  - 'tsconfig.json'
+  - '.nvmrc'
+  - '.github/workflows/test.yml'
