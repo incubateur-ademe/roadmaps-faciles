@@ -105,7 +105,20 @@ async function main() {
     },
   });
 
-  console.log("Users created:", admin.email, mod.email, user.email);
+  const otpUser = await prisma.user.create({
+    data: {
+      name: "Test OTP User",
+      email: "test-otp@test.local",
+      emailVerified: new Date(),
+      role: $Enums.UserRole.USER,
+      status: $Enums.UserStatus.ACTIVE,
+      username: "test-otp",
+      otpSecret: "JBSWY3DPEHPK3PXP",
+      otpVerifiedAt: new Date(),
+    },
+  });
+
+  console.log("Users created:", admin.email, mod.email, user.email, otpUser.email);
 
   // ---------------------------------------------------------------------------
   // 5. Memberships on tenant
@@ -126,6 +139,12 @@ async function main() {
       },
       {
         userId: user.id,
+        tenantId: tenant.id,
+        role: $Enums.UserRole.USER,
+        status: $Enums.UserStatus.ACTIVE,
+      },
+      {
+        userId: otpUser.id,
         tenantId: tenant.id,
         role: $Enums.UserRole.USER,
         status: $Enums.UserStatus.ACTIVE,

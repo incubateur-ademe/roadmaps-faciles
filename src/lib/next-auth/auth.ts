@@ -217,8 +217,24 @@ const {
       ...buildOAuthProviders(),
     ],
     callbacks: espaceMembreProvider.CallbacksWrapper({
-      redirect() {
-        return `${protocol}://${host}/`;
+      redirect({ url }) {
+        const fallback = `${protocol}://${host}/`;
+
+        if (url.startsWith("/")) return `${protocol}://${host}${url}`;
+
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return fallback;
+
+          const rootHost = new URL(config.host).host;
+          if (parsed.host === rootHost || parsed.host.endsWith(`.${config.rootDomain}`)) {
+            return url;
+          }
+        } catch {
+          // invalid URL — fall through
+        }
+
+        return fallback;
       },
       async signIn(params) {
         // Pre-login OTP check: block magic link if user has OTP configured but no pre-login proof

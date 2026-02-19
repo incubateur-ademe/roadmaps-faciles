@@ -37,7 +37,7 @@ export default defineConfig({
         launchOptions: { args: [HOST_RULES] },
       },
       dependencies: ["setup"],
-      testMatch: /\b(root-admin|profile)\.spec\.ts/,
+      testMatch: /\b(root-admin|profile|auth-bridge)\.spec\.ts/,
     },
 
     // --- Tenant: admin ---
@@ -86,7 +86,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         launchOptions: { args: [HOST_RULES] },
       },
-      testMatch: /\b(health|home|auth|routing|api)\.spec\.ts/,
+      testMatch: /\b(health|home|auth|auth-magic-link|auth-bridge|routing|api)\.spec\.ts/,
     },
 
     // --- Mobile ---

@@ -104,12 +104,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      maildev:
+        image: djfarrelly/maildev
+        ports:
+          - 1025:1025
+          - 1080:1080
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/roadmaps-faciles
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       ESPACE_MEMBRE_API_KEY: fakesecret
+      MAILER_SMTP_HOST: localhost
+      MAILER_SMTP_PORT: 1025
+      MAILER_SMTP_SSL: false
+      MAILER_FROM_EMAIL: "Roadmaps Faciles <noreply@test.local>"
     steps:
       - uses: actions/checkout@v4
 
