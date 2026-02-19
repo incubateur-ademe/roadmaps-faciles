@@ -53,9 +53,41 @@ const csp = {
   }),
 };
 
-const ContentSecurityPolicy = Object.entries(csp)
-  .map(([key, value]) => `${key} ${value.filter(Boolean).join(" ")};`)
-  .join(" ");
+const serializeCsp = (cspObj: Record<string, Array<false | string | undefined>>) =>
+  Object.entries(cspObj)
+    .map(([key, value]) => `${key} ${value.filter(Boolean).join(" ")};`)
+    .join(" ");
+
+const ContentSecurityPolicy = serializeCsp(csp);
+
+const embedCsp = {
+  ...csp,
+  "frame-ancestors": ["*"],
+};
+const EmbedContentSecurityPolicy = serializeCsp(embedCsp);
+
+const commonSecurityHeaders = [
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  {
+    key: "X-XSS-Protection",
+    value: "1; mode=block",
+  },
+  {
+    key: "Referrer-Policy",
+    value: "no-referrer, strict-origin-when-cross-origin",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "fullscreen=(), display-capture=(), camera=(), microphone=(), geolocation=()",
+  },
+  {
+    key: "Cross-Origin-Resource-Policy",
+    value: "cross-origin",
+  },
+];
 
 const config: NextConfig = {
   poweredByHeader: false,
@@ -85,6 +117,8 @@ const config: NextConfig = {
   },
 
   async headers() {
+    // Order matters: Next.js merges ALL matching rules, last wins for duplicate keys.
+    // Catch-all first, then embed override (so embed's relaxed headers take precedence).
     return [
       {
         source: "/(.*)",
@@ -98,22 +132,6 @@ const config: NextConfig = {
             value: "DENY",
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "no-referrer, strict-origin-when-cross-origin",
-          },
-          {
-            key: "Permissions-Policy",
-            value: "fullscreen=(), display-capture=(), camera=(), microphone=(), geolocation=()",
-          },
-          {
             key: "Cross-Origin-Embedder-Policy",
             value: "credentialless",
           },
@@ -121,10 +139,29 @@ const config: NextConfig = {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
           },
+          ...commonSecurityHeaders,
+        ],
+      },
+      {
+        source: "/:path*/embed/:rest*",
+        headers: [
           {
-            key: "Cross-Origin-Resource-Policy",
-            value: "cross-origin",
+            key: "Content-Security-Policy",
+            value: EmbedContentSecurityPolicy,
           },
+          {
+            key: "X-Frame-Options",
+            value: "",
+          },
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "unsafe-none",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "unsafe-none",
+          },
+          ...commonSecurityHeaders,
         ],
       },
     ];

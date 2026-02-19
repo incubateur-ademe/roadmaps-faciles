@@ -92,6 +92,7 @@
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
+- Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
 - Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
 - Caching: Redis via ioredis + unstorage
 - Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
@@ -159,6 +160,7 @@
 - E2E seed: `prisma/test-seed.ts` — predictable data (3 users, 2 boards, 4 posts, statuses, invitation)
 - E2E tenant: `e2e.localhost:3000` — Chromium `--host-resolver-rules` maps to 127.0.0.1 (no /etc/hosts needed)
 - E2E fixtures: `tests/teste2e/fixtures.ts` — Maildev helper (clearInbox, getLatestEmail, extractLink)
+- E2E embed: tests run in `unauthenticated` project with absolute `E2E_TENANT_URL` URLs; seed sets `allowEmbedding: true`
 - CI: GitHub Actions workflow (`.github/workflows/test.yml`) — PostgreSQL, Redis, Maildev services
 
 ## Security
@@ -192,3 +194,4 @@
 - Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
 - `@auth/core` provider merge: `Nodemailer()` stores user config in `options` field; `parseProviders()` does `merge(defaults, userOptions)` which overrides top-level keys with `options.*` — the espace-membre-provider wrapper must flatten `options` into the base config (fixed in v0.3.3)
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
+- Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before

@@ -28,6 +28,7 @@ export interface PostListCompactProps {
   anonymousId: string;
   boardId: number;
   initialPosts: EnrichedPost[];
+  linkTarget?: string;
   order: Order;
   search?: string;
   totalCount: number;
@@ -44,6 +45,7 @@ export const PostListCompact = ({
   order,
   boardId,
   search,
+  linkTarget,
 }: PostListCompactProps) => {
   const [posts, setPosts] = useState<EnrichedPost[]>(initialPosts);
   const [isPending, startTransition] = useTransition();
@@ -110,7 +112,11 @@ export const PostListCompact = ({
                         {t("post.unclassified")}
                       </Badge>
                     )}
-                    <Link href={dirtyDomainFixer(`/post/${post.id}`)} className={cx(fr.cx("fr-link"), "truncate")}>
+                    <Link
+                      href={dirtyDomainFixer(`/post/${post.id}`)}
+                      className={cx(fr.cx("fr-link"), "truncate")}
+                      {...(linkTarget && { target: linkTarget })}
+                    >
                       {highlightTitle(post.title)}
                     </Link>
                   </div>

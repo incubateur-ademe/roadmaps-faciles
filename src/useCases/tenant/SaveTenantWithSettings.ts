@@ -16,6 +16,7 @@ export const SaveTenantWithSettingsInput = z.object({
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
   requirePostApproval: z.boolean(),
+  allowEmbedding: z.boolean(),
 });
 export type SaveTenantWithSettingsInput = z.infer<typeof SaveTenantWithSettingsInput>;
 export type SaveTenantWithSettingsOutput = TenantSettings;
@@ -34,6 +35,7 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
       requirePostApproval: tenantSettings.requirePostApproval,
+      allowEmbedding: tenantSettings.allowEmbedding,
     });
 
     return updatedTenantSetting;

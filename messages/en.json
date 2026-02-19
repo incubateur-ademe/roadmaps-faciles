@@ -236,7 +236,8 @@
       "members": "Members",
       "invitations": "Invitations",
       "api": "API",
-      "auditLog": "Audit log"
+      "auditLog": "Audit log",
+      "embedding": "Embedding"
     },
     "general": {
       "title": "General",
@@ -295,7 +296,11 @@
       "deleteConfirm": "Are you sure you want to delete this tenant? This action is irreversible.",
       "seedBannerTitle": "Your space is empty",
       "seedBannerDescription": "Initialize default data to get started: {boards} boards, {statuses} statuses, {extras}.",
-      "seedBannerCta": "Configure in settings"
+      "seedBannerCta": "Configure in settings",
+      "embeddingTitle": "Embedding",
+      "allowEmbedding": "Allow iframe embedding",
+      "allowEmbeddingHelper": "Allows embedding boards and roadmap on external sites via iframe.",
+      "allowEmbeddingPrivateWarning": "Iframe embedding will not work if the site is private: visitors will not be authenticated in the iframe."
     },
     "boards": {
       "title": "Board management",
@@ -465,6 +470,14 @@
   "roadmap": {
     "title": "Roadmap",
     "emptyColumn": "Share your feedback and come back later to discover what's new!"
+  },
+  "embed": {
+    "privateTenant": "This content is private.",
+    "privateTenantLogin": "Sign in on the site",
+    "embeddingDisabled": "Embedding is not enabled for this space.",
+    "poweredBy": "Powered by {name}",
+    "viewFullBoard": "View full board",
+    "viewFullRoadmap": "View full roadmap"
   },
   "footer": {
     "contentDescription": "{brandName} is a service developed by the Ecological Transition Accelerator of ADEME.",

@@ -236,7 +236,8 @@
       "members": "Membres",
       "invitations": "Invitations",
       "api": "API",
-      "auditLog": "Journal d'audit"
+      "auditLog": "Journal d'audit",
+      "embedding": "Intégration"
     },
     "general": {
       "title": "Général",
@@ -295,7 +296,11 @@
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce tenant ? Cette action est irréversible.",
       "seedBannerTitle": "Votre espace est vide",
       "seedBannerDescription": "Initialisez des données par défaut pour démarrer : {boards} tableaux, {statuses} statuts, {extras}.",
-      "seedBannerCta": "Configurer dans les paramètres"
+      "seedBannerCta": "Configurer dans les paramètres",
+      "embeddingTitle": "Intégration",
+      "allowEmbedding": "Autoriser l'intégration iframe",
+      "allowEmbeddingHelper": "Permet d'embarquer les boards et la roadmap dans un site externe via iframe.",
+      "allowEmbeddingPrivateWarning": "L'intégration iframe ne fonctionnera pas si le site est privé : les visiteurs ne seront pas authentifiés dans l'iframe."
     },
     "boards": {
       "title": "Gestion des boards",
@@ -465,6 +470,14 @@
   "roadmap": {
     "title": "Feuille de route",
     "emptyColumn": "Partagez vos retours et revenez plus tard pour découvrir les nouveautés !"
+  },
+  "embed": {
+    "privateTenant": "Ce contenu est privé.",
+    "privateTenantLogin": "Se connecter sur le site",
+    "embeddingDisabled": "L'intégration n'est pas activée pour cet espace.",
+    "poweredBy": "Propulsé par {name}",
+    "viewFullBoard": "Voir le tableau complet",
+    "viewFullRoadmap": "Voir la roadmap complète"
   },
   "footer": {
     "contentDescription": "{brandName} est un service développé par l'Accélérateur de la Transition Écologique de l'ADEME.",

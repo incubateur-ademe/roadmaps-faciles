@@ -41,6 +41,7 @@ const formSchema = z.object({
   allowComments: z.boolean(),
   allowAnonymousVoting: z.boolean(),
   requirePostApproval: z.boolean(),
+  allowEmbedding: z.boolean(),
 });
 
 type FormType = z.infer<typeof formSchema>;
@@ -122,6 +123,17 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
       },
     ],
   },
+  {
+    id: "embedding",
+    title: t("embeddingTitle"),
+    toggles: [
+      {
+        name: "allowEmbedding",
+        label: t("allowEmbedding"),
+        helperText: t("allowEmbeddingHelper"),
+      },
+    ],
+  },
 ];
 
 type DomainFormType = {
@@ -166,6 +178,7 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
       allowComments: tenantSettings.allowComments,
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
       requirePostApproval: tenantSettings.requirePostApproval,
+      allowEmbedding: tenantSettings.allowEmbedding,
     },
   });
 
@@ -206,6 +219,15 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
             </section>
           );
         })}
+
+        {watchedValues.allowEmbedding && watchedValues.isPrivate && (
+          <Alert
+            className={fr.cx("fr-mb-2w")}
+            severity="warning"
+            small
+            description={t("allowEmbeddingPrivateWarning")}
+          />
+        )}
 
         <ClientAnimate>
           {saveError && (
