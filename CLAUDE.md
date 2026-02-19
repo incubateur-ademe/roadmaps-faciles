@@ -19,6 +19,9 @@
 - `pnpm prisma:studio` — open Prisma Studio (embedded in admin UI)
 - `pnpm prisma:reset` — reset database and re-seed
 - `pnpm export` — export standalone build
+- `pnpm test` / `pnpm test:coverage` — unit + integration tests (Vitest)
+- `pnpm test:db` — DB integration tests (requires `DATABASE_URL_TEST`)
+- `pnpm test:e2e` — E2E tests (Playwright, requires dev server + docker services)
 
 ## Local services (docker-compose)
 - PostgreSQL 15 → `localhost:5432` (db: roadmaps-faciles, user/pass: postgres/postgres)
@@ -111,6 +114,7 @@
 - Fix all lint errors and TypeScript errors before committing — do not leave unused variables, dead imports, or type errors
 - When asked to implement a feature, produce working code — not just a plan. Only produce a plan if explicitly asked for planning/architecture discussion
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
+- After implementing a feature or fix, assess whether tests should be added or updated — flag it to the user with a recommendation on which test layer(s) apply (testu for pure logic, testi for use case behavior, testdb for repo changes, teste2e for user-facing flows)
 
 ## Worktrees (multi-Claude en parallèle)
 - Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
@@ -138,7 +142,24 @@
 - NEVER mention `@copilot-pull-request-reviewer` or any bot handle in PR comments or review replies — this triggers automated bot actions (unwanted PRs, review loops)
 
 ## Testing
-- No test framework configured — no unit/integration/e2e tests in the project currently
+- Vitest for unit + integration tests, Playwright for E2E
+- Three test layers in `tests/`:
+  - `testu/` — unit tests (pure logic, Zod schemas, utilities) — no mocks, no DB
+  - `testi/` — integration tests (use cases with in-memory mocks of repos/services)
+  - `testdb/` — DB integration tests (Prisma repos against real PostgreSQL via `DATABASE_URL_TEST`)
+  - `teste2e/` — E2E tests (Playwright, 7 projects: root-auth, tenant-admin, tenant-mod, tenant-user, unauthenticated, mobile, setup)
+- Scripts:
+  - `pnpm test` — run unit + integration tests (Vitest)
+  - `pnpm test:watch` — Vitest in watch mode
+  - `pnpm test:coverage` — Vitest with coverage
+  - `pnpm test:db` — DB integration tests (requires `DATABASE_URL_TEST`)
+  - `pnpm test:db:setup` — migrate test DB
+  - `pnpm test:e2e` — Playwright E2E tests (requires dev server + services)
+- E2E auth: `POST /api/test-auth` route creates sessions for test users (dev-only)
+- E2E seed: `prisma/test-seed.ts` — predictable data (3 users, 2 boards, 4 posts, statuses, invitation)
+- E2E tenant: `e2e.localhost:3000` — Chromium `--host-resolver-rules` maps to 127.0.0.1 (no /etc/hosts needed)
+- E2E fixtures: `tests/teste2e/fixtures.ts` — Maildev helper (clearInbox, getLatestEmail, extractLink)
+- CI: GitHub Actions workflow (`.github/workflows/test.yml`) — PostgreSQL, Redis, Maildev services
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)

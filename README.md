@@ -292,6 +292,12 @@ pnpm generateEnvDeclaration     # Générer env.d.ts à partir de .env.developme
 pnpm prisma:studio              # Prisma Studio (http://localhost:5555/)
 pnpm prisma:reset               # Reset DB (migrations, pas de seed)
 pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans /scripts/xx.ts
+
+# Tests
+pnpm test                       # Tests unitaires + intégration (Vitest)
+pnpm test:coverage              # Idem avec couverture de code
+pnpm test:db                    # Tests d'intégration DB (nécessite DATABASE_URL_TEST)
+pnpm test:e2e                   # Tests E2E Playwright (nécessite dev server + docker services)
 ```
 
 ---
@@ -308,6 +314,10 @@ pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans 
 /src/useCases               # Logique métier (use cases DDD)
 /src/emails                 # Templates email react-email (DSFR Mail)
 /src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
+/tests/testu                # Tests unitaires (Vitest)
+/tests/testi                # Tests d'intégration (use cases, mocks)
+/tests/testdb               # Tests d'intégration DB (Prisma, PostgreSQL)
+/tests/teste2e              # Tests E2E (Playwright, 7 projets)
 ```
 
 ---
