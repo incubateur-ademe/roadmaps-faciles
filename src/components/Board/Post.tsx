@@ -59,10 +59,11 @@ export const BoardPost = ({
               small
               nativeSpanProps={{
                 onClick: () => {
+                  const url = dirtyDomainFixer(`/post/${post.id}`);
                   if (linkTarget) {
-                    window.open(dirtyDomainFixer(`/post/${post.id}`), linkTarget);
+                    window.open(url, linkTarget, "noopener,noreferrer");
                   } else {
-                    location.href = dirtyDomainFixer(`/post/${post.id}`);
+                    location.href = url;
                   }
                 },
               }}

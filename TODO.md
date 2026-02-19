@@ -23,7 +23,7 @@
 - [ ] Webhooks sortants (#17)
 - [ ] New user onboarding (#22)
 
-## À specifier / à discuter
+## À spécifier / à discuter
 
 - [ ] Espace d'échange : type forum, discussions, support ; lié aux tickets.
 - [ ] "Crisp" like : base de connaissance et chat en direct pour support et échanges entre utilisateurs, lié à l'espace d'échange et aux tickets. Avec IA pour suggérer des réponses et articles de la base de connaissances, suggérer des tickets existants, ou aider à rédiger un ticket à partir d'un besoin exprimé en langage naturel.

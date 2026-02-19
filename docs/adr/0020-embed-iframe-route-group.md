@@ -11,7 +11,7 @@
 ## Décision
   - Nouveau route group `src/app/[domain]/(embed)/` avec layout minimal (main + footer "Propulsé par").
   - Routes : `/embed/board/[boardSlug]` et `/embed/roadmap` avec paramètres URL (`hideVotes`, `theme`, `view`, `search`).
-  - Headers CSP spécifiques dans `next.config.ts` via source `/:path*/embed/:rest*` (avant le catch-all) : `frame-ancestors: *`, `X-Frame-Options: ""`, `Cross-Origin-Embedder-Policy: unsafe-none`.
+  - Headers CSP spécifiques dans `next.config.ts` via source `/:path*/embed/:rest*` (après le catch-all pour pouvoir surcharger les headers par défaut) : `frame-ancestors: *`, `X-Frame-Options: ""`, `Cross-Origin-Embedder-Policy: unsafe-none`.
   - Guard dans le layout embed : vérifie `TenantSettings.allowEmbedding` avant tout rendu.
   - Prop `linkTarget="_blank"` passée aux composants board pour ouvrir les liens hors de l'iframe.
 
