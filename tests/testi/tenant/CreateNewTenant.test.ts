@@ -134,6 +134,30 @@ describe("CreateNewTenant", () => {
     );
   });
 
+  it("continues when an owner invitation fails (e.g., already a member)", async () => {
+    const tenant = fakeTenant({ id: 5 });
+    const settings = fakeTenantSettings({ tenantId: 5, subdomain: "dup" });
+
+    mockTenantRepo.create.mockResolvedValue(tenant);
+    mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
+    mockAddDomain.mockResolvedValue(undefined);
+    mockAddRecord.mockResolvedValue({});
+    mockSendInvitationExecute
+      .mockRejectedValueOnce(new Error("Cet utilisateur est déjà membre de ce tenant."))
+      .mockResolvedValueOnce({});
+
+    const result = await useCase.execute({
+      name: "Dup",
+      subdomain: "dup",
+      creatorId: "user-1",
+      ownerEmails: ["already-member@test.com", "new-owner@test.com"],
+    });
+
+    expect(result.tenant).toBeDefined();
+    expect(mockSendInvitationExecute).toHaveBeenCalledTimes(2);
+  });
+
   it("creates OWNER membership for the creator", async () => {
     const tenant = fakeTenant({ id: 4 });
     const settings = fakeTenantSettings({ tenantId: 4, subdomain: "owned" });

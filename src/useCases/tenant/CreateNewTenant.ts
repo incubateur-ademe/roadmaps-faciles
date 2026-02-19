@@ -74,12 +74,16 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     const sendInvitation = new SendInvitation(this.invitationRepo);
 
     for (const email of input.ownerEmails) {
-      await sendInvitation.execute({
-        tenantId: tenant.id,
-        email,
-        tenantUrl,
-        role: UserRole.OWNER,
-      });
+      try {
+        await sendInvitation.execute({
+          tenantId: tenant.id,
+          email,
+          tenantUrl,
+          role: UserRole.OWNER,
+        });
+      } catch (error) {
+        logger.warn({ err: error, email, tenantId: tenant.id }, "Owner invitation skipped");
+      }
     }
 
     return { tenant: { ...tenant, settings }, dns: dnsResult };
