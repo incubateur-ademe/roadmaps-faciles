@@ -4,9 +4,11 @@ import {
   type createMockInvitationRepo as CreateMockInvitationRepo,
   type createMockTenantRepo as CreateMockTenantRepo,
   type createMockTenantSettingsRepo as CreateMockTenantSettingsRepo,
+  type createMockUserOnTenantRepo as CreateMockUserOnTenantRepo,
   createMockInvitationRepo,
   createMockTenantRepo,
   createMockTenantSettingsRepo,
+  createMockUserOnTenantRepo,
   fakeTenant,
   fakeTenantSettings,
 } from "../helpers";
@@ -41,13 +43,15 @@ describe("CreateNewTenant", () => {
   let mockTenantRepo: ReturnType<typeof CreateMockTenantRepo>;
   let mockSettingsRepo: ReturnType<typeof CreateMockTenantSettingsRepo>;
   let mockInvitationRepo: ReturnType<typeof CreateMockInvitationRepo>;
+  let mockUserOnTenantRepo: ReturnType<typeof CreateMockUserOnTenantRepo>;
   let useCase: CreateNewTenant;
 
   beforeEach(() => {
     mockTenantRepo = createMockTenantRepo();
     mockSettingsRepo = createMockTenantSettingsRepo();
     mockInvitationRepo = createMockInvitationRepo();
-    useCase = new CreateNewTenant(mockTenantRepo, mockSettingsRepo, mockInvitationRepo);
+    mockUserOnTenantRepo = createMockUserOnTenantRepo();
+    useCase = new CreateNewTenant(mockTenantRepo, mockSettingsRepo, mockInvitationRepo, mockUserOnTenantRepo);
     mockAddDomain.mockReset();
     mockAddRecord.mockReset();
     mockSendInvitationExecute.mockReset();
@@ -59,6 +63,7 @@ describe("CreateNewTenant", () => {
 
     mockTenantRepo.create.mockResolvedValue(tenant);
     mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
     mockAddDomain.mockResolvedValue(undefined);
     mockAddRecord.mockResolvedValue({ type: "CNAME", name: "test" });
     mockSendInvitationExecute.mockResolvedValue({});
@@ -66,6 +71,7 @@ describe("CreateNewTenant", () => {
     const result = await useCase.execute({
       name: "Test",
       subdomain: "test",
+      creatorId: "user-1",
       ownerEmails: ["owner@test.com"],
     });
 
@@ -85,6 +91,7 @@ describe("CreateNewTenant", () => {
 
     mockTenantRepo.create.mockResolvedValue(tenant);
     mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
     mockAddDomain.mockResolvedValue(undefined);
     mockAddRecord.mockRejectedValue(new Error("DNS provider error"));
     mockSendInvitationExecute.mockResolvedValue({});
@@ -92,6 +99,7 @@ describe("CreateNewTenant", () => {
     const result = await useCase.execute({
       name: "Test2",
       subdomain: "test2",
+      creatorId: "user-1",
       ownerEmails: ["owner@test.com"],
     });
 
@@ -105,6 +113,7 @@ describe("CreateNewTenant", () => {
 
     mockTenantRepo.create.mockResolvedValue(tenant);
     mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
     mockAddDomain.mockResolvedValue(undefined);
     mockAddRecord.mockResolvedValue({});
     mockSendInvitationExecute.mockResolvedValue({});
@@ -112,6 +121,7 @@ describe("CreateNewTenant", () => {
     await useCase.execute({
       name: "Multi",
       subdomain: "multi",
+      creatorId: "user-1",
       ownerEmails: ["owner1@test.com", "owner2@test.com"],
     });
 
@@ -122,5 +132,55 @@ describe("CreateNewTenant", () => {
     expect(mockSendInvitationExecute).toHaveBeenCalledWith(
       expect.objectContaining({ email: "owner2@test.com", role: "OWNER" }),
     );
+  });
+
+  it("continues when an owner invitation fails (e.g., already a member)", async () => {
+    const tenant = fakeTenant({ id: 5 });
+    const settings = fakeTenantSettings({ tenantId: 5, subdomain: "dup" });
+
+    mockTenantRepo.create.mockResolvedValue(tenant);
+    mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
+    mockAddDomain.mockResolvedValue(undefined);
+    mockAddRecord.mockResolvedValue({});
+    mockSendInvitationExecute
+      .mockRejectedValueOnce(new Error("Cet utilisateur est déjà membre de ce tenant."))
+      .mockResolvedValueOnce({});
+
+    const result = await useCase.execute({
+      name: "Dup",
+      subdomain: "dup",
+      creatorId: "user-1",
+      ownerEmails: ["already-member@test.com", "new-owner@test.com"],
+    });
+
+    expect(result.tenant).toBeDefined();
+    expect(mockSendInvitationExecute).toHaveBeenCalledTimes(2);
+  });
+
+  it("creates OWNER membership for the creator", async () => {
+    const tenant = fakeTenant({ id: 4 });
+    const settings = fakeTenantSettings({ tenantId: 4, subdomain: "owned" });
+
+    mockTenantRepo.create.mockResolvedValue(tenant);
+    mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
+    mockAddDomain.mockResolvedValue(undefined);
+    mockAddRecord.mockResolvedValue({});
+    mockSendInvitationExecute.mockResolvedValue({});
+
+    await useCase.execute({
+      name: "Owned",
+      subdomain: "owned",
+      creatorId: "creator-uuid",
+      ownerEmails: ["owner@test.com"],
+    });
+
+    expect(mockUserOnTenantRepo.create).toHaveBeenCalledWith({
+      userId: "creator-uuid",
+      tenantId: 4,
+      role: "OWNER",
+      status: "ACTIVE",
+    });
   });
 });

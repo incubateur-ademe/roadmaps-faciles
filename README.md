@@ -187,6 +187,7 @@ Gestion automatique des enregistrements DNS pour les sous-domaines.
 | Variable | Description | Défaut |
 |---|---|---|
 | `DNS_PROVIDER` | Provider DNS (`noop`, `manual`, `ovh`, `cloudflare`) | `noop` |
+| `DNS_ZONE_NAME` | Zone DNS si différente du rootDomain (sous-domaines imbriqués) | *(rootDomain)* |
 | `DNS_PROVIDER_TARGET` | Cible CNAME pour les enregistrements DNS | — |
 
 <details>

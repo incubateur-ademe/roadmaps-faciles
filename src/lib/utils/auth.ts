@@ -110,6 +110,8 @@ function checkRootUser(session: Session, check: AccessCheck, useForbidden: boole
 }
 
 async function checkTenantUser(session: Session, check: TenantAccessCheck, useForbidden: boolean, message: string) {
+  if (session.user.isSuperAdmin) return;
+
   const tenant = await getTenantFromDomain(check.domain);
   const userOnTenant = await userOnTenantRepo.findMembership(session.user.uuid, tenant.id);
 

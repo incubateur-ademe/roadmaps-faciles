@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import { config } from "@/config";
 
+import { computeDnsNames } from "../dnsUtils";
 import { type DnsProvisionResult, type DnsRecordStatus, type IDnsProvider } from "../IDnsProvider";
 
 const OVH_ENDPOINTS = {
@@ -19,10 +20,6 @@ interface OvhDnsRecord {
 }
 
 export class OvhDnsProvider implements IDnsProvider {
-  private get zone() {
-    return config.rootDomain.replace(/:\d+$/, "");
-  }
-
   private get target() {
     return config.dnsProvider.target;
   }
@@ -77,7 +74,8 @@ export class OvhDnsProvider implements IDnsProvider {
   }
 
   public async addRecord(subdomain: string): Promise<DnsProvisionResult> {
-    const existing = await this.findRecordIds(subdomain);
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const existing = await this.findRecordIds(zone, zoneSubdomain);
 
     if (existing.length > 0) {
       // Record already exists — check if target matches
@@ -88,35 +86,37 @@ export class OvhDnsProvider implements IDnsProvider {
     // DNS CNAME target must end with a dot
     const targetWithDot = this.target.endsWith(".") ? this.target : `${this.target}.`;
 
-    await this.request("POST", `/domain/zone/${this.zone}/record`, {
+    await this.request("POST", `/domain/zone/${zone}/record`, {
       fieldType: "CNAME",
-      subDomain: subdomain,
+      subDomain: zoneSubdomain,
       target: targetWithDot,
       ttl: 3600,
     });
 
-    await this.refreshZone();
+    await this.refreshZone(zone);
 
     return { provisioned: true, status: "active" };
   }
 
   public async removeRecord(subdomain: string): Promise<void> {
-    const ids = await this.findRecordIds(subdomain);
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const ids = await this.findRecordIds(zone, zoneSubdomain);
 
     for (const id of ids) {
-      await this.request("DELETE", `/domain/zone/${this.zone}/record/${id}`);
+      await this.request("DELETE", `/domain/zone/${zone}/record/${id}`);
     }
 
     if (ids.length > 0) {
-      await this.refreshZone();
+      await this.refreshZone(zone);
     }
   }
 
   public async checkRecord(subdomain: string): Promise<DnsRecordStatus> {
-    const ids = await this.findRecordIds(subdomain);
+    const { zone, zoneSubdomain } = computeDnsNames(subdomain);
+    const ids = await this.findRecordIds(zone, zoneSubdomain);
     if (ids.length === 0) return "pending";
 
-    const record = await this.request<OvhDnsRecord>("GET", `/domain/zone/${this.zone}/record/${ids[0]}`);
+    const record = await this.request<OvhDnsRecord>("GET", `/domain/zone/${zone}/record/${ids[0]}`);
     const normalizedTarget = record.target.replace(/\.$/, "");
     const normalizedExpected = this.target.replace(/\.$/, "");
 
@@ -127,14 +127,14 @@ export class OvhDnsProvider implements IDnsProvider {
     return "error";
   }
 
-  private async findRecordIds(subdomain: string): Promise<number[]> {
+  private async findRecordIds(zone: string, zoneSubdomain: string): Promise<number[]> {
     return this.request<number[]>(
       "GET",
-      `/domain/zone/${this.zone}/record?subDomain=${encodeURIComponent(subdomain)}&fieldType=CNAME`,
+      `/domain/zone/${zone}/record?subDomain=${encodeURIComponent(zoneSubdomain)}&fieldType=CNAME`,
     );
   }
 
-  private async refreshZone(): Promise<void> {
-    await this.request("POST", `/domain/zone/${this.zone}/refresh`);
+  private async refreshZone(zone: string): Promise<void> {
+    await this.request("POST", `/domain/zone/${zone}/refresh`);
   }
 }

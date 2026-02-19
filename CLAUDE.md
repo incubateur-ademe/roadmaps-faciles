@@ -64,6 +64,7 @@
   - `EmptyObject` type: import from `@/utils/types` (not `react-hook-form`)
   - Auth: `assertTenantAdmin(domain)` takes domain explicitly — type `TenantAccessCheck = { domain: string } & AccessCheck` in `src/lib/utils/auth.ts`
   - Auth: `assertTenantModerator(domain)` — same pattern, min role MODERATOR. Used by `/moderation` section (separate from `/admin`)
+  - Auth: `checkTenantUser()` has defense-in-depth super admin bypass — `isSuperAdmin` users skip tenant membership check (primary bypass is in `assertSession()`)
   - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
@@ -88,6 +89,7 @@
   - Server-side `console.*` → use `logger` from `@/lib/logger`; client-side `console.error` stays (Sentry captures automatically)
 - Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
+  - `DNS_ZONE_NAME` env var: when zone differs from rootDomain (nested subdomains), `computeDnsNames()` in `src/lib/dns-provider/dnsUtils.ts` computes zone-relative subdomain
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
@@ -168,6 +170,7 @@
 - Use cases operating on tenant-scoped resources must validate `tenantId` matches the caller's tenant (auth checks role, not resource ownership)
 - Role checks: use `USER_ROLE` enum for comparisons — never magic strings or boolean helpers like `isSuperAdmin` unless the logic truly requires super-admin only
 - Tenant-level roles come from tenant membership, NOT from the global user role — always check the correct scope
+- Server-derived data (e.g., `creatorId`) must NOT appear in public Zod schemas — use a separate interface/type that extends the Zod inferred type
 
 ## Gotchas
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves

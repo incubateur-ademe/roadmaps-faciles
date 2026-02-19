@@ -150,6 +150,7 @@ export const config = {
   },
   dnsProvider: {
     type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
+    zoneName: ensureApiEnvVar(process.env.DNS_ZONE_NAME, ""),
     get target() {
       const target = ensureApiEnvVar(process.env.DNS_PROVIDER_TARGET, "")
         .replace("http://", "")
