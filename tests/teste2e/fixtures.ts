@@ -54,7 +54,16 @@ export const test = base.extend<{ maildev: MaildevFixture }>({
       },
 
       async clearInbox(): Promise<void> {
-        await fetch(`${MAILDEV_API}/email/all`, { method: "DELETE" });
+        // Retry with backoff — Maildev may not be fully ready or may drop connections
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await fetch(`${MAILDEV_API}/email/all`, { method: "DELETE" });
+            return;
+          } catch {
+            if (attempt === 2) throw new Error(`Maildev clearInbox failed after 3 attempts (${MAILDEV_API})`);
+            await new Promise(r => setTimeout(r, 1_000 * (attempt + 1)));
+          }
+        }
       },
     };
 
