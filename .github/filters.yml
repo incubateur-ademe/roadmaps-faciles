@@ -42,6 +42,8 @@ should-lint:
 # --- Tests ---
 
 test-unit:
+  - 'package.json'
+  - 'pnpm-lock.yaml'
   - 'src/useCases/**'
   - 'src/lib/utils/**'
   - 'src/lib/model/**'
@@ -74,8 +76,6 @@ test-e2e:
   - 'next.config.ts'
 
 test-config:
-  - 'package.json'
-  - 'pnpm-lock.yaml'
   - 'tsconfig.json'
   - '.nvmrc'
   - '.github/workflows/test.yml'
