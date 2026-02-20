@@ -81,5 +81,22 @@ Pour chaque commentaire, affiche :
 Lance le skill `verif` pour valider que les corrections n'introduisent pas de regressions.
 
 ## 7. Finalisation
-- Une fois un commentaire adressé, "resolve" le commentaire sur GitHub pour indiquer qu'il a été traité avec un commentaire de suivi indiquant la correction effectuée ou la raison de l'ignorance.
+- Une fois un commentaire adressé, "resolve" le thread sur GitHub :
+  1. D'abord, poster un commentaire de réponse via `gh api` (REST) indiquant la correction effectuée ou la raison de l'ignorance
+  2. Ensuite, résoudre le thread via l'API GraphQL (les réponses REST ne résolvent pas les threads) :
+     ```bash
+     # Récupérer les IDs des threads non résolus
+     gh api graphql -f query='{
+       repository(owner: "OWNER", name: "REPO") {
+         pullRequest(number: NUMBER) {
+           reviewThreads(first: 50) {
+             nodes { id isResolved }
+           }
+         }
+       }
+     }' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | .id'
+
+     # Résoudre chaque thread
+     gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { isResolved } } }'
+     ```
 - Si copilot, tag le pour qu'il apprenne de ses erreurs ou de ses suggestions pertinentes. Précise lui qu'il ne faut absolument pas créer de PR !
