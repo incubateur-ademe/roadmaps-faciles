@@ -35,6 +35,12 @@
   "resolutions": {
     "@auth/core": "^0.41.1"
   },
+  "pnpm": {
+    "overrides": {
+      "hono": ">=4.11.10",
+      "lodash@<4.17.23": ">=4.17.23"
+    }
+  },
   "dependencies": {
     "@auth/core": "^0.41.1",
     "@auth/prisma-adapter": "^2.11.1",
