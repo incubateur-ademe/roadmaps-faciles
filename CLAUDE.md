@@ -144,6 +144,13 @@
 
 ## GitHub
 - NEVER mention `@copilot-pull-request-reviewer` or any bot handle in PR comments or review replies — this triggers automated bot actions (unwanted PRs, review loops)
+- Issues : toujours suivre les templates `.github/ISSUE_TEMPLATE/` — ne jamais créer d'issue "blank"
+  - **Feature Request** — type `Feature`, label `enhancement` : sections `### Description`, `### Motivation`, `### Scope` (opt), `### Alternatives envisagées` (opt), `### Notes techniques` (opt)
+  - **Bug Report** — type `Bug`, label `bug` : sections `### Description du bug`, `### Étapes de reproduction`, `### Comportement attendu`, `### Captures d'écran` (opt), `### Environnement` (opt)
+  - **Tâche technique** — type `Task`, label `infra` : sections `### Contexte`, `### Scope`, `### Notes techniques` (opt)
+  - Titre : même format que les commits conventionnels — `feat(scope): description`, `fix(scope): description`, `chore(scope): description`
+  - Corps : utiliser les sections H3 du template choisi, ne pas inventer de sections hors template
+  - Toujours assigner le type GitHub (Feature/Bug/Task) et le label correspondant à la création — utiliser `gh api graphql` pour le type si `gh issue create` ne le supporte pas
 
 ## Testing
 - Vitest for unit + integration tests, Playwright for E2E
