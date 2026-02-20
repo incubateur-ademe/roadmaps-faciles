@@ -12,7 +12,7 @@
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons && prisma generate",
     "dev": "next dev",
-    "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "build": "unset NODE_ENV && next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",
     "prelint": "next typegen && pnpm prisma generate",
