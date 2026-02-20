@@ -19,7 +19,12 @@ should-build:
   - 'postcss.config.js'
   - 'tailwind.config.ts'
   - 'sentry.*.config.ts'
+  - 'source.config.ts'
+  - 'next-sitemap.config.js'
+  - 'global.ts'
+  - 'content/**'
   - '.github/workflows/build.yml'
+  - '.github/filters.yml'
 
 # --- Lint ---
 
@@ -32,6 +37,7 @@ should-lint:
   - 'tests/**'
   - 'eslint.config.ts'
   - '.github/workflows/lint.yml'
+  - '.github/filters.yml'
 
 # --- Tests ---
 
@@ -73,3 +79,4 @@ test-config:
   - 'tsconfig.json'
   - '.nvmrc'
   - '.github/workflows/test.yml'
+  - '.github/filters.yml'
