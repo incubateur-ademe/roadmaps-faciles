@@ -200,7 +200,9 @@
     "url": "URL",
     "owners": "Owners",
     "members": "Membres",
-    "createdAt": "Créé le"
+    "createdAt": "Créé le",
+    "pin": "Épingler",
+    "unpin": "Désépingler"
   },
   "adminUsers": {
     "title": "Utilisateurs",

@@ -15,7 +15,7 @@ import { Heading, Text } from "@/dsfr/base/Typography";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
-import { tenantRepo } from "@/lib/repo";
+import { appSettingsRepo, tenantRepo } from "@/lib/repo";
 
 import { sharedMetadata } from "../../shared-metadata";
 
@@ -51,11 +51,11 @@ const RoadmapPageInner = async () => {
     </DsfrPage>
   );
 
-  const subdomain = config.roadmap.tenantSubdomain;
-  if (!subdomain) return notConfigured;
+  const appSettings = await appSettingsRepo.get();
+  if (!appSettings.pinnedTenantId) return notConfigured;
 
-  const tenant = await tenantRepo.findBySubdomain(subdomain);
-  if (!tenant) return notConfigured;
+  const tenant = await tenantRepo.findById(appSettings.pinnedTenantId);
+  if (!tenant || tenant.deletedAt) return notConfigured;
 
   const tenantSettings = await prisma.tenantSettings.findFirst({
     where: { tenantId: tenant.id },

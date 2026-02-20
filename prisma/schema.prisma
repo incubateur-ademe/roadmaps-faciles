@@ -290,15 +290,16 @@ enum Locale {
 }
 
 model Tenant {
-  id         Int             @id @default(autoincrement())
-  deletedAt  DateTime?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  apiKeys    ApiKey[]
-  boards     Board[]
-  settings   TenantSettings?
-  members    UserOnTenant[]
-  postStatus PostStatus[]
+  id                  Int             @id @default(autoincrement())
+  deletedAt           DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  apiKeys             ApiKey[]
+  boards              Board[]
+  settings            TenantSettings?
+  members             UserOnTenant[]
+  postStatus          PostStatus[]
+  pinnedByAppSettings AppSettings?
 }
 
 enum EmailRegistrationPolicy {
@@ -345,8 +346,11 @@ model AppSettings {
   id                Int      @id @default(0)
   force2FA          Boolean  @default(false)
   force2FAGraceDays Int      @default(5)
+  pinnedTenantId    Int?     @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  pinnedTenant Tenant? @relation(fields: [pinnedTenantId], references: [id], onDelete: SetNull)
 }
 
 model TenantDefaultOAuth {
@@ -565,6 +569,7 @@ enum AuditAction {
   ROOT_USER_STATUS_UPDATE
   ROOT_USER_UPDATE
   ROOT_SECURITY_SETTINGS_UPDATE
+  ROOT_APP_SETTINGS_UPDATE
 }
 
 model AuditLog {

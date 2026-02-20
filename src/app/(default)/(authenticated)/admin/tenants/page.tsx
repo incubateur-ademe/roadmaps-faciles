@@ -1,3 +1,4 @@
+import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { getLocale, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
@@ -6,14 +7,17 @@ import { CopyButton } from "@/components/CopyButton";
 import { config } from "@/config";
 import { TableCustom } from "@/dsfr/base/TableCustom";
 import { Link } from "@/i18n/navigation";
-import { tenantRepo } from "@/lib/repo";
+import { appSettingsRepo, tenantRepo } from "@/lib/repo";
 import { ListAllTenants } from "@/useCases/tenant/ListAllTenants";
+
+import { pinTenant } from "./actions";
 
 const TenantsPage = async () => {
   await connection();
 
-  const [useCase, t, tc, locale] = await Promise.all([
+  const [useCase, appSettings, t, tc, locale] = await Promise.all([
     Promise.resolve(new ListAllTenants(tenantRepo)),
+    appSettingsRepo.get(),
     getTranslations("adminTenants"),
     getTranslations("common"),
     getLocale(),
@@ -49,6 +53,7 @@ const TenantsPage = async () => {
         ]}
         body={tenants.map(tenant => {
           const tenantUrl = `${config.host.replace("://", `://${tenant.settings.subdomain}.`)}`;
+          const isPinned = tenant.id === appSettings.pinnedTenantId;
 
           return [
             {
@@ -87,17 +92,20 @@ const TenantsPage = async () => {
             },
             {
               children: (
-                <ButtonsGroup
-                  inlineLayoutWhen="always"
-                  buttonsSize="small"
-                  buttons={[
-                    {
-                      children: tc("detail"),
-                      priority: "secondary",
-                      linkProps: { href: `/admin/tenants/${tenant.id}` },
-                    },
-                  ]}
-                />
+                <div className="flex items-center gap-2">
+                  <form action={pinTenant.bind(null, tenant.id)}>
+                    <Button
+                      type="submit"
+                      iconId={isPinned ? "ri-pushpin-2-fill" : "ri-pushpin-2-line"}
+                      priority={isPinned ? "primary" : "tertiary no outline"}
+                      size="small"
+                      title={isPinned ? t("unpin") : t("pin")}
+                    />
+                  </form>
+                  <Button priority="secondary" size="small" linkProps={{ href: `/admin/tenants/${tenant.id}` }}>
+                    {tc("detail")}
+                  </Button>
+                </div>
               ),
             },
           ];

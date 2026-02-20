@@ -10,6 +10,8 @@
 #   --port <port>    Port custom (modifie PORT + NEXT_PUBLIC_SITE_URL)
 #   --db             Crée une DB dédiée + prisma db push + seed
 #   --from <branch>  Branche de base (défaut: dev)
+#   --code, --vscode Ouvre VS Code dans le worktree
+#   --skip-claude    Ne pas lancer Claude à la fin (lancé par défaut)
 #
 # Exemples :
 #   scripts/worktree-new.sh feat/auth-2fa              # léger : DB partagée, port 3000
@@ -17,6 +19,8 @@
 #   scripts/worktree-new.sh feat/auth-2fa --port 3001   # DB partagée, port 3001
 #   scripts/worktree-new.sh feat/auth-2fa --db --port 3001  # tout isolé
 #   scripts/worktree-new.sh fix/hotfix --from main      # worktree depuis main
+#   scripts/worktree-new.sh feat/ui --code              # ouvre VS Code après setup
+#   scripts/worktree-new.sh feat/ui --skip-claude       # pas de lancement Claude auto
 #
 # Par défaut le worktree partage la DB et le port du repo principal.
 # Utilise --db et/ou --port pour isoler quand nécessaire (sessions parallèles,
@@ -29,6 +33,8 @@ BRANCH=""
 PORT=""
 ISOLATED_DB=false
 BASE_BRANCH="dev"
+OPEN_VSCODE=false
+SKIP_CLAUDE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -43,6 +49,14 @@ while [[ $# -gt 0 ]]; do
     --from)
       BASE_BRANCH="${2:?--from nécessite une valeur}"
       shift 2
+      ;;
+    --code|--vscode)
+      OPEN_VSCODE=true
+      shift
+      ;;
+    --skip-claude)
+      SKIP_CLAUDE=true
+      shift
       ;;
     -h|--help)
       sed -n '2,/^$/p' "$0" | sed 's/^# \?//'
@@ -195,7 +209,20 @@ else
   echo "   Base       : partagée avec le repo principal"
 fi
 echo ""
-echo "👉 Pour lancer Claude dedans :"
-echo ""
-echo "   cd $WORKTREE_DIR && claude"
-echo ""
+
+# --- Ouverture VS Code ---
+if [ "$OPEN_VSCODE" = true ]; then
+  echo "💻 Ouverture de VS Code..."
+  code "$WORKTREE_DIR"
+fi
+
+# --- Lancement Claude ou cd dans le worktree ---
+if [ "$SKIP_CLAUDE" = true ]; then
+  echo "👉 cd $WORKTREE_DIR"
+  echo ""
+  cd "$WORKTREE_DIR" && exec "$SHELL"
+else
+  echo "🤖 Lancement de Claude..."
+  echo ""
+  cd "$WORKTREE_DIR" && exec claude
+fi
