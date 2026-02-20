@@ -6,13 +6,32 @@ on:
   pull_request:
     branches: [dev]
 
+permissions:
+  contents: read
+
 concurrency:
   cancel-in-progress: true
   group: build-${{ github.ref }}
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.filter.outputs.should-build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: filter
+        with:
+          filters: .github/filters.yml
+
   build:
     name: Build and export
+    needs: [changes]
+    if: >-
+      github.event_name == 'push' ||
+      needs.changes.outputs.should-build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -30,9 +49,9 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.json') }}-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
       - name: Build and export
         env:
           NODE_ENV: production

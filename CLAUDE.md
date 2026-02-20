@@ -163,7 +163,11 @@
 - E2E tenant: `e2e.localhost:3000` — Chromium `--host-resolver-rules` maps to 127.0.0.1 (no /etc/hosts needed)
 - E2E fixtures: `tests/teste2e/fixtures.ts` — Maildev helper (clearInbox, getLatestEmail, extractLink)
 - E2E embed: tests run in `unauthenticated` project with absolute `E2E_TENANT_URL` URLs; seed sets `allowEmbedding: true`
-- CI: GitHub Actions workflow (`.github/workflows/test.yml`) — PostgreSQL, Redis, Maildev services
+- CI: GitHub Actions (`.github/workflows/` — build, lint, test)
+  - Path filtering: `dorny/paths-filter` with shared config in `.github/filters.yml` — jobs skip when no relevant files changed
+  - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
+  - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
+  - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
