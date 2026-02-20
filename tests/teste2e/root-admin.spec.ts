@@ -34,40 +34,58 @@ test.describe("Root Admin", () => {
   });
 
   test.describe("Pin tenant", () => {
-    test.afterEach(async ({ page }) => {
-      // Reset: ensure no tenant is pinned after each test
+    /** Navigate to admin tenants and return the E2E tenant row + both button locators. */
+    async function getTenantRow(page: import("@playwright/test").Page) {
       await page.goto("/admin/tenants");
       const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      const unpinButton = row.getByRole("button", { name: /^désépingler$/i });
-      if ((await unpinButton.count()) > 0) {
-        await unpinButton.click();
-        await row.getByRole("button", { name: /^épingler$/i }).waitFor();
+      const pinBtn = row.getByRole("button", { name: /^épingler$/i });
+      const unpinBtn = row.getByRole("button", { name: /^désépingler$/i });
+      // Wait for either button to appear (handles SSR streaming)
+      await expect(pinBtn.or(unpinBtn)).toBeVisible();
+      return { row, pinBtn, unpinBtn };
+    }
+
+    /** Ensure the tenant is unpinned (idempotent). */
+    async function ensureUnpinned(page: import("@playwright/test").Page) {
+      const { pinBtn, unpinBtn } = await getTenantRow(page);
+      if (await unpinBtn.isVisible()) {
+        await unpinBtn.click();
+        await expect(pinBtn).toBeVisible();
       }
+    }
+
+    /** Ensure the tenant is pinned (idempotent). */
+    async function ensurePinned(page: import("@playwright/test").Page) {
+      const { pinBtn, unpinBtn } = await getTenantRow(page);
+      if (await pinBtn.isVisible()) {
+        await pinBtn.click();
+        await expect(unpinBtn).toBeVisible();
+      }
+    }
+
+    test.afterEach(async ({ page }) => {
+      await ensureUnpinned(page);
     });
 
     test("pin button is visible on each tenant row", async ({ page }) => {
-      await page.goto("/admin/tenants");
+      await ensureUnpinned(page);
+      const { pinBtn } = await getTenantRow(page);
 
-      const pinButton = page.getByRole("button", { name: /^épingler$/i });
-      await expect(pinButton.first()).toBeVisible();
+      await expect(pinBtn).toBeVisible();
     });
 
     test("clicking pin button pins the tenant", async ({ page }) => {
-      await page.goto("/admin/tenants");
+      await ensureUnpinned(page);
+      const { pinBtn, unpinBtn } = await getTenantRow(page);
 
-      const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      await row.getByRole("button", { name: /^épingler$/i }).click();
+      await pinBtn.click();
 
-      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
+      await expect(unpinBtn).toBeVisible();
     });
 
     test("pinned tenant is displayed on roadmap page", async ({ page }) => {
-      await page.goto("/admin/tenants");
-      const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      await row.getByRole("button", { name: /^épingler$/i }).click();
-      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
+      await ensurePinned(page);
 
-      // Retry navigation until revalidatePath takes effect
       await expect(async () => {
         await page.goto("/roadmap");
         await expect(page.getByText("Test Post")).toBeVisible({ timeout: 3000 });
@@ -75,18 +93,12 @@ test.describe("Root Admin", () => {
     });
 
     test("unpinning tenant shows not-configured on roadmap", async ({ page }) => {
-      await page.goto("/admin/tenants");
-      const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
+      await ensurePinned(page);
+      const { pinBtn, unpinBtn } = await getTenantRow(page);
 
-      // Pin
-      await row.getByRole("button", { name: /^épingler$/i }).click();
-      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
+      await unpinBtn.click();
+      await expect(pinBtn).toBeVisible();
 
-      // Unpin
-      await row.getByRole("button", { name: /^désépingler$/i }).click();
-      await expect(row.getByRole("button", { name: /^épingler$/i })).toBeVisible();
-
-      // Retry navigation until revalidatePath takes effect
       await expect(async () => {
         await page.goto("/roadmap");
         await expect(page.locator("main")).toContainText(/n'est pas configurée|not configured/i, { timeout: 3000 });
@@ -94,9 +106,12 @@ test.describe("Root Admin", () => {
     });
 
     test("roadmap shows not-configured when no tenant is pinned", async ({ page }) => {
-      await page.goto("/roadmap");
+      await ensureUnpinned(page);
 
-      await expect(page.locator("main")).toContainText(/n'est pas configurée|not configured/i);
+      await expect(async () => {
+        await page.goto("/roadmap");
+        await expect(page.locator("main")).toContainText(/n'est pas configurée|not configured/i, { timeout: 3000 });
+      }).toPass({ intervals: [1_000, 2_000], timeout: 15_000 });
     });
   });
 });
