@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [dev]
 
+permissions:
+  contents: read
+
 concurrency:
   cancel-in-progress: true
   group: build-${{ github.ref }}
