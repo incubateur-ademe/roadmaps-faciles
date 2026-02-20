@@ -17,6 +17,8 @@ _worktree_new() {
     '--port[Port custom]:port number:' \
     '--db[Crée une DB dédiée]' \
     '--from[Branche de base]:base branch:__worktree_git_branches' \
+    '(--code --vscode)'{--code,--vscode}'[Ouvre VS Code]' \
+    '--skip-claude[Ne pas lancer Claude]' \
     '(-h --help)'{-h,--help}'[Affiche l'\''aide]'
 }
 
