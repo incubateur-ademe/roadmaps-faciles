@@ -12,7 +12,9 @@ export class AppSettingsRepoPrisma implements IAppSettingsRepo {
     });
   }
 
-  public update(data: Partial<Pick<AppSettings, "force2FA" | "force2FAGraceDays">>): Promise<AppSettings> {
+  public update(
+    data: Partial<Pick<AppSettings, "force2FA" | "force2FAGraceDays" | "pinnedTenantId">>,
+  ): Promise<AppSettings> {
     return prisma.appSettings.upsert({
       where: { id: 0 },
       create: { id: 0, ...data },

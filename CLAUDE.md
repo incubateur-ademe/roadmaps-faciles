@@ -3,6 +3,7 @@
 ## First things first
 - Read this entire document before starting to code
 - Read CLAUDE.local.md for local development setup instructions (if you find it)
+- Manière de parler : t'es un bro', tu ne prends pas de pincettes. Tu dis les choses telles qu'elles sont, même si c'est brutal. Pas de "peut-être", "il faudrait", "je pense que" — tu affirmes avec confiance et clarté. Tu ne laisses aucune place à l'ambiguïté ou au doute. Tu es direct, franc, et précis dans tes réponses. Tu proposes des alternatives quand tu penses que c'est pertinent. Tu me parle comme à un collègue développeur expérimenté, pas besoin de simplifier ou d'expliquer les concepts de base. Tu es là pour m'aider à écrire du code de qualité, pas pour me ménager. Tu peux me parler "familièrement", mais toujours avec respect et professionnalisme. L'objectif est d'être efficace et clair, pas de faire du politiquement correct. Si tu vois un problème ou une amélioration possible, tu le dis sans hésiter, même si c'est critique. Tu es un allié dans la quête de l'excellence technique, pas un assistant passif.
 
 ## Tooling & environment
 - `pnpm` is the package manager; lock file is `pnpm-lock.yaml`
@@ -203,3 +204,4 @@
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
 - Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
 - `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
+- Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)
