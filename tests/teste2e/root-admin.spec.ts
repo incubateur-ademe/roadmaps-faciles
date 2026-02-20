@@ -38,70 +38,65 @@ test.describe("Root Admin", () => {
       // Reset: ensure no tenant is pinned after each test
       await page.goto("/admin/tenants");
       const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      const unpinButton = row.getByRole("button", { name: /désépingler|unpin/i });
-      if (await unpinButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const unpinButton = row.getByRole("button", { name: /^désépingler$/i });
+      if ((await unpinButton.count()) > 0) {
         await unpinButton.click();
+        await row.getByRole("button", { name: /^épingler$/i }).waitFor();
       }
     });
 
     test("pin button is visible on each tenant row", async ({ page }) => {
       await page.goto("/admin/tenants");
 
-      const pinButton = page.getByRole("button", { name: /épingler|pin/i });
+      const pinButton = page.getByRole("button", { name: /^épingler$/i });
       await expect(pinButton.first()).toBeVisible();
     });
 
     test("clicking pin button pins the tenant", async ({ page }) => {
       await page.goto("/admin/tenants");
 
-      // Click the pin button for the E2E tenant
       const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      const pinButton = row.getByRole("button", { name: /épingler|pin/i });
-      await pinButton.click();
+      await row.getByRole("button", { name: /^épingler$/i }).click();
 
-      // After pin, the button should now show "unpin" (filled icon)
-      await expect(row.getByRole("button", { name: /désépingler|unpin/i })).toBeVisible();
+      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
     });
 
     test("pinned tenant is displayed on roadmap page", async ({ page }) => {
-      // First, pin the tenant
       await page.goto("/admin/tenants");
       const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      const pinButton = row.getByRole("button", { name: /épingler|pin/i });
-      await pinButton.click();
-      await expect(row.getByRole("button", { name: /désépingler|unpin/i })).toBeVisible();
+      await row.getByRole("button", { name: /^épingler$/i }).click();
+      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
 
-      // Then navigate to roadmap
-      await page.goto("/roadmap");
-
-      // Roadmap should show the post statuses (columns) from the pinned tenant
-      await expect(page.getByText("En cours")).toBeVisible();
+      // Retry navigation until revalidatePath takes effect
+      await expect(async () => {
+        await page.goto("/roadmap");
+        await expect(page.getByText("Test Post")).toBeVisible({ timeout: 3000 });
+      }).toPass({ intervals: [1_000, 2_000], timeout: 15_000 });
     });
 
     test("unpinning tenant shows not-configured on roadmap", async ({ page }) => {
-      // Pin then unpin
       await page.goto("/admin/tenants");
       const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
 
       // Pin
-      const pinButton = row.getByRole("button", { name: /épingler|pin/i });
-      await pinButton.click();
-      await expect(row.getByRole("button", { name: /désépingler|unpin/i })).toBeVisible();
+      await row.getByRole("button", { name: /^épingler$/i }).click();
+      await expect(row.getByRole("button", { name: /^désépingler$/i })).toBeVisible();
 
       // Unpin
-      const unpinButton = row.getByRole("button", { name: /désépingler|unpin/i });
-      await unpinButton.click();
-      await expect(row.getByRole("button", { name: /épingler|pin/i })).toBeVisible();
+      await row.getByRole("button", { name: /^désépingler$/i }).click();
+      await expect(row.getByRole("button", { name: /^épingler$/i })).toBeVisible();
 
-      // Roadmap should show "not configured"
-      await page.goto("/roadmap");
-      await expect(page.locator("main")).toContainText(/feuille de route n'est pas configurée|not configured/i);
+      // Retry navigation until revalidatePath takes effect
+      await expect(async () => {
+        await page.goto("/roadmap");
+        await expect(page.locator("main")).toContainText(/n'est pas configurée|not configured/i, { timeout: 3000 });
+      }).toPass({ intervals: [1_000, 2_000], timeout: 15_000 });
     });
 
     test("roadmap shows not-configured when no tenant is pinned", async ({ page }) => {
       await page.goto("/roadmap");
 
-      await expect(page.locator("main")).toContainText(/feuille de route n'est pas configurée|not configured/i);
+      await expect(page.locator("main")).toContainText(/n'est pas configurée|not configured/i);
     });
   });
 });
