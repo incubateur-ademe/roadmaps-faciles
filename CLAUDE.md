@@ -97,6 +97,12 @@
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
 - Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
+- Documentation: Fumadocs (fumadocs-core, fumadocs-mdx, fumadocs-ui) — rendered at `/doc/*`
+  - Source: `content/docs/` — MDX files organized by section (concepts, guides, admin, moderation, technical)
+  - App: `src/app/doc/` — layout, MDX component registration, DSFR theme bridge
+  - Custom MDX components: registered in `src/app/doc/mdx-components.ts` via `getDocMDXComponents()`
+  - `ImageWithTheme`: client component for theme-aware screenshots (crossfade toggle, IntersectionObserver preload)
+  - DSFR theme bridge: `src/app/doc/dsfr-theme.css` maps DSFR tokens → Fumadocs CSS variables, handles `data-fr-theme` dark mode
 - Caching: Redis via ioredis + unstorage
 - Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
   - Layout DSFR Mail: `DsfrEmailLayout` (header/footer Marianne, dark mode, responsive 600px)
@@ -211,4 +217,5 @@
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
 - Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
 - `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
+- DSFR theme persistence: stored in localStorage key `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs on `<html>` — persists across navigations, must be explicitly forced in Playwright/automation scripts
 - Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)

@@ -306,11 +306,13 @@ pnpm test:e2e                   # Tests E2E Playwright (nécessite dev server + 
 ## 🗂️ Structure de répertoires (extrait)
 
 ```
+/content/docs/              # Documentation utilisateur (MDX, Fumadocs)
 /docs/adr/                  # Architecture Decision Records
 /prisma                     # Schéma Prisma + seed + migrations + views
 /src/app                    # App Router (Next.js)
 /src/app/(default)          # Site principal
 /src/app/[domain]           # Multi-tenant
+/src/app/doc/               # Documentation (layout, composants MDX, theme DSFR)
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
 /src/useCases               # Logique métier (use cases DDD)
 /src/emails                 # Templates email react-email (DSFR Mail)
