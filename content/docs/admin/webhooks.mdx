@@ -3,9 +3,13 @@ title: Webhooks
 description: Recevez des notifications automatiques lors d'événements sur votre espace.
 ---
 
-Les **webhooks** permettent d'envoyer des requêtes HTTP automatiques vers une URL externe lorsqu'un événement se produit sur votre espace. C'est utile pour intégrer Roadmaps Faciles avec d'autres outils (Slack, Mattermost, outils internes, etc.).
+<Callout type="warn" title="Fonctionnalité à venir">
+Les webhooks sont en cours de développement. L'interface d'administration permet de créer et gérer des webhooks, mais **l'envoi effectif des notifications n'est pas encore implémenté**. Cette page décrit le fonctionnement prévu.
+</Callout>
 
-![Configuration des webhooks](/doc/screenshots/admin-webhooks.png)
+Les **webhooks** permettront d'envoyer des requêtes HTTP automatiques vers une URL externe lorsqu'un événement se produit sur votre espace. Ce sera utile pour intégrer Roadmaps Faciles avec d'autres outils (Slack, Mattermost, outils internes, etc.).
+
+<ImageWithTheme srcLight="/doc/screenshots/admin-webhooks-light.png" srcDark="/doc/screenshots/admin-webhooks-dark.png" alt="Configuration des webhooks" />
 
 ## Configurer un webhook
 
@@ -35,16 +39,16 @@ Les détails ci-dessous concernent l'intégration technique des webhooks.
 
 ## Format du payload
 
-Chaque webhook envoie une requête **POST** avec un payload JSON. La requête inclut un en-tête `Content-Type: application/json`.
+Chaque webhook enverra une requête **POST** avec un payload JSON. La requête inclura un en-tête `Content-Type: application/json`.
 
-Le payload contient les informations de l'événement et les données associées (contribution, commentaire, utilisateur...). Le format exact dépend du type d'événement.
+Le payload contiendra les informations de l'événement et les données associées (contribution, commentaire, utilisateur...). Le format exact dépendra du type d'événement.
 
 ## Sécurité
 
-Les webhooks sont signés avec le **secret webhook** configuré sur l'instance. Vérifiez la signature dans l'en-tête de la requête pour vous assurer que la notification provient bien de Roadmaps Faciles.
+Les webhooks seront signés avec le **secret webhook** configuré sur l'instance (`SECURITY_WEBHOOK_SECRET`). Vérifiez la signature dans l'en-tête de la requête pour vous assurer que la notification provient bien de Roadmaps Faciles.
 
 ## Bonnes pratiques
 
-- **Répondez rapidement** — Votre endpoint doit répondre avec un code HTTP `2xx` dans un délai raisonnable. Les webhooks sont envoyés de façon "fire-and-forget" (pas de retry en cas d'échec).
+- **Répondez rapidement** — Votre endpoint devra répondre avec un code HTTP `2xx` dans un délai raisonnable.
 - **Utilisez HTTPS** — Configurez toujours une URL en HTTPS pour protéger les données transmises.
 - **Filtrez les événements** — Ne vous abonnez qu'aux événements dont vous avez besoin pour réduire le bruit.

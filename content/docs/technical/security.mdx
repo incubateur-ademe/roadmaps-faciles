@@ -49,7 +49,7 @@ Trois méthodes de second facteur sont disponibles :
 
 - **Clé d'accès (Passkey)** — Utilise l'API WebAuthn. Les challenges sont stockés dans Redis avec un TTL court. La vérification s'appuie sur `@simplewebauthn/server`.
 - **OTP (TOTP)** — Secret généré côté serveur, affiché une seule fois via QR code. La vérification utilise `otplib` avec une fenêtre de tolérance d'un pas.
-- **Email** — Un code à 6 chiffres est envoyé par email, stocké dans Redis avec un TTL de 10 minutes.
+- **Email** — Un code à 6 chiffres est envoyé par email, stocké dans Redis avec un TTL de 5 minutes.
 
 La vérification 2FA utilise un mécanisme de **preuve server-side** :
 

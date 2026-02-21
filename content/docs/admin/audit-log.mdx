@@ -5,7 +5,7 @@ description: Consultez l'historique de toutes les actions administratives.
 
 Le **journal d'audit** enregistre toutes les actions significatives effectuées sur votre espace de travail, à des fins de traçabilité et de conformité. Accédez-y via **Administration > Journal d'audit**.
 
-![Journal d'audit](/doc/screenshots/admin-audit-log.png)
+<ImageWithTheme srcLight="/doc/screenshots/admin-audit-log-light.png" srcDark="/doc/screenshots/admin-audit-log-dark.png" alt="Journal d'audit" />
 
 ## Informations enregistrées
 
@@ -18,6 +18,7 @@ Chaque entrée du journal contient :
 | **Date et heure** | Le moment exact de l'action. |
 | **Résultat** | Succès ou erreur. |
 | **Cible** | La ressource concernée (contribution, tableau, membre...). |
+| **Adresse IP** | L'adresse IP de la personne ayant effectué l'action. |
 
 ## Filtrer les entrées
 
@@ -33,12 +34,17 @@ Le journal couvre l'ensemble des actions d'administration :
 | Catégorie | Exemples d'actions |
 |-----------|-------------------|
 | **Tableaux** | Création, modification, suppression, réordonnancement |
-| **Contributions** | Approbation, rejet, suppression, changement de statut, épinglage |
+| **Contributions** | Création, approbation, rejet, suppression, modification, changement de statut |
 | **Membres** | Invitation, changement de rôle, blocage, suppression |
-| **Paramètres** | Modification des paramètres généraux, authentification |
+| **Paramètres** | Modification des paramètres généraux, authentification, sécurité, feuille de route |
+| **Domaines** | Modification du domaine personnalisé |
 | **Clés API** | Création, suppression |
 | **Webhooks** | Création, suppression |
 | **Espace** | Purge des données, suppression de l'espace |
+
+## Export CSV
+
+Vous pouvez exporter le journal d'audit au format **CSV** pour un traitement externe. Le bouton d'export génère un fichier contenant toutes les entrées filtrées.
 
 ## Conservation des données
 

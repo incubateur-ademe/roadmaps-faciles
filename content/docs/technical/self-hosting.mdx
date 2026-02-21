@@ -98,6 +98,29 @@ Générez des secrets aléatoires robustes pour `SECURITY_JWT_SECRET` et `SECURI
 | `NEXT_PUBLIC_MATOMO_URL` | URL de l'instance Matomo | — |
 | `NEXT_PUBLIC_MATOMO_SITE_ID` | ID du site Matomo | — |
 
+### OAuth / SSO (optionnel)
+
+Pour activer la connexion via des fournisseurs OAuth, configurez les variables correspondantes :
+
+| Variable | Description |
+|----------|-------------|
+| `OAUTH_GITHUB_CLIENT_ID` | Client ID de l'application GitHub OAuth |
+| `OAUTH_GITHUB_CLIENT_SECRET` | Client Secret GitHub |
+| `OAUTH_GOOGLE_CLIENT_ID` | Client ID Google OAuth |
+| `OAUTH_GOOGLE_CLIENT_SECRET` | Client Secret Google |
+| `OAUTH_PROCONNECT_CLIENT_ID` | Client ID ProConnect (OIDC) |
+| `OAUTH_PROCONNECT_CLIENT_SECRET` | Client Secret ProConnect |
+
+Seuls les fournisseurs dont les variables sont renseignées seront disponibles. Chaque tenant choisit ensuite lesquels activer via **Administration > Authentification**.
+
+### Observabilité (optionnel)
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `SENTRY_DSN` | DSN Sentry pour le suivi d'erreurs (vide = désactivé) | — |
+| `SENTRY_AUTH_TOKEN` | Token d'authentification Sentry (pour l'upload des source maps) | — |
+| `APP_ENV` | Environnement applicatif (`dev`, `review`, `staging`, `prod`) — les source maps ne sont uploadées qu'en `prod` et `staging` | `dev` |
+
 ### Branding
 
 L'apparence de l'instance est personnalisable via les variables `NEXT_PUBLIC_BRAND_*` :
@@ -323,7 +346,7 @@ feedback.mon-produit.fr.  3600  IN  CNAME  roadmaps.example.com.
 
 3. La plateforme vérifie le CNAME et provisionne le certificat TLS selon le fournisseur de domaine configuré.
 
-Pour la configuration DNS détaillée, consultez la page [Configuration DNS](/docs/technical/dns).
+Pour la configuration DNS détaillée, consultez la page [Configuration DNS](/doc/technical/dns).
 
 ### Fournisseurs DNS supportés
 

@@ -29,6 +29,17 @@ Si vous êtes membre de l'écosystème beta.gouv.fr :
 
 Une fois connecté sur la page d'accueil, vous pouvez accéder à n'importe quel espace de travail grâce au **pont SSO** : votre session est automatiquement transférée lorsque vous naviguez vers un sous-domaine.
 
+### Connexion via un fournisseur OAuth (SSO)
+
+Si l'administrateur de l'espace a activé des fournisseurs OAuth, vous pouvez vous connecter en un clic :
+
+1. Rendez-vous sur la page de connexion de l'espace.
+2. Cliquez sur le bouton du fournisseur souhaité (**GitHub**, **Google** ou **ProConnect**).
+3. Autorisez l'accès sur la page du fournisseur.
+4. Vous êtes automatiquement connecté et rattaché à l'espace.
+
+Les fournisseurs disponibles dépendent de la configuration de l'espace. Si aucun bouton OAuth n'apparaît, cette option n'est pas activée.
+
 ### Connexion via invitation
 
 Si vous recevez un email d'invitation :
@@ -51,3 +62,9 @@ Si vous n'arrivez pas à vous inscrire, vérifiez la politique d'accès avec l'a
 ## Appartenir à plusieurs espaces
 
 Un même compte (identifié par votre email) peut être membre de **plusieurs espaces de travail**. Vous pouvez avoir des rôles différents sur chaque espace.
+
+## Double authentification (2FA)
+
+Certains espaces peuvent exiger la **double authentification**. Dans ce cas, après votre première connexion, vous serez invité à configurer une méthode 2FA (clé d'accès, application OTP ou email) avant de pouvoir accéder à l'espace.
+
+Vous pouvez gérer vos méthodes 2FA depuis votre **Profil > Sécurité**. Voir [Authentification](/doc/admin/authentication) pour plus de détails.

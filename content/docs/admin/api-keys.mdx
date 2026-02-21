@@ -5,14 +5,13 @@ description: Gérez l'accès programmatique à votre espace de travail.
 
 Les **clés API** permettent un accès programmatique à votre espace de travail pour des intégrations ou des automatisations.
 
-![Gestion des clés API](/doc/screenshots/admin-api-keys.png)
+<ImageWithTheme srcLight="/doc/screenshots/admin-api-keys-light.png" srcDark="/doc/screenshots/admin-api-keys-dark.png" alt="Gestion des clés API" />
 
 ## Créer une clé API
 
 1. Rendez-vous dans **Administration > API**.
 2. Cliquez sur **Créer une clé API**.
-3. Donnez un **nom descriptif** à votre clé (ex. : "Intégration Slack", "Script de reporting").
-4. Validez la création.
+3. Validez la création.
 
 <Callout type="warn">
   La clé API complète n'est affichée **qu'une seule fois** à la création. Copiez-la immédiatement et conservez-la en lieu sûr. Il n'est pas possible de la retrouver ultérieurement.
@@ -24,15 +23,14 @@ La liste affiche vos clés existantes avec :
 
 | Information | Description |
 |-------------|-------------|
-| **Nom** | Le nom descriptif de la clé. |
 | **Préfixe** | Les premiers caractères de la clé, pour l'identifier. |
 | **Date de création** | La date à laquelle la clé a été générée. |
 
-## Supprimer une clé
+## Révoquer une clé
 
-La suppression d'une clé est **immédiate et irréversible**. Toute intégration utilisant cette clé cessera de fonctionner dès la suppression.
+La révocation d'une clé est **immédiate et irréversible**. Toute intégration utilisant cette clé cessera de fonctionner dès la révocation.
 
-Avant de supprimer une clé, vérifiez qu'aucune intégration active ne l'utilise.
+Avant de révoquer une clé, vérifiez qu'aucune intégration active ne l'utilise.
 
 <Callout type="info" title="Section technique">
 La section ci-dessous concerne l'utilisation technique des clés API.

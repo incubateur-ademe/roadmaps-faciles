@@ -5,7 +5,7 @@ description: Configurez les options principales de votre espace de travail.
 
 Les paramètres généraux contrôlent le comportement global de votre espace de travail. Accédez-y via **Administration > Général**.
 
-![Paramètres généraux](/doc/screenshots/admin-general.png)
+<ImageWithTheme srcLight="/doc/screenshots/admin-general-light.png" srcDark="/doc/screenshots/admin-general-dark.png" alt="Paramètres généraux" />
 
 ## Identité
 
@@ -36,6 +36,12 @@ Ces options permettent de contrôler finement les interactions sur votre espace 
 | **Suppression des contributions** | Les auteurs peuvent supprimer leurs propres contributions. | Désactivé |
 | **Modération préalable** | Les contributions doivent être approuvées par un modérateur avant publication. Voir [Approbation](/doc/moderation/post-approval). | Désactivé |
 
+## Intégration (iframe)
+
+| Option | Description | Par défaut |
+|--------|-------------|:--------:|
+| **Autoriser l'intégration** | Permet d'afficher les tableaux et la feuille de route dans un site externe via une iframe. Voir [Intégrer dans un site](/doc/guides/embed). | Désactivé |
+
 ## Navigation
 
 - **Feuille de route dans l'en-tête** — Affiche un lien vers la feuille de route dans le menu principal de l'espace.
@@ -56,5 +62,5 @@ Cette option n'est disponible que si l'espace ne contient pas encore de tableaux
 
 | Action | Description |
 |--------|-------------|
-| **Purger les données** | Supprime toutes les contributions, votes et commentaires de l'espace. Les tableaux, statuts et membres sont conservés. Utile pour repartir de zéro sans recréer l'espace. |
+| **Purger les données** | Supprime toutes les contributions, votes, commentaires, statuts, tableaux, épingles et suivis de l'espace. Seuls les membres et les paramètres sont conservés. Utile pour repartir de zéro sans recréer l'espace. |
 | **Supprimer l'espace** | Supprime définitivement l'espace et toutes ses données (tableaux, contributions, membres, paramètres). Réservé au **propriétaire**. |

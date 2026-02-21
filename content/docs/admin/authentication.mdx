@@ -5,7 +5,7 @@ description: Configurez la politique d'inscription de votre espace.
 
 La configuration de l'authentification est accessible via **Administration > Authentification**.
 
-![Paramètres d'authentification](/doc/screenshots/admin-authentication.png)
+<ImageWithTheme srcLight="/doc/screenshots/admin-authentication-light.png" srcDark="/doc/screenshots/admin-authentication-dark.png" alt="Paramètres d'authentification" />
 
 ## Politique d'inscription
 
@@ -36,9 +36,13 @@ Par exemple, ajouter `mon-organisation.fr` autorisera toutes les adresses `*@mon
 Les utilisateurs de l'espace peuvent se connecter de deux façons :
 
 - **Magic link** — Un lien de connexion envoyé par email, sans mot de passe.
-- **Pont SSO** — Si l'utilisateur est déjà connecté sur la page d'accueil de Roadmaps Faciles (via Espace Membre), sa session est automatiquement transférée vers l'espace.
+- **Pont SSO** — Si l'utilisateur est déjà connecté sur la page d'accueil de la plateforme, sa session est automatiquement transférée vers l'espace.
 
 Les deux méthodes sont toujours disponibles et ne nécessitent aucune configuration.
+
+<Callout type="info">
+  Sur l'instance beta.gouv.fr, une méthode de connexion supplémentaire est disponible via **Espace Membre**. Cette méthode est spécifique à cette instance et n'est pas disponible sur les instances auto-hébergées.
+</Callout>
 
 ## Fournisseurs SSO (OAuth)
 

@@ -64,6 +64,83 @@
   color: var(--shiki-dark);
 }
 
+/*
+ * Theme-aware images (ImageWithTheme component).
+ * Two <img> stacked via absolute positioning, crossfade via opacity.
+ * Toggle button appears on hover, override attr on <html> for global switch.
+ */
+.image-with-theme {
+  position: relative;
+  margin: 1.5em 0;
+}
+
+.image-with-theme img[data-theme-img] {
+  display: block;
+  margin: 0; /* override prose img margins — wrapper handles spacing */
+  border: 1px solid var(--border-default-grey);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: opacity 0.3s ease;
+}
+
+/* Dark image overlays light image */
+.image-with-theme img[data-theme-img="dark"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Default: light visible, dark hidden */
+.image-with-theme img[data-theme-img="light"] { opacity: 1; }
+.image-with-theme img[data-theme-img="dark"] { opacity: 0; }
+
+/* DSFR dark theme: flip */
+:root[data-fr-theme="dark"] .image-with-theme img[data-theme-img="light"] { opacity: 0; }
+:root[data-fr-theme="dark"] .image-with-theme img[data-theme-img="dark"] { opacity: 1; }
+
+/* Manual override — placed AFTER theme rules so same-specificity wins by source order */
+:root[data-img-preview-override="light"] .image-with-theme img[data-theme-img="light"] { opacity: 1; }
+:root[data-img-preview-override="light"] .image-with-theme img[data-theme-img="dark"] { opacity: 0; }
+:root[data-img-preview-override="dark"] .image-with-theme img[data-theme-img="light"] { opacity: 0; }
+:root[data-img-preview-override="dark"] .image-with-theme img[data-theme-img="dark"] { opacity: 1; }
+
+/* Toggle button — top-right, visible on hover */
+.image-theme-toggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-default-grey);
+  background: var(--background-default-grey);
+  color: var(--text-default-grey);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.15s ease;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.15);
+}
+
+.image-with-theme:hover .image-theme-toggle,
+.image-with-theme:focus-within .image-theme-toggle,
+.image-theme-toggle:focus-visible {
+  opacity: 0.85;
+}
+
+.image-theme-toggle:hover,
+.image-theme-toggle:focus-visible {
+  opacity: 1 !important;
+  background: var(--background-contrast-grey);
+}
+
 /* Dark mode (DSFR dark scheme) — Fumadocs token overrides */
 .dark,
 :root[data-fr-theme="dark"] {
