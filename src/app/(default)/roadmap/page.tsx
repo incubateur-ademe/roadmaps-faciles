@@ -103,16 +103,14 @@ const RoadmapPageInner = async () => {
     <DsfrPage>
       <Container className="flex-1 flex flex-col overflow-x-hidden" my="2w">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <Heading as="h1" className={fr.cx("fr-mb-1w")}>
-              {t("title")}
-            </Heading>
-            <Text className={cx(fr.cx("fr-mb-2w"), "text-[var(--text-mention-grey)]")}>{t("description")}</Text>
-          </div>
+          <Heading as="h1" className={fr.cx("fr-mb-0")}>
+            {t("title")}
+          </Heading>
           <Button iconId="fr-icon-arrow-right-line" iconPosition="right" linkProps={{ href: tenantUrl }}>
             {t("submitFeedback")}
           </Button>
         </div>
+        <Text className={cx(fr.cx("fr-mb-2w"), "text-[var(--text-mention-grey)]")}>{t("description")}</Text>
 
         {postStatuses.length === 0 ? (
           <Text className={fr.cx("fr-py-4w")}>{t("empty")}</Text>

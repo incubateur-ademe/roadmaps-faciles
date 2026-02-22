@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
 
 export const toggleEmailTwoFactor = async (): Promise<ServerActionResponse> => {
@@ -11,6 +12,7 @@ export const toggleEmailTwoFactor = async (): Promise<ServerActionResponse> => {
   }
 
   const userId = session.user.uuid;
+  const reqCtx = await getRequestContext();
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { emailTwoFactorEnabled: true, otpVerifiedAt: true },
@@ -28,16 +30,41 @@ export const toggleEmailTwoFactor = async (): Promise<ServerActionResponse> => {
   const hasPasskey = authenticators > 0;
   const willHaveAny2FA = newValue || hasOtp || hasPasskey;
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      emailTwoFactorEnabled: newValue,
-      twoFactorEnabled: willHaveAny2FA,
-      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
-    },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailTwoFactorEnabled: newValue,
+        twoFactorEnabled: willHaveAny2FA,
+        ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
+      },
+    });
 
-  return { ok: true };
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_EMAIL_TOGGLE,
+        userId,
+        targetType: "User",
+        targetId: userId,
+        metadata: { enabled: newValue },
+      },
+      reqCtx,
+    );
+    return { ok: true };
+  } catch (error) {
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_EMAIL_TOGGLE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: (error as Error).message };
+  }
 };
 
 export const removeOtp = async (): Promise<ServerActionResponse> => {
@@ -47,6 +74,7 @@ export const removeOtp = async (): Promise<ServerActionResponse> => {
   }
 
   const userId = session.user.uuid;
+  const reqCtx = await getRequestContext();
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { emailTwoFactorEnabled: true },
@@ -60,17 +88,41 @@ export const removeOtp = async (): Promise<ServerActionResponse> => {
   const hasPasskey = authenticators > 0;
   const willHaveAny2FA = user.emailTwoFactorEnabled || hasPasskey;
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      otpSecret: null,
-      otpVerifiedAt: null,
-      twoFactorEnabled: willHaveAny2FA,
-      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
-    },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        otpSecret: null,
+        otpVerifiedAt: null,
+        twoFactorEnabled: willHaveAny2FA,
+        ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
+      },
+    });
 
-  return { ok: true };
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_OTP_REMOVE,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
+    return { ok: true };
+  } catch (error) {
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_OTP_REMOVE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: (error as Error).message };
+  }
 };
 
 export const removePasskey = async (credentialId: string): Promise<ServerActionResponse> => {
@@ -80,6 +132,7 @@ export const removePasskey = async (credentialId: string): Promise<ServerActionR
   }
 
   const userId = session.user.uuid;
+  const reqCtx = await getRequestContext();
 
   const authenticator = await prisma.authenticator.findUnique({
     where: { credentialID: credentialId },
@@ -89,25 +142,49 @@ export const removePasskey = async (credentialId: string): Promise<ServerActionR
     return { ok: false, error: "Authenticator not found" };
   }
 
-  await prisma.authenticator.delete({
-    where: { credentialID: credentialId },
-  });
+  try {
+    await prisma.authenticator.delete({
+      where: { credentialID: credentialId },
+    });
 
-  // Check remaining 2FA methods
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { emailTwoFactorEnabled: true, otpVerifiedAt: true },
-  });
-  const remainingAuthenticators = await prisma.authenticator.count({ where: { userId } });
-  const willHaveAny2FA = !!user?.emailTwoFactorEnabled || !!user?.otpVerifiedAt || remainingAuthenticators > 0;
+    // Check remaining 2FA methods
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailTwoFactorEnabled: true, otpVerifiedAt: true },
+    });
+    const remainingAuthenticators = await prisma.authenticator.count({ where: { userId } });
+    const willHaveAny2FA = !!user?.emailTwoFactorEnabled || !!user?.otpVerifiedAt || remainingAuthenticators > 0;
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      twoFactorEnabled: willHaveAny2FA,
-      ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
-    },
-  });
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: willHaveAny2FA,
+        ...(willHaveAny2FA ? { twoFactorDeadline: null } : {}),
+      },
+    });
 
-  return { ok: true };
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_PASSKEY_REMOVE,
+        userId,
+        targetType: "Authenticator",
+        targetId: credentialId,
+      },
+      reqCtx,
+    );
+    return { ok: true };
+  } catch (error) {
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_PASSKEY_REMOVE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "Authenticator",
+        targetId: credentialId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: (error as Error).message };
+  }
 };

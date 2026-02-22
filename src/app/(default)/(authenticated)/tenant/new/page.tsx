@@ -10,7 +10,7 @@ const NewTenantPage = async () => {
 
   return (
     <DsfrPage>
-      <Container>
+      <Container mt="2w">
         <h1>{t("newTitle")}</h1>
         <p>{t("newDescription")}</p>
         <NewTenantForm />

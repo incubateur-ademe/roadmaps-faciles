@@ -10,6 +10,7 @@ import { likeRepo } from "@/lib/repo";
 import { LikePost, type LikePostInput, LikePostInputBase, type LikePostOutput } from "@/useCases/likes/LikePost";
 import { UnlikePost, type UnlikePostOutput } from "@/useCases/likes/UnlikePost";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
 
 type LikePostResponse = ServerActionResponse<LikePostOutput | UnlikePostOutput>;
@@ -44,6 +45,8 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
     }
   }
 
+  const reqCtx = await getRequestContext();
+
   try {
     let ret: LikePostOutput | UnlikePostOutput;
     const input: LikePostInput = {
@@ -63,6 +66,16 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
       ret = await useCase.execute(input);
     }
 
+    audit(
+      {
+        action: unlike ? AuditAction.POST_UNVOTE : AuditAction.POST_VOTE,
+        userId: inputValidated.data.userId ?? undefined,
+        tenantId: inputValidated.data.tenantId,
+        targetType: "Post",
+        targetId: String(inputValidated.data.postId),
+      },
+      reqCtx,
+    );
     revalidatePath(`/tenant/${input.tenantId}`);
     if (ret) {
       return {
@@ -75,6 +88,18 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
     };
   } catch (error) {
     logger.error({ err: error }, "Error liking post");
+    audit(
+      {
+        action: unlike ? AuditAction.POST_UNVOTE : AuditAction.POST_VOTE,
+        success: false,
+        error: (error as Error).message,
+        userId: inputValidated.data.userId ?? undefined,
+        tenantId: inputValidated.data.tenantId,
+        targetType: "Post",
+        targetId: String(inputValidated.data.postId),
+      },
+      reqCtx,
+    );
     return {
       ok: false,
       error: (error as Error).message,

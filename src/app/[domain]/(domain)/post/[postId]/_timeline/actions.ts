@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { type Comment, type User } from "@/prisma/client";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
 
 export async function getReplies(commentId: number): Promise<ServerActionResponse<Array<{ user: User } & Comment>>> {
@@ -56,6 +57,8 @@ export async function sendComment({
   parentId,
   tenantId,
 }: SendCommentParams): Promise<ServerActionResponse<Comment>> {
+  const reqCtx = await getRequestContext();
+
   if (isNaN(postId) || !body) {
     return {
       ok: false,
@@ -87,12 +90,34 @@ export async function sendComment({
       },
     });
 
+    audit(
+      {
+        action: AuditAction.COMMENT_CREATE,
+        userId,
+        tenantId,
+        targetType: "Comment",
+        targetId: String(newComment.id),
+        metadata: { postId, parentId },
+      },
+      reqCtx,
+    );
     return {
       ok: true,
       data: newComment,
     };
   } catch (error) {
     logger.error({ err: error }, "Error creating comment");
+    audit(
+      {
+        action: AuditAction.COMMENT_CREATE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        tenantId,
+        metadata: { postId },
+      },
+      reqCtx,
+    );
     return {
       ok: false,
       error: "Failed to create comment",

@@ -5,6 +5,7 @@ import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
 import { redis } from "@/lib/db/redis/storage";
 import { auth } from "@/lib/next-auth/auth";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -15,6 +16,7 @@ export async function POST(req: NextRequest) {
   const userId = session.user.uuid;
   const rpID = config.rootDomain.replace(/:\d+$/, "");
   const origin = config.host;
+  const reqCtx = await getRequestContext();
 
   const body = (await req.json()) as RegistrationResponseJSON;
 
@@ -59,8 +61,28 @@ export async function POST(req: NextRequest) {
     // Clean up challenge
     await redis.removeItem(`webauthn:challenge:${userId}`);
 
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_PASSKEY_REGISTER,
+        userId,
+        targetType: "Authenticator",
+        targetId: credential.id,
+      },
+      reqCtx,
+    );
     return NextResponse.json({ verified: true });
-  } catch {
+  } catch (error) {
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_PASSKEY_REGISTER,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
     return NextResponse.json({ error: "Verification failed" }, { status: 400 });
   }
 }

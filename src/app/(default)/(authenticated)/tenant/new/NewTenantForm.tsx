@@ -58,7 +58,7 @@ export const NewTenantForm = () => {
   };
 
   return (
-    <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
+    <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)} className={fr.cx("fr-mb-2w")}>
       {error && (
         <Alert
           className={fr.cx("fr-mb-2w")}
@@ -103,7 +103,7 @@ export const NewTenantForm = () => {
         </GridCol>
       </Grid>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className={fr.cx("fr-mt-2w")}>
         {pending ? t("creating") : t("createTenant")}
       </Button>
     </form>

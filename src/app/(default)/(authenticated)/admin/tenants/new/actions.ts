@@ -16,6 +16,15 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
   const validated = CreateNewTenantInput.safeParse(data);
   if (!validated.success) {
     const t = await getTranslations("serverErrors");
+    audit(
+      {
+        action: AuditAction.ROOT_TENANT_CREATE,
+        success: false,
+        error: "validationFailed",
+        userId: session.user.uuid,
+      },
+      reqCtx,
+    );
     return { ok: false, error: t("invalidData") };
   }
 

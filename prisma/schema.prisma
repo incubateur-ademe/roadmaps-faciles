@@ -531,6 +531,13 @@ enum AuditAction {
   POST_DELETE
   POST_EDIT
 
+  // Tenant-scoped — Comments
+  COMMENT_CREATE
+
+  // Tenant-scoped — Votes
+  POST_VOTE
+  POST_UNVOTE
+
   // Tenant-scoped — API keys
   API_KEY_CREATE
   API_KEY_DELETE
@@ -559,6 +566,19 @@ enum AuditAction {
 
   // Tenant-scoped — Security
   SECURITY_SETTINGS_UPDATE
+
+  // User-scoped — Profile
+  PROFILE_UPDATE
+  ACCOUNT_DELETE
+  EM_LINK_REQUEST
+  EM_LINK_CONFIRM
+
+  // User-scoped — Security (2FA)
+  TWO_FACTOR_EMAIL_TOGGLE
+  TWO_FACTOR_OTP_SETUP
+  TWO_FACTOR_OTP_REMOVE
+  TWO_FACTOR_PASSKEY_REGISTER
+  TWO_FACTOR_PASSKEY_REMOVE
 
   // Root-scoped
   ROOT_MEMBER_REMOVE

@@ -125,6 +125,7 @@
 - When asked to implement a feature, produce working code — not just a plan. Only produce a plan if explicitly asked for planning/architecture discussion
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
 - After implementing a feature or fix, assess whether tests should be added or updated — flag it to the user with a recommendation on which test layer(s) apply (testu for pure logic, testi for use case behavior, testdb for repo changes, teste2e for user-facing flows)
+- Audit logging: every server action or route handler performing a mutation (create, update, delete, security change) MUST call `audit()` — check `AuditAction` enum for existing actions, propose new enum values if needed. Pattern: `getRequestContext()` before try/catch, `audit()` on success + catch + validation early returns
 
 ## Worktrees (multi-Claude en parallèle)
 - Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
