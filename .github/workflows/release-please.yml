@@ -31,5 +31,6 @@ jobs:
           # Pour que la PR de release trigger les autres workflows (lint, test, build),
           # remplacer par un PAT : secrets.RELEASE_PLEASE_TOKEN
           token: ${{ secrets.GITHUB_TOKEN }}
+          target-branch: main
           config-file: release-please-config.${{ inputs.release-phase }}.json
           manifest-file: .release-please-manifest.json
