@@ -7,11 +7,11 @@
   "include-v-in-tag": true,
   "skip-changelog": true,
   "bump-minor-pre-major": true,
-  "pull-request-title-pattern": "chore: release ${version}",
+  "pull-request-title-pattern": "chore(release): ${version}",
   "packages": {
     ".": {
       "prerelease-type": "alpha",
-      "exclude-paths": ["content/docs/", ".github/", "CLAUDE.md", "CLAUDE.local.md", "README.md"]
+      "exclude-paths": [ "content/docs/", ".github/", "CLAUDE.md", "CLAUDE.local.md", "README.md" ]
     }
   }
 }

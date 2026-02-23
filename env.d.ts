@@ -114,7 +114,7 @@ Française`
          */
         MAILER_SMTP_SSL?: string;
         /**
-         * Dist: `Roadmaps Faciles <noreply@roadmap.incubateur.net>`  
+         * Dist: `Roadmaps Faciles <noreply@roadmap.incubateur.ademe.fr>`  
          * {@link [Local Env Dist](.env.development)}
          */
         MAILER_FROM_EMAIL?: string;

@@ -180,7 +180,11 @@
 - E2E fixtures: `tests/teste2e/fixtures.ts` — Maildev helper (clearInbox, getLatestEmail, extractLink)
 - E2E embed: tests run in `unauthenticated` project with absolute `E2E_TENANT_URL` URLs; seed sets `allowEmbedding: true`
 - E2E consent: DSFR consent banner blocks pointer events — must be pre-accepted via localStorage in storageState (key `"@codegouvfr/react-dsfr finalityConsent "` with trailing space, value `{"isFullConsent":true}`); see `auth.setup.ts`
-- CI: GitHub Actions (`.github/workflows/` — build, lint, test)
+- CI: GitHub Actions (`.github/workflows/` — build, lint, test, deploy)
+  - Deploy: `.github/workflows/deploy.yml` — push-based to Scalingo (staging on `dev` after CI, prod on release-please tag, manual dispatch)
+  - CI scripts: `.github/scripts/` — CJS modules with JSDoc `@ts-check`, loaded via `require()` in `actions/github-script` (no TS support)
+  - Review apps: Scalingo native integration (keep enabled, disable auto-deploy only — review apps still work per-PR)
+  - GitHub Environments: `staging` + `production` — secrets scoped per env, setup via `scripts/setup-github-environments.sh`
   - Path filtering: `dorny/paths-filter` with shared config in `.github/filters.yml` — jobs skip when no relevant files changed
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
