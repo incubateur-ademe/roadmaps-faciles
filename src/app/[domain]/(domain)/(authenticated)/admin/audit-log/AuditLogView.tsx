@@ -208,7 +208,8 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
                   <span
                     className={fr.cx("fr-icon--sm", "fr-icon-information-line")}
                     style={{ cursor: "help" }}
-                    aria-hidden="true"
+                    role="img"
+                    aria-label={t("details")}
                   />
                 </MuiTooltip>
               ) : (
