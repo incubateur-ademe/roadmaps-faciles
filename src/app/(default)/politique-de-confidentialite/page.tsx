@@ -2,9 +2,9 @@ import { PrivacyPolicy } from "@incubateur-ademe/legal-pages-react/PrivacyPolicy
 import { type Metadata } from "next";
 
 import { config } from "@/config";
+import { FooterConsentManagementItem } from "@/consentManagement";
 
 import { sharedMetadata } from "../../shared-metadata";
-import { CookieConsentButton } from "../CookieConsentButton";
 
 const title = "Politique de confidentialité";
 const description = "Politique de confidentialité et gestion des cookies";
@@ -31,7 +31,7 @@ const PolitiqueDeConfidentialitePage = () => {
       <PrivacyPolicy
         includeBetaGouv
         siteName={config.brand.name}
-        cookieConsentButton={<CookieConsentButton />}
+        cookieConsentButton={<FooterConsentManagementItem />}
         cookies={[
           {
             category: "Mesure d'audience anonymisée",
