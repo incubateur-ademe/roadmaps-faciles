@@ -23,6 +23,7 @@ export const SendInvitationInput = z.object({
   role: invitationRoleEnum.optional().default("USER"),
 });
 
+// eslint-disable-next-line import/namespace -- false positive: z.infer exists in Zod 4
 export interface SendInvitationExecuteInput extends z.infer<typeof SendInvitationInput> {
   locale?: Locale;
 }
