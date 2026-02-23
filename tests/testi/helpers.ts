@@ -259,6 +259,7 @@ export function fakeInvitation(overrides = {}) {
     role: "USER" as const,
     acceptedAt: null,
     createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }

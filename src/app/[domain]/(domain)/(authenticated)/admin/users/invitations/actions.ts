@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { config } from "@/config";
-import { invitationRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
+import { invitationRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
 import { type UserEmailSearchResult } from "@/lib/repo/IUserRepo";
 import { type Invitation } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
@@ -27,7 +27,7 @@ export const sendInvitation = async (data: {
 
   try {
     const useCase = new SendInvitation(invitationRepo, userRepo, userOnTenantRepo);
-    const settings = await import("@/lib/repo").then(m => m.tenantSettingsRepo.findByTenantId(tenant.id));
+    const settings = await tenantSettingsRepo.findByTenantId(tenant.id);
     if (!settings) throw new Error("Settings not found");
 
     const tenantUrl = `${config.host.split("//")[0]}//${settings.subdomain}.${config.rootDomain}`;
