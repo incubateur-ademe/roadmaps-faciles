@@ -160,7 +160,11 @@ describe("assertSession", () => {
 
       await expect(
         assertSession({
-          tenantUser: { domain: "test.example.com", role: { min: "USER" as UserRole }, status: { min: "ACTIVE" as UserStatus } },
+          tenantUser: {
+            domain: "test.example.com",
+            role: { min: "USER" as UserRole },
+            status: { min: "ACTIVE" as UserStatus },
+          },
         }),
       ).rejects.toThrow();
     });
@@ -171,9 +175,7 @@ describe("assertSession", () => {
       const session = fakeSession({ status: "BLOCKED" as UserStatus });
       mockAuth.mockResolvedValue(session);
 
-      await expect(
-        assertSession({ rootUser: { status: { only: "ACTIVE" as UserStatus } } }),
-      ).rejects.toThrow();
+      await expect(assertSession({ rootUser: { status: { only: "ACTIVE" as UserStatus } } })).rejects.toThrow();
     });
 
     it("succeeds with sufficient root role", async () => {
