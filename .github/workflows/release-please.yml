@@ -1,17 +1,20 @@
 name: release-please
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       release-phase:
-        description: "Release phase"
+        description: "Release phase (override)"
         required: true
         type: choice
         options:
-          - stable
           - alpha
           - beta
-        default: stable
+          - stable
+        default: alpha
 
 permissions:
   contents: write
@@ -31,5 +34,6 @@ jobs:
           # Pour que la PR de release trigger les autres workflows (lint, test, build),
           # remplacer par un PAT : secrets.RELEASE_PLEASE_TOKEN
           token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.${{ inputs.release-phase }}.json
+          target-branch: main
+          config-file: release-please-config.${{ inputs.release-phase || 'alpha' }}.json
           manifest-file: .release-please-manifest.json
