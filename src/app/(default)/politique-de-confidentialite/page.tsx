@@ -31,14 +31,34 @@ const PolitiqueDeConfidentialitePage = () => {
       <PrivacyPolicy
         includeBetaGouv
         siteName={config.brand.name}
-        cookieConsentButton={<FooterConsentManagementItem />}
+        cookieConsentButton={
+          <span className="consent-btn-wrapper">
+            <FooterConsentManagementItem />
+          </span>
+        }
         cookies={[
           {
-            category: "Mesure d'audience anonymisée",
-            name: "Matomo",
-            expiration: "13 mois",
-            finalities: "Mesure d'audience",
-            editor: "Matomo & ADEME",
+            category: "Session utilisateur",
+            name: "authjs.session-token",
+            expiration: "Session",
+            finalities: "Authentification et maintien de la session utilisateur",
+            editor: config.brand.name,
+            destination: "France",
+          },
+          {
+            category: "Préférence de langue",
+            name: "NEXT_LOCALE",
+            expiration: "1 an",
+            finalities: "Mémoriser la langue choisie par l'utilisateur",
+            editor: config.brand.name,
+            destination: "France",
+          },
+          {
+            category: "Identification anonyme",
+            name: "anon_id",
+            expiration: "1 an",
+            finalities: "Identifier les contributions anonymes sans compte utilisateur",
+            editor: config.brand.name,
             destination: "France",
           },
         ]}
