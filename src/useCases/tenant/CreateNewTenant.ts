@@ -89,6 +89,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
           email,
           tenantUrl,
           role: UserRole.OWNER,
+          locale: settings.locale,
         });
       } catch (error) {
         const reason = (error as Error).message;

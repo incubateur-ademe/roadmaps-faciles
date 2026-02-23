@@ -192,6 +192,27 @@ describe("CreateNewTenant", () => {
     expect(result.failedInvitations).toBeUndefined();
   });
 
+  it("passes tenant locale to invitation emails", async () => {
+    const tenant = fakeTenant({ id: 7 });
+    const settings = fakeTenantSettings({ tenantId: 7, subdomain: "en-tenant", locale: "en" });
+
+    mockTenantRepo.create.mockResolvedValue(tenant);
+    mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
+    mockAddDomain.mockResolvedValue(undefined);
+    mockAddRecord.mockResolvedValue({});
+    mockSendInvitationExecute.mockResolvedValue({});
+
+    await useCase.execute({
+      name: "EN Tenant",
+      subdomain: "en-tenant",
+      creatorId: "user-1",
+      ownerEmails: ["owner@test.com"],
+    });
+
+    expect(mockSendInvitationExecute).toHaveBeenCalledWith(expect.objectContaining({ locale: "en" }));
+  });
+
   it("creates OWNER membership for the creator", async () => {
     const tenant = fakeTenant({ id: 4 });
     const settings = fakeTenantSettings({ tenantId: 4, subdomain: "owned" });

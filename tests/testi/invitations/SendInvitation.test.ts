@@ -1,3 +1,4 @@
+import { getEmailTranslations } from "@/emails/getEmailTranslations";
 import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 
 import {
@@ -133,5 +134,27 @@ describe("SendInvitation", () => {
 
     expect(mockInvitationRepo.delete).toHaveBeenCalledWith(42);
     expect(result).toEqual(newInvitation);
+  });
+
+  it("uses provided locale for email translations", async () => {
+    mockUserRepo.findByEmail.mockResolvedValue(null);
+    mockInvitationRepo.findByEmailAndTenant.mockResolvedValue(null);
+    mockInvitationRepo.create.mockResolvedValue(fakeInvitation());
+    mockSendEmail.mockResolvedValue(undefined);
+
+    await useCase.execute({ ...validInput, locale: "en" });
+
+    expect(getEmailTranslations).toHaveBeenCalledWith("en", expect.any(String), expect.any(Array));
+  });
+
+  it("defaults to French locale when not provided", async () => {
+    mockUserRepo.findByEmail.mockResolvedValue(null);
+    mockInvitationRepo.findByEmailAndTenant.mockResolvedValue(null);
+    mockInvitationRepo.create.mockResolvedValue(fakeInvitation());
+    mockSendEmail.mockResolvedValue(undefined);
+
+    await useCase.execute(validInput);
+
+    expect(getEmailTranslations).toHaveBeenCalledWith("fr", expect.any(String), expect.any(Array));
   });
 });

@@ -204,6 +204,7 @@ export function fakeTenantSettings(overrides = {}) {
     tenantId: 1,
     name: faker.company.name(),
     subdomain: faker.lorem.slug(),
+    locale: "fr" as const,
     ...overrides,
   };
 }

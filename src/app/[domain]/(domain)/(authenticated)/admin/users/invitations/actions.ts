@@ -36,6 +36,7 @@ export const sendInvitation = async (data: {
       email: data.email,
       tenantUrl,
       role: data.role ?? UserRole.USER,
+      locale: settings.locale,
     });
     audit(
       {

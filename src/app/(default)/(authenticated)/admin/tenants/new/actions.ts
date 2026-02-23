@@ -9,7 +9,12 @@ import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createTenant = async (data: unknown): Promise<ServerActionResponse<{ tenantId: number }>> => {
+export interface CreateTenantResult {
+  failedInvitations?: Array<{ email: string; reason: string }>;
+  tenantId: number;
+}
+
+export const createTenant = async (data: unknown): Promise<ServerActionResponse<CreateTenantResult>> => {
   const session = await assertAdmin();
   const reqCtx = await getRequestContext();
 
@@ -58,7 +63,13 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
       );
     }
     revalidatePath("/admin/tenants");
-    return { ok: true, data: { tenantId: result.tenant.id } };
+    return {
+      ok: true,
+      data: {
+        tenantId: result.tenant.id,
+        ...(result.failedInvitations && { failedInvitations: result.failedInvitations }),
+      },
+    };
   } catch (error) {
     audit(
       {

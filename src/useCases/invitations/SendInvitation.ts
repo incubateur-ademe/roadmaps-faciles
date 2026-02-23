@@ -9,6 +9,7 @@ import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
 import { type IUserRepo } from "@/lib/repo/IUserRepo";
 import { type Invitation } from "@/prisma/client";
+import { type Locale } from "@/utils/i18n";
 
 import { type UseCase } from "../types";
 
@@ -22,17 +23,19 @@ export const SendInvitationInput = z.object({
   role: invitationRoleEnum.optional().default("USER"),
 });
 
-export type SendInvitationInput = z.infer<typeof SendInvitationInput>;
+export interface SendInvitationExecuteInput extends z.infer<typeof SendInvitationInput> {
+  locale?: Locale;
+}
 export type SendInvitationOutput = Invitation;
 
-export class SendInvitation implements UseCase<SendInvitationInput, SendInvitationOutput> {
+export class SendInvitation implements UseCase<SendInvitationExecuteInput, SendInvitationOutput> {
   constructor(
     private readonly invitationRepo: IInvitationRepo,
     private readonly userRepo: IUserRepo,
     private readonly userOnTenantRepo: IUserOnTenantRepo,
   ) {}
 
-  public async execute(input: SendInvitationInput): Promise<SendInvitationOutput> {
+  public async execute(input: SendInvitationExecuteInput): Promise<SendInvitationOutput> {
     // Check if user with this email already exists and is a member of this tenant
     const existingUser = await this.userRepo.findByEmail(input.email);
 
@@ -73,8 +76,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
 
     const invitationLink = `${input.tenantUrl}/login?invitation=${token}`;
 
-    // TODO: resolve recipient locale if possible
-    const locale = "fr";
+    const locale = input.locale ?? "fr";
     const isOwnerInvite = input.role === "OWNER";
 
     const [t, tFooter] = await Promise.all([

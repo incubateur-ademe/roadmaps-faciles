@@ -86,7 +86,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         launchOptions: { args: [HOST_RULES] },
       },
-      testMatch: /\b(health|home|auth|auth-magic-link|auth-bridge|routing|api|embed)\.spec\.ts/,
+      testMatch: /\b(health|home|auth|auth-magic-link|auth-bridge|routing|api|embed|legal)\.spec\.ts/,
     },
 
     // --- Mobile ---
