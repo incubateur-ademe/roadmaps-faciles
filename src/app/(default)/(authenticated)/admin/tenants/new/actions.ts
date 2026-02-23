@@ -3,7 +3,7 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
-import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo } from "@/lib/repo";
+import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
 import { CreateNewTenant, CreateNewTenantInput } from "@/useCases/tenant/CreateNewTenant";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertAdmin } from "@/utils/auth";
@@ -29,7 +29,7 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
   }
 
   try {
-    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo);
+    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo, userRepo);
     const result = await useCase.execute({
       ...validated.data,
       creatorId: session.user.uuid,

@@ -10,6 +10,7 @@ import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
+import { type IUserRepo } from "@/lib/repo/IUserRepo";
 import { UserRole, UserStatus } from "@/prisma/enums";
 import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 
@@ -41,6 +42,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     private readonly tenantSettingsRepo: ITenantSettingsRepo,
     private readonly invitationRepo: IInvitationRepo,
     private readonly userOnTenantRepo: IUserOnTenantRepo,
+    private readonly userRepo: IUserRepo,
   ) {}
 
   public async execute(input: CreateNewTenantExecuteInput): Promise<CreateNewTenantOutput> {
@@ -71,7 +73,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     });
 
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
-    const sendInvitation = new SendInvitation(this.invitationRepo);
+    const sendInvitation = new SendInvitation(this.invitationRepo, this.userRepo, this.userOnTenantRepo);
 
     for (const email of input.ownerEmails) {
       try {

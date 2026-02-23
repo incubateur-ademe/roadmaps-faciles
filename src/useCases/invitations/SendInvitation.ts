@@ -4,9 +4,10 @@ import { z } from "zod";
 import { config } from "@/config";
 import { getEmailTranslations, interpolate } from "@/emails/getEmailTranslations";
 import { renderInvitationEmail } from "@/emails/renderEmails";
-import { prisma } from "@/lib/db/prisma";
 import { sendEmail } from "@/lib/mailer";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
+import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
+import { type IUserRepo } from "@/lib/repo/IUserRepo";
 import { type Invitation } from "@/prisma/client";
 
 import { type UseCase } from "../types";
@@ -25,28 +26,22 @@ export type SendInvitationInput = z.infer<typeof SendInvitationInput>;
 export type SendInvitationOutput = Invitation;
 
 export class SendInvitation implements UseCase<SendInvitationInput, SendInvitationOutput> {
-  constructor(private readonly invitationRepo: IInvitationRepo) {}
+  constructor(
+    private readonly invitationRepo: IInvitationRepo,
+    private readonly userRepo: IUserRepo,
+    private readonly userOnTenantRepo: IUserOnTenantRepo,
+  ) {}
 
   public async execute(input: SendInvitationInput): Promise<SendInvitationOutput> {
     // Check if user with this email already exists and is a member of this tenant
-    const existingUser = await prisma.user.findUnique({
-      where: { email: input.email },
-      select: {
-        id: true,
-        status: true,
-        memberships: {
-          where: { tenantId: input.tenantId },
-          select: { status: true },
-        },
-      },
-    });
+    const existingUser = await this.userRepo.findByEmail(input.email);
 
     if (existingUser) {
       if (existingUser.status === "BLOCKED" || existingUser.status === "DELETED") {
         throw new Error("Cet utilisateur est bloqué ou supprimé.");
       }
 
-      const membership = existingUser.memberships[0];
+      const membership = await this.userOnTenantRepo.findMembership(existingUser.id, input.tenantId);
       if (membership) {
         if (membership.status === "BLOCKED") {
           throw new Error("Cet utilisateur est bloqué sur ce tenant.");
@@ -56,9 +51,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
     }
 
     // Check for existing pending invitation
-    const existingInvitation = await prisma.invitation.findUnique({
-      where: { email_tenantId: { email: input.email, tenantId: input.tenantId } },
-    });
+    const existingInvitation = await this.invitationRepo.findByEmailAndTenant(input.email, input.tenantId);
     if (existingInvitation && !existingInvitation.acceptedAt) {
       throw new Error("Une invitation est déjà en attente pour cet utilisateur.");
     }
@@ -68,7 +61,7 @@ export class SendInvitation implements UseCase<SendInvitationInput, SendInvitati
 
     // If a previous invitation was accepted, delete it and create a new one
     if (existingInvitation) {
-      await prisma.invitation.delete({ where: { id: existingInvitation.id } });
+      await this.invitationRepo.delete(existingInvitation.id);
     }
 
     const invitation = await this.invitationRepo.create({

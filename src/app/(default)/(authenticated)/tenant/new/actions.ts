@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo } from "@/lib/repo";
+import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
 import { CreateNewTenant } from "@/useCases/tenant/CreateNewTenant";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertSession } from "@/utils/auth";
@@ -16,7 +16,7 @@ export const createTenantForUser = async (data: {
   const reqCtx = await getRequestContext();
 
   try {
-    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo);
+    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo, userRepo);
     const result = await useCase.execute({
       name: data.name,
       subdomain: data.subdomain,

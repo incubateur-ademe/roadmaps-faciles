@@ -2,23 +2,13 @@ import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 
 import {
   type createMockInvitationRepo as CreateMockInvitationRepo,
+  type createMockUserOnTenantRepo as CreateMockUserOnTenantRepo,
+  type createMockUserRepo as CreateMockUserRepo,
   createMockInvitationRepo,
+  createMockUserOnTenantRepo,
+  createMockUserRepo,
   fakeInvitation,
 } from "../helpers";
-
-// Mock prisma (direct access for user/invitation lookups)
-const mockUserFindUnique = vi.fn();
-const mockInvitationFindUnique = vi.fn();
-const mockInvitationDelete = vi.fn();
-vi.mock("@/lib/db/prisma", () => ({
-  prisma: {
-    user: { findUnique: (...args: unknown[]) => mockUserFindUnique(...args) },
-    invitation: {
-      findUnique: (...args: unknown[]) => mockInvitationFindUnique(...args),
-      delete: (...args: unknown[]) => mockInvitationDelete(...args),
-    },
-  },
-}));
 
 // Mock email sending
 const mockSendEmail = vi.fn();
@@ -57,6 +47,8 @@ vi.mock("@/config", () => ({
 
 describe("SendInvitation", () => {
   let mockInvitationRepo: ReturnType<typeof CreateMockInvitationRepo>;
+  let mockUserRepo: ReturnType<typeof CreateMockUserRepo>;
+  let mockUserOnTenantRepo: ReturnType<typeof CreateMockUserOnTenantRepo>;
   let useCase: SendInvitation;
 
   const validInput = {
@@ -68,16 +60,15 @@ describe("SendInvitation", () => {
 
   beforeEach(() => {
     mockInvitationRepo = createMockInvitationRepo();
-    useCase = new SendInvitation(mockInvitationRepo);
-    mockUserFindUnique.mockReset();
-    mockInvitationFindUnique.mockReset();
-    mockInvitationDelete.mockReset();
+    mockUserRepo = createMockUserRepo();
+    mockUserOnTenantRepo = createMockUserOnTenantRepo();
+    useCase = new SendInvitation(mockInvitationRepo, mockUserRepo, mockUserOnTenantRepo);
     mockSendEmail.mockReset();
   });
 
   it("sends an invitation successfully", async () => {
-    mockUserFindUnique.mockResolvedValue(null);
-    mockInvitationFindUnique.mockResolvedValue(null);
+    mockUserRepo.findByEmail.mockResolvedValue(null);
+    mockInvitationRepo.findByEmailAndTenant.mockResolvedValue(null);
     const invitation = fakeInvitation({ tenantId: 1, email: "new@example.com" });
     mockInvitationRepo.create.mockResolvedValue(invitation);
     mockSendEmail.mockResolvedValue(undefined);
@@ -96,48 +87,34 @@ describe("SendInvitation", () => {
   });
 
   it("throws when user is already a member", async () => {
-    mockUserFindUnique.mockResolvedValue({
-      id: "user-1",
-      status: "ACTIVE",
-      memberships: [{ status: "ACTIVE" }],
-    });
+    mockUserRepo.findByEmail.mockResolvedValue({ id: "user-1", status: "ACTIVE" });
+    mockUserOnTenantRepo.findMembership.mockResolvedValue({ status: "ACTIVE" });
 
     await expect(useCase.execute(validInput)).rejects.toThrow("Cet utilisateur est déjà membre de ce tenant.");
   });
 
   it("throws when user is blocked globally", async () => {
-    mockUserFindUnique.mockResolvedValue({
-      id: "user-1",
-      status: "BLOCKED",
-      memberships: [],
-    });
+    mockUserRepo.findByEmail.mockResolvedValue({ id: "user-1", status: "BLOCKED" });
 
     await expect(useCase.execute(validInput)).rejects.toThrow("Cet utilisateur est bloqué ou supprimé.");
   });
 
   it("throws when user is deleted globally", async () => {
-    mockUserFindUnique.mockResolvedValue({
-      id: "user-1",
-      status: "DELETED",
-      memberships: [],
-    });
+    mockUserRepo.findByEmail.mockResolvedValue({ id: "user-1", status: "DELETED" });
 
     await expect(useCase.execute(validInput)).rejects.toThrow("Cet utilisateur est bloqué ou supprimé.");
   });
 
   it("throws when user is blocked on tenant", async () => {
-    mockUserFindUnique.mockResolvedValue({
-      id: "user-1",
-      status: "ACTIVE",
-      memberships: [{ status: "BLOCKED" }],
-    });
+    mockUserRepo.findByEmail.mockResolvedValue({ id: "user-1", status: "ACTIVE" });
+    mockUserOnTenantRepo.findMembership.mockResolvedValue({ status: "BLOCKED" });
 
     await expect(useCase.execute(validInput)).rejects.toThrow("Cet utilisateur est bloqué sur ce tenant.");
   });
 
   it("throws when a pending invitation already exists", async () => {
-    mockUserFindUnique.mockResolvedValue(null);
-    mockInvitationFindUnique.mockResolvedValue(fakeInvitation({ acceptedAt: null }));
+    mockUserRepo.findByEmail.mockResolvedValue(null);
+    mockInvitationRepo.findByEmailAndTenant.mockResolvedValue(fakeInvitation({ acceptedAt: null }));
 
     await expect(useCase.execute(validInput)).rejects.toThrow(
       "Une invitation est déjà en attente pour cet utilisateur.",
@@ -145,16 +122,16 @@ describe("SendInvitation", () => {
   });
 
   it("replaces a previously accepted invitation", async () => {
-    mockUserFindUnique.mockResolvedValue(null);
-    mockInvitationFindUnique.mockResolvedValue(fakeInvitation({ id: 42, acceptedAt: new Date() }));
-    mockInvitationDelete.mockResolvedValue(undefined);
+    mockUserRepo.findByEmail.mockResolvedValue(null);
+    mockInvitationRepo.findByEmailAndTenant.mockResolvedValue(fakeInvitation({ id: 42, acceptedAt: new Date() }));
+    mockInvitationRepo.delete.mockResolvedValue(undefined);
     const newInvitation = fakeInvitation({ tenantId: 1 });
     mockInvitationRepo.create.mockResolvedValue(newInvitation);
     mockSendEmail.mockResolvedValue(undefined);
 
     const result = await useCase.execute(validInput);
 
-    expect(mockInvitationDelete).toHaveBeenCalledWith({ where: { id: 42 } });
+    expect(mockInvitationRepo.delete).toHaveBeenCalledWith(42);
     expect(result).toEqual(newInvitation);
   });
 });

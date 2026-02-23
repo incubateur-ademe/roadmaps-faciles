@@ -5,10 +5,12 @@ import {
   type createMockTenantRepo as CreateMockTenantRepo,
   type createMockTenantSettingsRepo as CreateMockTenantSettingsRepo,
   type createMockUserOnTenantRepo as CreateMockUserOnTenantRepo,
+  type createMockUserRepo as CreateMockUserRepo,
   createMockInvitationRepo,
   createMockTenantRepo,
   createMockTenantSettingsRepo,
   createMockUserOnTenantRepo,
+  createMockUserRepo,
   fakeTenant,
   fakeTenantSettings,
 } from "../helpers";
@@ -44,6 +46,7 @@ describe("CreateNewTenant", () => {
   let mockSettingsRepo: ReturnType<typeof CreateMockTenantSettingsRepo>;
   let mockInvitationRepo: ReturnType<typeof CreateMockInvitationRepo>;
   let mockUserOnTenantRepo: ReturnType<typeof CreateMockUserOnTenantRepo>;
+  let mockUserRepo: ReturnType<typeof CreateMockUserRepo>;
   let useCase: CreateNewTenant;
 
   beforeEach(() => {
@@ -51,7 +54,14 @@ describe("CreateNewTenant", () => {
     mockSettingsRepo = createMockTenantSettingsRepo();
     mockInvitationRepo = createMockInvitationRepo();
     mockUserOnTenantRepo = createMockUserOnTenantRepo();
-    useCase = new CreateNewTenant(mockTenantRepo, mockSettingsRepo, mockInvitationRepo, mockUserOnTenantRepo);
+    mockUserRepo = createMockUserRepo();
+    useCase = new CreateNewTenant(
+      mockTenantRepo,
+      mockSettingsRepo,
+      mockInvitationRepo,
+      mockUserOnTenantRepo,
+      mockUserRepo,
+    );
     mockAddDomain.mockReset();
     mockAddRecord.mockReset();
     mockSendInvitationExecute.mockReset();

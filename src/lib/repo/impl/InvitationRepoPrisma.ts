@@ -20,6 +20,10 @@ export class InvitationRepoPrisma implements IInvitationRepo {
     return prisma.invitation.findMany({ where: { tenantId }, orderBy: { createdAt: "desc" } });
   }
 
+  public findByEmailAndTenant(email: string, tenantId: number): Promise<Invitation | null> {
+    return prisma.invitation.findUnique({ where: { email_tenantId: { email, tenantId } } });
+  }
+
   public async delete(id: number): Promise<void> {
     await prisma.invitation.delete({ where: { id } });
   }
