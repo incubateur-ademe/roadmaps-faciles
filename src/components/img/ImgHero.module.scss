@@ -1,25 +1,22 @@
-.freepik_stories-audit:not(.animated) .animable {
+.freepik_stories-mind-map:not(.animated) .animable {
     opacity: 0;
 }
 
-.icon1,
-.icon2 {
-    animation: 1.5s Infinite linear floating;
+.animator-active {
+    animation: 1.5s Infinite linear wind;
     animation-delay: 0s;
 }
 
-@keyframes floating {
+@keyframes wind {
     0% {
-        opacity: 1;
-        transform: translateY(0px);
+        transform: rotate(0deg);
     }
 
-    50% {
-        transform: translateY(-10px);
+    25% {
+        transform: rotate(1deg);
     }
 
-    100% {
-        opacity: 1;
-        transform: translateY(0px);
+    75% {
+        transform: rotate(-1deg);
     }
 }
