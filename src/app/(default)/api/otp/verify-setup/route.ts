@@ -17,16 +17,19 @@ export async function POST(req: NextRequest) {
   const { code } = (await req.json()) as { code: string };
 
   if (!code) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "codeRequired", userId }, reqCtx);
     return NextResponse.json({ error: "Code required" }, { status: 400 });
   }
 
   const secret = await redis.getItem<string>(`otp:setup:${userId}`);
   if (!secret) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "setupExpired", userId }, reqCtx);
     return NextResponse.json({ error: "Setup expired" }, { status: 400 });
   }
 
   const result = verifySync({ token: code, secret });
   if (!result.valid) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "invalidCode", userId }, reqCtx);
     return NextResponse.json({ error: "Invalid code" }, { status: 400 });
   }
 
