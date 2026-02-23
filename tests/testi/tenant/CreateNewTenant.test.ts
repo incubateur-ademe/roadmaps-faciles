@@ -166,6 +166,30 @@ describe("CreateNewTenant", () => {
 
     expect(result.tenant).toBeDefined();
     expect(mockSendInvitationExecute).toHaveBeenCalledTimes(2);
+    expect(result.failedInvitations).toEqual([
+      { email: "already-member@test.com", reason: "Cet utilisateur est déjà membre de ce tenant." },
+    ]);
+  });
+
+  it("does not include failedInvitations when all succeed", async () => {
+    const tenant = fakeTenant({ id: 6 });
+    const settings = fakeTenantSettings({ tenantId: 6, subdomain: "ok" });
+
+    mockTenantRepo.create.mockResolvedValue(tenant);
+    mockSettingsRepo.create.mockResolvedValue(settings);
+    mockUserOnTenantRepo.create.mockResolvedValue({});
+    mockAddDomain.mockResolvedValue(undefined);
+    mockAddRecord.mockResolvedValue({});
+    mockSendInvitationExecute.mockResolvedValue({});
+
+    const result = await useCase.execute({
+      name: "Ok",
+      subdomain: "ok",
+      creatorId: "user-1",
+      ownerEmails: ["owner@test.com"],
+    });
+
+    expect(result.failedInvitations).toBeUndefined();
   });
 
   it("creates OWNER membership for the creator", async () => {

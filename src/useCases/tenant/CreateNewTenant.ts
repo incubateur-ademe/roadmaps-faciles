@@ -31,8 +31,14 @@ interface CreateNewTenantExecuteInput extends CreateNewTenantInput {
   creatorId: string;
 }
 
+export interface FailedInvitation {
+  email: string;
+  reason: string;
+}
+
 export interface CreateNewTenantOutput {
   dns?: DnsProvisionResult;
+  failedInvitations?: FailedInvitation[];
   tenant: TenantWithSettings;
 }
 
@@ -75,6 +81,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
     const sendInvitation = new SendInvitation(this.invitationRepo, this.userRepo, this.userOnTenantRepo);
 
+    const failedInvitations: FailedInvitation[] = [];
     for (const email of input.ownerEmails) {
       try {
         await sendInvitation.execute({
@@ -84,10 +91,16 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
           role: UserRole.OWNER,
         });
       } catch (error) {
+        const reason = (error as Error).message;
         logger.warn({ err: error, email, tenantId: tenant.id }, "Owner invitation skipped");
+        failedInvitations.push({ email, reason });
       }
     }
 
-    return { tenant: { ...tenant, settings }, dns: dnsResult };
+    return {
+      tenant: { ...tenant, settings },
+      dns: dnsResult,
+      ...(failedInvitations.length > 0 && { failedInvitations }),
+    };
   }
 }

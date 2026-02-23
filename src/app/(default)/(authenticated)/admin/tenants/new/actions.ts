@@ -44,6 +44,19 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
       },
       reqCtx,
     );
+    for (const failed of result.failedInvitations ?? []) {
+      audit(
+        {
+          action: AuditAction.INVITATION_SEND,
+          success: false,
+          error: failed.reason,
+          userId: session.user.uuid,
+          tenantId: result.tenant.id,
+          metadata: { email: failed.email, role: "OWNER" },
+        },
+        reqCtx,
+      );
+    }
     revalidatePath("/admin/tenants");
     return { ok: true, data: { tenantId: result.tenant.id } };
   } catch (error) {
