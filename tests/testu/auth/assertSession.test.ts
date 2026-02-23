@@ -59,12 +59,16 @@ function fakeSession(overrides: Partial<Session["user"]> = {}): Session {
 describe("assertSession", () => {
   let assertSession: typeof import("@/utils/auth").assertSession;
   let assertTenantAdmin: typeof import("@/utils/auth").assertTenantAdmin;
+  let assertTenantOwner: typeof import("@/utils/auth").assertTenantOwner;
+  let assertPublicAccess: typeof import("@/utils/auth").assertPublicAccess;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     const mod = await import("@/utils/auth");
     assertSession = mod.assertSession;
     assertTenantAdmin = mod.assertTenantAdmin;
+    assertTenantOwner = mod.assertTenantOwner;
+    assertPublicAccess = mod.assertPublicAccess;
   });
 
   it("returns session when no checks", async () => {
@@ -146,6 +150,113 @@ describe("assertSession", () => {
       await expect(
         assertSession({ tenantUser: { domain: "test.example.com", role: { min: "ADMIN" as UserRole } } }),
       ).rejects.toThrow();
+    });
+
+    it("fails when user has insufficient status", async () => {
+      const session = fakeSession();
+      mockAuth.mockResolvedValue(session);
+      mockGetTenantFromDomain.mockResolvedValue({ id: 1 });
+      mockFindMembership.mockResolvedValue({ role: "ADMIN", status: "BLOCKED" });
+
+      await expect(
+        assertSession({
+          tenantUser: { domain: "test.example.com", role: { min: "USER" as UserRole }, status: { min: "ACTIVE" as UserStatus } },
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("rootUser check", () => {
+    it("fails when root user has insufficient status", async () => {
+      const session = fakeSession({ status: "BLOCKED" as UserStatus });
+      mockAuth.mockResolvedValue(session);
+
+      await expect(
+        assertSession({ rootUser: { status: { only: "ACTIVE" as UserStatus } } }),
+      ).rejects.toThrow();
+    });
+
+    it("succeeds with sufficient root role", async () => {
+      const session = fakeSession({ role: "ADMIN" as UserRole });
+      mockAuth.mockResolvedValue(session);
+
+      const result = await assertSession({ rootUser: { role: { min: "ADMIN" as UserRole } } });
+      expect(result).toBe(session);
+    });
+  });
+
+  describe("useForbidden", () => {
+    it("calls forbidden() when useForbidden is true and no session", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(assertSession({ useForbidden: true })).rejects.toThrow("FORBIDDEN");
+    });
+  });
+
+  describe("AssertParam with message", () => {
+    it("accepts rootUser with check/message format", async () => {
+      const session = fakeSession({ role: "ADMIN" as UserRole });
+      mockAuth.mockResolvedValue(session);
+
+      const result = await assertSession({
+        rootUser: { check: { role: { min: "ADMIN" as UserRole } }, message: "Custom message" },
+      });
+      expect(result).toBe(session);
+    });
+
+    it("accepts tenantUser with check/message format", async () => {
+      const session = fakeSession();
+      mockAuth.mockResolvedValue(session);
+      mockGetTenantFromDomain.mockResolvedValue({ id: 1 });
+      mockFindMembership.mockResolvedValue({ role: "ADMIN", status: "ACTIVE" });
+
+      const result = await assertSession({
+        tenantUser: { check: { domain: "test.example.com", role: { min: "USER" as UserRole } }, message: "Custom" },
+      });
+      expect(result).toBe(session);
+    });
+  });
+
+  describe("assertTenantOwner", () => {
+    it("succeeds when user is OWNER", async () => {
+      const session = fakeSession();
+      mockAuth.mockResolvedValue(session);
+      mockGetTenantFromDomain.mockResolvedValue({ id: 1 });
+      mockFindMembership.mockResolvedValue({ role: "OWNER", status: "ACTIVE" });
+
+      const result = await assertTenantOwner("test.example.com");
+      expect(result).toBe(session);
+    });
+
+    it("fails when user is ADMIN (not OWNER)", async () => {
+      const session = fakeSession();
+      mockAuth.mockResolvedValue(session);
+      mockGetTenantFromDomain.mockResolvedValue({ id: 1 });
+      mockFindMembership.mockResolvedValue({ role: "ADMIN", status: "ACTIVE" });
+
+      await expect(assertTenantOwner("test.example.com")).rejects.toThrow("FORBIDDEN");
+    });
+  });
+
+  describe("assertPublicAccess", () => {
+    it("does nothing when site is not private", async () => {
+      await assertPublicAccess({ isPrivate: false } as Parameters<typeof assertPublicAccess>[0], "/login");
+      expect(mockAuth).not.toHaveBeenCalled();
+    });
+
+    it("does nothing when site is private and user is authenticated", async () => {
+      const session = fakeSession();
+      mockAuth.mockResolvedValue(session);
+
+      await assertPublicAccess({ isPrivate: true } as Parameters<typeof assertPublicAccess>[0], "/login");
+    });
+
+    it("redirects when site is private and user is not authenticated", async () => {
+      const { redirect } = await import("next/navigation");
+      mockAuth.mockResolvedValue(null);
+
+      await assertPublicAccess({ isPrivate: true } as Parameters<typeof assertPublicAccess>[0], "/login");
+      expect(redirect).toHaveBeenCalledWith("/login");
     });
   });
 });
