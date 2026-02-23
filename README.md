@@ -299,7 +299,25 @@ pnpm test                       # Tests unitaires + intégration (Vitest)
 pnpm test:coverage              # Idem avec couverture de code
 pnpm test:db                    # Tests d'intégration DB (nécessite DATABASE_URL_TEST)
 pnpm test:e2e                   # Tests E2E Playwright (nécessite dev server + docker services)
+
+# Déploiement
+./scripts/setup-github-environments.sh  # Setup one-shot des GitHub Environments + secrets Scalingo
 ```
+
+---
+
+## 🚢 Déploiement
+
+Le déploiement est géré par GitHub Actions (push vers Scalingo) :
+
+| Branche / Événement | Environnement | App Scalingo |
+|---|---|---|
+| Push sur `dev` (après CI) | staging | `incubateur-roadmaps-faciles-staging` |
+| Release (release-please tag) | production | `incubateur-roadmaps-faciles` |
+| `workflow_dispatch` | staging ou production | Au choix |
+| Pull Request | review app | Créée automatiquement par Scalingo |
+
+Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passent avant de déployer. Les review apps sont gérées nativement par l'intégration Scalingo (auto-deploy désactivé, review apps activées).
 
 ---
 

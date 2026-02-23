@@ -41,6 +41,22 @@ Pour un déploiement sur serveur dédié ou VPS, utilisez [Caddy](https://caddys
 
 Caddy interroge l'endpoint `/api/domains/check?domain=...` avant d'émettre un certificat, pour vérifier que le domaine est autorisé.
 
+## Déploiement automatisé (CI/CD)
+
+Le déploiement est piloté par GitHub Actions via le workflow `deploy.yml` qui push le code vers Scalingo :
+
+| Événement | Environnement | App Scalingo |
+|-----------|---------------|--------------|
+| Push sur `dev` (après CI) | Staging | `incubateur-roadmaps-faciles-staging` |
+| Release (tag release-please) | Production | `incubateur-roadmaps-faciles` |
+| Déclenchement manuel | Staging ou Production | Au choix |
+
+Les **review apps** sont gérées nativement par l'intégration GitHub de Scalingo : une app éphémère est créée automatiquement pour chaque pull request.
+
+Le workflow attend que les jobs CI (build, lint, tests) passent avant de déployer. Un déclenchement manuel (`workflow_dispatch`) est disponible pour les deux environnements.
+
+Les secrets Scalingo (`SCALINGO_API_TOKEN`) sont stockés dans les GitHub Environments (`staging`, `production`).
+
 ## Variables d'environnement principales
 
 | Variable | Description | Obligatoire |
