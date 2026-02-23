@@ -41,6 +41,8 @@ test.describe("Legal Pages", () => {
     await mentionsLink.click();
 
     await expect(page).toHaveURL(/mentions-legales/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(/mentions légales/i);
+    // Use name filter instead of level-only to avoid strict mode violation
+    // (during soft navigation, old + new h1 may coexist briefly)
+    await expect(page.getByRole("heading", { name: /mentions légales/i })).toBeVisible();
   });
 });
