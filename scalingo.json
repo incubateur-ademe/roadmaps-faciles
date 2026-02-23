@@ -4,7 +4,7 @@
   "description": "Roadmaps et product feedbacks, facilement.",
   "logo": "https://raw.githubusercontent.com/incubateur-ademe/roadmaps-faciles/refs/heads/main/public/img/roadmaps-faciles.png",
   "repository": "https://github.com/incubateur-ademe/roadmaps-faciles",
-  "website": "https://roadmap.incubateur.net",
+  "website": "https://roadmap.incubateur.ademe.fr",
   "formation": {
     "web": {
       "amount": 1,
