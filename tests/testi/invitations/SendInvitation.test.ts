@@ -65,6 +65,7 @@ describe("SendInvitation", () => {
     mockUserOnTenantRepo = createMockUserOnTenantRepo();
     useCase = new SendInvitation(mockInvitationRepo, mockUserRepo, mockUserOnTenantRepo);
     mockSendEmail.mockReset();
+    vi.mocked(getEmailTranslations).mockClear();
   });
 
   it("sends an invitation successfully", async () => {
@@ -144,7 +145,10 @@ describe("SendInvitation", () => {
 
     await useCase.execute({ ...validInput, locale: "en" });
 
-    expect(getEmailTranslations).toHaveBeenCalledWith("en", expect.any(String), expect.any(Array));
+    // Both calls (invitation namespace + footer) must use the provided locale
+    expect(getEmailTranslations).toHaveBeenCalledTimes(2);
+    expect(getEmailTranslations).toHaveBeenNthCalledWith(1, "en", expect.any(String), expect.any(Array));
+    expect(getEmailTranslations).toHaveBeenNthCalledWith(2, "en", expect.any(String), expect.any(Array));
   });
 
   it("defaults to French locale when not provided", async () => {
@@ -155,6 +159,8 @@ describe("SendInvitation", () => {
 
     await useCase.execute(validInput);
 
-    expect(getEmailTranslations).toHaveBeenCalledWith("fr", expect.any(String), expect.any(Array));
+    expect(getEmailTranslations).toHaveBeenCalledTimes(2);
+    expect(getEmailTranslations).toHaveBeenNthCalledWith(1, "fr", expect.any(String), expect.any(Array));
+    expect(getEmailTranslations).toHaveBeenNthCalledWith(2, "fr", expect.any(String), expect.any(Array));
   });
 });

@@ -84,14 +84,15 @@ export const CreateTenantForm = () => {
 
     if (result.ok) {
       if (result.data.failedInvitations?.length) {
+        setPending(false);
         setSuccessResult(result.data);
-      } else {
-        router.push("/admin/tenants");
+        return;
       }
-    } else if (!result.ok) {
-      setError(result.error);
+      router.push("/admin/tenants");
+      return;
     }
 
+    setError(result.error);
     setPending(false);
   };
 
