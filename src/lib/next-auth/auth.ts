@@ -30,6 +30,7 @@ import {
   userRepo,
 } from "../repo";
 import { refreshAccessToken } from "./refresh";
+import { revalidateSessionUser } from "./revalidateSessionUser";
 
 type CustomUser = {
   currentTenantRole?: UserRole;
@@ -427,6 +428,20 @@ const {
       async jwt({ token, trigger, account, espaceMembreMember }) {
         // Handle client-side session.update() calls for 2FA verification
         if (trigger === "update") {
+          // Re-validate user before accepting update (block deleted/blocked users)
+          if (token.user) {
+            const revalidated = await revalidateSessionUser(
+              token.user,
+              userRepo.findById.bind(userRepo),
+              config.admins,
+            );
+            if (revalidated === null) {
+              return { ...token, user: undefined as unknown as CustomUser };
+            }
+            if (revalidated !== undefined) {
+              token.user = { ...token.user, ...revalidated };
+            }
+          }
           // Validate server-side proof before marking as verified
           const { redis } = await import("../db/redis/storage");
           const userId = token.user?.uuid;
@@ -545,6 +560,15 @@ const {
         // Refresh OAuth access token if expired
         if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
           token = await refreshAccessToken(token);
+        }
+
+        // User re-validation on every request (SELECT by PK, <1ms)
+        const revalidated = await revalidateSessionUser(token.user, userRepo.findById.bind(userRepo), config.admins);
+        if (revalidated === null) {
+          return { ...token, user: undefined as unknown as CustomUser };
+        }
+        if (revalidated !== undefined) {
+          token.user = { ...token.user, ...revalidated };
         }
 
         // Sliding window session refresh
