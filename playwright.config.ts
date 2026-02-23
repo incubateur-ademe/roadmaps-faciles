@@ -84,9 +84,11 @@ export default defineConfig({
       name: "unauthenticated",
       use: {
         ...devices["Desktop Chrome"],
+        storageState: `${AUTH_DIR}/consent.json`,
         launchOptions: { args: [HOST_RULES] },
       },
-      testMatch: /\b(health|home|auth|auth-magic-link|auth-bridge|routing|api|embed)\.spec\.ts/,
+      dependencies: ["setup"],
+      testMatch: /\b(health|home|auth|auth-magic-link|auth-bridge|routing|api|embed|legal)\.spec\.ts/,
     },
 
     // --- Mobile ---

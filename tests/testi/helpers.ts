@@ -11,6 +11,7 @@ import { type IPostStatusRepo } from "@/lib/repo/IPostStatusRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
+import { type IUserRepo } from "@/lib/repo/IUserRepo";
 import { type IWebhookRepo } from "@/lib/repo/IWebhookRepo";
 
 type MockRepo<T> = { [K in keyof T]: Mock };
@@ -69,7 +70,21 @@ export function createMockInvitationRepo(): MockRepo<IInvitationRepo> {
     delete: vi.fn(),
     findAll: vi.fn(),
     findAllForTenant: vi.fn(),
+    findByEmailAndTenant: vi.fn(),
     findById: vi.fn(),
+  };
+}
+
+export function createMockUserRepo(): MockRepo<IUserRepo> {
+  return {
+    create: vi.fn(),
+    findAll: vi.fn(),
+    findAllWithTenantCount: vi.fn(),
+    findByEmail: vi.fn(),
+    findById: vi.fn(),
+    findByUsername: vi.fn(),
+    searchByEmail: vi.fn(),
+    update: vi.fn(),
   };
 }
 
@@ -189,6 +204,7 @@ export function fakeTenantSettings(overrides = {}) {
     tenantId: 1,
     name: faker.company.name(),
     subdomain: faker.lorem.slug(),
+    locale: "fr" as const,
     ...overrides,
   };
 }
@@ -244,6 +260,7 @@ export function fakeInvitation(overrides = {}) {
     role: "USER" as const,
     acceptedAt: null,
     createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }

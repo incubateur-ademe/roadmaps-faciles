@@ -9,6 +9,7 @@ import { Tenant } from "@/lib/model/Tenant";
 import { TenantSettings } from "@/lib/model/TenantSettings";
 import { tenantRepo, userOnTenantRepo } from "@/lib/repo";
 import { SaveTenant, type SaveTenantOutput } from "@/useCases/tenant/SaveTenant";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertSession } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
@@ -61,6 +62,8 @@ export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<
     };
   }
 
+  const reqCtx = await getRequestContext();
+
   try {
     const useCase = new SaveTenant(tenantRepo);
     const tenant = await useCase.execute({
@@ -68,6 +71,16 @@ export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<
       setting: settingValidated.data,
     });
 
+    audit(
+      {
+        action: AuditAction.TENANT_SETTINGS_UPDATE,
+        userId: session.user.uuid,
+        targetType: "Tenant",
+        targetId: String(tenant.id),
+        metadata: { ...settingValidated.data },
+      },
+      reqCtx,
+    );
     revalidatePath(`/tenant/${tenant.id}`);
     return {
       ok: true,
@@ -75,6 +88,17 @@ export const saveTenant = async ({ tenant, setting }: SaveTenantProps): Promise<
     };
   } catch (error) {
     logger.error({ err: error }, "Error saving tenant");
+    audit(
+      {
+        action: AuditAction.TENANT_SETTINGS_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        targetType: "Tenant",
+        targetId: String(tenantValidated.data.id),
+      },
+      reqCtx,
+    );
     return {
       ok: false,
       error: (error as Error).message,

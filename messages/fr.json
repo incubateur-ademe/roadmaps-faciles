@@ -404,6 +404,7 @@
       "action": "Action",
       "user": "Utilisateur",
       "target": "Cible",
+      "details": "Détails",
       "status": "Statut",
       "ip": "IP",
       "tenant": "Tenant",

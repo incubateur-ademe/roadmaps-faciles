@@ -12,6 +12,7 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { SkeletonTheme } from "react-loading-skeleton";
 
 import { config } from "@/config";
+import { ConsentBannerAndConsentManagement } from "@/consentManagement";
 import { DsfrProvider, StartDsfrOnHydration } from "@/dsfr-bootstrap";
 import { DsfrHead, getHtmlAttributes } from "@/dsfr-bootstrap/server-only-index";
 
@@ -63,6 +64,7 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
           <AppRouterCacheProvider>
             <NextIntlClientProvider messages={messages}>
               <DsfrProvider lang={lang}>
+                <ConsentBannerAndConsentManagement />
                 <MuiDsfrThemeProvider>
                   <SkeletonTheme
                     baseColor={fr.colors.decisions.background.contrast.grey.default}
@@ -70,7 +72,6 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
                     borderRadius={fr.spacing("1v")}
                     duration={2}
                   >
-                    {/* <ConsentBannerAndConsentManagement /> */}
                     <StartDsfrOnHydration />
                     <SkipLinks
                       links={[

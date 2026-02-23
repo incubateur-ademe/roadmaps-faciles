@@ -3,24 +3,38 @@
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
-import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo } from "@/lib/repo";
+import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
 import { CreateNewTenant, CreateNewTenantInput } from "@/useCases/tenant/CreateNewTenant";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertAdmin } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
-export const createTenant = async (data: unknown): Promise<ServerActionResponse<{ tenantId: number }>> => {
+export interface CreateTenantResult {
+  failedInvitations?: Array<{ email: string; reason: string }>;
+  tenantId: number;
+}
+
+export const createTenant = async (data: unknown): Promise<ServerActionResponse<CreateTenantResult>> => {
   const session = await assertAdmin();
   const reqCtx = await getRequestContext();
 
   const validated = CreateNewTenantInput.safeParse(data);
   if (!validated.success) {
     const t = await getTranslations("serverErrors");
+    audit(
+      {
+        action: AuditAction.ROOT_TENANT_CREATE,
+        success: false,
+        error: "validationFailed",
+        userId: session.user.uuid,
+      },
+      reqCtx,
+    );
     return { ok: false, error: t("invalidData") };
   }
 
   try {
-    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo);
+    const useCase = new CreateNewTenant(tenantRepo, tenantSettingsRepo, invitationRepo, userOnTenantRepo, userRepo);
     const result = await useCase.execute({
       ...validated.data,
       creatorId: session.user.uuid,
@@ -35,8 +49,27 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
       },
       reqCtx,
     );
+    for (const failed of result.failedInvitations ?? []) {
+      audit(
+        {
+          action: AuditAction.INVITATION_SEND,
+          success: false,
+          error: failed.reason,
+          userId: session.user.uuid,
+          tenantId: result.tenant.id,
+          metadata: { email: failed.email, role: "OWNER" },
+        },
+        reqCtx,
+      );
+    }
     revalidatePath("/admin/tenants");
-    return { ok: true, data: { tenantId: result.tenant.id } };
+    return {
+      ok: true,
+      data: {
+        tenantId: result.tenant.id,
+        ...(result.failedInvitations && { failedInvitations: result.failedInvitations }),
+      },
+    };
   } catch (error) {
     audit(
       {

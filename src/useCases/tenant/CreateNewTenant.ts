@@ -10,6 +10,7 @@ import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ITenantRepo } from "@/lib/repo/ITenantRepo";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 import { type IUserOnTenantRepo } from "@/lib/repo/IUserOnTenantRepo";
+import { type IUserRepo } from "@/lib/repo/IUserRepo";
 import { UserRole, UserStatus } from "@/prisma/enums";
 import { SendInvitation } from "@/useCases/invitations/SendInvitation";
 
@@ -30,8 +31,14 @@ interface CreateNewTenantExecuteInput extends CreateNewTenantInput {
   creatorId: string;
 }
 
+export interface FailedInvitation {
+  email: string;
+  reason: string;
+}
+
 export interface CreateNewTenantOutput {
   dns?: DnsProvisionResult;
+  failedInvitations?: FailedInvitation[];
   tenant: TenantWithSettings;
 }
 
@@ -41,6 +48,7 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     private readonly tenantSettingsRepo: ITenantSettingsRepo,
     private readonly invitationRepo: IInvitationRepo,
     private readonly userOnTenantRepo: IUserOnTenantRepo,
+    private readonly userRepo: IUserRepo,
   ) {}
 
   public async execute(input: CreateNewTenantExecuteInput): Promise<CreateNewTenantOutput> {
@@ -71,8 +79,9 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
     });
 
     const tenantUrl = `${config.host.split("//")[0]}//${input.subdomain}.${config.rootDomain}`;
-    const sendInvitation = new SendInvitation(this.invitationRepo);
+    const sendInvitation = new SendInvitation(this.invitationRepo, this.userRepo, this.userOnTenantRepo);
 
+    const failedInvitations: FailedInvitation[] = [];
     for (const email of input.ownerEmails) {
       try {
         await sendInvitation.execute({
@@ -80,12 +89,19 @@ export class CreateNewTenant implements UseCase<CreateNewTenantExecuteInput, Cre
           email,
           tenantUrl,
           role: UserRole.OWNER,
+          locale: settings.locale,
         });
       } catch (error) {
+        const reason = (error as Error).message;
         logger.warn({ err: error, email, tenantId: tenant.id }, "Owner invitation skipped");
+        failedInvitations.push({ email, reason });
       }
     }
 
-    return { tenant: { ...tenant, settings }, dns: dnsResult };
+    return {
+      tenant: { ...tenant, settings },
+      dns: dnsResult,
+      ...(failedInvitations.length > 0 && { failedInvitations }),
+    };
   }
 }

@@ -4,6 +4,7 @@ import { verifySync } from "otplib";
 import { prisma } from "@/lib/db/prisma";
 import { redis } from "@/lib/db/redis/storage";
 import { auth } from "@/lib/next-auth/auth";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -12,35 +13,63 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = session.user.uuid;
+  const reqCtx = await getRequestContext();
   const { code } = (await req.json()) as { code: string };
 
   if (!code) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "codeRequired", userId }, reqCtx);
     return NextResponse.json({ error: "Code required" }, { status: 400 });
   }
 
   const secret = await redis.getItem<string>(`otp:setup:${userId}`);
   if (!secret) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "setupExpired", userId }, reqCtx);
     return NextResponse.json({ error: "Setup expired" }, { status: 400 });
   }
 
   const result = verifySync({ token: code, secret });
   if (!result.valid) {
+    audit({ action: AuditAction.TWO_FACTOR_OTP_SETUP, success: false, error: "invalidCode", userId }, reqCtx);
     return NextResponse.json({ error: "Invalid code" }, { status: 400 });
   }
 
-  // Store secret in DB, mark OTP as verified, and clear grace period deadline
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      otpSecret: secret,
-      otpVerifiedAt: new Date(),
-      twoFactorEnabled: true,
-      twoFactorDeadline: null,
-    },
-  });
+  try {
+    // Store secret in DB, mark OTP as verified, and clear grace period deadline
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        otpSecret: secret,
+        otpVerifiedAt: new Date(),
+        twoFactorEnabled: true,
+        twoFactorDeadline: null,
+      },
+    });
 
-  // Clean up temporary secret
-  await redis.removeItem(`otp:setup:${userId}`);
+    // Clean up temporary secret
+    await redis.removeItem(`otp:setup:${userId}`);
 
-  return NextResponse.json({ verified: true });
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_OTP_SETUP,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
+    return NextResponse.json({ verified: true });
+  } catch (error) {
+    audit(
+      {
+        action: AuditAction.TWO_FACTOR_OTP_SETUP,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
+    return NextResponse.json({ error: "Setup failed" }, { status: 500 });
+  }
 }

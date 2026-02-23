@@ -328,3 +328,36 @@ $postStatusColor: (
 .ps tr {
     --muted: var(--background-alt-grey) !important;
 }
+
+/* Consent management button — style as DSFR secondary button when outside footer */
+.consent-btn-wrapper {
+    display: inline-block;
+
+    .fr-footer__bottom-link {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--text-action-high-blue-france);
+        background-color: transparent;
+        box-shadow: inset 0 0 0 1px var(--border-action-high-blue-france);
+
+        &:hover {
+            background-color: var(--background-action-high-blue-france-hover);
+        }
+
+        &:active {
+            background-color: var(--background-action-high-blue-france-active);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--border-action-high-blue-france);
+            outline-offset: 2px;
+        }
+    }
+}

@@ -8,12 +8,7 @@ export const {
   FooterPersonalDataPolicyItem,
   useConsent,
 } = createConsentManagement({
-  finalityDescription: {
-    matomo: {
-      title: "Matomo",
-      description: "Outil d’analyse comportementale des utilisateurs.",
-    },
-  },
+  finalityDescription: () => ({}),
   personalDataPolicyLinkProps: {
     href: "/politique-de-confidentialite#cookies",
   },

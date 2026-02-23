@@ -18,7 +18,7 @@ import { EmailAutocomplete } from "@/dsfr/base/EmailAutocomplete";
 import { FormFieldset } from "@/dsfr/base/FormFieldset";
 
 import { searchUsers } from "../../actions";
-import { createTenant } from "./actions";
+import { type CreateTenantResult, createTenant } from "./actions";
 
 export const CreateTenantForm = () => {
   const router = useRouter();
@@ -27,6 +27,7 @@ export const CreateTenantForm = () => {
   const [pending, setPending] = useState(false);
   const [ownerEmails, setOwnerEmails] = useState<string[]>([]);
   const [emailError, setEmailError] = useState<null | string>(null);
+  const [successResult, setSuccessResult] = useState<CreateTenantResult | null>(null);
 
   const formSchema = z.object({
     name: z.string().min(1, tv("nameRequired")),
@@ -82,13 +83,46 @@ export const CreateTenantForm = () => {
     });
 
     if (result.ok) {
+      if (result.data.failedInvitations?.length) {
+        setPending(false);
+        setSuccessResult(result.data);
+        return;
+      }
       router.push("/admin/tenants");
-    } else if (!result.ok) {
-      setError(result.error);
+      return;
     }
 
+    setError(result.error);
     setPending(false);
   };
+
+  if (successResult?.failedInvitations?.length) {
+    return (
+      <div>
+        <Alert
+          className={fr.cx("fr-mb-2w")}
+          severity="success"
+          title="Tenant créé"
+          description="Le tenant a été créé avec succès."
+        />
+        <Alert
+          className={fr.cx("fr-mb-2w")}
+          severity="warning"
+          title="Certaines invitations ont échoué"
+          description={
+            <ul className={fr.cx("fr-mt-1w")}>
+              {successResult.failedInvitations.map(f => (
+                <li key={f.email}>
+                  <strong>{f.email}</strong> : {f.reason}
+                </li>
+              ))}
+            </ul>
+          }
+        />
+        <Button linkProps={{ href: "/admin/tenants" }}>Retour à la liste des tenants</Button>
+      </div>
+    );
+  }
 
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>

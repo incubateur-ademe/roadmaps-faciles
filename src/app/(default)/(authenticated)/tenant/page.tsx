@@ -33,7 +33,7 @@ const TenantPage = async () => {
 
   return (
     <DsfrPage>
-      <Container>
+      <Container mt="2w">
         <div className={fr.cx("fr-mb-4w")}>
           <div className="flex items-center justify-between">
             <h1 className={fr.cx("fr-mb-0")}>{t("myWorkspaces")}</h1>

@@ -14,6 +14,7 @@ import { sendEmail } from "@/lib/mailer";
 import { userRepo } from "@/lib/repo";
 import { PrismaClientKnownRequestError } from "@/prisma/internal/prismaNamespace";
 import { UpdateUser } from "@/useCases/users/UpdateUser";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertSession } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
 
@@ -29,13 +30,35 @@ interface UpdateProfileData {
 export const updateProfile = async (data: UpdateProfileData): Promise<ServerActionResponse> => {
   const session = await assertSession();
   const t = await getTranslations("serverErrors");
+  const reqCtx = await getRequestContext();
 
   try {
     const useCase = new UpdateUser(userRepo);
     await useCase.execute({ id: session.user.uuid, data });
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+        metadata: { fields: Object.keys(data) },
+      },
+      reqCtx,
+    );
     revalidatePath("/profile");
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+      },
+      reqCtx,
+    );
     if (isUniqueConstraintError(error)) {
       return { ok: false, error: t("emailAlreadyUsed") };
     }
@@ -51,17 +74,38 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
   const session = await assertSession();
   const t = await getTranslations("serverErrors");
   const tEmail = await getTranslations("emails.emLinkConfirm");
+  const reqCtx = await getRequestContext();
 
   try {
     // Vérifier si ce username EM est déjà lié à un autre utilisateur
     const existingUser = await userRepo.findByUsername(username);
     if (existingUser && existingUser.id !== session.user.uuid) {
+      audit(
+        {
+          action: AuditAction.EM_LINK_REQUEST,
+          success: false,
+          error: "emLoginAlreadyLinked",
+          userId: session.user.uuid,
+          metadata: { username },
+        },
+        reqCtx,
+      );
       return { ok: false, error: t("emLoginAlreadyLinked") };
     }
 
     const member = await espaceMembreClient.member.getByUsername(username);
 
     if (!member.isActive) {
+      audit(
+        {
+          action: AuditAction.EM_LINK_REQUEST,
+          success: false,
+          error: "emMemberNotActive",
+          userId: session.user.uuid,
+          metadata: { username },
+        },
+        reqCtx,
+      );
       return { ok: false, error: t("emMemberNotActive") };
     }
 
@@ -104,8 +148,26 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
     const [localPart, domain] = emEmail.split("@");
     const maskedEmail = `${localPart.slice(0, 3)}***@${domain}`;
 
+    audit(
+      {
+        action: AuditAction.EM_LINK_REQUEST,
+        userId: session.user.uuid,
+        metadata: { username },
+      },
+      reqCtx,
+    );
     return { ok: true, data: { emEmail: maskedEmail } };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.EM_LINK_REQUEST,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        metadata: { username },
+      },
+      reqCtx,
+    );
     if (error instanceof EspaceMembreClientMemberNotFoundError) {
       return { ok: false, error: t("emMemberNotFound") };
     }
@@ -115,6 +177,7 @@ export const requestEmLink = async (username: string): Promise<ServerActionRespo
 
 export const unlinkEspaceMembre = async (): Promise<ServerActionResponse> => {
   const session = await assertSession();
+  const reqCtx = await getRequestContext();
 
   try {
     const useCase = new UpdateUser(userRepo);
@@ -126,9 +189,31 @@ export const unlinkEspaceMembre = async (): Promise<ServerActionResponse> => {
         image: null,
       },
     });
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+        metadata: { operation: "unlinkEspaceMembre" },
+      },
+      reqCtx,
+    );
     revalidatePath("/profile");
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+        metadata: { operation: "unlinkEspaceMembre" },
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
@@ -136,6 +221,7 @@ export const unlinkEspaceMembre = async (): Promise<ServerActionResponse> => {
 export const switchToEmEmail = async (): Promise<ServerActionResponse> => {
   const session = await assertSession();
   const t = await getTranslations("serverErrors");
+  const reqCtx = await getRequestContext();
 
   try {
     if (!session.user.isBetaGouvMember) {
@@ -166,9 +252,31 @@ export const switchToEmEmail = async (): Promise<ServerActionResponse> => {
       data: { email: emEmail },
     });
 
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+        metadata: { operation: "switchToEmEmail" },
+      },
+      reqCtx,
+    );
     revalidatePath("/profile");
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.PROFILE_UPDATE,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        targetType: "User",
+        targetId: session.user.uuid,
+        metadata: { operation: "switchToEmEmail" },
+      },
+      reqCtx,
+    );
     if (isUniqueConstraintError(error)) {
       return { ok: false, error: t("emailAlreadyUsed") };
     }
@@ -180,6 +288,7 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
   const session = await assertSession();
   const userId = session.user.uuid;
   const t = await getTranslations("serverErrors");
+  const reqCtx = await getRequestContext();
 
   try {
     const anonymousEmail = `deleted-${crypto.randomUUID()}@anonymous.local`;
@@ -218,8 +327,28 @@ export const deleteAccount = async (): Promise<ServerActionResponse> => {
       await tx.follow.deleteMany({ where: { userId } });
     });
 
+    audit(
+      {
+        action: AuditAction.ACCOUNT_DELETE,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
     return { ok: true };
   } catch (error) {
+    audit(
+      {
+        action: AuditAction.ACCOUNT_DELETE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        targetType: "User",
+        targetId: userId,
+      },
+      reqCtx,
+    );
     return { ok: false, error: (error as Error).message };
   }
 };
