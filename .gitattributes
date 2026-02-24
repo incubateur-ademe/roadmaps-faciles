@@ -1,0 +1,6 @@
+# Exclude Claude Code / agent files from deploy archives (git archive / scalingo deploy)
+.claude/ export-ignore
+.agents/ export-ignore
+docs/adr/ export-ignore
+CLAUDE.md export-ignore
+CLAUDE.local.md export-ignore
