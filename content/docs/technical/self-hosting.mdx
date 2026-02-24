@@ -359,7 +359,7 @@ Chaque espace de travail peut utiliser un domaine personnalisé en plus de son s
 1. Créez un enregistrement **CNAME** pointant vers le domaine racine de votre instance :
 
 ```text
-feedback.mon-produit.fr.  3600  IN  CNAME  roadmaps.example.com.
+feedback.mon-produit.fr.  3600  IN  CNAME  {{rootDomain}}.
 ```
 
 2. Ajoutez le domaine personnalisé dans l'interface d'administration de l'espace.
