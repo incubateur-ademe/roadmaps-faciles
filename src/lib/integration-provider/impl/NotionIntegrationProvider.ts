@@ -241,9 +241,10 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
     if (propertyMapping.status && post.postStatusId) {
       const statusEntry = Object.values(statusMapping).find(m => m.localId === post.postStatusId);
       if (statusEntry) {
-        properties[propertyMapping.status] = {
-          select: { name: statusEntry.notionName },
-        };
+        properties[propertyMapping.status.name] =
+          propertyMapping.status.type === "status"
+            ? { status: { name: statusEntry.notionName } }
+            : { select: { name: statusEntry.notionName } };
       }
     }
 
@@ -394,9 +395,16 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
 
     // Status
     if (propertyMapping.status) {
-      const statusProp = props[propertyMapping.status];
+      const statusProp = props[propertyMapping.status.name];
       const optionId = extractSelectOptionId(statusProp);
       if (optionId) change.statusNotionOptionId = optionId;
+    }
+
+    // Board
+    if (propertyMapping.board) {
+      const boardProp = props[propertyMapping.board.name];
+      const optionId = extractSelectOptionId(boardProp);
+      if (optionId) change.boardNotionOptionId = optionId;
     }
 
     // Tags

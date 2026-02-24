@@ -2,6 +2,7 @@ import { createIntegrationProvider } from "@/lib/integration-provider";
 import { decrypt } from "@/lib/integration-provider/encryption";
 import { type IntegrationConfig, type PostSyncData } from "@/lib/integration-provider/types";
 import { logger } from "@/lib/logger";
+import { type IBoardRepo } from "@/lib/repo/IBoardRepo";
 import { type IIntegrationMappingRepo } from "@/lib/repo/IIntegrationMappingRepo";
 import { type IIntegrationRepo } from "@/lib/repo/IIntegrationRepo";
 import { type IIntegrationSyncLogRepo } from "@/lib/repo/IIntegrationSyncLogRepo";
@@ -29,6 +30,7 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
     private readonly integrationMappingRepo: IIntegrationMappingRepo,
     private readonly syncLogRepo: IIntegrationSyncLogRepo,
     private readonly postRepo: IPostRepo,
+    private readonly boardRepo: IBoardRepo,
   ) {}
 
   public async execute(input: SyncIntegrationInput): Promise<SyncIntegrationOutput> {
@@ -102,6 +104,13 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
     const boardMappings = Object.values(config.boardMapping);
     const boardIds = boardMappings.map(m => m.localId);
 
+    // Pre-build boardId → slug lookup for comment links
+    const boardSlugMap = new Map<number, string>();
+    for (const boardId of boardIds) {
+      const slug = await this.boardRepo.findSlugById(boardId);
+      if (slug) boardSlugMap.set(boardId, slug);
+    }
+
     // Fetch posts for all mapped boards
     const posts = await this.postRepo.findAllForBoards(boardIds, integration.tenantId);
 
@@ -165,7 +174,7 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
 
           // Update comments and likes fields
           if (syncResult.remoteId) {
-            const boardSlug = post.slug ?? String(post.id);
+            const boardSlug = boardSlugMap.get(post.boardId) ?? String(post.boardId);
             await provider
               .updateCommentsField(
                 syncResult.remoteId,

@@ -5,7 +5,7 @@ import { createIntegrationProvider } from "@/lib/integration-provider";
 import { decrypt } from "@/lib/integration-provider/encryption";
 import { type IntegrationConfig } from "@/lib/integration-provider/types";
 import { logger } from "@/lib/logger";
-import { integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
+import { boardRepo, integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
 import { SyncIntegration } from "@/useCases/integrations/SyncIntegration";
 
 export async function POST(request: Request) {
@@ -35,7 +35,13 @@ export async function POST(request: Request) {
       }
 
       // Run sync
-      const useCase = new SyncIntegration(integrationRepo, integrationMappingRepo, integrationSyncLogRepo, postRepo);
+      const useCase = new SyncIntegration(
+        integrationRepo,
+        integrationMappingRepo,
+        integrationSyncLogRepo,
+        postRepo,
+        boardRepo,
+      );
 
       await useCase.execute({
         integrationId: integration.id,

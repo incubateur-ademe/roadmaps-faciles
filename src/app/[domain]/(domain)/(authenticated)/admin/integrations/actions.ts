@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { type IntegrationConfig } from "@/lib/integration-provider/types";
-import { integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
+import { boardRepo, integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
 import { type TenantIntegration } from "@/prisma/client";
 import { CreateIntegration } from "@/useCases/integrations/CreateIntegration";
 import { DeleteIntegration } from "@/useCases/integrations/DeleteIntegration";
@@ -207,7 +207,13 @@ export const syncIntegration = async (data: {
   const reqCtx = await getRequestContext();
 
   try {
-    const useCase = new SyncIntegration(integrationRepo, integrationMappingRepo, integrationSyncLogRepo, postRepo);
+    const useCase = new SyncIntegration(
+      integrationRepo,
+      integrationMappingRepo,
+      integrationSyncLogRepo,
+      postRepo,
+      boardRepo,
+    );
     const result = await useCase.execute({
       integrationId: data.integrationId,
       tenantId: tenant.id,

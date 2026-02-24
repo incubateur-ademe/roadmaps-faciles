@@ -1,6 +1,7 @@
 import { SyncIntegration } from "@/useCases/integrations/SyncIntegration";
 
 import {
+  createMockBoardRepo,
   createMockIntegrationMappingRepo,
   createMockIntegrationRepo,
   createMockPostRepo,
@@ -8,6 +9,7 @@ import {
   fakeIntegration,
   fakeIntegrationMapping,
   fakePost,
+  type createMockBoardRepo as CreateMockBoardRepo,
   type createMockIntegrationMappingRepo as CreateMockMappingRepo,
   type createMockIntegrationRepo as CreateMockIntegrationRepo,
   type createMockPostRepo as CreateMockPostRepo,
@@ -39,6 +41,7 @@ describe("SyncIntegration", () => {
   let mockMappingRepo: ReturnType<typeof CreateMockMappingRepo>;
   let mockSyncLogRepo: ReturnType<typeof CreateMockSyncLogRepo>;
   let mockPostRepo: ReturnType<typeof CreateMockPostRepo>;
+  let mockBoardRepo: ReturnType<typeof CreateMockBoardRepo>;
   let useCase: SyncIntegration;
 
   const baseInput = { integrationId: 1, tenantId: 1, tenantUrl: "https://test.example.com" };
@@ -48,7 +51,9 @@ describe("SyncIntegration", () => {
     mockMappingRepo = createMockIntegrationMappingRepo();
     mockSyncLogRepo = createMockSyncLogRepo();
     mockPostRepo = createMockPostRepo();
-    useCase = new SyncIntegration(mockIntegrationRepo, mockMappingRepo, mockSyncLogRepo, mockPostRepo);
+    mockBoardRepo = createMockBoardRepo();
+    mockBoardRepo.findSlugById.mockResolvedValue("test-board");
+    useCase = new SyncIntegration(mockIntegrationRepo, mockMappingRepo, mockSyncLogRepo, mockPostRepo, mockBoardRepo);
     mockSyncOutbound.mockReset();
     mockSyncInbound.mockReset();
     mockUpdateCommentsField.mockReset().mockResolvedValue(undefined);

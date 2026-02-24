@@ -77,8 +77,16 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
       <Select
         label={t("statusField")}
         nativeSelectProps={{
-          value: propertyMapping.status ?? "",
-          onChange: e => setPropertyMapping("status", e.target.value || undefined),
+          value: propertyMapping.status?.name ?? "",
+          onChange: e => {
+            const val = e.target.value;
+            if (val) {
+              const prop = selectProps.find(p => p.name === val);
+              setPropertyMapping("status", { name: val, type: (prop?.type as "select" | "status") ?? "select" });
+            } else {
+              setPropertyMapping("status", undefined);
+            }
+          },
         }}
       >
         <option value="">{t("notMapped")}</option>
@@ -92,7 +100,7 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
       {/* Status value mapping */}
       {propertyMapping.status &&
         (() => {
-          const statusProp = selectProps.find(p => p.name === propertyMapping.status);
+          const statusProp = selectProps.find(p => p.name === propertyMapping.status?.name);
           if (!statusProp?.options) return null;
           return (
             <div className="fr-ml-4w fr-mb-3w">
@@ -184,11 +192,14 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
       <Select
         label={t("boardField")}
         nativeSelectProps={{
+          value: propertyMapping.board?.name ?? "",
           onChange: e => {
-            const propName = e.target.value;
-            // Store the property name for board mapping reference
-            if (propName) {
-              // Reset board mapping when property changes
+            const val = e.target.value;
+            if (val) {
+              const prop = selectProps.find(p => p.name === val);
+              setPropertyMapping("board", { name: val, type: (prop?.type as "select" | "status") ?? "select" });
+            } else {
+              setPropertyMapping("board", undefined);
             }
           },
         }}
@@ -196,39 +207,44 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
         <option value="">{t("notMapped")}</option>
         {selectProps.map(p => (
           <option key={p.id} value={p.name}>
-            {p.name}
+            {p.name} ({p.type})
           </option>
         ))}
       </Select>
 
-      {/* Board value mapping would go here — similar to status value mapping */}
-      {boards.length > 0 && selectProps.length > 0 && selectProps[0]?.options && (
-        <div className="fr-ml-4w fr-mb-3w">
-          <h5>{t("boardValues")}</h5>
-          {selectProps[0].options.map(opt => (
-            <Select
-              key={opt.id}
-              label={opt.name}
-              nativeSelectProps={{
-                value: boardMapping[opt.id]?.localId ?? "",
-                onChange: e => {
-                  const localId = Number(e.target.value);
-                  if (localId) {
-                    setBoardMapping(opt.id, { localId, notionName: opt.name });
-                  }
-                },
-              }}
-            >
-              <option value="">{t("notMapped")}</option>
-              {boards.map(b => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
+      {/* Board value mapping — from the selected board property */}
+      {propertyMapping.board &&
+        (() => {
+          const boardProp = selectProps.find(p => p.name === propertyMapping.board?.name);
+          if (!boardProp?.options) return null;
+          return (
+            <div className="fr-ml-4w fr-mb-3w">
+              <h5>{t("boardValues")}</h5>
+              {boardProp.options.map(opt => (
+                <Select
+                  key={opt.id}
+                  label={opt.name}
+                  nativeSelectProps={{
+                    value: boardMapping[opt.id]?.localId ?? "",
+                    onChange: e => {
+                      const localId = Number(e.target.value);
+                      if (localId) {
+                        setBoardMapping(opt.id, { localId, notionName: opt.name });
+                      }
+                    },
+                  }}
+                >
+                  <option value="">{t("notMapped")}</option>
+                  {boards.map(b => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </Select>
               ))}
-            </Select>
-          ))}
-        </div>
-      )}
+            </div>
+          );
+        })()}
     </div>
   );
 };

@@ -34,11 +34,14 @@ export interface RemoteDatabaseSchema {
   properties: RemoteProperty[];
 }
 
+export type MappedPropertyType = "select" | "status";
+
 export interface PropertyMappingConfig {
+  board?: { name: string; type: MappedPropertyType };
   commentsInfo?: string;
   description?: { name: string; type: "property" } | { type: "page_content" };
   likes?: string;
-  status?: string;
+  status?: { name: string; type: MappedPropertyType };
   tags?: string;
   title: string;
 }
