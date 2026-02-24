@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { type User } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -9,6 +8,7 @@ import { type ReactElement } from "react";
 import { MarkdownAsync } from "react-markdown";
 
 import { LikeButton } from "@/components/Board/LikeButton";
+import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
 import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
@@ -22,6 +22,7 @@ import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { type EnrichedPost } from "../../board/[boardSlug]/actions";
 import { DomainPageHOP } from "../../DomainPage";
+import { uploadImage } from "../../upload-image";
 import { PostTimeline } from "./_timeline/PostTimeline";
 import { PostEditToggle } from "./PostEditToggle";
 
@@ -219,14 +220,9 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         </Text>
       </PostEditToggle>
       {allowComments && (
-        <Input
-          textArea
-          label={t("addComment")}
-          classes={{
-            nativeInputOrTextArea: "resize-y",
-          }}
-          className={fr.cx("fr-mt-2w")}
-        />
+        <div className={fr.cx("fr-mt-2w")}>
+          <MarkdownEditor label={t("addComment")} uploadImageAction={uploadImage} />
+        </div>
       )}
       {isModal ? (
         <>
