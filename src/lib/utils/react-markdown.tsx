@@ -12,6 +12,10 @@ export const reactMarkdownConfig: Options = {
     ["search-mark" as "div"]: ({ children }) => {
       return <mark>{children}</mark>;
     },
+    img: ({ src, alt }) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto", borderRadius: "4px" }} />
+    ),
   },
 };
 
