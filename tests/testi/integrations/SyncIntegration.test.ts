@@ -379,6 +379,7 @@ describe("SyncIntegration", () => {
       expect(mockMappingRepo.update).toHaveBeenCalledWith(8, expect.objectContaining({ syncStatus: "CONFLICT" }));
       expect(mockPostRepo.update).not.toHaveBeenCalled();
       expect(result.synced).toBe(0);
+      expect(result.conflicts).toBe(1);
     });
   });
 

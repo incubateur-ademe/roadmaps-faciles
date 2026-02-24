@@ -47,19 +47,24 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
 
     const result: SyncIntegrationOutput = { synced: 0, errors: 0, conflicts: 0 };
 
+    let currentPhase: SyncDirection = SyncDirection.OUTBOUND;
+
     try {
       const direction = decryptedConfig.syncDirection;
 
       if (direction === "outbound" || direction === "bidirectional") {
+        currentPhase = SyncDirection.OUTBOUND;
         const outResult = await this.syncOutbound(integration, decryptedConfig, provider, input.tenantUrl);
         result.synced += outResult.synced;
         result.errors += outResult.errors;
       }
 
       if (direction === "inbound" || direction === "bidirectional") {
+        currentPhase = SyncDirection.INBOUND;
         const inResult = await this.syncInbound(integration, decryptedConfig, provider);
         result.synced += inResult.synced;
         result.errors += inResult.errors;
+        result.conflicts += inResult.conflicts;
       }
 
       // Update last sync cursor and timestamp
@@ -74,7 +79,7 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
       // Batch-level error
       await this.syncLogRepo.create({
         integrationId: integration.id,
-        direction: SyncDirection.OUTBOUND,
+        direction: currentPhase,
         status: SyncLogStatus.ERROR,
         message: (error as Error).message,
       });
@@ -120,6 +125,8 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
           }
         }
 
+        const { comments: commentCount, likes: likeCount } = await this.getPostCounts(post.id);
+
         const postData: PostSyncData = {
           postId: post.id,
           title: post.title,
@@ -128,8 +135,8 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
           postStatusId: post.postStatusId,
           tags: post.tags,
           slug: post.slug,
-          commentCount: await this.getCommentCount(post.id),
-          likeCount: await this.getLikeCount(post.id),
+          commentCount,
+          likeCount,
           tenantUrl,
         };
 
@@ -215,9 +222,10 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
     integration: TenantIntegration,
     config: IntegrationConfig,
     provider: ReturnType<typeof createIntegrationProvider>,
-  ): Promise<{ errors: number; synced: number }> {
+  ): Promise<{ conflicts: number; errors: number; synced: number }> {
     let synced = 0;
     let errors = 0;
+    let conflicts = 0;
 
     const since = config.lastSyncCursor ? new Date(config.lastSyncCursor) : undefined;
     const changes = await provider.syncInbound(since);
@@ -270,6 +278,7 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
                 status: SyncLogStatus.CONFLICT,
                 message: `Conflict detected for post ${existingMapping.localId}`,
               });
+              conflicts++;
               continue;
             }
           }
@@ -329,16 +338,11 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
       }
     }
 
-    return { synced, errors };
+    return { synced, errors, conflicts };
   }
 
-  private async getCommentCount(postId: number): Promise<number> {
+  private async getPostCounts(postId: number): Promise<{ comments: number; likes: number }> {
     const counts = await this.postRepo.getPostCounts(postId);
-    return counts.comments;
-  }
-
-  private async getLikeCount(postId: number): Promise<number> {
-    const counts = await this.postRepo.getPostCounts(postId);
-    return counts.likes;
+    return { comments: counts.comments, likes: counts.likes };
   }
 }

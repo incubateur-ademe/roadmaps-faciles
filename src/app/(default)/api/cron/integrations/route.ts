@@ -36,8 +36,6 @@ export async function POST(request: Request) {
 
       // Run sync
       const useCase = new SyncIntegration(integrationRepo, integrationMappingRepo, integrationSyncLogRepo, postRepo);
-      const tenant = await integrationRepo.findById(integration.id);
-      if (!tenant) continue;
 
       await useCase.execute({
         integrationId: integration.id,
