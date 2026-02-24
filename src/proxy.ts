@@ -44,6 +44,21 @@ export function proxy(req: NextRequest) {
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
   let hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
 
+  // Canonical redirect: platform default domain → configured site URL
+  // When PLATFORM_DOMAIN is set (e.g. "scalingo.io"), requests on that domain are redirected.
+  // Skips review apps where rootDomain IS the platform domain, and API routes (health checks).
+  if (appConfig.platformDomain && !pathname.startsWith("/api/")) {
+    const hostnameWithoutPort = hostname.replace(/:\d+$/, "");
+    const rootDomainWithoutPort = appConfig.rootDomain.replace(/:\d+$/, "");
+    if (
+      hostnameWithoutPort.endsWith(`.${appConfig.platformDomain}`) &&
+      hostnameWithoutPort !== rootDomainWithoutPort
+    ) {
+      const redirectUrl = new URL(`${pathname}${url.search}`, appConfig.host);
+      return withCorrelationId(req, NextResponse.redirect(redirectUrl, 301));
+    }
+  }
+
   // experimental: support for Chrome DevTools
   if (req.url.includes("/.well-known/appspecific/com.chrome.devtools.json") && appConfig.env === "dev") {
     return NextResponse.json({
