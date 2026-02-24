@@ -492,6 +492,22 @@
     "legalNotice": "Mentions légales",
     "license": "Sauf mention contraire, tous les contenus de ce site sont sous <a>licence Apache 2.0</a>"
   },
+  "editor": {
+    "bold": "Gras",
+    "italic": "Italique",
+    "heading": "Titre",
+    "list": "Liste",
+    "orderedList": "Liste ordonnée",
+    "quote": "Citation",
+    "code": "Code",
+    "link": "Lien",
+    "image": "Image",
+    "preview": "Aperçu",
+    "previewEmpty": "Rien à afficher.",
+    "placeholder": "Écrivez en Markdown…",
+    "uploading": "Upload en cours…",
+    "markdownSupported": "Markdown supporté"
+  },
   "consent": {
     "matomoTitle": "Matomo",
     "matomoDescription": "Outil d'analyse comportementale des utilisateurs."
@@ -523,7 +539,11 @@
     "accountNotLinkedToEm": "Votre compte n'est pas lié à l'Espace Membre.",
     "noEmUsername": "Aucun username Espace Membre trouvé.",
     "emailAlreadySameAsEm": "Votre e-mail est déjà identique à celui de l'Espace Membre.",
-    "lastOwnerCannotDelete": "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte."
+    "lastOwnerCannotDelete": "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte.",
+    "uploadFailed": "L'upload a échoué.",
+    "uploadTooLarge": "Le fichier est trop volumineux (max {max} Mo).",
+    "uploadInvalidType": "Type de fichier non supporté. Types autorisés : PNG, JPG, GIF, WebP.",
+    "uploadInvalidFile": "Fichier invalide."
   },
   "profile": {
     "title": "Mon profil",

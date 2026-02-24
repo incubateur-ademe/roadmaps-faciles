@@ -146,6 +146,18 @@ export const config = {
       return this.sentryServerDsn || this.sentryDsn;
     },
   },
+  storageProvider: {
+    type: ensureApiEnvVar<"noop" | "s3">(process.env.STORAGE_PROVIDER, "noop"),
+    maxFileSizeMb: ensureApiEnvVar(process.env.STORAGE_MAX_FILE_SIZE_MB, Number, 5),
+    s3: {
+      endpoint: ensureApiEnvVar(process.env.STORAGE_S3_ENDPOINT, ""),
+      region: ensureApiEnvVar(process.env.STORAGE_S3_REGION, "us-east-1"),
+      bucket: ensureApiEnvVar(process.env.STORAGE_S3_BUCKET, ""),
+      accessKeyId: ensureApiEnvVar(process.env.STORAGE_S3_ACCESS_KEY_ID, ""),
+      secretAccessKey: ensureApiEnvVar(process.env.STORAGE_S3_SECRET_ACCESS_KEY, ""),
+      publicUrl: ensureApiEnvVar(process.env.STORAGE_S3_PUBLIC_URL, ""),
+    },
+  },
   dnsProvider: {
     type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
     zoneName: ensureApiEnvVar(process.env.DNS_ZONE_NAME, ""),

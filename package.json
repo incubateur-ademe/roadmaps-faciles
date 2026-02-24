@@ -44,6 +44,8 @@
   "dependencies": {
     "@auth/core": "^0.41.1",
     "@auth/prisma-adapter": "^2.11.1",
+    "@aws-sdk/client-s3": "^3.996.0",
+    "@aws-sdk/s3-request-presigner": "^3.996.0",
     "@codegouvfr/react-dsfr": "^1.31.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

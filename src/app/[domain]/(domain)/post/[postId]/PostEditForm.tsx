@@ -6,10 +6,13 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
+import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
+
+import { uploadImage } from "../../upload-image";
 import { updatePost } from "./actions";
 
 const editSchema = z.object({
@@ -37,6 +40,7 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<EditFormType>({
     resolver: standardSchemaResolver(editSchema),
@@ -46,6 +50,13 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
       description: description ?? "",
     },
   });
+
+  const handleDescriptionChangeAction = useCallback(
+    (value: string) => {
+      setValue("description", value, { shouldDirty: true });
+    },
+    [setValue],
+  );
 
   const onSubmit = async (data: EditFormType) => {
     setError(null);
@@ -67,11 +78,11 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
         state={errors.title ? "error" : "default"}
         stateRelatedMessage={errors.title?.message}
       />
-      <Input
-        textArea
+      <MarkdownEditor
         label={t("editDescription")}
-        nativeTextAreaProps={register("description")}
-        classes={{ nativeInputOrTextArea: "resize-y" }}
+        defaultValue={description ?? ""}
+        onChangeAction={handleDescriptionChangeAction}
+        uploadImageAction={uploadImage}
       />
       {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
       <span className="flex gap-[1rem]">

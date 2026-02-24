@@ -14,3 +14,8 @@ export const reactMarkdownConfig: Options = {
     },
   },
 };
+
+export const reactMarkdownPreviewConfig: Options = {
+  remarkPlugins: [remarkGfm, remarkDirective, remarkDirectiveRehype],
+  components: reactMarkdownConfig.components,
+};

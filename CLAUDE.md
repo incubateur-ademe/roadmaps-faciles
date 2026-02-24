@@ -28,6 +28,9 @@
 - PostgreSQL 15 → `localhost:5432` (db: roadmaps-faciles, user/pass: postgres/postgres)
 - Redis → `localhost:6379`
 - Maildev SMTP → `localhost:1025` (web UI: localhost:1080)
+- MinIO S3 → `localhost:9000` (API) / `localhost:9001` (console UI, user/pass: minioadmin/minioadmin)
+  - Bucket `roadmaps-faciles` créé automatiquement par `minio-init` (healthcheck-based)
+  - Public URL: `http://localhost:9000/roadmaps-faciles`
 - Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
@@ -89,6 +92,18 @@
   - Health check: `/api/healthz` route handler (JSON, checks DB + Redis, 200/503)
   - Server-side `console.*` → use `logger` from `@/lib/logger`; client-side `console.error` stays (Sentry captures automatically)
 - Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
+- Storage providers: `src/lib/storage-provider/` — `IStorageProvider` abstraction + factory `getStorageProvider()` (noop, s3)
+  - Config: `config.storageProvider` in `src/config.ts` — `STORAGE_PROVIDER`, `STORAGE_S3_*` env vars
+  - S3 impl: `@aws-sdk/client-s3` — PutObject/DeleteObject, `forcePathStyle: true` for MinIO compatibility
+  - Upload: `uploadImage()` server action in `src/app/[domain]/(domain)/upload-image.ts` — auth + tenant-scoped, file type/size validation, audit trail
+  - Key structure: `tenants/{tenantId}/images/{uuid}.{ext}` — images served from S3 public URL
+  - CSP: `img-src` in `next.config.ts` dynamically includes `STORAGE_S3_PUBLIC_URL` host
+- Markdown editor: `MarkdownEditor` component in `src/dsfr/base/client/MarkdownEditor.tsx`
+  - Toolbar: bold, italic, heading, list, ordered list, quote, code, link, image upload
+  - Keyboard shortcuts: Ctrl+B (bold), Ctrl+I (italic)
+  - Preview toggle: `reactMarkdownPreviewConfig` in `src/lib/utils/react-markdown.tsx` (full paragraph rendering)
+  - Image upload: drag & drop, clipboard paste, file picker → `uploadImage()` server action → `![alt](url)` insertion
+  - Used in `SubmitPostForm` and `PostEditForm` — replaces plain `<Input textArea>`
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
   - `DNS_ZONE_NAME` env var: when zone differs from rootDomain (nested subdomains), `computeDnsNames()` in `src/lib/dns-provider/dnsUtils.ts` computes zone-relative subdomain
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
@@ -112,7 +127,7 @@
   - i18n: `getEmailTranslations()` in `src/emails/getEmailTranslations.ts` — standalone (loads JSON directly, no next-intl server context dependency)
 - i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
   - Config: `src/i18n/request.ts` (reads `NEXT_LOCALE` cookie), utils/types in `src/lib/utils/i18n.ts`
-  - Messages: `messages/fr.json` + `messages/en.json` — 23 namespaces, ICU plural syntax supported
+  - Messages: `messages/fr.json` + `messages/en.json` — 24 namespaces, ICU plural syntax supported
   - Navigation: `src/i18n/navigation.tsx` — simple re-exports from `next/link` / `next/navigation` (no locale prefix)
   - Server components/actions: `await getTranslations("namespace")` + `await getLocale()` from `next-intl/server`
   - Client components: `useTranslations("namespace")` + `useLocale()` from `next-intl`
@@ -241,4 +256,5 @@
 - Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
 - release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
 - GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
+- File upload MIME type: `file.type` from `FormData` is client-controlled — server validates against `ALLOWED_TYPES` set but does NOT check magic bytes. A `file-type` npm package could be added for magic bytes validation if stricter security is needed
 - Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)

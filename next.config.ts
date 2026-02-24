@@ -32,7 +32,12 @@ const csp = {
   ].flat(),
   "font-src": ["'self'"],
   "media-src": ["'self'"],
-  "img-src": ["'self'", "data:", "espace-membre.incubateur.net"],
+  "img-src": [
+    "'self'",
+    "data:",
+    "espace-membre.incubateur.net",
+    process.env.STORAGE_S3_PUBLIC_URL && new URL(process.env.STORAGE_S3_PUBLIC_URL).host,
+  ].flat(),
   "script-src": [
     "'self'",
     "'unsafe-inline'",
@@ -113,6 +118,16 @@ const config: NextConfig = {
         port: "",
         search: "",
       },
+      ...(process.env.STORAGE_S3_PUBLIC_URL
+        ? [
+            {
+              protocol: new URL(process.env.STORAGE_S3_PUBLIC_URL).protocol.replace(":", "") as "http" | "https",
+              hostname: new URL(process.env.STORAGE_S3_PUBLIC_URL).hostname,
+              port: new URL(process.env.STORAGE_S3_PUBLIC_URL).port,
+              pathname: "/**",
+            },
+          ]
+        : []),
     ],
   },
 
