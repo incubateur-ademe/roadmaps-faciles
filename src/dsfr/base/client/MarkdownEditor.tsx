@@ -4,7 +4,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useTranslations } from "next-intl";
-import { Fragment, type DragEvent, type KeyboardEvent, useCallback, useId, useRef, useState } from "react";
+import { Fragment, type DragEvent, type KeyboardEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { MarkdownHooks } from "react-markdown";
 
 import { reactMarkdownPreviewConfig } from "@/utils/react-markdown";
@@ -37,8 +37,15 @@ export const MarkdownEditor = ({
   const [previewEnabled, setPreviewEnabled] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
+
+  useEffect(() => {
+    if (!uploadError) return;
+    const timer = setTimeout(() => setUploadError(null), 5000);
+    return () => clearTimeout(timer);
+  }, [uploadError]);
 
   const updateValue = useCallback(
     (newValue: string) => {
@@ -70,6 +77,7 @@ export const MarkdownEditor = ({
       if (!ALLOWED_TYPES.has(file.type)) return;
 
       setUploading(true);
+      setUploadError(null);
       try {
         const formData = new FormData();
         formData.set("file", file);
@@ -90,12 +98,16 @@ export const MarkdownEditor = ({
             textarea.focus();
             textarea.setSelectionRange(cursorStart, cursorEnd);
           });
+        } else if (result.error) {
+          setUploadError(result.error);
         }
+      } catch {
+        setUploadError(t("uploadFailed"));
       } finally {
         setUploading(false);
       }
     },
-    [uploadImageAction, updateValue],
+    [t, uploadImageAction, updateValue],
   );
 
   const handleKeyDown = useCallback(
@@ -200,6 +212,9 @@ export const MarkdownEditor = ({
 
           <div className="ml-auto flex items-center">
             {uploading && <span className={styles.uploading}>{t("uploading")}</span>}
+            {uploadError && (
+              <span className={cx(styles.uploading, "text-[var(--text-default-error)]")}>{uploadError}</span>
+            )}
             <ToggleSwitch
               className="mb-0"
               label={

@@ -506,6 +506,7 @@
     "previewEmpty": "Nothing to display.",
     "placeholder": "Write in Markdown…",
     "uploading": "Uploading…",
+    "uploadFailed": "Upload failed.",
     "markdownSupported": "Markdown supported"
   },
   "consent": {
