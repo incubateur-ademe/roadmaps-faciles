@@ -46,14 +46,12 @@ export function proxy(req: NextRequest) {
 
   // Canonical redirect: platform default domain → configured site URL
   // When PLATFORM_DOMAIN is set (e.g. "scalingo.io"), requests on that domain are redirected.
-  // Skips review apps where rootDomain IS the platform domain, and API routes (health checks).
+  // Skips review apps where rootDomain is on the platform domain, and API routes (health checks).
   if (appConfig.platformDomain && !pathname.startsWith("/api/")) {
     const hostnameWithoutPort = hostname.replace(/:\d+$/, "");
     const rootDomainWithoutPort = appConfig.rootDomain.replace(/:\d+$/, "");
-    if (
-      hostnameWithoutPort.endsWith(`.${appConfig.platformDomain}`) &&
-      hostnameWithoutPort !== rootDomainWithoutPort
-    ) {
+    const rootOnPlatformDomain = rootDomainWithoutPort.endsWith(`.${appConfig.platformDomain}`);
+    if (!rootOnPlatformDomain && hostnameWithoutPort.endsWith(`.${appConfig.platformDomain}`)) {
       const redirectUrl = new URL(`${pathname}${url.search}`, appConfig.host);
       return withCorrelationId(req, NextResponse.redirect(redirectUrl, 301));
     }
