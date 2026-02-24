@@ -64,6 +64,7 @@ Créer `.env.development.local` à partir de `.env.development` et renseigner si
 |---|---|---|
 | `APP_ENV` | Environnement applicatif (`dev`, `prod`, `review`, `staging`) | `dev` |
 | `MAINTENANCE_MODE` | Active le mode maintenance | `false` |
+| `PLATFORM_DOMAIN` | Domaine de la plateforme d'hébergement (ex: `scalingo.io`) — redirige les requêtes vers `NEXT_PUBLIC_SITE_URL` | — |
 | `NEXT_PUBLIC_SITE_URL` | URL publique du site principal | `http://localhost:3000` |
 | `NEXT_PUBLIC_REPOSITORY_URL` | URL du dépôt Git | `https://github.com/incubateur-ademe/roadmaps-faciles` |
 | `NEXT_PUBLIC_APP_VERSION` | Version affichée (auto en CI) | `dev` |

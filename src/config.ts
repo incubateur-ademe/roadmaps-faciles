@@ -22,6 +22,7 @@ export const config = {
     maxRepliesPerComment: ensureApiEnvVar(process.env.SEED_MAX_REPLIES_PER_COMMENT, Number, 8),
   },
   maintenance: ensureApiEnvVar(process.env.MAINTENANCE_MODE, isTruthy, false),
+  platformDomain: ensureApiEnvVar(process.env.PLATFORM_DOMAIN, ""),
   host: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
   get rootDomain() {
     return this.host.replace(/^(https?:\/\/)?(www\.)?/, "");

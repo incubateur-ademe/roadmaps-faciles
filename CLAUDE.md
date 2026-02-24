@@ -215,6 +215,7 @@
 - `pino` and `pino-pretty` must be in `serverExternalPackages` in `next.config.ts` — Turbopack cannot bundle them
 - `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
 - Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
+- Canonical redirect: `PLATFORM_DOMAIN` env var (e.g. `scalingo.io`) — proxy 301-redirects platform default domain to `NEXT_PUBLIC_SITE_URL`; skips `/api/` routes and review apps where rootDomain IS the platform domain; empty = disabled
 - DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
 - Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
 - Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
@@ -226,4 +227,6 @@
 - `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
 - DSFR theme persistence: stored in localStorage key `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs on `<html>` — persists across navigations, must be explicitly forced in Playwright/automation scripts
 - Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
+- release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
+- GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
 - Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)
