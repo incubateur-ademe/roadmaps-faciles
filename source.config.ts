@@ -7,7 +7,7 @@ export const docs = defineDocs({
 // --- Remark plugin: replaces {{variableName}} placeholders in MDX content ---
 
 interface MdastNode {
-  children?: Array<MdastNode>;
+  children?: MdastNode[];
   url?: string;
   value?: string;
 }
@@ -17,7 +17,7 @@ const mdxVariables: Record<string, string> = {
 };
 
 function replaceVars(text: string): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (match, key) => mdxVariables[key] ?? match);
+  return text.replace(/\{\{(\w+)\}\}/g, (match, key: string) => mdxVariables[key] ?? match);
 }
 
 function walkMdast(node: MdastNode) {
