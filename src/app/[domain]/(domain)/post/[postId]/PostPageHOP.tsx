@@ -13,6 +13,7 @@ import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
+import { integrationMappingRepo } from "@/lib/repo";
 import { type Activity, type Board } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
@@ -127,9 +128,16 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
 
     const alreadyLiked = post.likes.some(like => session?.user.id === like.userId || like.anonymousId === anonymousId);
 
+    // Fetch integration mapping for "View on Notion" link
+    const postMappings = await integrationMappingRepo.findMappingsForPost(post.id);
+    const notionMapping = postMappings.find(m => m.remoteUrl);
+    const isInbound = postMappings.some(
+      m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
+    );
+
     let canEdit = false;
     let canDelete = false;
-    if (session?.user) {
+    if (session?.user && !isInbound) {
       const isAuthor = post.userId && post.userId === session.user.uuid;
       if (isAuthor && settings.allowPostEdits) {
         canEdit = true;
@@ -154,6 +162,7 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       allowVoting: settings.allowVoting,
       allowAnonymousVoting: settings.allowAnonymousVoting,
       allowComments: settings.allowComments,
+      notionUrl: isAdmin && notionMapping ? notionMapping.remoteUrl : undefined,
     });
   });
 
@@ -167,12 +176,13 @@ export interface PostPageComponentProps {
   canDelete: boolean;
   canEdit: boolean;
   isModal?: boolean;
+  notionUrl?: null | string;
   post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;
 }
 
 export const PostPageComponent = async (props: PostPageComponentProps) => {
-  const { post, allowComments, canEdit, canDelete, boardSlug, isModal } = props;
+  const { post, allowComments, canEdit, canDelete, boardSlug, isModal, notionUrl } = props;
   const [t, locale] = await Promise.all([getTranslations("post"), getLocale()]);
 
   return (
@@ -189,6 +199,13 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
             {tag}
           </Tag>
         ))}
+        {notionUrl && (
+          <a href={notionUrl} target="_blank" rel="noopener noreferrer">
+            <Badge severity="info" noIcon>
+              {t("viewOnNotion")}
+            </Badge>
+          </a>
+        )}
       </span>
       <Text mt="2w">
         {t.rich("addedBy", {

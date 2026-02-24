@@ -172,4 +172,9 @@ export const config = {
       apiKey: ensureApiEnvVar(process.env.DNS_CLOUDFLARE_API_KEY, ""),
     },
   },
+  integrations: {
+    encryptionKey: ensureApiEnvVar(process.env.INTEGRATION_ENCRYPTION_KEY, ""),
+    cronManager: ensureApiEnvVar<"noop" | "route">(process.env.INTEGRATION_CRON_MANAGER, "noop"),
+    cronSecret: ensureApiEnvVar(process.env.INTEGRATION_CRON_SECRET, ""),
+  },
 } as const;

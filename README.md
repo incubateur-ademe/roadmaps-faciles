@@ -225,6 +225,16 @@ Logging structuré (Pino) et error tracking (Sentry) optionnel. Voir `docs/adr/0
 | `SENTRY_PROJECT` | Projet Sentry | — |
 | `LOG_LEVEL` | Niveau de log Pino (`trace`, `debug`, `info`, `warn`, `error`, `fatal`, `silent`) | `debug` |
 
+#### Intégrations tierces (Notion)
+
+Variables pour le framework d'intégrations tierces (connecteur Notion). Voir `docs/adr/` pour les décisions architecturales.
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `INTEGRATION_ENCRYPTION_KEY` | **Obligatoire en prod.** Clé de chiffrement AES-256-GCM pour les clés API des intégrations (≥ 32 caractères) | — |
+| `INTEGRATION_CRON_MANAGER` | Type de cron manager (`noop`, `route`) | `noop` |
+| `INTEGRATION_CRON_SECRET` | Secret Bearer pour le endpoint cron `/api/cron/integrations` | — |
+
 #### Seed (dev uniquement)
 
 Variables utilisées uniquement par le script de seed (`pnpm prisma db seed`).
@@ -334,6 +344,7 @@ Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passe
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
 /src/useCases               # Logique métier (use cases DDD)
 /src/emails                 # Templates email react-email (DSFR Mail)
+/src/lib/integration-provider # Connecteurs tiers (Notion) — provider pattern
 /src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
 /tests/testu                # Tests unitaires (Vitest)
 /tests/testi                # Tests d'intégration (use cases, mocks)

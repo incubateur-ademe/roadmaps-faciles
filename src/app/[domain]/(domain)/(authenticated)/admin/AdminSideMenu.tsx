@@ -117,6 +117,11 @@ export const AdminSideMenu = () => {
       isActive: currentPage === "webhooks",
     },
     {
+      text: t("integrations"),
+      linkProps: { href: `/admin/integrations` },
+      isActive: currentPage.startsWith("integrations"),
+    },
+    {
       text: t("users"),
       linkProps: { href: `/admin/users` },
       isActive: currentPage.startsWith("users"),

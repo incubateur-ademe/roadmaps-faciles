@@ -21,6 +21,27 @@
 - [ ] Notifications in-app et email, préférences par utilisateur (#74)
 - [ ] Widget feedback embarquable SDK JS (#75)
 - [ ] Framework d'intégrations : Notion, Trello, projets.numerique.gouv.fr (#76)
+  - [x] Architecture provider-pattern (IIntegrationProvider, factory, types)
+  - [x] Notion SDK v5.9.0 : provider complet (testConnection, syncOutbound, syncInbound, readPageContent)
+  - [x] Encryption AES-256-GCM des clés API (scrypt, salt:iv:tag:ciphertext)
+  - [x] Prisma models : TenantIntegration, IntegrationMapping, IntegrationSyncLog
+  - [x] Repos + interfaces : IIntegrationRepo, IIntegrationMappingRepo, IIntegrationSyncLogRepo
+  - [x] Use cases : Create, Update, Delete, List, Sync, ResolveSyncConflict, GetSyncLogs, TestConnection
+  - [x] Admin UI : liste, wizard (connection → mapping → sync direction → confirm), page détail
+  - [x] Cron route handler POST /api/cron/integrations (Bearer auth)
+  - [x] Inbound readonly : double guard (UI canEdit/canDelete=false + server action reject)
+  - [x] Badge "Voir sur Notion" avec lien pour moderators+
+  - [x] Comment/like counts via PostCounts (IPostRepo.getPostCounts)
+  - [x] Page content blocks (Notion page body → description markdown)
+  - [x] Traductions fr/en (serverErrors.inboundPostReadonly, post.viewOnNotion, admin.integrations.*)
+  - [x] Tests testu : encryption (7 tests)
+  - [x] Tests testi : 7 fichiers, 46 tests (Create, Delete, Update, List, Sync, ResolveSyncConflict, GetSyncLogs)
+  - [x] CI filter : ajout src/lib/integration-provider/** dans test-unit
+  - [ ] Tests E2E : admin pages, inbound readonly guard, badge Notion, cron 401
+  - [ ] Tests DB : repos Prisma (IntegrationRepoPrisma, IntegrationMappingRepoPrisma, IntegrationSyncLogRepoPrisma)
+  - [ ] Wizard : step de sélection de la database Notion (listRemoteDatabases + getRemoteDatabaseSchema)
+  - [ ] Sync bidirectionnel : UI de résolution de conflits dans la page détail
+  - [ ] Cron manager : implémentation réelle (node-cron ou externe)
 - [ ] Espace d'échange : discussions par tenant, conversion Discussion ↔ Post (#77)
 - [ ] Chat opérateur + base de connaissance par tenant, intégration Chatwoot (#78)
 

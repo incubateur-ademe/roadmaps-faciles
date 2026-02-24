@@ -93,6 +93,12 @@
   - `DNS_ZONE_NAME` env var: when zone differs from rootDomain (nested subdomains), `computeDnsNames()` in `src/lib/dns-provider/dnsUtils.ts` computes zone-relative subdomain
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
   - `CreateNewTenantOutput` is `{ tenant: TenantWithSettings, dns?: DnsProvisionResult }` — access `result.tenant.id`, not `result.id`
+- Integration providers: `src/lib/integration-provider/` — `IIntegrationProvider` abstraction + factory `createIntegrationProvider(type, config)` (Notion only for now)
+  - Per-tenant instantiation (not singleton) — each integration gets its own provider instance with decrypted credentials
+  - Encryption: AES-256-GCM with scrypt key derivation in `src/lib/integration-provider/encryption.ts` — env var `INTEGRATION_ENCRYPTION_KEY`
+  - Cron: `POST /api/cron/integrations` route handler with Bearer auth (`INTEGRATION_CRON_SECRET`)
+  - Inbound posts are readonly — double guard: UI (`canEdit=false`/`canDelete=false` in PostPageHOP) + server actions (reject with i18n error)
+  - Notion SDK v5.9.0: uses `dataSources.query()` (not `databases.query()`), `isFullDataSource` type guard, search filter `"data_source"` (not `"database"`)
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
@@ -216,6 +222,8 @@
 - `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
 - Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
 - DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
+- Prisma 7 enums are PascalCase (`IntegrationType`, `SyncDirection`, `SyncLogStatus`) — NOT SCREAMING_SNAKE (`INTEGRATION_TYPE`, `SYNC_DIRECTION`)
+- Prisma JSON fields: `Record<string, unknown>` is not assignable to `Prisma.InputJsonValue` — use `as unknown as Prisma.InputJsonValue` explicit cast
 - Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
 - Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
 - Email templates (`src/emails/`): inline `style={{...}}` is required — email clients don't support external CSS/Tailwind; this is the exception to the "no inline styles" rule
