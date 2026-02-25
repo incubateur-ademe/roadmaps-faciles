@@ -1,5 +1,5 @@
 /**
- * Tracking Plan — AARRR Pirate Metrics
+ * Tracking Plan — AARRI Pirate Metrics (Impact replaces Revenue for public service)
  *
  * Organized by customer lifecycle stage:
  *  1. Acquisition  — how users discover the platform

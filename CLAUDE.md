@@ -102,7 +102,7 @@
   - Client-side: `useTracking()` hook from `TrackingContext.tsx`, `<TrackPageView event={...} />` for page views
   - Server-side: `void trackServerEvent(distinctId, event)` from `@/lib/tracking-provider/serverTracking` — fire-and-forget like `audit()`
   - Server imports: `import { trackServerEvent } from "@/lib/tracking-provider/serverTracking"` (never from barrel `index.ts` — it's client-safe only)
-  - Tracking plan: `trackingPlan.ts` — 24 typed events organized by AARRR (Acquisition → Activation → Engagement → Retention → Referral → Impact)
+  - Tracking plan: `trackingPlan.ts` — 24 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
   - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`
   - Consent: DSFR consent banner with conditional finalities per provider in `src/consentManagement.tsx`
   - Identity sync: `IdentifyUser.tsx` client component — syncs NextAuth session → Sentry user context + tracking provider identify/group
@@ -179,7 +179,7 @@
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
 - After implementing a feature or fix, assess whether tests should be added or updated — flag it to the user with a recommendation on which test layer(s) apply (testu for pure logic, testi for use case behavior, testdb for repo changes, teste2e for user-facing flows)
 - Audit logging: every server action or route handler performing a mutation (create, update, delete, security change) MUST call `audit()` — check `AuditAction` enum for existing actions, propose new enum values if needed. Pattern: `getRequestContext()` before try/catch, `audit()` on success + catch + validation early returns
-- Event tracking: server actions with business-significant mutations should call `void trackServerEvent(distinctId, eventFactory({...}))` after `audit()` on the success path. Check `trackingPlan.ts` for existing events, propose new ones following the `entity.past_tense_verb` convention and AARRR categorization
+- Event tracking: server actions with business-significant mutations should call `void trackServerEvent(distinctId, eventFactory({...}))` after `audit()` on the success path. Check `trackingPlan.ts` for existing events, propose new ones following the `entity.past_tense_verb` convention and AARRI categorization
 
 ## Worktrees (multi-Claude en parallèle)
 - Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
