@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 
 import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { tenantCreated } from "@/lib/tracking-provider/trackingPlan";
 import { CreateNewTenant } from "@/useCases/tenant/CreateNewTenant";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertSession } from "@/utils/auth";
@@ -33,6 +35,11 @@ export const createTenantForUser = async (data: {
         metadata: { ...data },
       },
       reqCtx,
+    );
+
+    void trackServerEvent(
+      session.user.uuid,
+      tenantCreated({ tenantId: String(result.tenant.id), subdomain: data.subdomain }),
     );
 
     redirect(`/tenant/${result.tenant.id}`);

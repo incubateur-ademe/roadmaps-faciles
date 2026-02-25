@@ -8,6 +8,8 @@ import { logger } from "@/lib/logger";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { postRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { postCreated, postFirstCreated } from "@/lib/tracking-provider/trackingPlan";
 import { type Like, type Post, type PostStatus, type PostWithHotness, type Prisma, type User } from "@/prisma/client";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
@@ -206,6 +208,33 @@ export async function submitPost(data: {
       },
       reqCtx,
     );
+
+    const distinctId = session?.user.uuid ?? `anon:${anonymousId}`;
+    void trackServerEvent(
+      distinctId,
+      postCreated({
+        postId: String(post.id),
+        boardId: String(data.boardId),
+        tenantId: String(tenant.id),
+        isAnonymous: !session,
+      }),
+    );
+
+    // Activation: detect first post for authenticated users
+    if (session?.user.uuid) {
+      void prisma.post.count({ where: { userId: session.user.uuid } }).then(count => {
+        if (count === 1) {
+          void trackServerEvent(
+            session.user.uuid,
+            postFirstCreated({
+              postId: String(post.id),
+              boardId: String(data.boardId),
+              tenantId: String(tenant.id),
+            }),
+          );
+        }
+      });
+    }
 
     revalidatePath(`/board`);
     return { ok: true, data: { pending: settings.requirePostApproval } };

@@ -37,6 +37,11 @@ export const config = {
     url: ensureNextEnvVar(process.env.NEXT_PUBLIC_MATOMO_URL, ""),
     siteId: ensureNextEnvVar(process.env.NEXT_PUBLIC_MATOMO_SITE_ID, ""),
   },
+  tracking: {
+    provider: ensureNextEnvVar<"matomo" | "noop" | "posthog">(process.env.NEXT_PUBLIC_TRACKING_PROVIDER, "noop"),
+    posthogKey: ensureNextEnvVar(process.env.NEXT_PUBLIC_POSTHOG_KEY, ""),
+    posthogHost: ensureNextEnvVar(process.env.NEXT_PUBLIC_POSTHOG_HOST, "https://eu.i.posthog.com"),
+  },
   admins: ensureApiEnvVar(
     process.env.ADMINS,
     v =>

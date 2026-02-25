@@ -29,6 +29,8 @@ import {
   userOnTenantRepo,
   userRepo,
 } from "../repo";
+import { trackServerEvent } from "../tracking-provider/serverTracking";
+import { invitationAccepted, userFirstLogin, userSignedIn, userSignedUp } from "../tracking-provider/trackingPlan";
 import { refreshAccessToken } from "./refresh";
 import { revalidateSessionUser } from "./revalidateSessionUser";
 
@@ -418,6 +420,7 @@ const {
                     status: "ACTIVE",
                   });
                 }
+                void trackServerEvent(userId, invitationAccepted({ tenantId: String(tenant.id), userId }));
               }
             }
           }
@@ -549,6 +552,12 @@ const {
           token.sessionRefreshAt = Date.now() + SESSION_MAX_AGE;
 
           if (trigger === "signIn") {
+            const method = account?.provider ?? "unknown";
+            if (dbUser.signInCount === 0) {
+              void trackServerEvent(dbUser.id, userSignedUp({ userId: dbUser.id, method }));
+              void trackServerEvent(dbUser.id, userFirstLogin({ userId: dbUser.id, method }));
+            }
+            void trackServerEvent(dbUser.id, userSignedIn({ userId: dbUser.id, method }));
             await userRepo.update(dbUser.id, {
               signInCount: dbUser.signInCount + 1,
               lastSignInAt: dbUser.currentSignInAt ?? now,

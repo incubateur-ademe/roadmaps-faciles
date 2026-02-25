@@ -9,6 +9,8 @@ import { Container, Grid, GridCol } from "@/dsfr";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
+import { TrackPageView } from "@/lib/tracking-provider";
+import { boardPublicViewed, boardViewed } from "@/lib/tracking-provider/trackingPlan";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
 import { withValidation } from "@/utils/next";
@@ -76,8 +78,13 @@ const BoardPage = withValidation({
 
   const showSuggestionForm = _data.settings.allowAnonymousFeedback || !!session;
 
+  const boardTrackEvent = session
+    ? boardViewed({ boardId: String(board.id), tenantId: String(_data.tenant.id) })
+    : boardPublicViewed({ boardId: String(board.id), tenantId: String(_data.tenant.id) });
+
   return (
     <DsfrPage>
+      <TrackPageView event={boardTrackEvent} />
       <Container my="2w">
         <Grid haveGutters className={style.board}>
           {showSuggestionForm && (

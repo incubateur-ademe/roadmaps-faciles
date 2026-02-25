@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { commentCreated } from "@/lib/tracking-provider/trackingPlan";
 import { type Comment, type User } from "@/prisma/client";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
@@ -101,6 +103,12 @@ export async function sendComment({
       },
       reqCtx,
     );
+
+    void trackServerEvent(
+      userId,
+      commentCreated({ postId: String(postId), tenantId: String(tenantId), isReply: !!parentId }),
+    );
+
     return {
       ok: true,
       data: newComment,

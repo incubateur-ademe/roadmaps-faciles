@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { userOnTenantRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { memberRoleChanged } from "@/lib/tracking-provider/trackingPlan";
 import { UserRole, type UserStatus } from "@/prisma/enums";
 import { RemoveMember } from "@/useCases/user_on_tenant/RemoveMember";
 import { UpdateMemberRole } from "@/useCases/user_on_tenant/UpdateMemberRole";
@@ -51,6 +53,16 @@ export const updateMemberRole = async (data: { role: UserRole; userId: string })
       },
       reqCtx,
     );
+    void trackServerEvent(
+      session.user.uuid,
+      memberRoleChanged({
+        tenantId: String(tenant.id),
+        userId: data.userId,
+        oldRole: "unknown",
+        newRole: data.role,
+      }),
+    );
+
     revalidatePath("/admin/users");
     return { ok: true };
   } catch (error) {
