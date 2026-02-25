@@ -300,6 +300,7 @@ model Tenant {
   members             UserOnTenant[]
   postStatus          PostStatus[]
   pinnedByAppSettings AppSettings?
+  integrations        TenantIntegration[]
 }
 
 enum EmailRegistrationPolicy {
@@ -512,6 +513,90 @@ model Webhook {
   @@index([tenantId])
 }
 
+// --- Integrations ---
+
+enum IntegrationType {
+  NOTION
+}
+
+enum IntegrationSyncStatus {
+  SYNCED
+  PENDING
+  ERROR
+  CONFLICT
+}
+
+enum SyncDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum SyncLogStatus {
+  SUCCESS
+  ERROR
+  SKIPPED
+  CONFLICT
+}
+
+model TenantIntegration {
+  id                  Int             @id @default(autoincrement())
+  tenantId            Int
+  type                IntegrationType
+  name                String
+  config              Json
+  enabled             Boolean         @default(true)
+  lastSyncAt          DateTime?
+  syncIntervalMinutes Int?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  tenant   Tenant               @relation(fields: [tenantId], references: [id])
+  mappings IntegrationMapping[]
+  syncLogs IntegrationSyncLog[]
+
+  @@index([tenantId])
+  @@index([enabled, lastSyncAt])
+}
+
+model IntegrationMapping {
+  id            Int                   @id @default(autoincrement())
+  integrationId Int
+  localType     String
+  localId       Int
+  remoteId      String
+  remoteUrl     String?
+  syncStatus    IntegrationSyncStatus @default(PENDING)
+  lastSyncAt    DateTime?
+  lastError     String?
+  metadata      Json?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  integration TenantIntegration  @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  syncLogs    IntegrationSyncLog[]
+
+  @@unique([integrationId, localType, localId])
+  @@index([integrationId])
+  @@index([localType, localId])
+}
+
+model IntegrationSyncLog {
+  id            Int           @id @default(autoincrement())
+  integrationId Int
+  mappingId     Int?
+  direction     SyncDirection
+  status        SyncLogStatus
+  message       String?
+  details       Json?
+  createdAt     DateTime      @default(now())
+
+  integration TenantIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  mapping     IntegrationMapping? @relation(fields: [mappingId], references: [id], onDelete: SetNull)
+
+  @@index([integrationId, createdAt])
+  @@index([mappingId])
+}
+
 enum AuditAction {
   // Tenant-scoped — Boards
   BOARD_CREATE
@@ -551,6 +636,12 @@ enum AuditAction {
   // Tenant-scoped — Webhooks
   WEBHOOK_CREATE
   WEBHOOK_DELETE
+
+  // Tenant-scoped — Integrations
+  INTEGRATION_CREATE
+  INTEGRATION_UPDATE
+  INTEGRATION_DELETE
+  INTEGRATION_SYNC
 
   // Tenant-scoped — Members
   MEMBER_REMOVE

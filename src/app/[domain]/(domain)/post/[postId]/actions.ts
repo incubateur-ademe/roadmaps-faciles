@@ -7,7 +7,7 @@ import z from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
-import { postRepo } from "@/lib/repo";
+import { integrationMappingRepo, postRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
 import { DeletePost, DeletePostInput } from "@/useCases/posts/DeletePost";
 import { UpdatePostContent, UpdatePostContentInput } from "@/useCases/posts/UpdatePostContent";
@@ -46,6 +46,13 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
 
   if (!post || post.tenantId !== tenant.id) {
     return { ok: false, error: t("postNotFound") };
+  }
+
+  // Block editing inbound-synced posts (readonly from Notion)
+  const mappings = await integrationMappingRepo.findMappingsForPost(validated.data.postId);
+  const isInbound = mappings.some(m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound");
+  if (isInbound) {
+    return { ok: false, error: t("inboundPostReadonly") };
   }
 
   const isAdmin =
@@ -126,6 +133,15 @@ export const deletePost = async (data: unknown): Promise<ServerActionResponse<{ 
 
   if (!post || post.tenantId !== tenant.id) {
     return { ok: false, error: t("postNotFound") };
+  }
+
+  // Block deleting inbound-synced posts (managed by Notion integration)
+  const deleteMappings = await integrationMappingRepo.findMappingsForPost(validated.data.postId);
+  const isInboundDelete = deleteMappings.some(
+    m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
+  );
+  if (isInboundDelete) {
+    return { ok: false, error: t("inboundPostReadonly") };
   }
 
   const isAdmin =

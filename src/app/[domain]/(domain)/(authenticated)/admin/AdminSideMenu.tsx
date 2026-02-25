@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Container } from "@/dsfr";
+import { useFeatureFlag } from "@/lib/feature-flags/client";
 
 const GENERAL_SECTION_IDS = ["privacy", "localization", "moderation", "header", "visibility", "embedding"];
 
@@ -14,6 +15,7 @@ export const AdminSideMenu = () => {
   const [activeSection, setActiveSection] = useState<null | string>(null);
   const visibleSections = useRef(new Set<string>());
   const t = useTranslations("domainAdmin.sideMenu");
+  const integrationsEnabled = useFeatureFlag("integrations");
 
   // Extract the current admin page from pathname (e.g., /admin/general -> general)
   const currentPage = pathname.split("/admin/")[1]?.split("#")[0] || "general";
@@ -116,6 +118,15 @@ export const AdminSideMenu = () => {
       linkProps: { href: `/admin/webhooks` },
       isActive: currentPage === "webhooks",
     },
+    ...(integrationsEnabled
+      ? [
+          {
+            text: t("integrations"),
+            linkProps: { href: `/admin/integrations` },
+            isActive: currentPage.startsWith("integrations"),
+          },
+        ]
+      : []),
     {
       text: t("users"),
       linkProps: { href: `/admin/users` },
