@@ -209,6 +209,7 @@
 - Server-derived data (e.g., `creatorId`) must NOT appear in public Zod schemas — use a separate interface/type that extends the Zod inferred type
 
 ## Gotchas
+- React 19 / Next.js 16: ne JAMAIS exporter `Context.Provider` directement (`export const Provider = MyContext.Provider`) — ça crash en RSC ("Received a promise that resolves to: Context"). Toujours wrapper dans un vrai composant client (`export const Provider = ({ children, value }) => <MyContext value={value}>{children}</MyContext>`)
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
 - DNS CNAME trailing dot: resolvers may return `"target.io."` — always normalize with `.replace(/\.$/, "")` before comparing
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing

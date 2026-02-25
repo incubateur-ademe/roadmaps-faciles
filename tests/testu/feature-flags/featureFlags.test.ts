@@ -22,9 +22,8 @@ vi.mock("@/lib/repo", () => ({
 }));
 
 // Dynamic import AFTER mocks are set up
-const { getFeatureFlags, getEffectiveFlags, isFeatureEnabled, assertFeature, FEATURE_FLAGS } = await import(
-  "@/lib/feature-flags"
-);
+const { getFeatureFlags, getEffectiveFlags, isFeatureEnabled, assertFeature, FEATURE_FLAGS } =
+  await import("@/lib/feature-flags");
 
 function fakeSession(overrides: Partial<Session["user"]> = {}): Session {
   return {

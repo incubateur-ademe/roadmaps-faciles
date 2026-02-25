@@ -29,9 +29,7 @@ vi.mock("@/lib/repo", () => ({
   appSettingsRepo: { get: () => mockGet() },
 }));
 
-const { getFeatureFlags, getEffectiveFlags, isFeatureEnabled, assertFeature } = await import(
-  "@/lib/feature-flags"
-);
+const { getFeatureFlags, getEffectiveFlags, isFeatureEnabled, assertFeature } = await import("@/lib/feature-flags");
 
 function fakeSession(overrides: Partial<Session["user"]> = {}): Session {
   return {
