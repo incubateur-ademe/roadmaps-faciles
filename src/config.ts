@@ -22,6 +22,7 @@ export const config = {
     maxRepliesPerComment: ensureApiEnvVar(process.env.SEED_MAX_REPLIES_PER_COMMENT, Number, 8),
   },
   maintenance: ensureApiEnvVar(process.env.MAINTENANCE_MODE, isTruthy, false),
+  platformDomain: ensureApiEnvVar(process.env.PLATFORM_DOMAIN, ""),
   host: ensureNextEnvVar(process.env.NEXT_PUBLIC_SITE_URL, "http://localhost:3000"),
   get rootDomain() {
     return this.host.replace(/^(https?:\/\/)?(www\.)?/, "");
@@ -35,6 +36,11 @@ export const config = {
   matomo: {
     url: ensureNextEnvVar(process.env.NEXT_PUBLIC_MATOMO_URL, ""),
     siteId: ensureNextEnvVar(process.env.NEXT_PUBLIC_MATOMO_SITE_ID, ""),
+  },
+  tracking: {
+    provider: ensureNextEnvVar<"matomo" | "noop" | "posthog">(process.env.NEXT_PUBLIC_TRACKING_PROVIDER, "noop"),
+    posthogKey: ensureNextEnvVar(process.env.NEXT_PUBLIC_POSTHOG_KEY, ""),
+    posthogHost: ensureNextEnvVar(process.env.NEXT_PUBLIC_POSTHOG_HOST, "https://eu.i.posthog.com"),
   },
   admins: ensureApiEnvVar(
     process.env.ADMINS,
@@ -145,6 +151,18 @@ export const config = {
       return this.sentryServerDsn || this.sentryDsn;
     },
   },
+  storageProvider: {
+    type: ensureApiEnvVar<"noop" | "s3">(process.env.STORAGE_PROVIDER, "noop"),
+    maxFileSizeMb: ensureApiEnvVar(process.env.STORAGE_MAX_FILE_SIZE_MB, Number, 5),
+    s3: {
+      endpoint: ensureApiEnvVar(process.env.STORAGE_S3_ENDPOINT, ""),
+      region: ensureApiEnvVar(process.env.STORAGE_S3_REGION, "us-east-1"),
+      bucket: ensureApiEnvVar(process.env.STORAGE_S3_BUCKET, ""),
+      accessKeyId: ensureApiEnvVar(process.env.STORAGE_S3_ACCESS_KEY_ID, ""),
+      secretAccessKey: ensureApiEnvVar(process.env.STORAGE_S3_SECRET_ACCESS_KEY, ""),
+      publicUrl: ensureApiEnvVar(process.env.STORAGE_S3_PUBLIC_URL, ""),
+    },
+  },
   dnsProvider: {
     type: ensureApiEnvVar<"cloudflare" | "manual" | "noop" | "ovh">(process.env.DNS_PROVIDER, "noop"),
     zoneName: ensureApiEnvVar(process.env.DNS_ZONE_NAME, ""),
@@ -171,5 +189,10 @@ export const config = {
       email: ensureApiEnvVar(process.env.DNS_CLOUDFLARE_EMAIL, ""),
       apiKey: ensureApiEnvVar(process.env.DNS_CLOUDFLARE_API_KEY, ""),
     },
+  },
+  integrations: {
+    encryptionKey: ensureApiEnvVar(process.env.INTEGRATION_ENCRYPTION_KEY, ""),
+    cronManager: ensureApiEnvVar<"noop" | "route">(process.env.INTEGRATION_CRON_MANAGER, "noop"),
+    cronSecret: ensureApiEnvVar(process.env.INTEGRATION_CRON_SECRET, ""),
   },
 } as const;

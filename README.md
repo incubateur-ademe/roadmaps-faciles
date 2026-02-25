@@ -43,7 +43,7 @@ pnpm install
 
 ### docker-compose (optionnel)
 
-Uniquement pour PostgreSQL et Maildev.
+PostgreSQL, Redis, Maildev et MinIO (stockage S3 local).
 
 ```bash
 # Démarrer PostgreSQL et Maildev
@@ -64,6 +64,7 @@ Créer `.env.development.local` à partir de `.env.development` et renseigner si
 |---|---|---|
 | `APP_ENV` | Environnement applicatif (`dev`, `prod`, `review`, `staging`) | `dev` |
 | `MAINTENANCE_MODE` | Active le mode maintenance | `false` |
+| `PLATFORM_DOMAIN` | Domaine de la plateforme d'hébergement (ex: `scalingo.io`) — redirige les requêtes vers `NEXT_PUBLIC_SITE_URL` | — |
 | `NEXT_PUBLIC_SITE_URL` | URL publique du site principal | `http://localhost:3000` |
 | `NEXT_PUBLIC_REPOSITORY_URL` | URL du dépôt Git | `https://github.com/incubateur-ademe/roadmaps-faciles` |
 | `NEXT_PUBLIC_APP_VERSION` | Version affichée (auto en CI) | `dev` |
@@ -180,6 +181,21 @@ Gestion des domaines custom sur la plateforme d'hébergement. Voir `docs/deploy/
 
 </details>
 
+#### Storage Provider (upload d'images)
+
+Stockage S3-compatible pour les images uploadées dans les posts (drag & drop, presse-papier).
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `STORAGE_PROVIDER` | Provider de stockage (`noop`, `s3`) | `noop` |
+| `STORAGE_MAX_FILE_SIZE_MB` | Taille max d'un fichier uploadé (Mo) | `5` |
+| `STORAGE_S3_ENDPOINT` | Endpoint S3 (ex: `http://localhost:9000` pour MinIO) | — |
+| `STORAGE_S3_REGION` | Région S3 | `us-east-1` |
+| `STORAGE_S3_BUCKET` | Nom du bucket | — |
+| `STORAGE_S3_ACCESS_KEY_ID` | Access Key ID | — |
+| `STORAGE_S3_SECRET_ACCESS_KEY` | Secret Access Key | — |
+| `STORAGE_S3_PUBLIC_URL` | URL publique du bucket (ex: `http://localhost:9000/roadmaps-faciles`) | — |
+
 #### DNS Provider
 
 Gestion automatique des enregistrements DNS pour les sous-domaines.
@@ -224,6 +240,16 @@ Logging structuré (Pino) et error tracking (Sentry) optionnel. Voir `docs/adr/0
 | `SENTRY_ORG` | Organisation Sentry | — |
 | `SENTRY_PROJECT` | Projet Sentry | — |
 | `LOG_LEVEL` | Niveau de log Pino (`trace`, `debug`, `info`, `warn`, `error`, `fatal`, `silent`) | `debug` |
+
+#### Intégrations tierces (Notion)
+
+Variables pour le framework d'intégrations tierces (connecteur Notion). Voir `docs/adr/` pour les décisions architecturales.
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `INTEGRATION_ENCRYPTION_KEY` | **Obligatoire en prod.** Clé de chiffrement AES-256-GCM pour les clés API des intégrations (≥ 32 caractères) | — |
+| `INTEGRATION_CRON_MANAGER` | Type de cron manager (`noop`, `route`) | `noop` |
+| `INTEGRATION_CRON_SECRET` | Secret Bearer pour le endpoint cron `/api/cron/integrations` | — |
 
 #### Seed (dev uniquement)
 
@@ -331,9 +357,11 @@ Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passe
 /src/app/(default)          # Site principal
 /src/app/[domain]           # Multi-tenant
 /src/app/doc/               # Documentation (layout, composants MDX, theme DSFR)
+/src/lib/storage-provider    # Abstraction stockage S3 (IStorageProvider, noop, s3)
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
 /src/useCases               # Logique métier (use cases DDD)
 /src/emails                 # Templates email react-email (DSFR Mail)
+/src/lib/integration-provider # Connecteurs tiers (Notion) — provider pattern
 /src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
 /tests/testu                # Tests unitaires (Vitest)
 /tests/testi                # Tests d'intégration (use cases, mocks)

@@ -14,6 +14,7 @@ const isDeployment = !!process.env.SOURCE_VERSION;
 const env = {
   NEXT_PUBLIC_APP_VERSION: version,
   NEXT_PUBLIC_APP_VERSION_COMMIT: isDeployment ? process.env.SOURCE_VERSION : "dev",
+  NEXT_PUBLIC_APP_ENV: process.env.APP_ENV || "dev",
 };
 
 const isDev = process.env.NODE_ENV === "development";
@@ -25,18 +26,36 @@ const csp = {
   "connect-src": [
     "'self'",
     "https://*.gouv.fr",
-    process.env.NEXT_PUBLIC_SENTRY_DSN && "https://*.ingest.sentry.io",
+    process.env.NEXT_PUBLIC_SENTRY_DSN &&
+      (() => {
+        try {
+          const { hostname } = new URL(process.env.NEXT_PUBLIC_SENTRY_DSN);
+          return `https://${hostname}`;
+        } catch {
+          return "https://*.ingest.sentry.io";
+        }
+      })(),
+    process.env.NEXT_PUBLIC_TRACKING_PROVIDER === "posthog" && process.env.NEXT_PUBLIC_POSTHOG_HOST,
     isDev && "http://localhost",
     isDev && localCustomDomains.map(domain => `http://${domain}`),
     isDev && localCustomDomains.map(domain => `ws://${domain}`),
   ].flat(),
   "font-src": ["'self'"],
   "media-src": ["'self'"],
-  "img-src": ["'self'", "data:", "espace-membre.incubateur.net"],
+  "img-src": [
+    "'self'",
+    "data:",
+    "espace-membre.incubateur.net",
+    process.env.STORAGE_S3_PUBLIC_URL && new URL(process.env.STORAGE_S3_PUBLIC_URL).host,
+    !process.env.STORAGE_S3_PUBLIC_URL &&
+      process.env.STORAGE_S3_ENDPOINT &&
+      new URL(process.env.STORAGE_S3_ENDPOINT).host,
+  ].flat(),
   "script-src": [
     "'self'",
     "'unsafe-inline'",
     process.env.NEXT_PUBLIC_MATOMO_URL,
+    process.env.NEXT_PUBLIC_TRACKING_PROVIDER === "posthog" && process.env.NEXT_PUBLIC_POSTHOG_HOST,
     "'unsafe-eval'",
     isDev && "http://localhost",
     isDev && localCustomDomains.map(domain => `http://${domain}`),
@@ -113,6 +132,16 @@ const config: NextConfig = {
         port: "",
         search: "",
       },
+      ...(process.env.STORAGE_S3_PUBLIC_URL
+        ? [
+            {
+              protocol: new URL(process.env.STORAGE_S3_PUBLIC_URL).protocol.replace(":", "") as "http" | "https",
+              hostname: new URL(process.env.STORAGE_S3_PUBLIC_URL).hostname,
+              port: new URL(process.env.STORAGE_S3_PUBLIC_URL).port,
+              pathname: "/**",
+            },
+          ]
+        : []),
     ],
   },
 

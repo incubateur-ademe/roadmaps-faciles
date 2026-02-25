@@ -6,10 +6,13 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
+import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
+
+import { uploadImage } from "../../upload-image";
 import { submitPost } from "./actions";
 
 const createFormSchema = (t: ReturnType<typeof useTranslations<"board">>) =>
@@ -34,11 +37,13 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<null | string>(null);
   const [success, setSuccess] = useState<null | string>(null);
+  const [editorKey, setEditorKey] = useState(0);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormType>({
     resolver: standardSchemaResolver(formSchema),
@@ -47,6 +52,13 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
       description: "",
     },
   });
+
+  const handleDescriptionChangeAction = useCallback(
+    (value: string) => {
+      setValue("description", value, { shouldDirty: true });
+    },
+    [setValue],
+  );
 
   const onSubmit = (data: FormType) => {
     startTransition(async () => {
@@ -63,6 +75,7 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
         setError(result.error);
       } else {
         reset();
+        setEditorKey(prev => prev + 1);
         setSuccess(result.data.pending ? t("postSubmittedPending") : t("postSubmitted"));
         setTimeout(() => setSuccess(null), 8000);
       }
@@ -82,11 +95,11 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
         state={errors.title ? "error" : "default"}
         stateRelatedMessage={errors.title?.message}
       />
-      <Input
+      <MarkdownEditor
+        key={editorKey}
         label={t("description")}
-        textArea
-        nativeTextAreaProps={{ ...register("description") }}
-        classes={{ nativeInputOrTextArea: "resize-y" }}
+        onChangeAction={handleDescriptionChangeAction}
+        uploadImageAction={uploadImage}
       />
       {error && <Alert severity="error" title={te("technicalError")} description={error} small />}
       {success && <Alert severity="success" title={success} small closable description="" />}

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { boardRepo, tenantSettingsRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { boardCreated } from "@/lib/tracking-provider/trackingPlan";
 import { type Board } from "@/prisma/client";
 import { CreateBoard } from "@/useCases/boards/CreateBoard";
 import { DeleteBoard } from "@/useCases/boards/DeleteBoard";
@@ -36,6 +38,8 @@ export const createBoard = async (data: {
       },
       reqCtx,
     );
+    void trackServerEvent(session.user.uuid, boardCreated({ boardId: String(board.id), tenantId: String(tenant.id) }));
+
     revalidatePath("/admin/boards");
     return { ok: true, data: board };
   } catch (error) {

@@ -7,6 +7,8 @@ import z from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { likeRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { voteCast, voteFirstCast } from "@/lib/tracking-provider/trackingPlan";
 import { LikePost, type LikePostInput, LikePostInputBase, type LikePostOutput } from "@/useCases/likes/LikePost";
 import { UnlikePost, type UnlikePostOutput } from "@/useCases/likes/UnlikePost";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
@@ -76,6 +78,28 @@ export async function likePost(input: Partial<LikePostInput>, unlike?: boolean):
       },
       reqCtx,
     );
+
+    if (!unlike) {
+      const voteDistinctId = inputValidated.data.userId ?? `anon:${input.anonymousId}`;
+      void trackServerEvent(
+        voteDistinctId,
+        voteCast({ postId: String(input.postId), tenantId: String(input.tenantId) }),
+      );
+
+      // Activation: detect first vote for authenticated users
+      if (inputValidated.data.userId) {
+        const userId = inputValidated.data.userId;
+        void prisma.like.count({ where: { userId } }).then(count => {
+          if (count === 1) {
+            void trackServerEvent(
+              userId,
+              voteFirstCast({ postId: String(input.postId), tenantId: String(input.tenantId) }),
+            );
+          }
+        });
+      }
+    }
+
     revalidatePath(`/tenant/${input.tenantId}`);
     if (ret) {
       return {

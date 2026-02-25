@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { invitationRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { tenantCreated } from "@/lib/tracking-provider/trackingPlan";
 import { CreateNewTenant, CreateNewTenantInput } from "@/useCases/tenant/CreateNewTenant";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertAdmin } from "@/utils/auth";
@@ -49,6 +51,11 @@ export const createTenant = async (data: unknown): Promise<ServerActionResponse<
       },
       reqCtx,
     );
+    void trackServerEvent(
+      session.user.uuid,
+      tenantCreated({ tenantId: String(result.tenant.id), subdomain: validated.data.subdomain }),
+    );
+
     for (const failed of result.failedInvitations ?? []) {
       audit(
         {

@@ -16,6 +16,7 @@ export const ChangePostStatusInput = z.object({
 export type ChangePostStatusInput = z.infer<typeof ChangePostStatusInput>;
 export type ChangePostStatusOutput = PostStatusChangeModel;
 
+// TODO: wire trackServerEvent(postStatusChanged(...)) when a server action calls this use case
 export class ChangePostStatus implements UseCase<ChangePostStatusInput, ChangePostStatusOutput> {
   constructor(private readonly postStatusChangeRepo: IPostStatusChangeRepo) {}
 
