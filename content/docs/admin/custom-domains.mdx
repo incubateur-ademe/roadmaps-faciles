@@ -3,7 +3,7 @@ title: Domaines personnalisés
 description: Associez votre propre nom de domaine à votre espace de travail.
 ---
 
-Par défaut, votre espace est accessible via un sous-domaine de Roadmaps Faciles (ex. : `mon-produit.roadmaps-faciles.fr`). Vous pouvez configurer un **domaine personnalisé** pour que votre espace soit accessible via votre propre nom de domaine (ex. : `feedback.mon-produit.fr`).
+Par défaut, votre espace est accessible via un sous-domaine de la plateforme (ex. : `mon-produit.{{rootDomain}}`). Vous pouvez configurer un **domaine personnalisé** pour que votre espace soit accessible via votre propre nom de domaine (ex. : `feedback.mon-produit.fr`).
 
 ## Configurer un domaine personnalisé
 
@@ -33,7 +33,7 @@ Pour associer votre domaine, vous devez créer un **enregistrement CNAME** chez 
 |-------|--------|
 | **Type** | `CNAME` |
 | **Nom / Hôte** | Le sous-domaine souhaité (ex. : `feedback`) |
-| **Cible / Valeur** | Le domaine de la plateforme (ex. : `roadmaps-faciles.fr`) |
+| **Cible / Valeur** | Le domaine de la plateforme (ex. : `{{rootDomain}}`) |
 | **TTL** | `3600` (1 heure) ou la valeur par défaut |
 
 3. Enregistrez la modification.

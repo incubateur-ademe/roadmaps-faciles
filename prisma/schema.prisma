@@ -532,8 +532,13 @@ enum AuditAction {
   POST_DELETE
   POST_EDIT
 
+  // Tenant-scoped — Images
+  IMAGE_UPLOAD
+
   // Tenant-scoped — Comments
   COMMENT_CREATE
+  COMMENT_EDIT
+  COMMENT_DELETE
 
   // Tenant-scoped — Votes
   POST_VOTE

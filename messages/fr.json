@@ -468,7 +468,27 @@
     "savePost": "Enregistrer",
     "anonymous": "Anonyme",
     "deletePost": "Supprimer",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible."
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.",
+    "submitComment": "Envoyer",
+    "loginToComment": "<link>Connectez-vous</link> pour commenter.",
+    "reply": "Répondre",
+    "cancelReply": "Annuler",
+    "submitReply": "Envoyer",
+    "viewPreviousReplies": "Voir les réponses précédentes",
+    "collapseReplies": "Replier les réponses",
+    "viewReplies": "{count, plural, one {Voir 1 réponse} other {Voir # réponses}}",
+    "roleOwner": "Propriétaire",
+    "roleAdmin": "Admin",
+    "roleModerator": "Modérateur",
+    "tagAuthor": "Auteur",
+    "tagYou": "Moi",
+    "postCreated": "{author} a créé le post",
+    "editComment": "Modifier",
+    "deleteComment": "Supprimer",
+    "deleteCommentConfirm": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
+    "saveComment": "Enregistrer",
+    "cancelEdit": "Annuler",
+    "edited": "(modifié)"
   },
   "roadmap": {
     "title": "Feuille de route",
@@ -491,6 +511,23 @@
     "cgu": "CGU",
     "legalNotice": "Mentions légales",
     "license": "Sauf mention contraire, tous les contenus de ce site sont sous <a>licence Apache 2.0</a>"
+  },
+  "editor": {
+    "bold": "Gras",
+    "italic": "Italique",
+    "heading": "Titre",
+    "list": "Liste",
+    "orderedList": "Liste ordonnée",
+    "quote": "Citation",
+    "code": "Code",
+    "link": "Lien",
+    "image": "Image",
+    "preview": "Aperçu",
+    "previewEmpty": "Rien à afficher.",
+    "placeholder": "Écrivez en Markdown…",
+    "uploading": "Upload en cours…",
+    "uploadFailed": "L'upload a échoué.",
+    "markdownSupported": "Markdown supporté"
   },
   "consent": {
     "matomoTitle": "Matomo",
@@ -523,7 +560,11 @@
     "accountNotLinkedToEm": "Votre compte n'est pas lié à l'Espace Membre.",
     "noEmUsername": "Aucun username Espace Membre trouvé.",
     "emailAlreadySameAsEm": "Votre e-mail est déjà identique à celui de l'Espace Membre.",
-    "lastOwnerCannotDelete": "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte."
+    "lastOwnerCannotDelete": "Vous êtes le dernier propriétaire d'un tenant. Transférez la propriété avant de supprimer votre compte.",
+    "uploadFailed": "L'upload a échoué.",
+    "uploadTooLarge": "Le fichier est trop volumineux (max {max} Mo).",
+    "uploadInvalidType": "Type de fichier non supporté. Types autorisés : PNG, JPG, GIF, WebP.",
+    "uploadInvalidFile": "Fichier invalide."
   },
   "profile": {
     "title": "Mon profil",

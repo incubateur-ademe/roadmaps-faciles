@@ -1,0 +1,111 @@
+"use server";
+
+import { getTranslations } from "next-intl/server";
+import { randomUUID } from "node:crypto";
+
+import { config } from "@/config";
+import { logger } from "@/lib/logger";
+import { auth } from "@/lib/next-auth/auth";
+import { getStorageProvider } from "@/lib/storage-provider";
+import { audit, AuditAction, getRequestContext } from "@/utils/audit";
+import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
+
+const ALLOWED_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
+
+const EXTENSION_MAP: Record<string, string> = {
+  "image/gif": "gif",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+export async function uploadImage(formData: FormData): Promise<ServerActionResponse<{ url: string }>> {
+  const t = await getTranslations("serverErrors");
+  const domain = await getDomainFromHost();
+  const tenant = await getTenantFromDomain(domain);
+  const reqCtx = await getRequestContext();
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    audit(
+      {
+        action: AuditAction.IMAGE_UPLOAD,
+        success: false,
+        error: "Invalid file",
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: t("uploadInvalidFile") };
+  }
+
+  if (!ALLOWED_TYPES.has(file.type)) {
+    audit(
+      {
+        action: AuditAction.IMAGE_UPLOAD,
+        success: false,
+        error: `Invalid type: ${file.type}`,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: t("uploadInvalidType") };
+  }
+
+  const maxBytes = config.storageProvider.maxFileSizeMb * 1024 * 1024;
+  if (file.size > maxBytes) {
+    audit(
+      {
+        action: AuditAction.IMAGE_UPLOAD,
+        success: false,
+        error: `Too large: ${file.size} bytes`,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: t("uploadTooLarge", { max: config.storageProvider.maxFileSizeMb }) };
+  }
+
+  const ext = EXTENSION_MAP[file.type] ?? "bin";
+  const key = `tenants/${tenant.id}/images/${randomUUID()}.${ext}`;
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const storage = getStorageProvider();
+    await storage.upload(key, buffer, file.type);
+
+    audit(
+      {
+        action: AuditAction.IMAGE_UPLOAD,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+        metadata: { key, contentType: file.type, size: file.size },
+      },
+      reqCtx,
+    );
+
+    return { ok: true, data: { url: `/api/uploads/${key}` } };
+  } catch (error) {
+    logger.error({ err: error }, "Error uploading image");
+    audit(
+      {
+        action: AuditAction.IMAGE_UPLOAD,
+        success: false,
+        error: (error as Error).message,
+        userId: session.user.uuid,
+        tenantId: tenant.id,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: t("uploadFailed") };
+  }
+}

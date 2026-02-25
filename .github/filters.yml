@@ -50,6 +50,8 @@ test-unit:
   - 'src/lib/repo/I*.ts'
   - 'src/lib/repo/index.ts'
   - 'src/lib/services/**'
+  - 'src/lib/storage-provider/**'
+  - 'src/dsfr/**'
   - 'src/config.ts'
   - 'tests/testu/**'
   - 'tests/testi/**'
