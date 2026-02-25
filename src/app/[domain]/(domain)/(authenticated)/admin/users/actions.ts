@@ -40,6 +40,9 @@ export const updateMemberRole = async (data: { role: UserRole; userId: string })
   }
 
   try {
+    const membership = await userOnTenantRepo.findMembership(data.userId, tenant.id);
+    const oldRole = membership?.role ?? "unknown";
+
     const useCase = new UpdateMemberRole(userOnTenantRepo);
     await useCase.execute({ userId: data.userId, tenantId: tenant.id, role: data.role });
     audit(
@@ -58,7 +61,7 @@ export const updateMemberRole = async (data: { role: UserRole; userId: string })
       memberRoleChanged({
         tenantId: String(tenant.id),
         userId: data.userId,
-        oldRole: "unknown",
+        oldRole,
         newRole: data.role,
       }),
     );

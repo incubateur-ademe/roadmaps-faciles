@@ -41,11 +41,9 @@ export function IdentifyUser() {
       });
 
       // Tenant group (if in a tenant context)
-      const tenantRole = (user as unknown as Record<string, unknown>).currentTenantRole as string | undefined;
-      const tenantId = (user as unknown as Record<string, unknown>).currentTenantId as string | undefined;
-      if (tenantId) {
-        tracking.group("tenant", tenantId, {
-          role: tenantRole,
+      if (user.currentTenantRole) {
+        tracking.group("tenant", userId, {
+          role: user.currentTenantRole,
         });
       }
 

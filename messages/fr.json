@@ -494,9 +494,7 @@
   },
   "consent": {
     "matomoTitle": "Matomo",
-    "matomoDescription": "Outil d'analyse comportementale des utilisateurs.",
-    "posthogTitle": "PostHog",
-    "posthogDescription": "Outil d'analyse produit et de suivi comportemental."
+    "matomoDescription": "Outil d'analyse comportementale des utilisateurs."
   },
   "serverErrors": {
     "invalidData": "Données invalides.",
