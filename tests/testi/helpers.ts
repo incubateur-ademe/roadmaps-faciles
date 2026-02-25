@@ -3,6 +3,9 @@ import { type Mock, vi } from "vitest";
 
 import { type IBoardRepo } from "@/lib/repo/IBoardRepo";
 import { type ICommentRepo } from "@/lib/repo/ICommentRepo";
+import { type IIntegrationMappingRepo } from "@/lib/repo/IIntegrationMappingRepo";
+import { type IIntegrationRepo } from "@/lib/repo/IIntegrationRepo";
+import { type IIntegrationSyncLogRepo } from "@/lib/repo/IIntegrationSyncLogRepo";
 import { type IInvitationRepo } from "@/lib/repo/IInvitationRepo";
 import { type ILikeRepo } from "@/lib/repo/ILikeRepo";
 import { type IPostRepo } from "@/lib/repo/IPostRepo";
@@ -21,9 +24,43 @@ export function createMockPostRepo(): MockRepo<IPostRepo> {
     create: vi.fn(),
     delete: vi.fn(),
     findAll: vi.fn(),
+    findAllForBoards: vi.fn(),
     findByBoardId: vi.fn(),
     findById: vi.fn(),
+    getPostCounts: vi.fn(),
     update: vi.fn(),
+  };
+}
+
+export function createMockIntegrationRepo(): MockRepo<IIntegrationRepo> {
+  return {
+    create: vi.fn(),
+    delete: vi.fn(),
+    findAllForTenant: vi.fn(),
+    findById: vi.fn(),
+    findDueForSync: vi.fn(),
+    update: vi.fn(),
+  };
+}
+
+export function createMockIntegrationMappingRepo(): MockRepo<IIntegrationMappingRepo> {
+  return {
+    create: vi.fn(),
+    deleteAllForIntegration: vi.fn(),
+    findAllForIntegration: vi.fn(),
+    findById: vi.fn(),
+    findByLocalEntity: vi.fn(),
+    findByRemoteId: vi.fn(),
+    findInboundPostIdsForIntegration: vi.fn(),
+    findMappingsForPost: vi.fn(),
+    update: vi.fn(),
+  };
+}
+
+export function createMockSyncLogRepo(): MockRepo<IIntegrationSyncLogRepo> {
+  return {
+    create: vi.fn(),
+    findRecentForIntegration: vi.fn(),
   };
 }
 
@@ -261,6 +298,62 @@ export function fakeInvitation(overrides = {}) {
     acceptedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function fakeIntegration(overrides = {}) {
+  return {
+    id: faker.number.int({ min: 1, max: 10000 }),
+    tenantId: 1,
+    type: "NOTION" as const,
+    name: faker.lorem.words(2),
+    config: {
+      apiKey: "encrypted:key",
+      databaseId: faker.string.uuid(),
+      databaseName: "Test DB",
+      propertyMapping: { title: "Name" },
+      statusMapping: {},
+      boardMapping: { "opt-1": { localId: 1, notionName: "Board" } },
+      syncDirection: "outbound" as const,
+    },
+    enabled: true,
+    lastSyncAt: null,
+    syncIntervalMinutes: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function fakeIntegrationMapping(overrides = {}) {
+  return {
+    id: faker.number.int({ min: 1, max: 10000 }),
+    integrationId: 1,
+    localType: "post",
+    localId: faker.number.int({ min: 1, max: 10000 }),
+    remoteId: faker.string.uuid(),
+    remoteUrl: `https://www.notion.so/${faker.string.alphanumeric(32)}`,
+    syncStatus: "SYNCED" as const,
+    lastSyncAt: new Date(),
+    lastError: null,
+    metadata: { direction: "outbound" },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function fakeSyncLog(overrides = {}) {
+  return {
+    id: faker.number.int({ min: 1, max: 10000 }),
+    integrationId: 1,
+    mappingId: null,
+    direction: "OUTBOUND" as const,
+    status: "SUCCESS" as const,
+    message: null,
+    details: null,
+    createdAt: new Date(),
     ...overrides,
   };
 }

@@ -60,6 +60,7 @@
     "@mui/material-nextjs": "^7.3.8",
     "@next/env": "^16.1.6",
     "@next/mdx": "^16.1.6",
+    "@notionhq/client": "^5.9.0",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "@prisma/studio-core": "^0.8.2",

@@ -5,7 +5,7 @@
  * Les valeurs par défaut sont utilisées quand le flag n'est pas overridé en DB.
  */
 export const FEATURE_FLAGS = {
-  // example: false,
+  integrations: false,
 } as const satisfies Record<string, boolean>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;

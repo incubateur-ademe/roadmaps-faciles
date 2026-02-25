@@ -42,9 +42,8 @@ export const FeatureFlagsForm = ({ flags }: FeatureFlagsFormProps) => {
   return (
     <div>
       {flagKeys.map(key => {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- FeatureFlagKey is `never` when registry is empty; dead code (early return above)
         const label = t(`flags.${key}.label` as never);
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- same as above
+
         const description = t(`flags.${key}.description` as never);
         return (
           <ToggleSwitch
