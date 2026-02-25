@@ -1,4 +1,4 @@
-# ADR 0022 — Abstraction tracking multi-provider + PostHog
+# ADR 0024 — Abstraction tracking multi-provider + PostHog
 - **Date**: 2026-02-25
 - **Statut**: Accepted
 

@@ -1,4 +1,4 @@
-# ADR 0022 — Framework d'intégrations tierces (provider pattern)
+# ADR 0023 — Framework d'intégrations tierces (provider pattern)
 - **Date**: 2026-02-24
 - **Statut**: Accepted
 
