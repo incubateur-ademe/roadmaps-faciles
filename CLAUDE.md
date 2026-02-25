@@ -120,6 +120,17 @@
   - Date formatting: `formatDateHour(date, locale)` / `formatRelativeDate(date, locale)` in `src/lib/utils/date.ts`
   - Language switch: DSFR `LanguageSelect` + cookie set + `window.location.reload()` in `src/app/LanguageSelectClient.tsx`
 
+## Feature Flags
+- Registre : `src/lib/feature-flags/flags.ts` — ajouter un flag = une ligne (`myFlag: false`) + clés i18n (`rootAdmin.featureFlags.flags.myFlag.{label,description}`)
+- Server : `isFeatureEnabled(flagKey, session)` pour conditionner, `assertFeature(flagKey, session)` pour bloquer (→ `forbidden()`)
+- Client : `useFeatureFlag(key)` retourne un `boolean` — le bypass super admin est déjà résolu côté provider, aucune logique de rôle dans les composants
+- Provider : injecté dans le root layout (`src/app/layout.tsx`), les flags effectifs sont pré-calculés (super admin → tout à `true`)
+- Admin UI : `/admin/feature-flags` — toggles DSFR + audit log (`ROOT_FEATURE_FLAGS_UPDATE`)
+- Stockage : `AppSettings.featureFlags` (JSON) — merge defaults + DB au read time, `React.cache()` pour une seule lecture DB/request
+- **Réflexe systématique** : à chaque nouvelle feature, se poser la question "cette feature doit-elle être derrière un flag ?" — si non stabilisée et en prod, la réponse est oui
+- Retrait : feature validée → supprimer la clé de `flags.ts` + nettoyer le code conditionnel + supprimer les clés i18n. La valeur DB orpheline est ignorée automatiquement
+- Tests : vérifier les 4 cas (flag on/off × super admin/user)
+
 ## Workflow
 - Always run `pnpm lint --fix` first, then `pnpm build` to catch type errors, BEFORE committing
 - Fix all lint errors and TypeScript errors before committing — do not leave unused variables, dead imports, or type errors
