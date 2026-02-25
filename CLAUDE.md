@@ -104,6 +104,8 @@
   - Preview toggle: `reactMarkdownPreviewConfig` in `src/lib/utils/react-markdown.tsx` (full paragraph rendering)
   - Image upload: drag & drop, clipboard paste, file picker → `uploadImage()` server action → `![alt](url)` insertion
   - Used in `SubmitPostForm` and `PostEditForm` — replaces plain `<Input textArea>`
+  - Emoji autocomplete: `@github/text-expander-element` — must be dynamically imported in `useEffect` (`customElements.define()` at module scope requires `HTMLElement`, not available during SSR)
+  - `node-emoji.search()` passes query to `new RegExp()` — special chars (+, *, ?, etc.) crash it; always wrap in try/catch
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
   - `DNS_ZONE_NAME` env var: when zone differs from rootDomain (nested subdomains), `computeDnsNames()` in `src/lib/dns-provider/dnsUtils.ts` computes zone-relative subdomain
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
@@ -111,6 +113,7 @@
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
+- Comment edit/delete: author can always edit/delete own comments; admin/mod/owner can delete any; no dedicated TenantSettings toggle — follows GitHub/Slack conventions
 - Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
 - Documentation: Fumadocs (fumadocs-core, fumadocs-mdx, fumadocs-ui) — rendered at `/doc/*`
   - Source: `content/docs/` — MDX files organized by section (concepts, guides, admin, moderation, technical)
@@ -215,6 +218,8 @@
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
   - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
+- Vitest alias `@/dsfr` resolves to `src/dsfr/server.ts` barrel — deep client imports fail in tests; use relative paths for non-barrel modules
+- `vi.doMock()` + dynamic `await import()` required for testing modules with module-level singleton state (e.g., `getStorageProvider()` factory)
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
