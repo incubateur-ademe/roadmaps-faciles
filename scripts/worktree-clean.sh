@@ -56,9 +56,9 @@ fi
 
 # --- Suppression de la DB (optionnel) ---
 if [ "$DROP_DB" = "--drop-db" ]; then
-  if psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
+  if PGPASSWORD=postgres psql -h localhost -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
     echo "🗄️  Suppression de la base $DB_NAME..."
-    dropdb -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME supprimée." || echo "   ⚠️  Impossible de supprimer la DB $DB_NAME."
+    PGPASSWORD=postgres dropdb -h localhost -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME supprimée." || echo "   ⚠️  Impossible de supprimer la DB $DB_NAME."
   else
     echo "ℹ️  Pas de DB dédiée $DB_NAME trouvée (worktree utilisait la DB partagée)."
   fi
