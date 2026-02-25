@@ -21,6 +21,13 @@ const isDev = process.env.NODE_ENV === "development";
 
 const localCustomDomains = ["*.localhost", "mon-espace.local"];
 
+const posthogHostCps =
+  (process.env.NEXT_PUBLIC_TRACKING_PROVIDER === "posthog" && [
+    process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    "https://*.posthog.com",
+  ]) ||
+  [];
+
 const csp = {
   "default-src": ["'none'"],
   "connect-src": [
@@ -39,13 +46,15 @@ const csp = {
     isDev && "http://localhost",
     isDev && localCustomDomains.map(domain => `http://${domain}`),
     isDev && localCustomDomains.map(domain => `ws://${domain}`),
+    ...posthogHostCps,
   ].flat(),
-  "font-src": ["'self'"],
-  "media-src": ["'self'"],
+  "font-src": ["'self'", ...posthogHostCps],
+  "media-src": ["'self'", ...posthogHostCps],
   "img-src": [
     "'self'",
     "data:",
     "espace-membre.incubateur.net",
+    ...posthogHostCps,
     process.env.STORAGE_S3_PUBLIC_URL && new URL(process.env.STORAGE_S3_PUBLIC_URL).host,
     !process.env.STORAGE_S3_PUBLIC_URL &&
       process.env.STORAGE_S3_ENDPOINT &&
@@ -54,13 +63,13 @@ const csp = {
   "script-src": [
     "'self'",
     "'unsafe-inline'",
-    process.env.NEXT_PUBLIC_MATOMO_URL,
-    process.env.NEXT_PUBLIC_TRACKING_PROVIDER === "posthog" && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    process.env.NEXT_PUBLIC_TRACKING_PROVIDER === "matomo" && process.env.NEXT_PUBLIC_MATOMO_URL,
+    ...posthogHostCps,
     "'unsafe-eval'",
     isDev && "http://localhost",
     isDev && localCustomDomains.map(domain => `http://${domain}`),
   ].flat(),
-  "style-src": ["'self'", "'unsafe-inline'"],
+  "style-src": ["'self'", "'unsafe-inline'", ...posthogHostCps],
   "object-src": ["'self'", "data:"],
   "frame-ancestors": ["'self'"],
   "base-uri": ["'self'", "https://*.gouv.fr"],
@@ -70,6 +79,7 @@ const csp = {
     "block-all-mixed-content": [],
     "upgrade-insecure-requests": [],
   }),
+  "worker-src": ["'self'", ...posthogHostCps],
 };
 
 const serializeCsp = (cspObj: Record<string, Array<false | string | undefined>>) =>

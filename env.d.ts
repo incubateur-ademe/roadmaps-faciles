@@ -18,10 +18,10 @@ declare namespace NodeJS {
          */
         MAINTENANCE_MODE?: string;
         /**
-         * Dist: `development`  
+         * No dist value.  
          * {@link [Local Env Dist](.env.development)}
          */
-        NODE_ENV?: string;
+        PLATFORM_DOMAIN?: string;
         /**
          * Dist: `https://github.com/incubateur-ademe/roadmaps-faciles`  
          * {@link [Local Env Dist](.env.development)}
@@ -204,6 +204,21 @@ Française`
          */
         NEXT_PUBLIC_MATOMO_URL?: string;
         /**
+         * Dist: `noop`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        NEXT_PUBLIC_TRACKING_PROVIDER?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        NEXT_PUBLIC_POSTHOG_KEY?: string;
+        /**
+         * Dist: `https://eu.i.posthog.com`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        NEXT_PUBLIC_POSTHOG_HOST?: string;
+        /**
          * Dist: `postgresql://postgres:postgres@localhost:5432/roadmaps-faciles`  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -339,6 +354,46 @@ Française`
          */
         DOMAIN_CADDY_ADMIN_URL?: string;
         /**
+         * Dist: `s3`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_PROVIDER?: string;
+        /**
+         * Dist: `5`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_MAX_FILE_SIZE_MB?: string;
+        /**
+         * Dist: `http://localhost:9000`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_ENDPOINT?: string;
+        /**
+         * Dist: `us-east-1`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_REGION?: string;
+        /**
+         * Dist: `roadmaps-faciles`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_BUCKET?: string;
+        /**
+         * Dist: `minioadmin`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_ACCESS_KEY_ID?: string;
+        /**
+         * Dist: `minioadmin`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_SECRET_ACCESS_KEY?: string;
+        /**
+         * Dist: `http://localhost:9000/roadmaps-faciles`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        STORAGE_S3_PUBLIC_URL?: string;
+        /**
          * Dist: `noop`  
          * {@link [Local Env Dist](.env.development)}
          */
@@ -348,6 +403,11 @@ Française`
          * {@link [Local Env Dist](.env.development)}
          */
         DNS_PROVIDER_TARGET?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        DNS_ZONE_NAME?: string;
         /**
          * Dist: `ovh-eu`  
          * {@link [Local Env Dist](.env.development)}
@@ -378,6 +438,21 @@ Française`
          * {@link [Local Env Dist](.env.development)}
          */
         DNS_CLOUDFLARE_API_KEY?: string;
+        /**
+         * Dist: `dev-encryption-key-min-32-chars!!`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        INTEGRATION_ENCRYPTION_KEY?: string;
+        /**
+         * Dist: `noop`  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        INTEGRATION_CRON_MANAGER?: string;
+        /**
+         * No dist value.  
+         * {@link [Local Env Dist](.env.development)}
+         */
+        INTEGRATION_CRON_SECRET?: string;
         /**
          * No dist value.  
          * {@link [Local Env Dist](.env.development)}
@@ -474,7 +549,7 @@ declare type ProcessEnvCustomKeys =
     | 'NEXT_TELEMETRY_DISABLED'
     | 'APP_ENV'
     | 'MAINTENANCE_MODE'
-    | 'NODE_ENV'
+    | 'PLATFORM_DOMAIN'
     | 'NEXT_PUBLIC_REPOSITORY_URL'
     | 'NEXT_PUBLIC_SITE_URL'
     | 'AUTH_TRUST_HOST'
@@ -511,6 +586,9 @@ declare type ProcessEnvCustomKeys =
     | 'REDIS_URL'
     | 'NEXT_PUBLIC_MATOMO_SITE_ID'
     | 'NEXT_PUBLIC_MATOMO_URL'
+    | 'NEXT_PUBLIC_TRACKING_PROVIDER'
+    | 'NEXT_PUBLIC_POSTHOG_KEY'
+    | 'NEXT_PUBLIC_POSTHOG_HOST'
     | 'DATABASE_URL'
     | 'SEED_ADMIN_NAME'
     | 'SEED_ADMIN_EMAIL'
@@ -538,14 +616,26 @@ declare type ProcessEnvCustomKeys =
     | 'DOMAIN_CLEVERCLOUD_TOKEN_SECRET'
     | 'DOMAIN_CLEVERCLOUD_APP_ID'
     | 'DOMAIN_CADDY_ADMIN_URL'
+    | 'STORAGE_PROVIDER'
+    | 'STORAGE_MAX_FILE_SIZE_MB'
+    | 'STORAGE_S3_ENDPOINT'
+    | 'STORAGE_S3_REGION'
+    | 'STORAGE_S3_BUCKET'
+    | 'STORAGE_S3_ACCESS_KEY_ID'
+    | 'STORAGE_S3_SECRET_ACCESS_KEY'
+    | 'STORAGE_S3_PUBLIC_URL'
     | 'DNS_PROVIDER'
     | 'DNS_PROVIDER_TARGET'
+    | 'DNS_ZONE_NAME'
     | 'DNS_OVH_ENDPOINT'
     | 'DNS_OVH_APPLICATION_KEY'
     | 'DNS_OVH_APPLICATION_SECRET'
     | 'DNS_OVH_CONSUMER_KEY'
     | 'DNS_CLOUDFLARE_EMAIL'
     | 'DNS_CLOUDFLARE_API_KEY'
+    | 'INTEGRATION_ENCRYPTION_KEY'
+    | 'INTEGRATION_CRON_MANAGER'
+    | 'INTEGRATION_CRON_SECRET'
     | 'NEXT_PUBLIC_SENTRY_DSN'
     | 'SENTRY_DSN'
     | 'SENTRY_AUTH_TOKEN'
