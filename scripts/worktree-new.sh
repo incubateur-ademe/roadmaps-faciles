@@ -153,8 +153,10 @@ if [ -n "$PORT" ] || [ "$ISOLATED_DB" = true ]; then
     if [ -n "$PORT" ]; then
       sed -i '' "s|^PORT=.*|PORT=${PORT}|" .env.development.local
       sed -i '' "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}|" .env.development.local
+      sed -i '' "s|^AUTH_URL=.*|AUTH_URL=http://localhost:${PORT}/api/auth|" .env.development.local
       grep -q "^PORT=" .env.development.local || echo "PORT=${PORT}" >> .env.development.local
       grep -q "^NEXT_PUBLIC_SITE_URL=" .env.development.local || echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}" >> .env.development.local
+      grep -q "^AUTH_URL=" .env.development.local || echo "AUTH_URL=http://localhost:${PORT}/api/auth" >> .env.development.local
     fi
   else
     # Pas de fichier source — créer un minimal
@@ -163,6 +165,7 @@ if [ -n "$PORT" ] || [ "$ISOLATED_DB" = true ]; then
       [ "$ISOLATED_DB" = true ] && echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\""
       [ -n "$PORT" ] && echo "PORT=${PORT}"
       [ -n "$PORT" ] && echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}"
+      [ -n "$PORT" ] && echo "AUTH_URL=http://localhost:${PORT}/api/auth"
     } > .env.development.local
   fi
 fi
