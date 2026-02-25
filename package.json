@@ -11,7 +11,7 @@
   "scripts": {
     "predev": "react-dsfr update-icons",
     "prebuild": "react-dsfr update-icons && prisma generate",
-    "dev": "next dev --port ${PORT:-$(grep -m1 '^PORT=' .env.development.local 2>/dev/null | cut -d= -f2 || echo 3000)}",
+    "dev": "PORT=${PORT:-$(grep -m1 '^PORT=' .env.development.local 2>/dev/null | cut -d= -f2)}; next dev --port ${PORT:-3000}",
     "build": "unset NODE_ENV && next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "postbuild": "next-sitemap",
     "start": "node .next/standalone/server.js",

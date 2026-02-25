@@ -17,7 +17,7 @@ export class AppSettingsRepoPrisma implements IAppSettingsRepo {
   ): Promise<AppSettings> {
     return prisma.appSettings.upsert({
       where: { id: 0 },
-      create: { id: 0 },
+      create: { id: 0, ...data } as Prisma.AppSettingsUncheckedCreateInput,
       update: data as Prisma.AppSettingsUncheckedUpdateInput,
     });
   }
