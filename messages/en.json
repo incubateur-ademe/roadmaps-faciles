@@ -607,6 +607,14 @@
       "gracePeriod": "Grace period",
       "immediate": "Immediate",
       "days": "{count, plural, one {# day} other {# days}}"
+    },
+    "featureFlags": {
+      "menu": "Feature Flags",
+      "title": "Feature Flags",
+      "description": "Enable or disable features under development. Super admins always see all features regardless of flag state.",
+      "noFlags": "No feature flags are defined yet.",
+      "saved": "Feature flags saved.",
+      "flags": {}
     }
   },
   "emails": {

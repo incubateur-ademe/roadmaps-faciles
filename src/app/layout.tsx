@@ -15,6 +15,9 @@ import { config } from "@/config";
 import { ConsentBannerAndConsentManagement } from "@/consentManagement";
 import { DsfrProvider, StartDsfrOnHydration } from "@/dsfr-bootstrap";
 import { DsfrHead, getHtmlAttributes } from "@/dsfr-bootstrap/server-only-index";
+import { getEffectiveFlags } from "@/lib/feature-flags";
+import { FeatureFlagProvider } from "@/lib/feature-flags/client";
+import { auth } from "@/lib/next-auth/auth";
 
 import styles from "./root.module.scss";
 import { sharedMetadata } from "./shared-metadata";
@@ -39,9 +42,13 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = async ({ children }: LayoutProps<"/">) => {
-  const lang = await getLocale();
-  const messages = await getMessages();
-  const t = await getTranslations("skipLinks");
+  const [lang, messages, t, session] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    getTranslations("skipLinks"),
+    auth(),
+  ]);
+  const effectiveFlags = await getEffectiveFlags(session);
 
   return (
     <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app, "snap-y")}>
@@ -85,7 +92,9 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
                         },
                       ]}
                     />
-                    <div className={styles.app}>{children}</div>
+                    <FeatureFlagProvider value={effectiveFlags}>
+                      <div className={styles.app}>{children}</div>
+                    </FeatureFlagProvider>
                   </SkeletonTheme>
                 </MuiDsfrThemeProvider>
               </DsfrProvider>

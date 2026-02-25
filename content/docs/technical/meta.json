@@ -1,5 +1,5 @@
 {
   "title": "Technique",
   "icon": "fr-icon-code-line",
-  "pages": ["index", "dns", "deployment", "self-hosting", "security"]
+  "pages": ["index", "dns", "deployment", "self-hosting", "security", "feature-flags"]
 }

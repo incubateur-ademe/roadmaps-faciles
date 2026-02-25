@@ -30,6 +30,11 @@ export const AdminSideMenu = () => {
       isActive: currentPage === "security",
     },
     {
+      text: t("featureFlags.menu"),
+      linkProps: { href: "/admin/feature-flags" },
+      isActive: currentPage === "feature-flags",
+    },
+    {
       text: t("prismaStudio"),
       linkProps: { href: "/admin/prisma" },
       isActive: currentPage === "prisma",
