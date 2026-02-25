@@ -537,6 +537,8 @@ enum AuditAction {
 
   // Tenant-scoped — Comments
   COMMENT_CREATE
+  COMMENT_EDIT
+  COMMENT_DELETE
 
   // Tenant-scoped — Votes
   POST_VOTE

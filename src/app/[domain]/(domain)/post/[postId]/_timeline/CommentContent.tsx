@@ -33,7 +33,7 @@ import { formatDateHour } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { uploadImage } from "../../../upload-image";
-import { getReplies, sendComment } from "./actions";
+import { deleteComment, editComment, getReplies, sendComment } from "./actions";
 import { type CommentActivity } from "./activityHelpers";
 import style from "./CommentContent.module.scss";
 
@@ -87,6 +87,7 @@ const AuthorBadges = ({
 
 interface CommentContentProps {
   activity: CommentActivity;
+  isAdmin: boolean;
   postAuthorId?: string;
   roleMap: Record<string, UserRole>;
   userId?: string;
@@ -101,8 +102,10 @@ export const CommentContent = ({
   userImage,
   roleMap: initialRoleMap,
   postAuthorId,
+  isAdmin,
 }: CommentContentProps) => {
   const t = useTranslations("post");
+  const locale = useLocale();
   const comment = activity.comment;
   const [showInput, setShowInput] = useState(false);
   const [replies, setReplies] = useState(comment.replies as ReplyWithUser[]);
@@ -110,6 +113,16 @@ export const CommentContent = ({
   const [firstOpen, setFirstOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [roleMap, setRoleMap] = useState(initialRoleMap);
+
+  // Edit state for the main comment
+  const [isEditing, setIsEditing] = useState(false);
+  const [commentBody, setCommentBody] = useState(comment.body);
+  const [wasEdited, setWasEdited] = useState(comment.updatedAt > comment.createdAt);
+  const editBodyRef = useRef(comment.body ?? "");
+  const [editKey, setEditKey] = useState(0);
+  const [editPending, setEditPending] = useState(false);
+  const [editError, setEditError] = useState<null | string>(null);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   // Optimistic replies
   const [optimisticReplies, addOptimisticReply] = useOptimistic(replies, (currentReplies, newReply: ReplyWithUser) => [
@@ -134,6 +147,46 @@ export const CommentContent = ({
   const handleReplyChange = useCallback((value: string) => {
     replyBodyRef.current = value;
   }, []);
+
+  const handleEditChange = useCallback((value: string) => {
+    editBodyRef.current = value;
+  }, []);
+
+  const canEditComment = userId === comment.userId;
+  const canDeleteComment = userId === comment.userId || isAdmin;
+
+  const handleEditSave = async () => {
+    const body = editBodyRef.current.trim();
+    if (!body) return;
+    setEditPending(true);
+    setEditError(null);
+    const result = await editComment({ commentId: comment.id, body });
+    if (result.ok) {
+      setCommentBody(body);
+      setWasEdited(true);
+      setIsEditing(false);
+      setEditKey(k => k + 1);
+    } else {
+      setEditError(result.error);
+    }
+    setEditPending(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(t("deleteCommentConfirm"))) return;
+    const result = await deleteComment(comment.id);
+    if (result.ok) {
+      setIsDeleted(true);
+    }
+  };
+
+  const handleReplyEdit = (replyId: number, newBody: string) => {
+    setReplies(prev => prev.map(r => (r.id === replyId ? { ...r, body: newBody, updatedAt: new Date() } : r)));
+  };
+
+  const handleReplyDelete = (replyId: number) => {
+    setReplies(prev => prev.filter(r => r.id !== replyId));
+  };
 
   const handleReplySubmit = () => {
     const body = replyBodyRef.current.trim();
@@ -210,6 +263,8 @@ export const CommentContent = ({
     });
   };
 
+  if (isDeleted) return null;
+
   const hasMoreReplies = comment._count.replies > 1;
   const firstReply = optimisticReplies[0];
   const displayReplies = optimisticReplies;
@@ -235,14 +290,82 @@ export const CommentContent = ({
                 {activity.comment.user.name}
               </Text>
               <AuthorBadges authorUserId={activity.comment.userId} {...badgeProps} />
+              {wasEdited && (
+                <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
+                  {t("edited")}
+                </Text>
+              )}
             </div>
+            {(canEditComment || canDeleteComment) && !isEditing && (
+              <span className="flex gap-1">
+                {canEditComment && (
+                  <Button
+                    type="button"
+                    size="small"
+                    priority="tertiary no outline"
+                    iconId="fr-icon-edit-line"
+                    title={t("editComment")}
+                    onClick={() => {
+                      editBodyRef.current = commentBody ?? "";
+                      setIsEditing(true);
+                    }}
+                  />
+                )}
+                {canDeleteComment && (
+                  <Button
+                    type="button"
+                    size="small"
+                    priority="tertiary no outline"
+                    iconId="fr-icon-delete-line"
+                    title={t("deleteComment")}
+                    onClick={() => void handleDelete()}
+                  />
+                )}
+              </span>
+            )}
           </div>
         }
-        desc={<MarkdownHooks {...reactMarkdownConfig}>{activity.comment.body}</MarkdownHooks>}
+        desc={
+          isEditing ? (
+            <>
+              <MarkdownEditor
+                key={editKey}
+                defaultValue={commentBody ?? ""}
+                onChangeAction={handleEditChange}
+                uploadImageAction={uploadImage}
+                disabled={editPending}
+              />
+              {editError && <Alert small severity="error" description={editError} className={fr.cx("fr-mt-1w")} />}
+              <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end gap-2")}>
+                <Button
+                  type="button"
+                  size="small"
+                  priority="secondary"
+                  disabled={editPending}
+                  onClick={() => setIsEditing(false)}
+                >
+                  {t("cancelEdit")}
+                </Button>
+                <Button type="button" size="small" disabled={editPending} onClick={() => void handleEditSave()}>
+                  {t("saveComment")}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <MarkdownHooks {...reactMarkdownConfig}>{commentBody}</MarkdownHooks>
+          )
+        }
         endDetail={
           <span className="flex justify-between items-center gap-[1rem] w-full">
-            <span>
-              {activity.comment._count.replies > 0 ? `${activity.comment._count.replies} réponse(s)` : undefined}
+            <span className="flex items-center gap-2">
+              <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
+                {formatDateHour(activity.comment.createdAt, locale)}
+              </Text>
+              {activity.comment._count.replies > 0 && (
+                <Text inline variant={["xs"]} className={fr.cx("fr-mb-0")}>
+                  {`${activity.comment._count.replies} réponse(s)`}
+                </Text>
+              )}
             </span>
             <Button
               type="button"
@@ -276,13 +399,25 @@ export const CommentContent = ({
                     }
                   ></Loader>
                 )}
-                <Reply reply={firstReply} {...badgeProps} />
+                <Reply
+                  reply={firstReply}
+                  isAdmin={isAdmin}
+                  onEditAction={handleReplyEdit}
+                  onDeleteAction={handleReplyDelete}
+                  {...badgeProps}
+                />
               </ThreadEntity>
             ) : showReplies ? (
               <>
                 {displayReplies.map(reply => (
                   <ThreadEntity key={reply.id}>
-                    <Reply reply={reply} {...badgeProps} />
+                    <Reply
+                      reply={reply}
+                      isAdmin={isAdmin}
+                      onEditAction={handleReplyEdit}
+                      onDeleteAction={handleReplyDelete}
+                      {...badgeProps}
+                    />
                   </ThreadEntity>
                 ))}
                 <ThreadEntity actions>
@@ -407,14 +542,63 @@ export const ThreadEntity = ({
 
 interface ReplyProps {
   currentUserId?: string;
+  isAdmin: boolean;
+  onDeleteAction: (replyId: number) => void;
+  onEditAction: (replyId: number, newBody: string) => void;
   postAuthorId?: string;
   reply: ReplyWithUser;
   roleMap: Record<string, UserRole>;
   t: ReturnType<typeof useTranslations<"post">>;
 }
 
-export const Reply = ({ reply, roleMap, currentUserId, postAuthorId, t }: ReplyProps) => {
+export const Reply = ({
+  reply,
+  roleMap,
+  currentUserId,
+  postAuthorId,
+  isAdmin,
+  onEditAction,
+  onDeleteAction,
+  t,
+}: ReplyProps) => {
   const locale = useLocale();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editPending, setEditPending] = useState(false);
+  const [editError, setEditError] = useState<null | string>(null);
+  const editBodyRef = useRef(reply.body ?? "");
+  const [editKey, setEditKey] = useState(0);
+
+  const canEdit = currentUserId === reply.userId;
+  const canDelete = currentUserId === reply.userId || isAdmin;
+  const wasEdited = reply.updatedAt > reply.createdAt;
+
+  const handleEditChange = useCallback((value: string) => {
+    editBodyRef.current = value;
+  }, []);
+
+  const handleEditSave = async () => {
+    const body = editBodyRef.current.trim();
+    if (!body) return;
+    setEditPending(true);
+    setEditError(null);
+    const result = await editComment({ commentId: reply.id, body });
+    if (result.ok) {
+      onEditAction(reply.id, body);
+      setIsEditing(false);
+      setEditKey(k => k + 1);
+    } else {
+      setEditError(result.error);
+    }
+    setEditPending(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(t("deleteCommentConfirm"))) return;
+    const result = await deleteComment(reply.id);
+    if (result.ok) {
+      onDeleteAction(reply.id);
+    }
+  };
 
   return (
     <Card
@@ -442,13 +626,74 @@ export const Reply = ({ reply, roleMap, currentUserId, postAuthorId, t }: ReplyP
               roleMap={roleMap}
               t={t}
             />
+            {wasEdited && (
+              <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
+                {t("edited")}
+              </Text>
+            )}
+            <Text inline variant={["xs", "light"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
+              {formatDateHour(reply.createdAt, locale)}
+            </Text>
           </div>
-          <Text inline variant={["xs", "light"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-            {formatDateHour(reply.createdAt, locale)}
-          </Text>
+          {(canEdit || canDelete) && !isEditing && (
+            <span className="flex gap-1">
+              {canEdit && (
+                <Button
+                  type="button"
+                  size="small"
+                  priority="tertiary no outline"
+                  iconId="fr-icon-edit-line"
+                  title={t("editComment")}
+                  onClick={() => {
+                    editBodyRef.current = reply.body ?? "";
+                    setIsEditing(true);
+                  }}
+                />
+              )}
+              {canDelete && (
+                <Button
+                  type="button"
+                  size="small"
+                  priority="tertiary no outline"
+                  iconId="fr-icon-delete-line"
+                  title={t("deleteComment")}
+                  onClick={() => void handleDelete()}
+                />
+              )}
+            </span>
+          )}
         </div>
       }
-      desc={<MarkdownHooks {...reactMarkdownConfig}>{reply.body}</MarkdownHooks>}
+      desc={
+        isEditing ? (
+          <>
+            <MarkdownEditor
+              key={editKey}
+              defaultValue={reply.body ?? ""}
+              onChangeAction={handleEditChange}
+              uploadImageAction={uploadImage}
+              disabled={editPending}
+            />
+            {editError && <Alert small severity="error" description={editError} className={fr.cx("fr-mt-1w")} />}
+            <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end gap-2")}>
+              <Button
+                type="button"
+                size="small"
+                priority="secondary"
+                disabled={editPending}
+                onClick={() => setIsEditing(false)}
+              >
+                {t("cancelEdit")}
+              </Button>
+              <Button type="button" size="small" disabled={editPending} onClick={() => void handleEditSave()}>
+                {t("saveComment")}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <MarkdownHooks {...reactMarkdownConfig}>{reply.body}</MarkdownHooks>
+        )
+      }
     />
   );
 };

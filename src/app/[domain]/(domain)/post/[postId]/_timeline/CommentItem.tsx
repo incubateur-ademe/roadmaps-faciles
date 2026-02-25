@@ -12,6 +12,7 @@ import { ItemDate } from "./ItemDate";
 
 interface CommentItemProps {
   activity: CommentActivity;
+  isAdmin: boolean;
   postAuthorId?: string;
   roleMap: Record<string, UserRole>;
   userId?: string;
@@ -19,7 +20,15 @@ interface CommentItemProps {
   userName?: string;
 }
 
-export const CommentItem = ({ activity, userId, userName, userImage, roleMap, postAuthorId }: CommentItemProps) => {
+export const CommentItem = ({
+  activity,
+  userId,
+  userName,
+  userImage,
+  roleMap,
+  postAuthorId,
+  isAdmin,
+}: CommentItemProps) => {
   return (
     <>
       <TimelineSeparator>
@@ -37,6 +46,7 @@ export const CommentItem = ({ activity, userId, userName, userImage, roleMap, po
           userImage={userImage}
           roleMap={roleMap}
           postAuthorId={postAuthorId}
+          isAdmin={isAdmin}
         />
       </TimelineContent>
     </>

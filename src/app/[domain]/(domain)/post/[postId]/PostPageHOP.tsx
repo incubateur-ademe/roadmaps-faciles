@@ -152,6 +152,7 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       alreadyLiked,
       canEdit,
       canDelete,
+      isAdmin: Boolean(isAdmin),
       boardSlug: post.board.slug ?? "",
       allowVoting: settings.allowVoting,
       allowAnonymousVoting: settings.allowAnonymousVoting,
@@ -168,6 +169,7 @@ export interface PostPageComponentProps {
   boardSlug: string;
   canDelete: boolean;
   canEdit: boolean;
+  isAdmin: boolean;
   isModal?: boolean;
   post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;

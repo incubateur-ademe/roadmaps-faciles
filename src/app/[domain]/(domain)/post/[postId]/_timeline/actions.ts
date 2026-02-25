@@ -1,14 +1,20 @@
 "use server";
 
 import { getTranslations } from "next-intl/server";
+import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
 import { type Comment, type User } from "@/prisma/client";
-import { type UserRole } from "@/prisma/enums";
+import { UserRole } from "@/prisma/enums";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost } from "@/utils/tenant";
+
+function isElevatedRole(role: UserRole) {
+  return role === UserRole.ADMIN || role === UserRole.OWNER || role === UserRole.MODERATOR;
+}
 
 export interface GetRepliesData {
   replies: Array<{ user: User } & Comment>;
@@ -165,5 +171,152 @@ export async function sendComment({
       ok: false,
       error: "Failed to create comment",
     };
+  }
+}
+
+export interface EditCommentParams {
+  body: string;
+  commentId: number;
+}
+
+export async function editComment({ commentId, body }: EditCommentParams): Promise<ServerActionResponse<Comment>> {
+  const reqCtx = await getRequestContext();
+  const t = await getTranslations("serverErrors");
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+  const userId = session.user.uuid;
+
+  if (!body.trim()) {
+    return { ok: false, error: "Comment body cannot be empty" };
+  }
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { userId: true, tenantId: true, postId: true },
+  });
+
+  if (!comment) {
+    return { ok: false, error: "Comment not found" };
+  }
+
+  const membership = await prisma.userOnTenant.findUnique({
+    where: { userId_tenantId: { userId, tenantId: comment.tenantId } },
+    select: { role: true },
+  });
+
+  const isAdmin = session.user.isSuperAdmin || (membership && isElevatedRole(membership.role));
+  const isAuthor = comment.userId === userId;
+
+  if (!isAuthor && !isAdmin) {
+    return { ok: false, error: t("noPermissionToEdit") };
+  }
+
+  try {
+    const updated = await prisma.comment.update({
+      where: { id: commentId },
+      data: { body: body.trim() },
+      include: { user: true },
+    });
+
+    const domain = await getDomainFromHost();
+    audit(
+      {
+        action: AuditAction.COMMENT_EDIT,
+        userId,
+        tenantId: comment.tenantId,
+        targetType: "Comment",
+        targetId: String(commentId),
+        metadata: { postId: comment.postId },
+      },
+      reqCtx,
+    );
+
+    revalidatePath(`/${domain}/post/${comment.postId}`);
+    return { ok: true, data: updated };
+  } catch (error) {
+    logger.error({ err: error }, "Error editing comment");
+    audit(
+      {
+        action: AuditAction.COMMENT_EDIT,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        tenantId: comment.tenantId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: "Failed to edit comment" };
+  }
+}
+
+export async function deleteComment(commentId: number): Promise<ServerActionResponse> {
+  const reqCtx = await getRequestContext();
+  const t = await getTranslations("serverErrors");
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+  const userId = session.user.uuid;
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { userId: true, tenantId: true, postId: true, _count: { select: { replies: true } } },
+  });
+
+  if (!comment) {
+    return { ok: false, error: "Comment not found" };
+  }
+
+  const membership = await prisma.userOnTenant.findUnique({
+    where: { userId_tenantId: { userId, tenantId: comment.tenantId } },
+    select: { role: true },
+  });
+
+  const isAdmin = session.user.isSuperAdmin || (membership && isElevatedRole(membership.role));
+  const isAuthor = comment.userId === userId;
+
+  if (!isAuthor && !isAdmin) {
+    return { ok: false, error: t("noPermissionToDelete") };
+  }
+
+  try {
+    // Delete replies first (no cascade on self-referencing relation)
+    if (comment._count.replies > 0) {
+      await prisma.comment.deleteMany({ where: { parentId: commentId } });
+    }
+    await prisma.comment.delete({ where: { id: commentId } });
+
+    const domain = await getDomainFromHost();
+    audit(
+      {
+        action: AuditAction.COMMENT_DELETE,
+        userId,
+        tenantId: comment.tenantId,
+        targetType: "Comment",
+        targetId: String(commentId),
+        metadata: { postId: comment.postId },
+      },
+      reqCtx,
+    );
+
+    revalidatePath(`/${domain}/post/${comment.postId}`);
+    return { ok: true };
+  } catch (error) {
+    logger.error({ err: error }, "Error deleting comment");
+    audit(
+      {
+        action: AuditAction.COMMENT_DELETE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        tenantId: comment.tenantId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: "Failed to delete comment" };
   }
 }

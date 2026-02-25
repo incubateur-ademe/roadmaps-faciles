@@ -482,7 +482,13 @@
     "roleModerator": "Modérateur",
     "tagAuthor": "Auteur",
     "tagYou": "Moi",
-    "postCreated": "{author} a créé le post"
+    "postCreated": "{author} a créé le post",
+    "editComment": "Modifier",
+    "deleteComment": "Supprimer",
+    "deleteCommentConfirm": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
+    "saveComment": "Enregistrer",
+    "cancelEdit": "Annuler",
+    "edited": "(modifié)"
   },
   "roadmap": {
     "title": "Feuille de route",

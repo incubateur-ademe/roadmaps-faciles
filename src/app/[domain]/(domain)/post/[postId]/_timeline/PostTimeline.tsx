@@ -21,10 +21,11 @@ import { ItemDate } from "./ItemDate";
 import { StatusChangeItem } from "./StatusChangeItem";
 
 export interface PostTimelineProps {
+  isAdmin: boolean;
   post: PostPageComponentProps["post"];
 }
 
-export const PostTimeline = async ({ post }: PostTimelineProps) => {
+export const PostTimeline = async ({ post, isAdmin }: PostTimelineProps) => {
   const t = await getTranslations("post");
   const session = await auth();
   const userId = session?.user?.uuid;
@@ -72,6 +73,7 @@ export const PostTimeline = async ({ post }: PostTimelineProps) => {
                 userImage={userImage}
                 roleMap={roleMap}
                 postAuthorId={post.userId ?? undefined}
+                isAdmin={isAdmin}
               />
             ) : isStatusChangeActivity(activity) ? (
               <StatusChangeItem activity={activity} />

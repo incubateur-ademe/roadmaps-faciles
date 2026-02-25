@@ -1,6 +1,5 @@
 "use client";
 
-import "@github/text-expander-element";
 import { fr } from "@codegouvfr/react-dsfr";
 import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
@@ -52,6 +51,11 @@ export const MarkdownEditor = ({
   const [expanderEl, setExpanderEl] = useState<HTMLElement | null>(null);
   const expanderCallbackRef = useCallback((node: HTMLElement | null) => setExpanderEl(node), []);
   const inputId = useId();
+
+  // Load text-expander Web Component client-side only (uses HTMLElement at module scope)
+  useEffect(() => {
+    void import("@github/text-expander-element");
+  }, []);
 
   useEffect(() => {
     if (!uploadError) return;

@@ -225,6 +225,7 @@
 
 ## Gotchas
 - React 19 / Next.js 16: ne JAMAIS exporter `Context.Provider` directement (`export const Provider = MyContext.Provider`) — ça crash en RSC ("Received a promise that resolves to: Context"). Toujours wrapper dans un vrai composant client (`export const Provider = ({ children, value }) => <MyContext value={value}>{children}</MyContext>`)
+- **NEVER use `prisma db push`** — it applies schema changes directly without creating a migration, causing drift between the migration history and the actual database. Always use `prisma migrate dev --name <name>` to create migrations. If you need to add enum values, create the migration SQL manually (`ALTER TYPE ... ADD VALUE`) and use `prisma migrate dev` to apply it. The only exception is `scripts/worktree-new.sh --db` which uses `db push` for ephemeral worktree DBs.
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
 - DNS CNAME trailing dot: resolvers may return `"target.io."` — always normalize with `.replace(/\.$/, "")` before comparing
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing
