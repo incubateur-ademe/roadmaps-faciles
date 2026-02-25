@@ -1,9 +1,11 @@
 "use client";
 
+import "@github/text-expander-element";
 import { fr } from "@codegouvfr/react-dsfr";
 import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useTranslations } from "next-intl";
+import { search } from "node-emoji";
 import { Fragment, type DragEvent, type KeyboardEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { MarkdownHooks } from "react-markdown";
 
@@ -12,6 +14,14 @@ import { reactMarkdownPreviewConfig } from "@/utils/react-markdown";
 import { Text } from "../Typography";
 import styles from "./MarkdownEditor.module.scss";
 import { applyToolbarAction, insertImageMarkdown, toolbarItems } from "./markdownToolbar";
+
+declare module "react" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "text-expander": React.DetailedHTMLProps<{ keys?: string } & React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
 
 const ALLOWED_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
 
@@ -39,6 +49,8 @@ export const MarkdownEditor = ({
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<null | string>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [expanderEl, setExpanderEl] = useState<HTMLElement | null>(null);
+  const expanderCallbackRef = useCallback((node: HTMLElement | null) => setExpanderEl(node), []);
   const inputId = useId();
 
   useEffect(() => {
@@ -54,6 +66,74 @@ export const MarkdownEditor = ({
     },
     [onChangeAction],
   );
+
+  // Emoji autocomplete via text-expander
+  useEffect(() => {
+    if (!expanderEl) return;
+    const expander = expanderEl;
+
+    const MAX_SUGGESTIONS = 8;
+
+    const handleChange = (e: Event) => {
+      const { text, provide } = (e as CustomEvent).detail as {
+        provide: (result: { fragment?: HTMLElement; matched: boolean }) => void;
+        text: string;
+      };
+
+      let results: ReturnType<typeof search> = [];
+      try {
+        results = search(text).slice(0, MAX_SUGGESTIONS);
+      } catch {
+        // node-emoji passes query to RegExp — special chars like +, *, ( crash it
+        provide({ matched: false });
+        return;
+      }
+      if (results.length === 0) {
+        provide({ matched: false });
+        return;
+      }
+
+      const menu = document.createElement("ul");
+      menu.className = styles.emojiMenu;
+      menu.setAttribute("role", "listbox");
+
+      for (const result of results) {
+        const li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.setAttribute("data-value", `:${result.name}:`);
+        const charSpan = document.createElement("span");
+        charSpan.className = styles.emojiChar;
+        charSpan.textContent = result.emoji;
+        const nameSpan = document.createElement("span");
+        nameSpan.className = styles.emojiName;
+        nameSpan.textContent = `:${result.name}:`;
+        li.append(charSpan, " ", nameSpan);
+        menu.appendChild(li);
+      }
+
+      provide({ matched: true, fragment: menu });
+    };
+
+    const handleValue = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { item: HTMLElement; value: null | string };
+      detail.value = detail.item.getAttribute("data-value");
+    };
+
+    const handleCommitted = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { input: HTMLTextAreaElement };
+      updateValue(detail.input.value);
+    };
+
+    expander.addEventListener("text-expander-change", handleChange);
+    expander.addEventListener("text-expander-value", handleValue);
+    expander.addEventListener("text-expander-committed", handleCommitted);
+
+    return () => {
+      expander.removeEventListener("text-expander-change", handleChange);
+      expander.removeEventListener("text-expander-value", handleValue);
+      expander.removeEventListener("text-expander-committed", handleCommitted);
+    };
+  }, [expanderEl, updateValue]);
 
   const applyAction = useCallback(
     (action: (typeof toolbarItems)[number]["action"]) => {
@@ -124,6 +204,7 @@ export const MarkdownEditor = ({
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      if (disabled) return;
       const items = e.clipboardData.items;
       for (const item of items) {
         if (ALLOWED_TYPES.has(item.type)) {
@@ -134,13 +215,14 @@ export const MarkdownEditor = ({
         }
       }
     },
-    [handleUpload],
+    [disabled, handleUpload],
   );
 
   const handleDrop = useCallback(
     (e: DragEvent<HTMLTextAreaElement>) => {
       e.preventDefault();
       setIsDragging(false);
+      if (disabled) return;
       const files = e.dataTransfer.files;
       if (files.length > 0) {
         const file = files[0];
@@ -149,7 +231,7 @@ export const MarkdownEditor = ({
         }
       }
     },
-    [handleUpload],
+    [disabled, handleUpload],
   );
 
   const handleDragOver = useCallback((e: DragEvent<HTMLTextAreaElement>) => {
@@ -212,9 +294,7 @@ export const MarkdownEditor = ({
 
           <div className="ml-auto flex items-center">
             {uploading && <span className={styles.uploading}>{t("uploading")}</span>}
-            {uploadError && (
-              <span className={cx(styles.uploading, "text-[var(--text-default-error)]")}>{uploadError}</span>
-            )}
+            {uploadError && <span className={styles.uploadError}>{uploadError}</span>}
             <ToggleSwitch
               className="mb-0"
               label={
@@ -239,20 +319,22 @@ export const MarkdownEditor = ({
             )}
           </div>
         ) : (
-          <textarea
-            ref={textareaRef}
-            id={inputId}
-            className={cx(styles.textarea, isDragging && styles.dropzone)}
-            value={value}
-            disabled={disabled}
-            placeholder={t("placeholder")}
-            onChange={e => updateValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          />
+          <text-expander ref={expanderCallbackRef} keys=":">
+            <textarea
+              ref={textareaRef}
+              id={inputId}
+              className={cx(styles.textarea, isDragging && styles.dropzone)}
+              value={value}
+              disabled={disabled}
+              placeholder={t("placeholder")}
+              onChange={e => updateValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            />
+          </text-expander>
         )}
       </div>
     </div>

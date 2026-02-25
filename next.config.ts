@@ -37,6 +37,9 @@ const csp = {
     "data:",
     "espace-membre.incubateur.net",
     process.env.STORAGE_S3_PUBLIC_URL && new URL(process.env.STORAGE_S3_PUBLIC_URL).host,
+    !process.env.STORAGE_S3_PUBLIC_URL &&
+      process.env.STORAGE_S3_ENDPOINT &&
+      new URL(process.env.STORAGE_S3_ENDPOINT).host,
   ].flat(),
   "script-src": [
     "'self'",

@@ -108,8 +108,58 @@
   }
 }
 
+.uploadError {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-default-error);
+}
+
 .dropzone {
   outline: 2px dashed var(--border-active-blue-france);
   outline-offset: -2px;
   background-color: var(--background-alt-blue-france);
+}
+
+.emojiMenu {
+  position: absolute;
+  z-index: 1000;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--text-default-grey);
+
+    &[aria-selected="true"] {
+      background-color: var(--background-default-grey-hover);
+    }
+
+    &:hover {
+      background-color: var(--background-default-grey-hover);
+    }
+  }
+}
+
+.emojiChar {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.emojiName {
+  color: var(--text-mention-grey);
 }

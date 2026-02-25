@@ -468,7 +468,21 @@
     "savePost": "Enregistrer",
     "anonymous": "Anonyme",
     "deletePost": "Supprimer",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible."
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.",
+    "submitComment": "Envoyer",
+    "loginToComment": "<link>Connectez-vous</link> pour commenter.",
+    "reply": "Répondre",
+    "cancelReply": "Annuler",
+    "submitReply": "Envoyer",
+    "viewPreviousReplies": "Voir les réponses précédentes",
+    "collapseReplies": "Replier les réponses",
+    "viewReplies": "{count, plural, one {Voir 1 réponse} other {Voir # réponses}}",
+    "roleOwner": "Propriétaire",
+    "roleAdmin": "Admin",
+    "roleModerator": "Modérateur",
+    "tagAuthor": "Auteur",
+    "tagYou": "Moi",
+    "postCreated": "{author} a créé le post"
   },
   "roadmap": {
     "title": "Feuille de route",

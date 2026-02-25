@@ -468,7 +468,21 @@
     "savePost": "Save",
     "anonymous": "Anonymous",
     "deletePost": "Delete",
-    "deleteConfirm": "Are you sure you want to delete this post? This action is irreversible."
+    "deleteConfirm": "Are you sure you want to delete this post? This action is irreversible.",
+    "submitComment": "Send",
+    "loginToComment": "<link>Log in</link> to comment.",
+    "reply": "Reply",
+    "cancelReply": "Cancel",
+    "submitReply": "Send",
+    "viewPreviousReplies": "View previous replies",
+    "collapseReplies": "Collapse replies",
+    "viewReplies": "{count, plural, one {View 1 reply} other {View # replies}}",
+    "roleOwner": "Owner",
+    "roleAdmin": "Admin",
+    "roleModerator": "Moderator",
+    "tagAuthor": "Author",
+    "tagYou": "Me",
+    "postCreated": "{author} created the post"
   },
   "roadmap": {
     "title": "Roadmap",

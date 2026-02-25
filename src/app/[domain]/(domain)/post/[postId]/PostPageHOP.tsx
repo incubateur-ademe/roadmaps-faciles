@@ -8,7 +8,6 @@ import { type ReactElement } from "react";
 import { MarkdownAsync } from "react-markdown";
 
 import { LikeButton } from "@/components/Board/LikeButton";
-import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
 import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
@@ -24,6 +23,7 @@ import { type EnrichedPost } from "../../board/[boardSlug]/actions";
 import { DomainPageHOP } from "../../DomainPage";
 import { uploadImage } from "../../upload-image";
 import { PostTimeline } from "./_timeline/PostTimeline";
+import { CommentForm } from "./CommentForm";
 import { PostEditToggle } from "./PostEditToggle";
 
 export interface PostPageParams {
@@ -147,6 +147,7 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
     return page({
       post,
       user: session?.user,
+      userId: session?.user.uuid,
       anonymousId,
       alreadyLiked,
       canEdit,
@@ -170,6 +171,7 @@ export interface PostPageComponentProps {
   isModal?: boolean;
   post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;
+  userId?: string;
 }
 
 export const PostPageComponent = async (props: PostPageComponentProps) => {
@@ -220,9 +222,7 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         </Text>
       </PostEditToggle>
       {allowComments && (
-        <div className={fr.cx("fr-mt-2w")}>
-          <MarkdownEditor label={t("addComment")} uploadImageAction={uploadImage} />
-        </div>
+        <CommentForm postId={post.id} tenantId={post.tenantId} userId={props.userId} uploadImageAction={uploadImage} />
       )}
       {isModal ? (
         <>

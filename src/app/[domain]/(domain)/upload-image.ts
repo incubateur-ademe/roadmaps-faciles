@@ -81,7 +81,7 @@ export async function uploadImage(formData: FormData): Promise<ServerActionRespo
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const storage = getStorageProvider();
-    const result = await storage.upload(key, buffer, file.type);
+    await storage.upload(key, buffer, file.type);
 
     audit(
       {
@@ -93,7 +93,7 @@ export async function uploadImage(formData: FormData): Promise<ServerActionRespo
       reqCtx,
     );
 
-    return { ok: true, data: { url: result.url } };
+    return { ok: true, data: { url: `/api/uploads/${key}` } };
   } catch (error) {
     logger.error({ err: error }, "Error uploading image");
     audit(
