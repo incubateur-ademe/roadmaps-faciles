@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { type AppSettings } from "@/prisma/client";
+import { type AppSettings, type Prisma } from "@/prisma/client";
 
 import { type IAppSettingsRepo } from "../IAppSettingsRepo";
 
@@ -13,12 +13,12 @@ export class AppSettingsRepoPrisma implements IAppSettingsRepo {
   }
 
   public update(
-    data: Partial<Pick<AppSettings, "force2FA" | "force2FAGraceDays" | "pinnedTenantId">>,
+    data: Partial<Pick<AppSettings, "featureFlags" | "force2FA" | "force2FAGraceDays" | "pinnedTenantId">>,
   ): Promise<AppSettings> {
     return prisma.appSettings.upsert({
       where: { id: 0 },
-      create: { id: 0, ...data },
-      update: data,
+      create: { id: 0, ...data } as Prisma.AppSettingsUncheckedCreateInput,
+      update: data as Prisma.AppSettingsUncheckedUpdateInput,
     });
   }
 }

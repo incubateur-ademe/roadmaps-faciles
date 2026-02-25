@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
+import { assertFeature } from "@/lib/feature-flags";
 import { type IntegrationConfig } from "@/lib/integration-provider/types";
+import { auth } from "@/lib/next-auth/auth";
 import { boardRepo, integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
 import { type TenantIntegration } from "@/prisma/client";
 import { CreateIntegration } from "@/useCases/integrations/CreateIntegration";
@@ -22,6 +24,7 @@ import { getDomainFromHost, getTenantFromDomain } from "@/utils/tenant";
 export const testNotionConnection = async (data: {
   apiKey: string;
 }): Promise<ServerActionResponse<{ botName?: string; success: boolean }>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
@@ -37,6 +40,7 @@ export const testNotionConnection = async (data: {
 export const fetchNotionDatabases = async (data: {
   apiKey: string;
 }): Promise<ServerActionResponse<Array<{ id: string; name: string; url: string }>>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
@@ -53,6 +57,7 @@ export const fetchNotionDatabaseSchema = async (data: {
   apiKey: string;
   databaseId: string;
 }): Promise<ServerActionResponse<Awaited<ReturnType<GetNotionDatabaseSchema["execute"]>>>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
 
@@ -70,6 +75,7 @@ export const createIntegration = async (data: {
   name: string;
   syncIntervalMinutes?: number;
 }): Promise<ServerActionResponse<TenantIntegration>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
@@ -118,6 +124,7 @@ export const updateIntegration = async (data: {
   name?: string;
   syncIntervalMinutes?: null | number;
 }): Promise<ServerActionResponse<TenantIntegration>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
@@ -160,6 +167,7 @@ export const deleteIntegration = async (data: {
   cleanupInboundPosts: boolean;
   id: number;
 }): Promise<ServerActionResponse<{ deletedPostCount: number }>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
@@ -201,6 +209,7 @@ export const deleteIntegration = async (data: {
 export const syncIntegration = async (data: {
   integrationId: number;
 }): Promise<ServerActionResponse<{ conflicts: number; errors: number; synced: number }>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   const session = await assertTenantAdmin(domain);
   const tenant = await getTenantFromDomain(domain);
@@ -253,6 +262,7 @@ export const resolveSyncConflict = async (data: {
   mappingId: number;
   resolution: "local" | "remote";
 }): Promise<ServerActionResponse> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   const session = await assertTenantModerator(domain);
   const tenant = await getTenantFromDomain(domain);
@@ -288,6 +298,7 @@ export const fetchSyncLogs = async (data: {
   integrationId: number;
   limit?: number;
 }): Promise<ServerActionResponse<Awaited<ReturnType<GetIntegrationSyncLogs["execute"]>>>> => {
+  await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantModerator(domain);
   const tenant = await getTenantFromDomain(domain);

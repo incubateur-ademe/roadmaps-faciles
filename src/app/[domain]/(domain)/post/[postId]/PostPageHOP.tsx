@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { type User } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -11,6 +10,7 @@ import { MarkdownAsync } from "react-markdown";
 import { LikeButton } from "@/components/Board/LikeButton";
 import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { integrationMappingRepo } from "@/lib/repo";
@@ -23,7 +23,9 @@ import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { type EnrichedPost } from "../../board/[boardSlug]/actions";
 import { DomainPageHOP } from "../../DomainPage";
+import { uploadImage } from "../../upload-image";
 import { PostTimeline } from "./_timeline/PostTimeline";
+import { CommentForm } from "./CommentForm";
 import { PostEditToggle } from "./PostEditToggle";
 
 export interface PostPageParams {
@@ -128,8 +130,9 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
 
     const alreadyLiked = post.likes.some(like => session?.user.id === like.userId || like.anonymousId === anonymousId);
 
-    // Fetch integration mapping for "View on Notion" link
-    const postMappings = await integrationMappingRepo.findMappingsForPost(post.id);
+    // Fetch integration mapping for "View on Notion" link (only if feature enabled)
+    const integrationsEnabled = await isFeatureEnabled("integrations", session);
+    const postMappings = integrationsEnabled ? await integrationMappingRepo.findMappingsForPost(post.id) : [];
     const notionMapping = postMappings.find(m => m.remoteUrl);
     const isInbound = postMappings.some(
       m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
@@ -154,10 +157,12 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
     return page({
       post,
       user: session?.user,
+      userId: session?.user.uuid,
       anonymousId,
       alreadyLiked,
       canEdit,
       canDelete,
+      isAdmin: Boolean(isAdmin),
       boardSlug: post.board.slug ?? "",
       allowVoting: settings.allowVoting,
       allowAnonymousVoting: settings.allowAnonymousVoting,
@@ -175,10 +180,12 @@ export interface PostPageComponentProps {
   boardSlug: string;
   canDelete: boolean;
   canEdit: boolean;
+  isAdmin: boolean;
   isModal?: boolean;
   notionUrl?: null | string;
   post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;
+  userId?: string;
 }
 
 export const PostPageComponent = async (props: PostPageComponentProps) => {
@@ -236,14 +243,7 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         </Text>
       </PostEditToggle>
       {allowComments && (
-        <Input
-          textArea
-          label={t("addComment")}
-          classes={{
-            nativeInputOrTextArea: "resize-y",
-          }}
-          className={fr.cx("fr-mt-2w")}
-        />
+        <CommentForm postId={post.id} tenantId={post.tenantId} userId={props.userId} uploadImageAction={uploadImage} />
       )}
       {isModal ? (
         <>

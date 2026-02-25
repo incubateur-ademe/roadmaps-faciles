@@ -347,6 +347,7 @@ model AppSettings {
   id                Int      @id @default(0)
   force2FA          Boolean  @default(false)
   force2FAGraceDays Int      @default(5)
+  featureFlags      Json?
   pinnedTenantId    Int?     @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -616,8 +617,13 @@ enum AuditAction {
   POST_DELETE
   POST_EDIT
 
+  // Tenant-scoped — Images
+  IMAGE_UPLOAD
+
   // Tenant-scoped — Comments
   COMMENT_CREATE
+  COMMENT_EDIT
+  COMMENT_DELETE
 
   // Tenant-scoped — Votes
   POST_VOTE
@@ -679,6 +685,7 @@ enum AuditAction {
   ROOT_USER_ROLE_UPDATE
   ROOT_USER_STATUS_UPDATE
   ROOT_USER_UPDATE
+  ROOT_FEATURE_FLAGS_UPDATE
   ROOT_SECURITY_SETTINGS_UPDATE
   ROOT_APP_SETTINGS_UPDATE
 }

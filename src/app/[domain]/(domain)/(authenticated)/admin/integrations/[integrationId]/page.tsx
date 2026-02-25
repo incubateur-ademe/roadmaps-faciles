@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { assertFeature } from "@/lib/feature-flags";
+import { auth } from "@/lib/next-auth/auth";
 import { integrationMappingRepo, integrationRepo, integrationSyncLogRepo } from "@/lib/repo";
 import { GetIntegrationSyncLogs } from "@/useCases/integrations/GetIntegrationSyncLogs";
 
@@ -9,6 +11,8 @@ import { IntegrationDetail } from "./IntegrationDetail";
 
 const IntegrationDetailPage = DomainPageHOP<{ integrationId: string }>()(async props => {
   const { tenant } = props._data;
+  await assertFeature("integrations", await auth());
+
   const integrationId = Number((await props.params).integrationId);
 
   if (isNaN(integrationId)) notFound();

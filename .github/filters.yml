@@ -51,6 +51,8 @@ test-unit:
   - 'src/lib/repo/index.ts'
   - 'src/lib/services/**'
   - 'src/lib/integration-provider/**'
+  - 'src/lib/storage-provider/**'
+  - 'src/dsfr/**'
   - 'src/config.ts'
   - 'tests/testu/**'
   - 'tests/testi/**'

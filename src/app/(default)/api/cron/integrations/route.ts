@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { config } from "@/config";
+import { getFeatureFlags } from "@/lib/feature-flags";
 import { createIntegrationProvider } from "@/lib/integration-provider";
 import { decrypt } from "@/lib/integration-provider/encryption";
 import { type IntegrationConfig } from "@/lib/integration-provider/types";
@@ -15,6 +16,12 @@ export async function POST(request: Request) {
 
   if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check feature flag (no session for cron — check global flag only)
+  const flags = await getFeatureFlags();
+  if (!flags.integrations) {
+    return NextResponse.json({ error: "Feature disabled" }, { status: 403 });
   }
 
   const dueIntegrations = await integrationRepo.findDueForSync();
