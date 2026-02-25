@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db/prisma";
 import { type DNSVerificationResult, verifyDNS } from "@/lib/domain-provider/dns";
 import { logger } from "@/lib/logger";
 import { boardRepo, postStatusRepo, tenantRepo, tenantSettingsRepo, userOnTenantRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { embedConfigured, tenantDomainConfigured, tenantSettingsUpdated } from "@/lib/tracking-provider/trackingPlan";
 import { DeleteTenant } from "@/useCases/tenant/DeleteTenant";
 import { SaveTenantWithSettings, SaveTenantWithSettingsInput } from "@/useCases/tenant/SaveTenantWithSettings";
 import { UpdateTenantDomain, UpdateTenantDomainInput } from "@/useCases/tenant/UpdateTenantDomain";
@@ -41,6 +43,14 @@ export const saveTenantSettings = async (data: unknown): Promise<ServerActionRes
       },
       reqCtx,
     );
+    void trackServerEvent(
+      session.user.uuid,
+      tenantSettingsUpdated({ tenantId: String(tenant.id), setting: "general" }),
+    );
+    if (validated.data.allowEmbedding) {
+      void trackServerEvent(session.user.uuid, embedConfigured({ tenantId: String(tenant.id) }));
+    }
+
     revalidatePath("/admin/general");
     return { ok: true };
   } catch (error) {
@@ -118,6 +128,11 @@ export const updateTenantDomain = async (data: unknown): Promise<ServerActionRes
       },
       reqCtx,
     );
+    void trackServerEvent(
+      session.user.uuid,
+      tenantDomainConfigured({ tenantId: String(tenant.id), domain: String(validated.data.customDomain ?? "") }),
+    );
+
     revalidatePath("/admin/general");
     return { ok: true };
   } catch (error) {

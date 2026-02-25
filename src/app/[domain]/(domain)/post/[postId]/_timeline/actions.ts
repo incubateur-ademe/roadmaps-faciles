@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { commentCreated } from "@/lib/tracking-provider/trackingPlan";
 import { type Comment, type User } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
@@ -150,6 +152,12 @@ export async function sendComment({
       },
       reqCtx,
     );
+
+    void trackServerEvent(
+      userId,
+      commentCreated({ postId: String(postId), tenantId: String(tenantId), isReply: !!parentId }),
+    );
+
     return {
       ok: true,
       data: newComment,

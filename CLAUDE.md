@@ -84,14 +84,30 @@
   - `AuditInput.metadata` accepts `Record<string, unknown>` — cast to `Prisma.InputJsonValue` happens internally in `audit()`
   - TS interfaces lack implicit index signatures — use `{ ...obj }` spread to convert interface to `Record<string, unknown>`
   - `AuditLog` Prisma model has no FK intentionally — logs survive user/tenant deletion; batch user lookup via Map in repo
-- Observability: Pino (structured logging) + Sentry (optional error tracking/tracing)
+- Observability: Pino (structured logging) + Sentry (error tracking/tracing) + PostHog (product analytics)
   - Logger: `src/lib/logger.ts` — `server-only` singleton; `pino-pretty` in dev, JSON in prod
   - Sentry: enabled by `SENTRY_DSN` env var; when empty, fully disabled (zero overhead)
   - Sentry source maps: only uploaded in prod/staging (`APP_ENV` check in `next.config.ts`)
+  - Sentry hardening: environment from `NEXT_PUBLIC_APP_ENV`, release from `NEXT_PUBLIC_APP_VERSION`, sampling by env (prod=0.1, staging=0.5, dev=1.0), `beforeSend` noise filter (ResizeObserver, extensions, CORS), PostHog cross-integration (session/distinct ID as Sentry tags)
+  - Sentry scope: `enrichSentryScope(reqCtx)` in `src/lib/utils/sentry.ts` — injects correlation ID + IP as Sentry tags
   - Correlation ID: generated in `src/proxy.ts`, propagated via `x-correlation-id` header (request + response)
   - Request logger: `createRequestLogger(reqCtx)` in `src/lib/utils/requestLogger.ts` — child logger with correlationId
   - Health check: `/api/healthz` route handler (JSON, checks DB + Redis, 200/503)
   - Server-side `console.*` → use `logger` from `@/lib/logger`; client-side `console.error` stays (Sentry captures automatically)
+- Tracking: `src/lib/tracking-provider/` — provider abstraction (like domain-provider/dns-provider)
+  - Three providers: `noop` (dev default), `matomo` (page views only), `posthog` (full tracking + feature flags)
+  - Config: `NEXT_PUBLIC_TRACKING_PROVIDER` env var (`"noop"` | `"matomo"` | `"posthog"`), `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` (default `https://eu.i.posthog.com`)
+  - PostHog: EU host, no session replay (`disable_session_recording: true`), feature flags prepared (`useFeatureFlags()` hook)
+  - PostHog has separate preprod + prod projects; Sentry has one project with `environment` tag distinction
+  - Client-side: `useTracking()` hook from `TrackingContext.tsx`, `<TrackPageView event={...} />` for page views
+  - Server-side: `void trackServerEvent(distinctId, event)` from `@/lib/tracking-provider/serverTracking` — fire-and-forget like `audit()`
+  - Server imports: `import { trackServerEvent } from "@/lib/tracking-provider/serverTracking"` (never from barrel `index.ts` — it's client-safe only)
+  - Tracking plan: `trackingPlan.ts` — 24 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
+  - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`
+  - Consent: DSFR consent banner with conditional finalities per provider in `src/consentManagement.tsx`
+  - Identity sync: `IdentifyUser.tsx` client component — syncs NextAuth session → Sentry user context + tracking provider identify/group
+  - Auth tracking: `user.signed_up`, `user.first_login`, `user.signed_in` fired in NextAuth jwt callback; `invitation.accepted` in signIn callback
+  - Activation events: `post.first_created` / `vote.first_cast` use fire-and-forget count check (`prisma.post.count().then(...)`) after creation
 - Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
 - Storage providers: `src/lib/storage-provider/` — `IStorageProvider` abstraction + factory `getStorageProvider()` (noop, s3)
   - Config: `config.storageProvider` in `src/config.ts` — `STORAGE_PROVIDER`, `STORAGE_S3_*` env vars
@@ -163,6 +179,7 @@
 - If a task is too large for one session, implement as much as possible and clearly list remaining items
 - After implementing a feature or fix, assess whether tests should be added or updated — flag it to the user with a recommendation on which test layer(s) apply (testu for pure logic, testi for use case behavior, testdb for repo changes, teste2e for user-facing flows)
 - Audit logging: every server action or route handler performing a mutation (create, update, delete, security change) MUST call `audit()` — check `AuditAction` enum for existing actions, propose new enum values if needed. Pattern: `getRequestContext()` before try/catch, `audit()` on success + catch + validation early returns
+- Event tracking: server actions with business-significant mutations should call `void trackServerEvent(distinctId, eventFactory({...}))` after `audit()` on the success path. Check `trackingPlan.ts` for existing events, propose new ones following the `entity.past_tense_verb` convention and AARRI categorization
 
 ## Worktrees (multi-Claude en parallèle)
 - Chaque session Claude parallèle travaille dans son propre git worktree — JAMAIS deux sessions sur le même répertoire
@@ -273,3 +290,6 @@
 - GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
 - File upload MIME type: `file.type` from `FormData` is client-controlled — server validates against `ALLOWED_TYPES` set but does NOT check magic bytes. A `file-type` npm package could be added for magic bytes validation if stricter security is needed
 - Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)
+- Tracking provider `factory.ts` uses CJS `require()` to avoid pulling server code into client bundle — cannot be unit-tested with vitest ESM mocking; test providers directly instead
+- Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
+- Tracking barrel `index.ts` is client-safe only — never import `getServerTrackingProvider` or `serverTracking` from it; use direct path imports for server code

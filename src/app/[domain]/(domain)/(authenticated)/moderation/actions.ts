@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { logger } from "@/lib/logger";
 import { postRepo } from "@/lib/repo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { moderationPostApproved, moderationPostRejected } from "@/lib/tracking-provider/trackingPlan";
 import { ApprovePost, ApprovePostInput } from "@/useCases/posts/ApprovePost";
 import { DeletePost, DeletePostInput } from "@/useCases/posts/DeletePost";
 import { RejectPost, RejectPostInput } from "@/useCases/posts/RejectPost";
@@ -36,6 +38,11 @@ export async function approvePost(data: { postId: number }): Promise<ServerActio
         targetId: String(data.postId),
       },
       reqCtx,
+    );
+
+    void trackServerEvent(
+      session.user.uuid,
+      moderationPostApproved({ postId: String(data.postId), tenantId: String(tenant.id) }),
     );
 
     revalidatePath("/moderation");
@@ -80,6 +87,11 @@ export async function rejectPost(data: { postId: number }): Promise<ServerAction
         targetId: String(data.postId),
       },
       reqCtx,
+    );
+
+    void trackServerEvent(
+      session.user.uuid,
+      moderationPostRejected({ postId: String(data.postId), tenantId: String(tenant.id) }),
     );
 
     revalidatePath("/moderation");

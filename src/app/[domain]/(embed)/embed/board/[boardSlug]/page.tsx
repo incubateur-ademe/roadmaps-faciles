@@ -12,6 +12,8 @@ import { config } from "@/config";
 import { Container } from "@/dsfr";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
+import { TrackPageView } from "@/lib/tracking-provider";
+import { embedViewed } from "@/lib/tracking-provider/trackingPlan";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { getTenantFromDomain } from "@/utils/tenant";
 
@@ -108,6 +110,7 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
 
   return (
     <Container my="2w">
+      <TrackPageView event={embedViewed({ boardId: String(board.id), tenantId: String(tenant.id) })} />
       <h2 className={fr.cx("fr-h4", "fr-mb-1w")}>{board.name}</h2>
       <p className={cx(fr.cx("fr-hint-text", "fr-mb-2w"))}>{tc("result", { count: filteredCount })}</p>
       <ClientAnimate className={cx("flex flex-col gap-[1rem]")}>

@@ -18,6 +18,8 @@ import { DsfrHead, getHtmlAttributes } from "@/dsfr-bootstrap/server-only-index"
 import { getEffectiveFlags } from "@/lib/feature-flags";
 import { FeatureFlagProvider } from "@/lib/feature-flags/client";
 import { auth } from "@/lib/next-auth/auth";
+import { IdentifyUser } from "@/lib/tracking-provider/IdentifyUser";
+import { TrackingProvider } from "@/lib/tracking-provider/TrackingProvider";
 
 import styles from "./root.module.scss";
 import { sharedMetadata } from "./shared-metadata";
@@ -73,29 +75,44 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
               <DsfrProvider lang={lang}>
                 <ConsentBannerAndConsentManagement />
                 <MuiDsfrThemeProvider>
-                  <SkeletonTheme
-                    baseColor={fr.colors.decisions.background.contrast.grey.default}
-                    highlightColor={fr.colors.decisions.background.contrast.grey.active}
-                    borderRadius={fr.spacing("1v")}
-                    duration={2}
+                  <TrackingProvider
+                    providerType={config.tracking.provider}
+                    posthog={
+                      config.tracking.provider === "posthog"
+                        ? { apiKey: config.tracking.posthogKey, host: config.tracking.posthogHost }
+                        : undefined
+                    }
+                    matomo={
+                      config.tracking.provider === "matomo"
+                        ? { url: config.matomo.url, siteId: config.matomo.siteId }
+                        : undefined
+                    }
                   >
-                    <StartDsfrOnHydration />
-                    <SkipLinks
-                      links={[
-                        {
-                          anchor: `#${contentId}`,
-                          label: t("content"),
-                        },
-                        {
-                          anchor: `#${footerId}`,
-                          label: t("footer"),
-                        },
-                      ]}
-                    />
-                    <FeatureFlagProvider value={effectiveFlags}>
-                      <div className={styles.app}>{children}</div>
-                    </FeatureFlagProvider>
-                  </SkeletonTheme>
+                    <IdentifyUser />
+                    <SkeletonTheme
+                      baseColor={fr.colors.decisions.background.contrast.grey.default}
+                      highlightColor={fr.colors.decisions.background.contrast.grey.active}
+                      borderRadius={fr.spacing("1v")}
+                      duration={2}
+                    >
+                      <StartDsfrOnHydration />
+                      <SkipLinks
+                        links={[
+                          {
+                            anchor: `#${contentId}`,
+                            label: t("content"),
+                          },
+                          {
+                            anchor: `#${footerId}`,
+                            label: t("footer"),
+                          },
+                        ]}
+                      />
+                      <FeatureFlagProvider value={effectiveFlags}>
+                        <div className={styles.app}>{children}</div>
+                      </FeatureFlagProvider>
+                    </SkeletonTheme>
+                  </TrackingProvider>
                 </MuiDsfrThemeProvider>
               </DsfrProvider>
             </NextIntlClientProvider>

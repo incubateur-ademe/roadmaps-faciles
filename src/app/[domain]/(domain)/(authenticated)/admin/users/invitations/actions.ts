@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { config } from "@/config";
 import { invitationRepo, tenantSettingsRepo, userOnTenantRepo, userRepo } from "@/lib/repo";
 import { type UserEmailSearchResult } from "@/lib/repo/IUserRepo";
+import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
+import { invitationSent } from "@/lib/tracking-provider/trackingPlan";
 import { type Invitation } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { RevokeInvitation } from "@/useCases/invitations/RevokeInvitation";
@@ -49,6 +51,11 @@ export const sendInvitation = async (data: {
       },
       reqCtx,
     );
+    void trackServerEvent(
+      session.user.uuid,
+      invitationSent({ tenantId: String(tenant.id), role: data.role ?? UserRole.USER }),
+    );
+
     revalidatePath("/admin/users/invitations");
     return { ok: true, data: invitation };
   } catch (error) {
