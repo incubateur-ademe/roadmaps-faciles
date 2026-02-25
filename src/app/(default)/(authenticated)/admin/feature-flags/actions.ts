@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { type FeatureFlagsMap } from "@/lib/feature-flags";
+import { FEATURE_FLAGS, type FeatureFlagsMap } from "@/lib/feature-flags";
 import { appSettingsRepo } from "@/lib/repo";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertAdmin } from "@/utils/auth";
@@ -12,14 +12,21 @@ export const saveFeatureFlags = async (flags: FeatureFlagsMap): Promise<ServerAc
   const session = await assertAdmin();
   const reqCtx = await getRequestContext();
 
+  // Sanitize: only keep keys present in the registry, coerce to boolean
+  const safeFlags = Object.fromEntries(
+    Object.keys(FEATURE_FLAGS)
+      .filter(k => k in flags)
+      .map(k => [k, Boolean((flags as Record<string, unknown>)[k])]),
+  );
+
   try {
-    await appSettingsRepo.update({ featureFlags: { ...flags } });
+    await appSettingsRepo.update({ featureFlags: safeFlags });
 
     audit(
       {
         action: AuditAction.ROOT_FEATURE_FLAGS_UPDATE,
         userId: session.user.uuid,
-        metadata: { ...flags },
+        metadata: { ...safeFlags },
       },
       reqCtx,
     );

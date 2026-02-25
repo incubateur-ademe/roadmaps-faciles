@@ -613,7 +613,8 @@
       "title": "Feature Flags",
       "description": "Activez ou désactivez les fonctionnalités en cours de développement. Les super admins voient toujours toutes les features, quel que soit l'état du flag.",
       "noFlags": "Aucun feature flag n'est défini pour le moment.",
-      "saved": "Feature flags sauvegardés."
+      "saved": "Feature flags sauvegardés.",
+      "flags": {}
     }
   },
   "emails": {

@@ -31,7 +31,11 @@ export const FeatureFlagsForm = ({ flags }: FeatureFlagsFormProps) => {
   };
 
   const handleSave = async () => {
-    await saveFeatureFlags(localFlags);
+    const result = await saveFeatureFlags(localFlags);
+    if (!result.ok) {
+      console.error(result.error);
+      return;
+    }
     router.refresh();
   };
 
