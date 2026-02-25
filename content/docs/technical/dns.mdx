@@ -12,9 +12,9 @@ Cette page s'adresse aux administrateurs techniques en charge de la configuratio
 Roadmaps Faciles utilise une architecture multi-tenant basée sur les sous-domaines :
 
 ```
-roadmaps-faciles.fr              ← Domaine racine (admin plateforme)
-├── mon-produit.roadmaps-faciles.fr  ← Sous-domaine automatique
-├── autre-produit.roadmaps-faciles.fr
+{{rootDomain}}              ← Domaine racine (admin plateforme)
+├── mon-produit.{{rootDomain}}  ← Sous-domaine automatique
+├── autre-produit.{{rootDomain}}
 └── feedback.mon-produit.fr      ← Domaine personnalisé (CNAME)
 ```
 
@@ -25,7 +25,7 @@ Les sous-domaines sont créés automatiquement à la création d'un espace. Les 
 Pour associer un domaine personnalisé, créez un enregistrement **CNAME** pointant vers le domaine racine de la plateforme :
 
 ```text
-feedback.mon-produit.fr.  3600  IN  CNAME  roadmaps-faciles.fr.
+feedback.mon-produit.fr.  3600  IN  CNAME  {{rootDomain}}.
 ```
 
 ### Points d'attention

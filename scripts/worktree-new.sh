@@ -153,8 +153,10 @@ if [ -n "$PORT" ] || [ "$ISOLATED_DB" = true ]; then
     if [ -n "$PORT" ]; then
       sed -i '' "s|^PORT=.*|PORT=${PORT}|" .env.development.local
       sed -i '' "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}|" .env.development.local
+      sed -i '' "s|^AUTH_URL=.*|AUTH_URL=http://localhost:${PORT}/api/auth|" .env.development.local
       grep -q "^PORT=" .env.development.local || echo "PORT=${PORT}" >> .env.development.local
       grep -q "^NEXT_PUBLIC_SITE_URL=" .env.development.local || echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}" >> .env.development.local
+      grep -q "^AUTH_URL=" .env.development.local || echo "AUTH_URL=http://localhost:${PORT}/api/auth" >> .env.development.local
     fi
   else
     # Pas de fichier source — créer un minimal
@@ -163,6 +165,7 @@ if [ -n "$PORT" ] || [ "$ISOLATED_DB" = true ]; then
       [ "$ISOLATED_DB" = true ] && echo "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/${DB_NAME}\""
       [ -n "$PORT" ] && echo "PORT=${PORT}"
       [ -n "$PORT" ] && echo "NEXT_PUBLIC_SITE_URL=http://localhost:${PORT}"
+      [ -n "$PORT" ] && echo "AUTH_URL=http://localhost:${PORT}/api/auth"
     } > .env.development.local
   fi
 fi
@@ -170,10 +173,10 @@ fi
 # --- Base de données (seulement si --db) ---
 if [ "$ISOLATED_DB" = true ]; then
   echo "🗄️  Préparation de la base de données..."
-  if psql -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
+  if PGPASSWORD=postgres psql -h localhost -U postgres -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
     echo "   DB $DB_NAME existe déjà, skip."
   else
-    createdb -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME créée." || echo "   ⚠️  Impossible de créer la DB $DB_NAME. Crée-la manuellement."
+    PGPASSWORD=postgres createdb -h localhost -U postgres "$DB_NAME" 2>/dev/null && echo "   DB $DB_NAME créée." || echo "   ⚠️  Impossible de créer la DB $DB_NAME. Crée-la manuellement."
   fi
 fi
 
@@ -186,8 +189,8 @@ echo "🔧 Génération du client Prisma..."
 pnpm prisma generate
 
 if [ "$ISOLATED_DB" = true ]; then
-  echo "🔧 Prisma db push..."
-  pnpm prisma db push --skip-generate 2>/dev/null || echo "   ⚠️  prisma db push a échoué — lance-le manuellement si le schéma a changé."
+  echo "🔧 Prisma migrate deploy..."
+  pnpm prisma migrate deploy 2>/dev/null || echo "   ⚠️  prisma migrate deploy a échoué — lance-le manuellement si le schéma a changé."
   echo "🌱 Seed de la base..."
   pnpm prisma db seed 2>/dev/null || echo "   ⚠️  Seed a échoué — lance 'pnpm prisma db seed' manuellement si nécessaire."
 fi

@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import Input from "@codegouvfr/react-dsfr/Input";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { type User } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -22,7 +21,9 @@ import { reactMarkdownConfig } from "@/utils/react-markdown";
 
 import { type EnrichedPost } from "../../board/[boardSlug]/actions";
 import { DomainPageHOP } from "../../DomainPage";
+import { uploadImage } from "../../upload-image";
 import { PostTimeline } from "./_timeline/PostTimeline";
+import { CommentForm } from "./CommentForm";
 import { PostEditToggle } from "./PostEditToggle";
 
 export interface PostPageParams {
@@ -146,10 +147,12 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
     return page({
       post,
       user: session?.user,
+      userId: session?.user.uuid,
       anonymousId,
       alreadyLiked,
       canEdit,
       canDelete,
+      isAdmin: Boolean(isAdmin),
       boardSlug: post.board.slug ?? "",
       allowVoting: settings.allowVoting,
       allowAnonymousVoting: settings.allowAnonymousVoting,
@@ -166,9 +169,11 @@ export interface PostPageComponentProps {
   boardSlug: string;
   canDelete: boolean;
   canEdit: boolean;
+  isAdmin: boolean;
   isModal?: boolean;
   post: { activities: Activity[]; board: Board; editedBy?: { name: null | string } | null } & EnrichedPost;
   user?: null | User;
+  userId?: string;
 }
 
 export const PostPageComponent = async (props: PostPageComponentProps) => {
@@ -219,14 +224,7 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         </Text>
       </PostEditToggle>
       {allowComments && (
-        <Input
-          textArea
-          label={t("addComment")}
-          classes={{
-            nativeInputOrTextArea: "resize-y",
-          }}
-          className={fr.cx("fr-mt-2w")}
-        />
+        <CommentForm postId={post.id} tenantId={post.tenantId} userId={props.userId} uploadImageAction={uploadImage} />
       )}
       {isModal ? (
         <>

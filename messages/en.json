@@ -468,7 +468,27 @@
     "savePost": "Save",
     "anonymous": "Anonymous",
     "deletePost": "Delete",
-    "deleteConfirm": "Are you sure you want to delete this post? This action is irreversible."
+    "deleteConfirm": "Are you sure you want to delete this post? This action is irreversible.",
+    "submitComment": "Send",
+    "loginToComment": "<link>Log in</link> to comment.",
+    "reply": "Reply",
+    "cancelReply": "Cancel",
+    "submitReply": "Send",
+    "viewPreviousReplies": "View previous replies",
+    "collapseReplies": "Collapse replies",
+    "viewReplies": "{count, plural, one {View 1 reply} other {View # replies}}",
+    "roleOwner": "Owner",
+    "roleAdmin": "Admin",
+    "roleModerator": "Moderator",
+    "tagAuthor": "Author",
+    "tagYou": "Me",
+    "postCreated": "{author} created the post",
+    "editComment": "Edit",
+    "deleteComment": "Delete",
+    "deleteCommentConfirm": "Are you sure you want to delete this comment?",
+    "saveComment": "Save",
+    "cancelEdit": "Cancel",
+    "edited": "(edited)"
   },
   "roadmap": {
     "title": "Roadmap",
@@ -491,6 +511,23 @@
     "cgu": "Terms of Use",
     "legalNotice": "Legal notice",
     "license": "Unless otherwise stated, all content on this site is under <a>Apache License 2.0</a>"
+  },
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "heading": "Heading",
+    "list": "List",
+    "orderedList": "Ordered list",
+    "quote": "Quote",
+    "code": "Code",
+    "link": "Link",
+    "image": "Image",
+    "preview": "Preview",
+    "previewEmpty": "Nothing to display.",
+    "placeholder": "Write in Markdown…",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed.",
+    "markdownSupported": "Markdown supported"
   },
   "consent": {
     "matomoTitle": "Matomo",
@@ -523,7 +560,11 @@
     "accountNotLinkedToEm": "Your account is not linked to Espace Membre.",
     "noEmUsername": "No Espace Membre username found.",
     "emailAlreadySameAsEm": "Your email is already the same as the Espace Membre one.",
-    "lastOwnerCannotDelete": "You are the last owner of a tenant. Transfer ownership before deleting your account."
+    "lastOwnerCannotDelete": "You are the last owner of a tenant. Transfer ownership before deleting your account.",
+    "uploadFailed": "Upload failed.",
+    "uploadTooLarge": "File is too large (max {max} MB).",
+    "uploadInvalidType": "Unsupported file type. Allowed types: PNG, JPG, GIF, WebP.",
+    "uploadInvalidFile": "Invalid file."
   },
   "profile": {
     "title": "My profile",
@@ -607,6 +648,14 @@
       "gracePeriod": "Grace period",
       "immediate": "Immediate",
       "days": "{count, plural, one {# day} other {# days}}"
+    },
+    "featureFlags": {
+      "menu": "Feature Flags",
+      "title": "Feature Flags",
+      "description": "Enable or disable features under development. Super admins always see all features regardless of flag state.",
+      "noFlags": "No feature flags are defined yet.",
+      "saved": "Feature flags saved.",
+      "flags": {}
     }
   },
   "emails": {

@@ -1,16 +1,29 @@
 "use server";
 
 import { getTranslations } from "next-intl/server";
+import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
+import { auth } from "@/lib/next-auth/auth";
 import { trackServerEvent } from "@/lib/tracking-provider/serverTracking";
 import { commentCreated } from "@/lib/tracking-provider/trackingPlan";
 import { type Comment, type User } from "@/prisma/client";
+import { UserRole } from "@/prisma/enums";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { type ServerActionResponse } from "@/utils/next";
+import { getDomainFromHost } from "@/utils/tenant";
 
-export async function getReplies(commentId: number): Promise<ServerActionResponse<Array<{ user: User } & Comment>>> {
+function isElevatedRole(role: UserRole) {
+  return role === UserRole.ADMIN || role === UserRole.OWNER || role === UserRole.MODERATOR;
+}
+
+export interface GetRepliesData {
+  replies: Array<{ user: User } & Comment>;
+  roleMap: Record<string, UserRole>;
+}
+
+export async function getReplies(commentId: number): Promise<ServerActionResponse<GetRepliesData>> {
   if (isNaN(commentId)) {
     return {
       ok: false,
@@ -19,6 +32,15 @@ export async function getReplies(commentId: number): Promise<ServerActionRespons
   }
 
   try {
+    const parentComment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: { tenantId: true },
+    });
+
+    if (!parentComment) {
+      return { ok: false, error: "Comment not found" };
+    }
+
     const replies = await prisma.comment.findMany({
       where: {
         parentId: commentId,
@@ -31,9 +53,22 @@ export async function getReplies(commentId: number): Promise<ServerActionRespons
       },
     });
 
+    // Batch-fetch tenant roles for reply authors
+    const userIds = [...new Set(replies.map(r => r.userId))];
+    const memberships =
+      userIds.length > 0
+        ? await prisma.userOnTenant.findMany({
+            where: { userId: { in: userIds }, tenantId: parentComment.tenantId },
+            select: { userId: true, role: true },
+          })
+        : [];
+
     return {
       ok: true,
-      data: replies,
+      data: {
+        replies,
+        roleMap: Object.fromEntries(memberships.map(m => [m.userId, m.role])),
+      },
     };
   } catch (error) {
     logger.error({ err: error }, "Error fetching replies");
@@ -49,17 +84,22 @@ export interface SendCommentParams {
   parentId?: null | number;
   postId: number;
   tenantId: number;
-  userId: string;
 }
 
 export async function sendComment({
   postId,
   body,
-  userId,
   parentId,
   tenantId,
 }: SendCommentParams): Promise<ServerActionResponse<Comment>> {
   const reqCtx = await getRequestContext();
+  const t = await getTranslations("serverErrors");
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+  const userId = session.user.uuid;
 
   if (isNaN(postId) || !body) {
     return {
@@ -68,13 +108,22 @@ export async function sendComment({
     };
   }
 
+  // Verify post belongs to tenant
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { tenantId: true },
+  });
+
+  if (!post || post.tenantId !== tenantId) {
+    return { ok: false, error: "Post not found" };
+  }
+
   const settings = await prisma.tenantSettings.findUnique({
     where: { tenantId },
     select: { allowComments: true },
   });
 
   if (!settings?.allowComments) {
-    const t = await getTranslations("serverErrors");
     return { ok: false, error: t("commentsDisabled") };
   }
 
@@ -85,7 +134,7 @@ export async function sendComment({
         postId,
         userId,
         parentId: parentId ?? null,
-        tenantId: tenantId,
+        tenantId,
       },
       include: {
         user: true,
@@ -130,5 +179,152 @@ export async function sendComment({
       ok: false,
       error: "Failed to create comment",
     };
+  }
+}
+
+export interface EditCommentParams {
+  body: string;
+  commentId: number;
+}
+
+export async function editComment({ commentId, body }: EditCommentParams): Promise<ServerActionResponse<Comment>> {
+  const reqCtx = await getRequestContext();
+  const t = await getTranslations("serverErrors");
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+  const userId = session.user.uuid;
+
+  if (!body.trim()) {
+    return { ok: false, error: "Comment body cannot be empty" };
+  }
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { userId: true, tenantId: true, postId: true },
+  });
+
+  if (!comment) {
+    return { ok: false, error: "Comment not found" };
+  }
+
+  const membership = await prisma.userOnTenant.findUnique({
+    where: { userId_tenantId: { userId, tenantId: comment.tenantId } },
+    select: { role: true },
+  });
+
+  const isAdmin = session.user.isSuperAdmin || (membership && isElevatedRole(membership.role));
+  const isAuthor = comment.userId === userId;
+
+  if (!isAuthor && !isAdmin) {
+    return { ok: false, error: t("noPermissionToEdit") };
+  }
+
+  try {
+    const updated = await prisma.comment.update({
+      where: { id: commentId },
+      data: { body: body.trim() },
+      include: { user: true },
+    });
+
+    const domain = await getDomainFromHost();
+    audit(
+      {
+        action: AuditAction.COMMENT_EDIT,
+        userId,
+        tenantId: comment.tenantId,
+        targetType: "Comment",
+        targetId: String(commentId),
+        metadata: { postId: comment.postId },
+      },
+      reqCtx,
+    );
+
+    revalidatePath(`/${domain}/post/${comment.postId}`);
+    return { ok: true, data: updated };
+  } catch (error) {
+    logger.error({ err: error }, "Error editing comment");
+    audit(
+      {
+        action: AuditAction.COMMENT_EDIT,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        tenantId: comment.tenantId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: "Failed to edit comment" };
+  }
+}
+
+export async function deleteComment(commentId: number): Promise<ServerActionResponse> {
+  const reqCtx = await getRequestContext();
+  const t = await getTranslations("serverErrors");
+
+  const session = await auth();
+  if (!session?.user) {
+    return { ok: false, error: t("notAuthenticated") };
+  }
+  const userId = session.user.uuid;
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { userId: true, tenantId: true, postId: true, _count: { select: { replies: true } } },
+  });
+
+  if (!comment) {
+    return { ok: false, error: "Comment not found" };
+  }
+
+  const membership = await prisma.userOnTenant.findUnique({
+    where: { userId_tenantId: { userId, tenantId: comment.tenantId } },
+    select: { role: true },
+  });
+
+  const isAdmin = session.user.isSuperAdmin || (membership && isElevatedRole(membership.role));
+  const isAuthor = comment.userId === userId;
+
+  if (!isAuthor && !isAdmin) {
+    return { ok: false, error: t("noPermissionToDelete") };
+  }
+
+  try {
+    // Delete replies first (no cascade on self-referencing relation)
+    if (comment._count.replies > 0) {
+      await prisma.comment.deleteMany({ where: { parentId: commentId } });
+    }
+    await prisma.comment.delete({ where: { id: commentId } });
+
+    const domain = await getDomainFromHost();
+    audit(
+      {
+        action: AuditAction.COMMENT_DELETE,
+        userId,
+        tenantId: comment.tenantId,
+        targetType: "Comment",
+        targetId: String(commentId),
+        metadata: { postId: comment.postId },
+      },
+      reqCtx,
+    );
+
+    revalidatePath(`/${domain}/post/${comment.postId}`);
+    return { ok: true };
+  } catch (error) {
+    logger.error({ err: error }, "Error deleting comment");
+    audit(
+      {
+        action: AuditAction.COMMENT_DELETE,
+        success: false,
+        error: (error as Error).message,
+        userId,
+        tenantId: comment.tenantId,
+      },
+      reqCtx,
+    );
+    return { ok: false, error: "Failed to delete comment" };
   }
 }

@@ -28,6 +28,9 @@
 - PostgreSQL 15 → `localhost:5432` (db: roadmaps-faciles, user/pass: postgres/postgres)
 - Redis → `localhost:6379`
 - Maildev SMTP → `localhost:1025` (web UI: localhost:1080)
+- MinIO S3 → `localhost:9000` (API) / `localhost:9001` (console UI, user/pass: minioadmin/minioadmin)
+  - Bucket `roadmaps-faciles` créé automatiquement par `minio-init` (healthcheck-based)
+  - Public URL: `http://localhost:9000/roadmaps-faciles`
 - Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
@@ -105,6 +108,20 @@
   - Auth tracking: `user.signed_up`, `user.first_login`, `user.signed_in` fired in NextAuth jwt callback; `invitation.accepted` in signIn callback
   - Activation events: `post.first_created` / `vote.first_cast` use fire-and-forget count check (`prisma.post.count().then(...)`) after creation
 - Domain providers: `src/lib/domain-provider/` — `IDomainProvider` abstraction + factory `getDomainProvider()` (noop, scalingo, scalingo-wildcard, clevercloud, caddy)
+- Storage providers: `src/lib/storage-provider/` — `IStorageProvider` abstraction + factory `getStorageProvider()` (noop, s3)
+  - Config: `config.storageProvider` in `src/config.ts` — `STORAGE_PROVIDER`, `STORAGE_S3_*` env vars
+  - S3 impl: `@aws-sdk/client-s3` — PutObject/DeleteObject, `forcePathStyle: true` for MinIO compatibility
+  - Upload: `uploadImage()` server action in `src/app/[domain]/(domain)/upload-image.ts` — auth + tenant-scoped, file type/size validation, audit trail
+  - Key structure: `tenants/{tenantId}/images/{uuid}.{ext}` — images served from S3 public URL
+  - CSP: `img-src` in `next.config.ts` dynamically includes `STORAGE_S3_PUBLIC_URL` host
+- Markdown editor: `MarkdownEditor` component in `src/dsfr/base/client/MarkdownEditor.tsx`
+  - Toolbar: bold, italic, heading, list, ordered list, quote, code, link, image upload
+  - Keyboard shortcuts: Ctrl+B (bold), Ctrl+I (italic)
+  - Preview toggle: `reactMarkdownPreviewConfig` in `src/lib/utils/react-markdown.tsx` (full paragraph rendering)
+  - Image upload: drag & drop, clipboard paste, file picker → `uploadImage()` server action → `![alt](url)` insertion
+  - Used in `SubmitPostForm` and `PostEditForm` — replaces plain `<Input textArea>`
+  - Emoji autocomplete: `@github/text-expander-element` — must be dynamically imported in `useEffect` (`customElements.define()` at module scope requires `HTMLElement`, not available during SSR)
+  - `node-emoji.search()` passes query to `new RegExp()` — special chars (+, *, ?, etc.) crash it; always wrap in try/catch
 - DNS providers: `src/lib/dns-provider/` — `IDnsProvider` abstraction + factory `getDnsProvider()` (noop, manual, ovh, cloudflare)
   - `DNS_ZONE_NAME` env var: when zone differs from rootDomain (nested subdomains), `computeDnsNames()` in `src/lib/dns-provider/dnsUtils.ts` computes zone-relative subdomain
   - DNS errors are non-blocking in use cases (try/catch + `logger.warn`)
@@ -112,6 +129,7 @@
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
+- Comment edit/delete: author can always edit/delete own comments; admin/mod/owner can delete any; no dedicated TenantSettings toggle — follows GitHub/Slack conventions
 - Board views: `view=list|cards` URL param toggles compact list vs card layout; `VIEW_ENUM`/`ORDER_ENUM` pattern for `z.enum()` search param validation in `types.ts`
 - Documentation: Fumadocs (fumadocs-core, fumadocs-mdx, fumadocs-ui) — rendered at `/doc/*`
   - Source: `content/docs/` — MDX files organized by section (concepts, guides, admin, moderation, technical)
@@ -128,13 +146,24 @@
   - i18n: `getEmailTranslations()` in `src/emails/getEmailTranslations.ts` — standalone (loads JSON directly, no next-intl server context dependency)
 - i18n: next-intl v4 — cookie-based locale (no URL prefix), fr (default) + en
   - Config: `src/i18n/request.ts` (reads `NEXT_LOCALE` cookie), utils/types in `src/lib/utils/i18n.ts`
-  - Messages: `messages/fr.json` + `messages/en.json` — 23 namespaces, ICU plural syntax supported
+  - Messages: `messages/fr.json` + `messages/en.json` — 24 namespaces, ICU plural syntax supported
   - Navigation: `src/i18n/navigation.tsx` — simple re-exports from `next/link` / `next/navigation` (no locale prefix)
   - Server components/actions: `await getTranslations("namespace")` + `await getLocale()` from `next-intl/server`
   - Client components: `useTranslations("namespace")` + `useLocale()` from `next-intl`
   - Zod validation schemas: accept `ValidationTranslator` param for translated error messages (`src/lib/utils/zod-schema.ts`)
   - Date formatting: `formatDateHour(date, locale)` / `formatRelativeDate(date, locale)` in `src/lib/utils/date.ts`
   - Language switch: DSFR `LanguageSelect` + cookie set + `window.location.reload()` in `src/app/LanguageSelectClient.tsx`
+
+## Feature Flags
+- Registre : `src/lib/feature-flags/flags.ts` — ajouter un flag = une ligne (`myFlag: false`) + clés i18n (`rootAdmin.featureFlags.flags.myFlag.{label,description}`)
+- Server : `isFeatureEnabled(flagKey, session)` pour conditionner, `assertFeature(flagKey, session)` pour bloquer (→ `forbidden()`)
+- Client : `useFeatureFlag(key)` retourne un `boolean` — le bypass super admin est déjà résolu côté provider, aucune logique de rôle dans les composants
+- Provider : injecté dans le root layout (`src/app/layout.tsx`), les flags effectifs sont pré-calculés (super admin → tout à `true`)
+- Admin UI : `/admin/feature-flags` — toggles DSFR + audit log (`ROOT_FEATURE_FLAGS_UPDATE`)
+- Stockage : `AppSettings.featureFlags` (JSON) — merge defaults + DB au read time, `React.cache()` pour une seule lecture DB/request
+- **Réflexe systématique** : à chaque nouvelle feature, se poser la question "cette feature doit-elle être derrière un flag ?" — si non stabilisée et en prod, la réponse est oui
+- Retrait : feature validée → supprimer la clé de `flags.ts` + nettoyer le code conditionnel + supprimer les clés i18n. La valeur DB orpheline est ignorée automatiquement
+- Tests : vérifier les 4 cas (flag on/off × super admin/user)
 
 ## Workflow
 - Always run `pnpm lint --fix` first, then `pnpm build` to catch type errors, BEFORE committing
@@ -206,6 +235,8 @@
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
   - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
+- Vitest alias `@/dsfr` resolves to `src/dsfr/server.ts` barrel — deep client imports fail in tests; use relative paths for non-barrel modules
+- `vi.doMock()` + dynamic `await import()` required for testing modules with module-level singleton state (e.g., `getStorageProvider()` factory)
 
 ## Security
 - Use cases must validate both source and target values (e.g., `UpdateMemberRole` blocks setting role to OWNER/INHERITED, not just checking current role)
@@ -215,6 +246,8 @@
 - Server-derived data (e.g., `creatorId`) must NOT appear in public Zod schemas — use a separate interface/type that extends the Zod inferred type
 
 ## Gotchas
+- React 19 / Next.js 16: ne JAMAIS exporter `Context.Provider` directement (`export const Provider = MyContext.Provider`) — ça crash en RSC ("Received a promise that resolves to: Context"). Toujours wrapper dans un vrai composant client (`export const Provider = ({ children, value }) => <MyContext value={value}>{children}</MyContext>`)
+- **NEVER use `prisma db push`** — it applies schema changes directly without creating a migration, causing drift between the migration history and the actual database. Always use `prisma migrate dev --name <name>` to create migrations. If you need to add enum values, create the migration SQL manually (`ALTER TYPE ... ADD VALUE`) and use `prisma migrate dev` to apply it. The only exception is `scripts/worktree-new.sh --db` which uses `db push` for ephemeral worktree DBs.
 - `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
 - DNS CNAME trailing dot: resolvers may return `"target.io."` — always normalize with `.replace(/\.$/, "")` before comparing
 - `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing
@@ -246,6 +279,7 @@
 - Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
 - release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
 - GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
+- File upload MIME type: `file.type` from `FormData` is client-controlled — server validates against `ALLOWED_TYPES` set but does NOT check magic bytes. A `file-type` npm package could be added for magic bytes validation if stricter security is needed
 - Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)
 - Tracking provider `factory.ts` uses CJS `require()` to avoid pulling server code into client bundle — cannot be unit-tested with vitest ESM mocking; test providers directly instead
 - Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
