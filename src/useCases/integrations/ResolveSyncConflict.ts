@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { createIntegrationProvider } from "@/lib/integration-provider";
 import { decrypt } from "@/lib/integration-provider/encryption";
 import { type IntegrationConfig, type PostSyncData } from "@/lib/integration-provider/types";
@@ -46,6 +48,7 @@ export class ResolveSyncConflict implements UseCase<ResolveSyncConflictInput, Re
       // Push local version to Notion
       const post = await this.postRepo.findById(mapping.localId);
       if (!post) throw new Error("Local post not found");
+      if (post.tenantId !== input.tenantId) throw new Error("Post does not belong to caller's tenant");
 
       const postData: PostSyncData = {
         postId: post.id,
@@ -55,6 +58,7 @@ export class ResolveSyncConflict implements UseCase<ResolveSyncConflictInput, Re
         postStatusId: post.postStatusId,
         tags: post.tags,
         slug: post.slug,
+        createdAt: post.createdAt,
         commentCount: 0,
         likeCount: 0,
         tenantUrl: input.tenantUrl,
@@ -65,9 +69,11 @@ export class ResolveSyncConflict implements UseCase<ResolveSyncConflictInput, Re
         throw new Error(`Failed to push local version: ${result.error}`);
       }
     } else {
-      // Pull Notion version to RF
-      const changes = await provider.syncInbound();
-      const change = changes.find(c => c.remoteId === mapping.remoteId);
+      // Pull single page from Notion (avoids full DB scan)
+      if (!provider.getInboundChange) {
+        throw new Error("Provider does not support single-page fetch; cannot resolve conflict with remote resolution");
+      }
+      const change = await provider.getInboundChange(mapping.remoteId);
 
       if (!change) {
         throw new Error("Remote page not found in Notion");
@@ -95,6 +101,7 @@ export class ResolveSyncConflict implements UseCase<ResolveSyncConflictInput, Re
 
     await this.syncLogRepo.create({
       integrationId: integration.id,
+      syncRunId: randomUUID(),
       mappingId: mapping.id,
       direction: input.resolution === "local" ? SyncDirection.OUTBOUND : SyncDirection.INBOUND,
       status: SyncLogStatus.SUCCESS,

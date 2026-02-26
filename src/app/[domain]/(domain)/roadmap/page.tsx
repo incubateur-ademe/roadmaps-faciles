@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Card from "@codegouvfr/react-dsfr/Card";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
@@ -12,6 +13,8 @@ import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
+import { userOnTenantRepo } from "@/lib/repo";
+import { UserRole } from "@/prisma/enums";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
 
@@ -60,6 +63,17 @@ const RoadmapPage = DomainPageHOP()(async props => {
     },
   });
 
+  // Check if current user is tenant admin (for admin hints)
+  const membership = userId ? await userOnTenantRepo.findMembership(userId, tenant.id) : null;
+  const isAdmin = !!(
+    session?.user.isSuperAdmin ||
+    membership?.role === UserRole.ADMIN ||
+    membership?.role === UserRole.OWNER
+  );
+
+  // posts is already filtered with postStatusId: { not: null }
+  const showAdminHint = isAdmin && postStatuses.length === 0 && posts.length > 0;
+
   const [t, tc] = await Promise.all([getTranslations("roadmap"), getTranslations("common")]);
 
   return (
@@ -68,6 +82,19 @@ const RoadmapPage = DomainPageHOP()(async props => {
         <Heading as="h2" className={fr.cx("fr-mb-2w")}>
           {t("title")}
         </Heading>
+        {showAdminHint && (
+          <Alert
+            severity="warning"
+            small
+            description={
+              <>
+                {t("adminNoStatusHint", { count: posts.length })}{" "}
+                <a href={dirtyDomainFixer("/admin/statuses")}>{t("adminNoStatusLink")}</a>
+              </>
+            }
+            className={fr.cx("fr-mb-2w")}
+          />
+        )}
         <Box className={cx("flex flex-1 min-h-0 gap-2 w-full overflow-x-auto scrollbar-thin snap-x")}>
           {postStatuses.map(statusColumn => {
             const postsInColumn = posts.filter(post => post.postStatusId === statusColumn.id);

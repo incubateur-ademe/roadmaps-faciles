@@ -31,6 +31,8 @@ export class DeleteIntegration implements UseCase<DeleteIntegrationInput, Delete
     if (input.cleanupInboundPosts) {
       const inboundPostIds = await this.integrationMappingRepo.findInboundPostIdsForIntegration(input.id);
       for (const postId of inboundPostIds) {
+        const post = await this.postRepo.findById(postId);
+        if (!post) continue;
         await this.postRepo.delete(postId);
         deletedPostCount++;
       }

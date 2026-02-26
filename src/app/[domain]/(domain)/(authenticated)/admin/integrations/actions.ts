@@ -5,17 +5,26 @@ import { revalidatePath } from "next/cache";
 import { assertFeature } from "@/lib/feature-flags";
 import { type IntegrationConfig } from "@/lib/integration-provider/types";
 import { auth } from "@/lib/next-auth/auth";
-import { boardRepo, integrationMappingRepo, integrationRepo, integrationSyncLogRepo, postRepo } from "@/lib/repo";
+import {
+  boardRepo,
+  integrationMappingRepo,
+  integrationRepo,
+  integrationSyncLogRepo,
+  postRepo,
+  postStatusRepo,
+} from "@/lib/repo";
 import { type TenantIntegration } from "@/prisma/client";
+import { CreateBoard } from "@/useCases/boards/CreateBoard";
 import { CreateIntegration } from "@/useCases/integrations/CreateIntegration";
 import { DeleteIntegration } from "@/useCases/integrations/DeleteIntegration";
-import { GetIntegrationSyncLogs } from "@/useCases/integrations/GetIntegrationSyncLogs";
-import { GetNotionDatabases } from "@/useCases/integrations/GetNotionDatabases";
+import { type GetNotionDatabasesOutput, GetNotionDatabases } from "@/useCases/integrations/GetNotionDatabases";
 import { GetNotionDatabaseSchema } from "@/useCases/integrations/GetNotionDatabaseSchema";
+import { GetSyncRuns } from "@/useCases/integrations/GetSyncRuns";
 import { ResolveSyncConflict } from "@/useCases/integrations/ResolveSyncConflict";
 import { SyncIntegration } from "@/useCases/integrations/SyncIntegration";
 import { TestIntegrationConnection } from "@/useCases/integrations/TestIntegrationConnection";
 import { UpdateIntegration } from "@/useCases/integrations/UpdateIntegration";
+import { CreatePostStatus } from "@/useCases/post_statuses/CreatePostStatus";
 import { audit, AuditAction, getRequestContext } from "@/utils/audit";
 import { assertTenantAdmin, assertTenantModerator } from "@/utils/auth";
 import { type ServerActionResponse } from "@/utils/next";
@@ -39,7 +48,7 @@ export const testNotionConnection = async (data: {
 
 export const fetchNotionDatabases = async (data: {
   apiKey: string;
-}): Promise<ServerActionResponse<Array<{ id: string; name: string; url: string }>>> => {
+}): Promise<ServerActionResponse<GetNotionDatabasesOutput>> => {
   await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantAdmin(domain);
@@ -74,6 +83,7 @@ export const createIntegration = async (data: {
   config: IntegrationConfig;
   name: string;
   syncIntervalMinutes?: number;
+  unmappedStatusOptions?: Array<{ id: string; name: string }>;
 }): Promise<ServerActionResponse<TenantIntegration>> => {
   await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
@@ -82,12 +92,67 @@ export const createIntegration = async (data: {
   const reqCtx = await getRequestContext();
 
   try {
+    const config = { ...data.config };
+
+    // Validate no duplicate property names in mapping
+    const mappedPropertyNames: string[] = [];
+    const pm = config.propertyMapping;
+    if (pm.title) mappedPropertyNames.push(pm.title);
+    if (pm.description && typeof pm.description === "object" && "name" in pm.description)
+      mappedPropertyNames.push(pm.description.name);
+    if (pm.date) mappedPropertyNames.push(pm.date.name);
+    if (pm.status) mappedPropertyNames.push(pm.status.name);
+    if (pm.tags) mappedPropertyNames.push(pm.tags);
+    if (pm.commentsInfo) mappedPropertyNames.push(pm.commentsInfo);
+    if (pm.likes) mappedPropertyNames.push(typeof pm.likes === "string" ? pm.likes : pm.likes.name);
+    if (pm.board) mappedPropertyNames.push(pm.board.name);
+
+    const duplicates = mappedPropertyNames.filter((name, i) => mappedPropertyNames.indexOf(name) !== i);
+    if (duplicates.length > 0) {
+      return { ok: false, error: `Duplicate property mapping: ${[...new Set(duplicates)].join(", ")}` };
+    }
+
+    // Auto-create a default board if no board mapping is configured
+    if (!config.propertyMapping.board && !config.defaultBoardId) {
+      const boardName = config.databaseName || "Notion";
+      const existingBoards = await boardRepo.findAllForTenant(tenant.id);
+      const existing = existingBoards.find(b => b.name === boardName);
+      if (existing) {
+        config.defaultBoardId = existing.id;
+      } else {
+        const createBoardUC = new CreateBoard(boardRepo);
+        const board = await createBoardUC.execute({ tenantId: tenant.id, name: boardName });
+        config.defaultBoardId = board.id;
+      }
+    }
+
+    // Auto-create PostStatus for unmapped Notion status options
+    if (data.unmappedStatusOptions?.length) {
+      const existingStatuses = await postStatusRepo.findAllForTenant(tenant.id);
+      const createStatusUC = new CreatePostStatus(postStatusRepo);
+      for (const opt of data.unmappedStatusOptions) {
+        const existing = existingStatuses.find(s => s.name === opt.name);
+        if (existing) {
+          config.statusMapping[opt.id] = { localId: existing.id, notionName: opt.name };
+        } else {
+          const status = await createStatusUC.execute({
+            tenantId: tenant.id,
+            name: opt.name,
+            color: "grey",
+            showInRoadmap: true,
+          });
+          config.statusMapping[opt.id] = { localId: status.id, notionName: opt.name };
+          existingStatuses.push(status); // Avoid duplicate creation within the same batch
+        }
+      }
+    }
+
     const useCase = new CreateIntegration(integrationRepo);
     const integration = await useCase.execute({
       tenantId: tenant.id,
       type: "NOTION",
       name: data.name,
-      config: data.config,
+      config,
       syncIntervalMinutes: data.syncIntervalMinutes,
     });
     audit(
@@ -294,19 +359,19 @@ export const resolveSyncConflict = async (data: {
   }
 };
 
-export const fetchSyncLogs = async (data: {
+export const fetchSyncRuns = async (data: {
   integrationId: number;
   limit?: number;
-}): Promise<ServerActionResponse<Awaited<ReturnType<GetIntegrationSyncLogs["execute"]>>>> => {
+}): Promise<ServerActionResponse<Awaited<ReturnType<GetSyncRuns["execute"]>>>> => {
   await assertFeature("integrations", await auth());
   const domain = await getDomainFromHost();
   await assertTenantModerator(domain);
   const tenant = await getTenantFromDomain(domain);
 
   try {
-    const useCase = new GetIntegrationSyncLogs(integrationRepo, integrationSyncLogRepo);
-    const logs = await useCase.execute({ ...data, tenantId: tenant.id });
-    return { ok: true, data: logs };
+    const useCase = new GetSyncRuns(integrationRepo, integrationSyncLogRepo);
+    const runs = await useCase.execute({ ...data, tenantId: tenant.id });
+    return { ok: true, data: runs };
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }

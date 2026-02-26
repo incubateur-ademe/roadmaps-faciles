@@ -7,13 +7,27 @@ export type ConnectionTestResult = {
   workspaceName?: string;
 } & ({ error: string; success: false } | { success: true });
 
+export type RemoteDatabaseIcon = { emoji: string; type: "emoji" } | { type: "url"; url: string };
+
 export interface RemoteDatabase {
+  description?: string;
+  icon?: RemoteDatabaseIcon;
   id: string;
   name: string;
+  parentName?: string;
+  propertyCount: number;
   url: string;
 }
 
-export type RemotePropertyType = "multi_select" | "number" | "rich_text" | "select" | "status" | "title";
+export type RemotePropertyType =
+  | "created_time"
+  | "date"
+  | "multi_select"
+  | "number"
+  | "rich_text"
+  | "select"
+  | "status"
+  | "title";
 
 export interface RemotePropertyOption {
   color?: string;
@@ -39,8 +53,9 @@ export type MappedPropertyType = "select" | "status";
 export interface PropertyMappingConfig {
   board?: { name: string; type: MappedPropertyType };
   commentsInfo?: string;
+  date?: { name: string; type: "created_time" | "date" };
   description?: { name: string; type: "property" } | { type: "page_content" };
-  likes?: string;
+  likes?: { name: string; type: "number" | "rich_text" } | string;
   status?: { name: string; type: MappedPropertyType };
   tags?: string;
   title: string;
@@ -56,6 +71,7 @@ export interface IntegrationConfig {
   boardMapping: Record<string, ValueMapping>;
   databaseId: string;
   databaseName: string;
+  defaultBoardId?: number;
   lastSyncCursor?: string;
   propertyMapping: PropertyMappingConfig;
   statusMapping: Record<string, ValueMapping>;
@@ -71,6 +87,7 @@ export interface SyncResult {
 
 export interface InboundChange {
   boardNotionOptionId?: string;
+  date?: string;
   description?: string;
   lastEditedTime: string;
   remoteId: string;
@@ -83,6 +100,7 @@ export interface InboundChange {
 export interface PostSyncData {
   boardId: number;
   commentCount: number;
+  createdAt: Date;
   description: null | string;
   likeCount: number;
   postId: number;

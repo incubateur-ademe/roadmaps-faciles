@@ -94,7 +94,7 @@ export const PostTimeline = async ({ post, isAdmin }: PostTimelineProps) => {
 
           <TimelineContent className="flex flex-col gap-[.5rem]">
             <ItemDate activity={{ id: post.id, startTime: post.createdAt } as Activity} />
-            {t("postCreated", { author: post.user?.name ?? t("anonymous") })}
+            {t("postCreated", { author: post.user?.name ?? post.sourceLabel ?? t("anonymous") })}
           </TimelineContent>
         </TimelineItem>
       </Timeline>

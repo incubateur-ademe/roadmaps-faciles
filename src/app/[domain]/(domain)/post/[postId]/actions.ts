@@ -48,10 +48,24 @@ export const updatePost = async (data: unknown): Promise<ServerActionResponse> =
     return { ok: false, error: t("postNotFound") };
   }
 
-  // Block editing inbound-synced posts (readonly from Notion)
+  // Block editing inbound-only posts (readonly from Notion); bidirectional inbound posts are editable
   const mappings = await integrationMappingRepo.findMappingsForPost(validated.data.postId);
-  const isInbound = mappings.some(m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound");
-  if (isInbound) {
+  const inboundMapping = mappings.find(
+    m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
+  );
+  const isInboundOnly =
+    inboundMapping && (inboundMapping.integration.config as Record<string, unknown>)?.syncDirection === "inbound";
+  if (isInboundOnly) {
+    audit(
+      {
+        action: AuditAction.POST_EDIT,
+        success: false,
+        error: "inbound readonly",
+        tenantId: tenant.id,
+        userId: session.user.uuid,
+      },
+      reqCtx,
+    );
     return { ok: false, error: t("inboundPostReadonly") };
   }
 
@@ -135,12 +149,25 @@ export const deletePost = async (data: unknown): Promise<ServerActionResponse<{ 
     return { ok: false, error: t("postNotFound") };
   }
 
-  // Block deleting inbound-synced posts (managed by Notion integration)
+  // Block deleting inbound-only posts (managed by Notion integration); bidirectional inbound posts are deletable
   const deleteMappings = await integrationMappingRepo.findMappingsForPost(validated.data.postId);
-  const isInboundDelete = deleteMappings.some(
+  const inboundDeleteMapping = deleteMappings.find(
     m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
   );
-  if (isInboundDelete) {
+  const isInboundOnlyDelete =
+    inboundDeleteMapping &&
+    (inboundDeleteMapping.integration.config as Record<string, unknown>)?.syncDirection === "inbound";
+  if (isInboundOnlyDelete) {
+    audit(
+      {
+        action: AuditAction.POST_DELETE,
+        success: false,
+        error: "inbound readonly",
+        tenantId: tenant.id,
+        userId: session.user.uuid,
+      },
+      reqCtx,
+    );
     return { ok: false, error: t("inboundPostReadonly") };
   }
 

@@ -1,7 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { type ReactNode } from "react";
 
-export type HrProps = { small?: boolean } & (
+export type HrProps = (
   | {
       as: "hr";
       children?: never;
@@ -17,7 +17,7 @@ export type HrProps = { small?: boolean } & (
       children?: ReactNode;
       or: true;
     }
-);
+) & { small?: boolean };
 
 export const Hr = ({ as: As = "p", children, or, small }: HrProps) => {
   if (As === "hr") {

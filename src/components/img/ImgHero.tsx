@@ -1620,7 +1620,7 @@ export const ImgHero = () => {
       <defs>
         <filter id="active" height="200%">
           <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="2"></feMorphology>
-          <feFlood flood-color="#32DFEC" flood-opacity="1" result="PINK"></feFlood>
+          <feFlood floodColor="#32DFEC" floodOpacity="1" result="PINK"></feFlood>
           <feComposite in="PINK" in2="DILATED" operator="in" result="OUTLINE"></feComposite>
           <feMerge>
             <feMergeNode in="OUTLINE"></feMergeNode> <feMergeNode in="SourceGraphic"></feMergeNode>
@@ -1628,7 +1628,7 @@ export const ImgHero = () => {
         </filter>
         <filter id="hover" height="200%">
           <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="2"></feMorphology>
-          <feFlood flood-color="#ff0000" flood-opacity="0.5" result="PINK"></feFlood>
+          <feFlood floodColor="#ff0000" floodOpacity="0.5" result="PINK"></feFlood>
           <feComposite in="PINK" in2="DILATED" operator="in" result="OUTLINE"></feComposite>
           <feMerge>
             <feMergeNode in="OUTLINE"></feMergeNode> <feMergeNode in="SourceGraphic"></feMergeNode>

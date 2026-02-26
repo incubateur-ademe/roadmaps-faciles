@@ -102,8 +102,8 @@
   - Client-side: `useTracking()` hook from `TrackingContext.tsx`, `<TrackPageView event={...} />` for page views
   - Server-side: `void trackServerEvent(distinctId, event)` from `@/lib/tracking-provider/serverTracking` — fire-and-forget like `audit()`
   - Server imports: `import { trackServerEvent } from "@/lib/tracking-provider/serverTracking"` (never from barrel `index.ts` — it's client-safe only)
-  - Tracking plan: `trackingPlan.ts` — 24 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
-  - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`
+  - Tracking plan: `trackingPlan.ts` — 25 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
+  - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`, 4) update event count in this doc + JSDoc header comment in `trackingPlan.ts`
   - Consent: DSFR consent banner with conditional finalities per provider in `src/consentManagement.tsx`
   - Identity sync: `IdentifyUser.tsx` client component — syncs NextAuth session → Sentry user context + tracking provider identify/group
   - Auth tracking: `user.signed_up`, `user.first_login`, `user.signed_in` fired in NextAuth jwt callback; `invitation.accepted` in signIn callback

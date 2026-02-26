@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { type IntegrationMapping, type Prisma } from "@/prisma/client";
 
-import { type IIntegrationMappingRepo } from "../IIntegrationMappingRepo";
+import { type IIntegrationMappingRepo, type IntegrationMappingWithIntegration } from "../IIntegrationMappingRepo";
 
 export class IntegrationMappingRepoPrisma implements IIntegrationMappingRepo {
   public create(data: Prisma.IntegrationMappingUncheckedCreateInput): Promise<IntegrationMapping> {
@@ -35,7 +35,7 @@ export class IntegrationMappingRepoPrisma implements IIntegrationMappingRepo {
     });
   }
 
-  public findMappingsForPost(postId: number): Promise<IntegrationMapping[]> {
+  public findMappingsForPost(postId: number): Promise<IntegrationMappingWithIntegration[]> {
     return prisma.integrationMapping.findMany({
       where: { localType: "post", localId: postId },
       include: { integration: true },
