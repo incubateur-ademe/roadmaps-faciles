@@ -6,6 +6,7 @@ import {
   docsPageViewed,
   embedConfigured,
   embedViewed,
+  integrationSynced,
   invitationAccepted,
   invitationSent,
   memberRoleChanged,
@@ -29,8 +30,8 @@ import {
 
 describe("trackingPlan", () => {
   describe("TRACKING_EVENTS registry", () => {
-    it("contains exactly 24 event keys", () => {
-      expect(Object.keys(TRACKING_EVENTS)).toHaveLength(24);
+    it("contains exactly 25 event keys", () => {
+      expect(Object.keys(TRACKING_EVENTS)).toHaveLength(25);
     });
 
     it("has keys matching the event names", () => {
@@ -50,6 +51,7 @@ describe("trackingPlan", () => {
         "post.status_changed",
         "board.viewed",
         "board.created",
+        "integration.synced",
         "user.signed_in",
         "invitation.sent",
         "invitation.accepted",
@@ -129,6 +131,11 @@ describe("trackingPlan", () => {
         factory: memberRoleChanged,
         name: "member.role_changed",
         props: { tenantId: "1", userId: "u1", oldRole: "USER", newRole: "ADMIN" },
+      },
+      {
+        factory: integrationSynced,
+        name: "integration.synced",
+        props: { integrationId: "1", tenantId: "2", synced: 5, errors: 1, conflicts: 0 },
       },
     ])("$name returns { name, properties }", ({ factory, name, props }) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any

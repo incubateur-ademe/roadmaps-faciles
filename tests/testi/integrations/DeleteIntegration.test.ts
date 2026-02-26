@@ -5,6 +5,7 @@ import {
   createMockIntegrationRepo,
   createMockPostRepo,
   fakeIntegration,
+  fakePost,
   type createMockIntegrationMappingRepo as CreateMockMappingRepo,
   type createMockIntegrationRepo as CreateMockIntegrationRepo,
   type createMockPostRepo as CreateMockPostRepo,
@@ -36,6 +37,10 @@ describe("DeleteIntegration", () => {
   it("deletes integration with inbound post cleanup", async () => {
     mockIntegrationRepo.findById.mockResolvedValue(fakeIntegration({ id: 1, tenantId: 1 }));
     mockMappingRepo.findInboundPostIdsForIntegration.mockResolvedValue([10, 20, 30]);
+    mockPostRepo.findById
+      .mockResolvedValueOnce(fakePost({ id: 10 }))
+      .mockResolvedValueOnce(fakePost({ id: 20 }))
+      .mockResolvedValueOnce(fakePost({ id: 30 }));
 
     const result = await useCase.execute({ id: 1, tenantId: 1, cleanupInboundPosts: true });
 

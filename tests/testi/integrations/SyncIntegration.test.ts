@@ -142,6 +142,7 @@ describe("SyncIntegration", () => {
       mockIntegrationRepo.findById.mockResolvedValue(outboundIntegration);
       const post = fakePost({ id: 42, boardId: 10, tenantId: 1 });
       mockPostRepo.findAllForBoards.mockResolvedValue([post]);
+      mockPostRepo.getPostCounts.mockResolvedValue({ comments: 2, likes: 5 });
       mockMappingRepo.findByLocalEntity.mockResolvedValue(
         fakeIntegrationMapping({ metadata: { direction: "inbound" } }),
       );
@@ -149,7 +150,9 @@ describe("SyncIntegration", () => {
       const result = await useCase.execute(baseInput);
 
       expect(mockSyncOutbound).not.toHaveBeenCalled();
+      expect(mockUpdateCommentsField).toHaveBeenCalled();
       expect(result.synced).toBe(0);
+      expect(result.errors).toBe(0);
     });
 
     it("records error when provider sync fails", async () => {
@@ -319,7 +322,8 @@ describe("SyncIntegration", () => {
 
       expect(mockPostRepo.create).not.toHaveBeenCalled();
       expect(mockSyncLogRepo.create).toHaveBeenCalledWith(expect.objectContaining({ status: "SKIPPED" }));
-      expect(result.errors).toBe(1);
+      expect(result.synced).toBe(0);
+      expect(result.errors).toBe(0);
     });
 
     it("handles per-change exception gracefully", async () => {

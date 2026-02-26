@@ -61,6 +61,7 @@ export function createMockSyncLogRepo(): MockRepo<IIntegrationSyncLogRepo> {
   return {
     create: vi.fn(),
     findRecentForIntegration: vi.fn(),
+    findSyncRuns: vi.fn(),
   };
 }
 

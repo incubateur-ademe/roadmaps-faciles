@@ -22,11 +22,11 @@ vi.mock("@/lib/integration-provider/encryption", () => ({
 
 // Mock provider
 const mockSyncOutbound = vi.fn();
-const mockSyncInbound = vi.fn();
+const mockGetInboundChange = vi.fn();
 vi.mock("@/lib/integration-provider", () => ({
   createIntegrationProvider: () => ({
     syncOutbound: mockSyncOutbound,
-    syncInbound: mockSyncInbound,
+    getInboundChange: mockGetInboundChange,
   }),
 }));
 
@@ -66,7 +66,7 @@ describe("ResolveSyncConflict", () => {
     mockPostRepo = createMockPostRepo();
     useCase = new ResolveSyncConflict(mockIntegrationRepo, mockMappingRepo, mockSyncLogRepo, mockPostRepo);
     mockSyncOutbound.mockReset();
-    mockSyncInbound.mockReset();
+    mockGetInboundChange.mockReset();
   });
 
   it("throws when mapping not found", async () => {
@@ -99,7 +99,7 @@ describe("ResolveSyncConflict", () => {
     it("pushes local post to Notion and marks resolved", async () => {
       mockMappingRepo.findById.mockResolvedValue(mapping);
       mockIntegrationRepo.findById.mockResolvedValue(integration);
-      const post = fakePost({ id: 42, title: "Local Version", description: "My desc" });
+      const post = fakePost({ id: 42, tenantId: 1, title: "Local Version", description: "My desc" });
       mockPostRepo.findById.mockResolvedValue(post);
       mockSyncOutbound.mockResolvedValue({ success: true, remoteId: "remote-page-1" });
 
@@ -128,10 +128,20 @@ describe("ResolveSyncConflict", () => {
       ).rejects.toThrow("Local post not found");
     });
 
+    it("throws when post belongs to different tenant", async () => {
+      mockMappingRepo.findById.mockResolvedValue(mapping);
+      mockIntegrationRepo.findById.mockResolvedValue(integration);
+      mockPostRepo.findById.mockResolvedValue(fakePost({ id: 42, tenantId: 99 }));
+
+      await expect(
+        useCase.execute({ mappingId: 10, resolution: "local", tenantId: 1, tenantUrl: "https://test.com" }),
+      ).rejects.toThrow("Post does not belong to caller's tenant");
+    });
+
     it("throws when outbound push fails", async () => {
       mockMappingRepo.findById.mockResolvedValue(mapping);
       mockIntegrationRepo.findById.mockResolvedValue(integration);
-      mockPostRepo.findById.mockResolvedValue(fakePost({ id: 42 }));
+      mockPostRepo.findById.mockResolvedValue(fakePost({ id: 42, tenantId: 1 }));
       mockSyncOutbound.mockResolvedValue({ success: false, remoteId: "", error: "API fail" });
 
       await expect(
@@ -144,20 +154,19 @@ describe("ResolveSyncConflict", () => {
     it("pulls Notion version and updates local post", async () => {
       mockMappingRepo.findById.mockResolvedValue(mapping);
       mockIntegrationRepo.findById.mockResolvedValue(integration);
-      mockSyncInbound.mockResolvedValue([
-        {
-          remoteId: "remote-page-1",
-          title: "Notion Version",
-          description: "From Notion",
-          remoteUrl: "https://notion.so/page",
-          lastEditedTime: new Date().toISOString(),
-          statusNotionOptionId: "status-opt",
-          tags: ["notion-tag"],
-        },
-      ]);
+      mockGetInboundChange.mockResolvedValue({
+        remoteId: "remote-page-1",
+        title: "Notion Version",
+        description: "From Notion",
+        remoteUrl: "https://notion.so/page",
+        lastEditedTime: new Date().toISOString(),
+        statusNotionOptionId: "status-opt",
+        tags: ["notion-tag"],
+      });
 
       await useCase.execute({ mappingId: 10, resolution: "remote", tenantId: 1, tenantUrl: "https://test.com" });
 
+      expect(mockGetInboundChange).toHaveBeenCalledWith("remote-page-1");
       expect(mockPostRepo.update).toHaveBeenCalledWith(42, {
         title: "Notion Version",
         description: "From Notion",
@@ -170,10 +179,10 @@ describe("ResolveSyncConflict", () => {
       );
     });
 
-    it("throws when remote page not found in inbound results", async () => {
+    it("throws when remote page not found", async () => {
       mockMappingRepo.findById.mockResolvedValue(mapping);
       mockIntegrationRepo.findById.mockResolvedValue(integration);
-      mockSyncInbound.mockResolvedValue([]); // no matching page
+      mockGetInboundChange.mockResolvedValue(null);
 
       await expect(
         useCase.execute({ mappingId: 10, resolution: "remote", tenantId: 1, tenantUrl: "https://test.com" }),
