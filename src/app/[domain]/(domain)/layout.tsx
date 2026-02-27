@@ -97,7 +97,11 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
             {children}
           </ClientAnimate>
 
-          {theme === "Dsfr" ? <PublicFooter id="footer" /> : <ShadcnFooter id="footer" serviceName={tenantSettings.name} />}
+          {theme === "Dsfr" ? (
+            <PublicFooter id="footer" />
+          ) : (
+            <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
+          )}
 
           <ClientOnly>
             <ClientBodyPortal>

@@ -150,9 +150,55 @@
     "saveError": "Save error"
   },
   "home": {
-    "title": "Creating and showcasing your Startup d'État Roadmap has never been easier",
-    "description": "With <strong>{brandName}</strong>, easily gather user feedback to effectively guide your product roadmap and improve your <strong><u>impact</u></strong>!",
-    "cta": "Get started"
+    "badge": "Open source platform",
+    "title": "Create roadmaps your",
+    "titleAccent": "users love",
+    "description": "Collect feedback, prioritize by vote, and share your public roadmap. Built for public institutions and product teams.",
+    "cta": "Get started",
+    "ctaDoc": "View documentation",
+    "bento": {
+      "roadmap": {
+        "title": "Collaborative roadmap",
+        "description": "Manage your priorities with full transparency.",
+        "badgePublic": "Public",
+        "colStudy": "Under review",
+        "colInProgress": "In progress",
+        "colDone": "Shipped",
+        "itemPayment": "Online payment",
+        "itemFranceConnect": "FranceConnect",
+        "itemMobile": "Mobile app",
+        "itemMultilang": "Multilingual",
+        "badgePriority": "Priority",
+        "badgeStudy": "Review",
+        "badgeDone": "Done"
+      },
+      "vote": {
+        "title": "Citizen voting",
+        "description": "Involve your users in the decision-making process directly.",
+        "suggestLabel": "Suggest an idea",
+        "suggestPlaceholder": "Describe your suggestion...",
+        "voteButton": "Vote",
+        "lastVote": "Last vote: just now"
+      },
+      "satisfaction": {
+        "title": "Satisfaction",
+        "description": "User trust index"
+      },
+      "integrations": {
+        "title": "Connect your tools",
+        "notion": "Notion",
+        "jira": "Jira",
+        "slack": "Slack",
+        "linear": "Linear"
+      }
+    },
+    "trust": "Built for public institutions, government startups and product teams",
+    "ctaSection": {
+      "title": "Launch your collaborative roadmap",
+      "description": "Join the public transparency movement. Start collecting constructive feedback today.",
+      "cta": "Get started now",
+      "contact": "Contact us"
+    }
   },
   "stats": {
     "title": "Usage statistics",
@@ -675,7 +721,29 @@
     "viewFullRoadmap": "View full roadmap"
   },
   "footer": {
-    "contentDescription": "{brandName} is a service developed by the Ecological Transition Accelerator of ADEME.",
+    "contentDescription": "The collaborative tool for public institutions and modern product teams that prioritize transparency.",
+    "columns": {
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "publicRoadmap": "Public roadmap",
+        "hosting": "Hosting"
+      },
+      "resources": {
+        "title": "Resources",
+        "documentation": "Documentation",
+        "api": "API",
+        "github": "GitHub"
+      },
+      "legal": {
+        "title": "Legal",
+        "legalNotice": "Legal notice",
+        "privacy": "Privacy",
+        "accessibility": "Accessibility",
+        "cgu": "Terms of use"
+      }
+    },
+    "copyright": "© {year} {brandName}. Built for the public good.",
     "cgu": "Terms of Use",
     "legalNotice": "Legal notice",
     "license": "Unless otherwise stated, all content on this site is under <a>Apache License 2.0</a>"

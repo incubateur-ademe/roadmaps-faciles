@@ -150,9 +150,55 @@
     "saveError": "Erreur de sauvegarde"
   },
   "home": {
-    "title": "Créer et exposer la Roadmap de sa Startup d'État n'a jamais été aussi facile",
-    "description": "Grâce à <strong>{brandName}</strong>, regroupez facilement les avis et retours des usagers pour orienter efficacement la feuille de route de votre produit et améliorer votre <strong><u>impact</u></strong> !",
-    "cta": "Commencer"
+    "badge": "Plateforme open source",
+    "title": "Créez des feuilles de route que vos",
+    "titleAccent": "usagers adorent",
+    "description": "Recueillez les retours, priorisez par le vote, et partagez votre roadmap publique. Construit pour les collectivités et les équipes produit.",
+    "cta": "Commencer",
+    "ctaDoc": "Voir la documentation",
+    "bento": {
+      "roadmap": {
+        "title": "Roadmap collaborative",
+        "description": "Gérez vos priorités en toute transparence.",
+        "badgePublic": "Public",
+        "colStudy": "À étudier",
+        "colInProgress": "En cours",
+        "colDone": "Livré",
+        "itemPayment": "Paiement en ligne",
+        "itemFranceConnect": "FranceConnect",
+        "itemMobile": "Application mobile",
+        "itemMultilang": "Multilingue",
+        "badgePriority": "Priorité",
+        "badgeStudy": "Étude",
+        "badgeDone": "Terminé"
+      },
+      "vote": {
+        "title": "Vote citoyen",
+        "description": "Impliquez vos usagers dans le processus de décision de manière directe.",
+        "suggestLabel": "Suggérer une idée",
+        "suggestPlaceholder": "Décrivez votre suggestion...",
+        "voteButton": "Votez",
+        "lastVote": "Dernier vote : à l'instant"
+      },
+      "satisfaction": {
+        "title": "Satisfaction",
+        "description": "Indice de confiance usagers"
+      },
+      "integrations": {
+        "title": "Connectez vos outils",
+        "notion": "Notion",
+        "jira": "Jira",
+        "slack": "Slack",
+        "linear": "Linear"
+      }
+    },
+    "trust": "Conçu pour les collectivités, startups d'État et équipes produit",
+    "ctaSection": {
+      "title": "Lancez votre feuille de route collaborative",
+      "description": "Rejoignez le mouvement de la transparence publique. Commencez à recueillir des avis constructifs dès aujourd'hui.",
+      "cta": "Commencer maintenant",
+      "contact": "Nous contacter"
+    }
   },
   "stats": {
     "title": "Statistiques d'utilisation",
@@ -675,7 +721,29 @@
     "viewFullRoadmap": "Voir la roadmap complète"
   },
   "footer": {
-    "contentDescription": "{brandName} est un service développé par l'Accélérateur de la Transition Écologique de l'ADEME.",
+    "contentDescription": "L'outil collaboratif pour les institutions publiques et les équipes produit modernes qui privilégient la transparence.",
+    "columns": {
+      "product": {
+        "title": "Produit",
+        "features": "Fonctionnalités",
+        "publicRoadmap": "Roadmap publique",
+        "hosting": "Hébergement"
+      },
+      "resources": {
+        "title": "Ressources",
+        "documentation": "Documentation",
+        "api": "API",
+        "github": "GitHub"
+      },
+      "legal": {
+        "title": "Légal",
+        "legalNotice": "Mentions légales",
+        "privacy": "Confidentialité",
+        "accessibility": "Accessibilité",
+        "cgu": "CGU"
+      }
+    },
+    "copyright": "© {year} {brandName}. Construit pour l'intérêt général.",
     "cgu": "CGU",
     "legalNotice": "Mentions légales",
     "license": "Sauf mention contraire, tous les contenus de ce site sont sous <a>licence Apache 2.0</a>"

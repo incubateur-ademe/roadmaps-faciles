@@ -20,7 +20,7 @@ interface FooterProps {
 
 export const Footer = ({ id, serviceName, contentDescription, bottomLinks, license, className }: FooterProps) => (
   <footer id={id} className={cn("border-t bg-muted/40", className)}>
-    <div className="container py-8">
+    <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-sm font-semibold">{serviceName}</p>

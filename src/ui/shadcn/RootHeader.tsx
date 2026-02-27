@@ -27,7 +27,7 @@ export const RootHeader = ({ brandName, homeLinkProps, navigation, quickAccessIt
         className,
       )}
     >
-      <div className="container flex h-16 items-center">
+      <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
         <Link href={homeLinkProps.href} title={homeLinkProps.title} className="mr-8 flex items-center space-x-2">
           <span className="text-lg font-bold tracking-tight">{brandName}</span>
         </Link>

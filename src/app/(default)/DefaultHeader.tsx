@@ -1,3 +1,4 @@
+import { Map } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { config } from "@/config";
@@ -14,7 +15,8 @@ export const DefaultHeader = async () => {
     <RootHeader
       brandName={
         <>
-          {config.brand.name}{" "}
+          <Map className="size-5 text-primary" />
+          <span className="text-primary">{config.brand.name}</span>
           <Badge variant="outline" className="ml-1 text-xs">
             Alpha
           </Badge>

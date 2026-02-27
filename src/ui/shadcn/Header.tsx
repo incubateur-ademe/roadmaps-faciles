@@ -27,7 +27,7 @@ export const Header = ({ homeLinkProps, serviceName, navigation, quickAccessItem
         className,
       )}
     >
-      <div className="container flex h-14 items-center">
+      <div className="container mx-auto flex h-14 items-center px-4 sm:px-6 lg:px-8">
         <Link href={homeLinkProps.href} title={homeLinkProps.title} className="mr-6 flex items-center space-x-2">
           <span className="font-bold">{serviceName}</span>
         </Link>
