@@ -24,11 +24,13 @@ const EmailAutocompleteInput = ({
   disabled,
   label,
   onSelectAction,
+  placeholder,
   searchAction,
 }: {
   disabled?: boolean;
   label: string;
   onSelectAction: (email: string) => void;
+  placeholder: string;
   searchAction: (query: string) => Promise<UserEmailSearchResult[]>;
 }) => {
   const [options, setOptions] = useState<UserEmailSearchResult[]>([]);
@@ -95,7 +97,7 @@ const EmailAutocompleteInput = ({
         onChange={e => handleInputChange(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={() => options.length > 0 && setIsOpen(true)}
-        placeholder="Rechercher par email..."
+        placeholder={placeholder}
       />
       {isOpen && options.length > 0 && (
         <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
@@ -118,6 +120,8 @@ const EmailAutocompleteInput = ({
 
 export const CreateTenantForm = () => {
   const router = useRouter();
+  const t = useTranslations("adminTenants");
+  const tc = useTranslations("common");
   const tv = useTranslations("validation");
   const [error, setError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
@@ -153,7 +157,7 @@ export const CreateTenantForm = () => {
   const handleAddEmail = (email: string) => {
     setEmailError(null);
     if (ownerEmails.includes(email)) {
-      setEmailError("Cet email est déjà ajouté.");
+      setEmailError(t("emailAlreadyAdded"));
       return;
     }
     setOwnerEmails(prev => [...prev, email]);
@@ -165,7 +169,7 @@ export const CreateTenantForm = () => {
 
   const onSubmit = async (data: FormType) => {
     if (ownerEmails.length === 0) {
-      setEmailError("Au moins un email de propriétaire est requis.");
+      setEmailError(t("minOneOwnerRequired"));
       return;
     }
 
@@ -196,11 +200,11 @@ export const CreateTenantForm = () => {
     return (
       <div className="space-y-4">
         <Alert>
-          <AlertTitle>Tenant créé</AlertTitle>
-          <AlertDescription>Le tenant a été créé avec succès.</AlertDescription>
+          <AlertTitle>{t("createdTitle")}</AlertTitle>
+          <AlertDescription>{t("createdDescription")}</AlertDescription>
         </Alert>
         <Alert variant="destructive">
-          <AlertTitle>Certaines invitations ont échoué</AlertTitle>
+          <AlertTitle>{t("failedInvitationsTitle")}</AlertTitle>
           <AlertDescription>
             <ul className="mt-2 list-disc pl-4">
               {successResult.failedInvitations.map(f => (
@@ -212,7 +216,7 @@ export const CreateTenantForm = () => {
           </AlertDescription>
         </Alert>
         <Button asChild>
-          <Link href="/admin/tenants">Retour à la liste des tenants</Link>
+          <Link href="/admin/tenants">{t("backToList")}</Link>
         </Button>
       </div>
     );
@@ -222,29 +226,28 @@ export const CreateTenantForm = () => {
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
       {error && (
         <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Erreur</AlertTitle>
+          <AlertTitle>{tc("error")}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="name">Nom du tenant</Label>
-          <Input id="name" placeholder="Mon espace" aria-invalid={!!errors.name} {...register("name")} />
-          <p className="text-sm text-muted-foreground">Le nom de votre espace. Il peut être modifié ultérieurement.</p>
+          <Label htmlFor="name">{t("nameLabel")}</Label>
+          <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
+          <p className="text-sm text-muted-foreground">{t("nameHint")}</p>
           {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="subdomain">Sous-domaine</Label>
-          <Input id="subdomain" placeholder="mon-espace" aria-invalid={!!errors.subdomain} {...register("subdomain")} />
+          <Label htmlFor="subdomain">{t("subdomainLabel")}</Label>
+          <Input id="subdomain" aria-invalid={!!errors.subdomain} {...register("subdomain")} />
           <p className="text-sm text-muted-foreground">
-            {subdomain ? (
-              <>
-                URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
-              </>
-            ) : (
-              "Choisissez un sous-domaine pour votre espace"
-            )}
+            {subdomain
+              ? t.rich("subdomainPreview", {
+                  url: `${subdomain}.${config.rootDomain}`,
+                  strong: chunks => <strong>{chunks}</strong>,
+                })
+              : t("subdomainHint")}
           </p>
           {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain.message}</p>}
         </div>
@@ -252,12 +255,13 @@ export const CreateTenantForm = () => {
 
       <fieldset className="mb-6 space-y-4 border-0 p-0">
         <legend className="mb-2">
-          <h3 className="text-lg font-medium">Emails des propriétaires</h3>
+          <h3 className="text-lg font-medium">{t("ownersLegend")}</h3>
         </legend>
         {emailError && <p className="text-sm text-destructive">{emailError}</p>}
 
         <EmailAutocompleteInput
-          label="Ajouter un propriétaire"
+          label={t("addOwnerLabel")}
+          placeholder={t("emailSearchPlaceholder")}
           searchAction={searchUsers}
           onSelectAction={handleAddEmail}
         />
@@ -273,7 +277,7 @@ export const CreateTenantForm = () => {
                   onClick={() => handleRemoveEmail(email)}
                 >
                   <X className="size-3" />
-                  <span className="sr-only">Retirer {email}</span>
+                  <span className="sr-only">{t("removeEmail", { email })}</span>
                 </button>
               </Badge>
             ))}
@@ -282,7 +286,7 @@ export const CreateTenantForm = () => {
       </fieldset>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Création…" : "Créer le tenant"}
+        {pending ? t("creating") : t("createButton")}
       </Button>
     </form>
   );

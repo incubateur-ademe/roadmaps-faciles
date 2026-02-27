@@ -1,7 +1,8 @@
 "use client";
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -19,17 +20,6 @@ import { updateUser } from "./actions";
 const ASSIGNABLE_ROLES = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN] as const;
 const ASSIGNABLE_STATUSES = [UserStatus.ACTIVE, UserStatus.BLOCKED] as const;
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Administrateur",
-  MODERATOR: "Modérateur",
-  USER: "Utilisateur",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  ACTIVE: "Actif",
-  BLOCKED: "Bloqué",
-};
-
 const emptyToNull = z
   .string()
   .transform(v => (v.trim() === "" ? null : v))
@@ -45,13 +35,20 @@ const formSchema = z.object({
 
 type FormType = z.infer<typeof formSchema>;
 
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" });
-
 interface UserEditFormProps {
   user: User;
 }
 
 export const UserEditForm = ({ user }: UserEditFormProps) => {
+  const t = useTranslations("adminUsers");
+  const tc = useTranslations("common");
+  const tr = useTranslations("roles");
+  const ts = useTranslations("memberStatus");
+  const locale = useLocale();
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }),
+    [locale],
+  );
   const [saveError, setSaveError] = useState<null | string>(null);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -93,47 +90,48 @@ export const UserEditForm = ({ user }: UserEditFormProps) => {
   return (
     <>
       <div className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold">Informations</h2>
+        <h2 className="mb-4 text-xl font-semibold">{t("informationSection")}</h2>
         <dl className="space-y-1">
           <div>
-            <dt className="inline font-bold">ID :</dt> <dd className="inline">{user.id}</dd>
+            <dt className="inline font-bold">{t("idLabel")} :</dt> <dd className="inline">{user.id}</dd>
           </div>
           <div>
-            <dt className="inline font-bold">Inscrit le :</dt>{" "}
+            <dt className="inline font-bold">{t("createdAtLabel")} :</dt>{" "}
             <dd className="inline">{dateFormatter.format(new Date(user.createdAt))}</dd>
           </div>
           <div>
-            <dt className="inline font-bold">Dernière connexion :</dt>{" "}
+            <dt className="inline font-bold">{t("lastSignInLabel")} :</dt>{" "}
             <dd className="inline">{user.lastSignInAt ? dateFormatter.format(new Date(user.lastSignInAt)) : "—"}</dd>
           </div>
           <div>
-            <dt className="inline font-bold">Nombre de connexions :</dt> <dd className="inline">{user.signInCount}</dd>
+            <dt className="inline font-bold">{t("signInCountLabel")} :</dt>{" "}
+            <dd className="inline">{user.signInCount}</dd>
           </div>
         </dl>
       </div>
 
       <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
-        <h2 className="mb-4 text-xl font-semibold">Édition</h2>
+        <h2 className="mb-4 text-xl font-semibold">{t("editSection")}</h2>
 
         <fieldset className="mb-8 space-y-6 border-0 p-0">
           <legend className="mb-4">
-            <h3 className="text-lg font-medium">Identité</h3>
+            <h3 className="text-lg font-medium">{t("identityLegend")}</h3>
           </legend>
 
           <div className="space-y-2">
-            <Label htmlFor="name">Nom</Label>
+            <Label htmlFor="name">{t("nameLabel")}</Label>
             <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input id="email" type="email" aria-invalid={!!errors.email} {...register("email")} />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Nom d&apos;utilisateur</Label>
+            <Label htmlFor="username">{t("usernameLabel")}</Label>
             <Input id="username" aria-invalid={!!errors.username} {...register("username")} />
             {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
           </div>
@@ -141,23 +139,23 @@ export const UserEditForm = ({ user }: UserEditFormProps) => {
 
         <fieldset className="mb-8 space-y-6 border-0 p-0">
           <legend className="mb-4">
-            <h3 className="text-lg font-medium">Rôle et statut</h3>
+            <h3 className="text-lg font-medium">{t("roleAndStatusLegend")}</h3>
           </legend>
 
           <div className="space-y-2">
-            <Label>Rôle</Label>
+            <Label htmlFor="edit-role">{t("roleLabel")}</Label>
             <Controller
               control={control}
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="edit-role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ASSIGNABLE_ROLES.map(role => (
                       <SelectItem key={role} value={role}>
-                        {ROLE_LABELS[role]}
+                        {tr(role)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -167,19 +165,19 @@ export const UserEditForm = ({ user }: UserEditFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Statut</Label>
+            <Label htmlFor="edit-status">{t("statusLabel")}</Label>
             <Controller
               control={control}
               name="status"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="edit-status" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ASSIGNABLE_STATUSES.map(status => (
                       <SelectItem key={status} value={status}>
-                        {STATUS_LABELS[status]}
+                        {ts(status)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -192,19 +190,19 @@ export const UserEditForm = ({ user }: UserEditFormProps) => {
         <ClientAnimate>
           {saveError && (
             <Alert variant="destructive" className="mb-4">
-              <AlertTitle>Erreur de sauvegarde</AlertTitle>
+              <AlertTitle>{t("saveError")}</AlertTitle>
               <AlertDescription>{saveError}</AlertDescription>
             </Alert>
           )}
           {success && (
             <Alert className="mb-4">
-              <AlertTitle>Sauvegarde réussie</AlertTitle>
+              <AlertTitle>{t("saveSuccess")}</AlertTitle>
             </Alert>
           )}
         </ClientAnimate>
 
         <Button type="submit" disabled={pending || !isDirty}>
-          Sauvegarder
+          {tc("save")}
         </Button>
       </form>
     </>

@@ -14,11 +14,11 @@ export const AdminSideMenu = () => {
 
   const menuItems = [
     { text: t("tenants"), href: "/admin/tenants", isActive: currentPage.startsWith("tenants") },
-    { text: t("users"), href: "/admin/users", isActive: currentPage === "users" },
-    { text: t("security.menu"), href: "/admin/security", isActive: currentPage === "security" },
-    { text: t("featureFlags.menu"), href: "/admin/feature-flags", isActive: currentPage === "feature-flags" },
-    { text: t("prismaStudio"), href: "/admin/prisma", isActive: currentPage === "prisma" },
-    { text: t("auditLog"), href: "/admin/audit-log", isActive: currentPage === "audit-log" },
+    { text: t("users"), href: "/admin/users", isActive: currentPage.startsWith("users") },
+    { text: t("security.menu"), href: "/admin/security", isActive: currentPage.startsWith("security") },
+    { text: t("featureFlags.menu"), href: "/admin/feature-flags", isActive: currentPage.startsWith("feature-flags") },
+    { text: t("prismaStudio"), href: "/admin/prisma", isActive: currentPage.startsWith("prisma") },
+    { text: t("auditLog"), href: "/admin/audit-log", isActive: currentPage.startsWith("audit-log") },
   ];
 
   return (
