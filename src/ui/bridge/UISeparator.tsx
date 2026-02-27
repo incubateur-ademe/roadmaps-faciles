@@ -1,6 +1,7 @@
 "use client";
 
 import { fr } from "@codegouvfr/react-dsfr";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 
 import { useUI } from "@/ui";
 
@@ -15,7 +16,7 @@ export const UISeparator = ({ className, orientation = "horizontal" }: UISeparat
   const theme = useUI();
 
   if (theme === "Dsfr") {
-    return <hr className={fr.cx("fr-hr", className as never)} />;
+    return <hr className={cx(fr.cx("fr-hr"), className)} />;
   }
 
   return <ShadcnSeparator orientation={orientation} className={className} />;

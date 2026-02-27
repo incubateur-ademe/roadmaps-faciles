@@ -1,6 +1,7 @@
 "use client";
 
 import { fr } from "@codegouvfr/react-dsfr";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 
 import { useUI } from "@/ui";
 
@@ -17,7 +18,7 @@ export const UILabel = ({ children, htmlFor, className }: UILabelProps) => {
 
   if (theme === "Dsfr") {
     return (
-      <label htmlFor={htmlFor} className={fr.cx("fr-label", className as never)}>
+      <label htmlFor={htmlFor} className={cx(fr.cx("fr-label"), className)}>
         {children}
       </label>
     );
