@@ -278,7 +278,7 @@ export const PostPageTitle = ({
   allowAnonymousVoting,
   user,
 }: PostPageComponentProps) => (
-  <span className="flex justify-between items-center gap-[2rem]">
+  <span className="relative z-[1] flex justify-between items-center gap-[2rem]">
     <MarkdownAsync {...reactMarkdownConfig}>{post.title}</MarkdownAsync>
     {allowVoting && (allowAnonymousVoting || user?.id) && (
       <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={user?.id}>
