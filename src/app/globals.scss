@@ -43,6 +43,7 @@
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
     --color-cta-background: var(--cta-background);
+    --spacing-sticky-offset: var(--sticky-offset, 0px);
     --radius: 0.625rem;
 }
 
@@ -54,6 +55,9 @@
    Scoped to [data-ui-theme="Default"]
    ============================== */
 [data-ui-theme="Default"] {
+    /* Sticky offset = ShadcnHeader height (h-14) */
+    --sticky-offset: 3.5rem;
+
     /* French Blue primary */
     --primary: oklch(0.386 0.146 263);
     --primary-foreground: oklch(1 0 0);

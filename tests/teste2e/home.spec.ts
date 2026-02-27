@@ -10,7 +10,7 @@ test.describe("Home Page", () => {
   test("contains a call-to-action link", async ({ page }) => {
     await page.goto("/");
 
-    const ctaLink = page.getByRole("link", { name: /commencer/i });
+    const ctaLink = page.getByRole("link", { name: /commencer/i }).first();
     await expect(ctaLink).toBeVisible();
   });
 
