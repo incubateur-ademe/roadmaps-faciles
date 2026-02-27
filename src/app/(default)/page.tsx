@@ -278,7 +278,7 @@ const Home = async (_: PageProps<"/">) => {
       {/* CTA Section */}
       <section className="px-6 pb-24">
         <div className="mx-auto max-w-7xl">
-          <div className="relative overflow-hidden rounded-2xl bg-primary px-12 py-20 text-center text-white md:py-24">
+          <div className="relative overflow-hidden rounded-2xl bg-cta-background px-12 py-20 text-center text-white md:py-24">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_-20%,rgba(255,255,255,0.1),transparent)]" />
             <div className="relative z-10">
               <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-5xl">{t("ctaSection.title")}</h2>
@@ -289,8 +289,8 @@ const Home = async (_: PageProps<"/">) => {
                 <Button
                   asChild
                   size="lg"
-                  variant="secondary"
-                  className="bg-white px-10 py-4 text-lg font-bold text-primary shadow-xl hover:bg-white/90"
+                  variant="outline"
+                  className="border-white bg-white px-10 py-4 text-lg font-bold !text-cta-background shadow-xl hover:bg-white/90 hover:!text-cta-background"
                 >
                   <Link href="/tenant">{t("ctaSection.cta")}</Link>
                 </Button>
