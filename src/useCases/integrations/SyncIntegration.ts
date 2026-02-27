@@ -323,6 +323,7 @@ export class SyncIntegration implements UseCase<SyncIntegrationInput, SyncIntegr
           direction: SyncDirection.OUTBOUND,
           status: SyncLogStatus.ERROR,
           message: syncResult.error,
+          details: { postId: post.id },
         });
         return { synced: 0, errors: 1 };
       }
