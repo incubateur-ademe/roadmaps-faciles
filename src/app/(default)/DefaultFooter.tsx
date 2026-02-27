@@ -58,7 +58,7 @@ export const DefaultFooter = async ({ id }: DefaultFooterProps) => {
           {t.rich("license", {
             a: chunks => (
               <a
-                href={`${config.repositoryUrl}/main/LICENSE`}
+                href={`${config.repositoryUrl}/blob/main/LICENSE`}
                 target="_blank"
                 rel="noreferrer"
                 className="underline hover:text-foreground"

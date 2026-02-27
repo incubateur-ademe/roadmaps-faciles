@@ -29,7 +29,7 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
     if (tenantSettings.uiTheme === "Dsfr") {
       const current = await this.tenantSettingsRepo.findById(tenantSettings.id);
       if (!current?.customDomain?.endsWith(".gouv.fr")) {
-        throw new Error("DSFR theme requires a validated .gouv.fr custom domain");
+        throw new Error("DSFR theme requires a .gouv.fr custom domain");
       }
     }
 
