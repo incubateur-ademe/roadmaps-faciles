@@ -1,12 +1,15 @@
 import Header from "@codegouvfr/react-dsfr/Header";
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
+import { ConsentBannerAndConsentManagement } from "@/consentManagement";
+import { DsfrProvider } from "@/dsfr-bootstrap";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { type Board, type TenantSettings } from "@/prisma/client";
@@ -46,7 +49,11 @@ const DsfrNavigation = ({ boards, tenantSettings }: { boards: Board[]; tenantSet
 );
 
 const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
-  const [dirtyDomain, tenant] = await Promise.all([getDirtyDomain(), getTenantFromDomain((await params).domain)]);
+  const [dirtyDomain, tenant, lang] = await Promise.all([
+    getDirtyDomain(),
+    getTenantFromDomain((await params).domain),
+    getLocale(),
+  ]);
 
   const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
 
@@ -68,48 +75,59 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
   const theme = getTheme(tenantSettings);
   const homeHref = dirtyDomainFixer("/");
 
+  const content = (
+    <AppRouterCacheProvider>
+      <MuiDsfrThemeProvider>
+        {theme === "Dsfr" ? (
+          <Header
+            navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
+            brandTop={<Brand />}
+            homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+            serviceTitle={tenantSettings.name}
+            quickAccessItems={[
+              <LanguageSelectClient key="hqai-lang" />,
+              <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
+            ]}
+          />
+        ) : (
+          <ShadcnHeader
+            homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+            serviceName={tenantSettings.name}
+            navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
+            quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
+          />
+        )}
+
+        <ClientAnimate as="main" id="content" className={styles.content}>
+          {children}
+        </ClientAnimate>
+
+        {theme === "Dsfr" ? (
+          <PublicFooter id="footer" />
+        ) : (
+          <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
+        )}
+
+        <ClientOnly>
+          <ClientBodyPortal>
+            <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
+          </ClientBodyPortal>
+        </ClientOnly>
+      </MuiDsfrThemeProvider>
+    </AppRouterCacheProvider>
+  );
+
   return (
     <UIProvider value={theme}>
       <ThemeInjector theme={theme} />
-      <AppRouterCacheProvider>
-        <MuiDsfrThemeProvider>
-          {theme === "Dsfr" ? (
-            <Header
-              navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
-              brandTop={<Brand />}
-              homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-              serviceTitle={tenantSettings.name}
-              quickAccessItems={[
-                <LanguageSelectClient key="hqai-lang" />,
-                <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
-              ]}
-            />
-          ) : (
-            <ShadcnHeader
-              homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-              serviceName={tenantSettings.name}
-              navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
-              quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
-            />
-          )}
-
-          <ClientAnimate as="main" id="content" className={styles.content}>
-            {children}
-          </ClientAnimate>
-
-          {theme === "Dsfr" ? (
-            <PublicFooter id="footer" />
-          ) : (
-            <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
-          )}
-
-          <ClientOnly>
-            <ClientBodyPortal>
-              <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
-            </ClientBodyPortal>
-          </ClientOnly>
-        </MuiDsfrThemeProvider>
-      </AppRouterCacheProvider>
+      {theme === "Dsfr" ? (
+        <DsfrProvider lang={lang}>
+          <ConsentBannerAndConsentManagement />
+          {content}
+        </DsfrProvider>
+      ) : (
+        content
+      )}
     </UIProvider>
   );
 };

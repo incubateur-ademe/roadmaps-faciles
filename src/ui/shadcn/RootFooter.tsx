@@ -35,7 +35,7 @@ export const RootFooter = ({
   className,
   id,
 }: RootFooterProps) => (
-  <footer id={id} className={cn("border-t bg-muted/30", className)}>
+  <footer id={id} className={cn("border-t bg-muted/50", className)}>
     <div className="mx-auto max-w-7xl px-6 pb-12 pt-20">
       <div className="mb-20 grid grid-cols-2 gap-12 md:grid-cols-4 lg:grid-cols-5">
         {/* Brand column */}

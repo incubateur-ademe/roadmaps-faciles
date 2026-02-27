@@ -1,6 +1,6 @@
 ---
 name: sync-docs
-description: Synchronise la documentation du projet (CLAUDE.md, memory, README, ADR, content) avec les features implementees
+description: Synchronise la documentation du projet (CLAUDE.md, memory, README, ADR, DDR, design system, content) avec les features implementees
 ---
 
 # Synchronisation de la documentation
@@ -93,6 +93,7 @@ Un ADR n'est PAS justifie pour :
 - Un simple ajout de feature sans decision architecturale (ex: nouvelle page CRUD)
 - Un bugfix
 - Un refactoring mineur
+- Des decisions purement visuelles/design (→ utiliser un DDR, etape 7)
 
 Si un ADR est justifie :
 
@@ -107,7 +108,73 @@ Si un ADR est justifie :
 
 Presente le contenu de l'ADR propose et cree le fichier apres validation utilisateur.
 
-## 7. Resume
+## 7. DDR — Design Decision Records
+
+Les DDR sont l'equivalent des ADR pour les decisions de design system (palette, composants, patterns CSS, conventions visuelles). Ils vivent dans `docs/ddr/`.
+
+### ADR vs DDR — comment choisir
+
+| Critere | ADR (`docs/adr/`) | DDR (`docs/ddr/`) |
+|---------|-------|-------|
+| **Scope** | Architecture, patterns code, choix techniques | Palette, tokens CSS, composants UI, conventions visuelles |
+| **Exemples** | Multi-tenant routing, auth flow, provider pattern | Palette oklch, conventions boutons, patterns bordures cartes |
+| **Impact** | Structure du code, abstractions, data flow | Rendu visuel, coherence UI, accessibilite visuelle |
+| **Template** | `docs/adr/0000-template.md` | `docs/ddr/0000-template.md` |
+
+**Regle** : si la decision concerne **comment le code est structure**, c'est un ADR. Si elle concerne **comment l'interface se presente** (couleurs, espacements, variants de composants, dark mode), c'est un DDR. Certaines decisions chevauchent les deux (ex: architecture conditionnelle DSFR est un ADR pour le code, un DDR pour les tokens CSS) — dans ce cas, creer un DDR et y faire reference depuis les sections concernees.
+
+### Quand creer un DDR
+
+Un DDR est justifie si :
+- Un **choix de palette, token, ou convention visuelle** a ete fait avec des alternatives envisagees
+- Un **pattern de composant** est etabli (conventions de classes, hiérarchie de variants)
+- Une **regle de design** est posee (ex: "zero shadow sur les boutons")
+- Un **mecanisme UI** est introduit (ex: dark mode, theme switching)
+
+Un DDR n'est PAS justifie pour :
+- Un simple ajustement de padding ou couleur sans alternative envisagee
+- L'ajout d'un composant sans convention nouvelle
+- Un bugfix visuel
+
+### Procedure
+
+Si un DDR est justifie :
+
+1. Determine le prochain numero sequentiel en listant `docs/ddr/` :
+   ```bash
+   ls docs/ddr/*.md | sort | tail -1
+   ```
+2. Utilise le template `docs/ddr/0000-template.md`
+3. Redige le DDR en francais avec les sections : Contexte, Decision, Options envisagees, **Specifications** (tokens, composants, classes CSS), Consequences, Liens
+4. La date est celle du jour
+5. Le statut est `Accepted`
+
+Presente le contenu du DDR propose et cree le fichier apres validation utilisateur.
+
+## 8. Design System doc — Mise a jour
+
+Le fichier `docs/design-system.md` est la **documentation combinee** du design system (theme "Default" / French Blue). C'est la reference interne pour les developpeurs — pas pour les utilisateurs finaux.
+
+### Quand mettre a jour
+
+Mettre a jour `docs/design-system.md` si les changements de la session touchent :
+- La **palette** (tokens CSS dans `globals.scss`)
+- Les **conventions de composants** (Button, Card, Badge, Header, Footer, etc.)
+- La **typographie** ou les **patterns de layout**
+- L'**architecture du theme** (dark mode, DSFR separation, ThemeInjector)
+- Les **icones** (ajout, changement de convention de taille)
+- Les **fichiers cles** du theme (nouveaux fichiers, renommages)
+
+### Procedure
+
+1. Lis `docs/design-system.md` et compare avec l'etat actuel du code (composants `src/ui/shadcn/`, `globals.scss`, layouts)
+2. Identifie les sections obsoletes ou incompletes
+3. Propose les modifications necessaires
+4. Applique apres validation utilisateur
+
+**Regle** : `docs/design-system.md` doit toujours refleter l'etat actuel du code. Si un DDR est cree (etape 7), verifier que la section correspondante du design-system.md est coherente.
+
+## 9. Resume
 
 Affiche un resume final :
 
@@ -118,5 +185,7 @@ Affiche un resume final :
 | README.md | Modifie / Inchange |
 | content/ | Modifie (pages) / Inchange |
 | ADR | Cree (numero + titre) / Aucun nouveau |
+| DDR | Cree (numero + titre) / Aucun nouveau |
+| design-system.md | Modifie / Inchange |
 
 Liste les fichiers modifies/crees avec un lien relatif.

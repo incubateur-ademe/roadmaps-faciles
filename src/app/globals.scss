@@ -42,8 +42,6 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
-    --color-cta-background: var(--cta-background);
-    --spacing-sticky-offset: var(--sticky-offset, 0px);
     --radius: 0.625rem;
 }
 
@@ -106,9 +104,6 @@
     --sidebar-border: oklch(0.885 0.020 265);
     --sidebar-ring: oklch(0.542 0.104 265);
 
-    /* CTA section — stays deep blue in both themes */
-    --cta-background: oklch(0.386 0.146 263);  /* French Blue deep */
-
     /* Charts — use palette spread */
     --chart-1: oklch(0.386 0.146 263);  /* French Blue */
     --chart-2: oklch(0.542 0.104 265);  /* Smart Blue */
@@ -154,9 +149,6 @@
     --border: oklch(0.350 0.050 264);
     --input: oklch(0.350 0.050 264);
     --ring: oklch(0.542 0.104 265);
-
-    /* CTA section — stays deep blue in dark too */
-    --cta-background: oklch(0.350 0.130 264);  /* slightly lighter than light mode for dark contrast */
 
     /* Sidebar */
     --sidebar-background: oklch(0.240 0.020 264);

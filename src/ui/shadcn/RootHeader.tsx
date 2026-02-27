@@ -28,8 +28,12 @@ export const RootHeader = ({ brandName, homeLinkProps, navigation, quickAccessIt
       )}
     >
       <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
-        <Link href={homeLinkProps.href} title={homeLinkProps.title} className="mr-8 flex items-center space-x-2">
-          <span className="text-lg font-bold tracking-tight">{brandName}</span>
+        <Link
+          href={homeLinkProps.href}
+          title={homeLinkProps.title}
+          className="mr-8 flex items-center gap-2 text-lg font-bold tracking-tight"
+        >
+          {brandName}
         </Link>
 
         {/* Desktop nav */}

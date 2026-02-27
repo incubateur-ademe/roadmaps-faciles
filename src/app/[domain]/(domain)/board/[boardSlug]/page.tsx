@@ -88,14 +88,14 @@ const BoardPage = withValidation({
       <Container my="2w">
         <Grid haveGutters className={style.board}>
           {showSuggestionForm && (
-            <GridCol base={3} className={cx("sticky self-start top-sticky-offset", style.sidebar)}>
+            <GridCol base={3} className={cx("sticky self-start", style.sidebar)}>
               <div className={style.suggestionForm}>
                 <SubmitPostForm boardId={board.id} />
               </div>
             </GridCol>
           )}
           <GridCol base={showSuggestionForm ? 9 : 12}>
-            <Grid className={cx("sticky self-start top-sticky-offset z-[501]", style.header)}>
+            <Grid className={cx("sticky self-start z-[501]", style.header)}>
               <GridCol base={8} className={style.title} pr="1w">
                 <h1 className={fr.cx("fr-mb-1w", "fr-h3")}>{board.name}</h1>
                 {board.description && (

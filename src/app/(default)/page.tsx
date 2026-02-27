@@ -49,9 +49,9 @@ const Home = async (_: PageProps<"/">) => {
             </Badge>
           </div>
 
-          <h1 className="mx-auto max-w-4xl text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
+          <h1 className="mx-auto max-w-4xl text-balance text-5xl font-extrabold leading-[1.1] tracking-tight md:text-7xl">
             {t("title")}{" "}
-            <span className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text italic text-transparent underline decoration-primary/10">
+            <span className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
               {t("titleAccent")}
             </span>
           </h1>
@@ -59,12 +59,12 @@ const Home = async (_: PageProps<"/">) => {
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">{t("description")}</p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button asChild size="lg" className="w-full px-8 py-6 text-base shadow-lg shadow-primary/10 sm:w-auto">
+            <Button asChild size="lg" className="w-full px-8 py-6 text-base sm:w-auto">
               <Link href="/tenant">
                 {t("cta")} <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="w-full px-8 py-6 text-base sm:w-auto">
+            <Button asChild variant="secondary" size="lg" className="w-full px-8 py-6 text-base sm:w-auto">
               <Link href="/doc">{t("ctaDoc")}</Link>
             </Button>
           </div>
@@ -77,7 +77,7 @@ const Home = async (_: PageProps<"/">) => {
           <h2 className="sr-only">{t("bento.roadmap.title")}</h2>
           <div className="grid auto-rows-min grid-cols-1 gap-6 md:grid-cols-12">
             {/* Roadmap collaborative — 8col, 2row */}
-            <Card className="p-8 md:col-span-8 md:row-span-2">
+            <Card className="border-border/40 p-8 shadow-none md:col-span-8 md:row-span-2">
               <div className="mb-8 flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-semibold">{t("bento.roadmap.title")}</h3>
@@ -97,13 +97,13 @@ const Home = async (_: PageProps<"/">) => {
                       {t("bento.roadmap.colStudy")}
                     </span>
                   </div>
-                  <Card className="bg-muted/30 p-4">
+                  <Card className="border-border/30 bg-muted/30 p-4 shadow-none">
                     <p className="mb-3 text-sm font-medium">{t("bento.roadmap.itemPayment")}</p>
                     <Badge className="border-amber-200 bg-amber-50 text-[10px] text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400">
                       {t("bento.roadmap.badgePriority")}
                     </Badge>
                   </Card>
-                  <Card className="bg-muted/30 p-4">
+                  <Card className="border-border/30 bg-muted/30 p-4 shadow-none">
                     <p className="mb-3 text-sm font-medium">{t("bento.roadmap.itemFranceConnect")}</p>
                     <Badge variant="outline" className="text-[10px]">
                       {t("bento.roadmap.badgeStudy")}
@@ -119,7 +119,7 @@ const Home = async (_: PageProps<"/">) => {
                       {t("bento.roadmap.colInProgress")}
                     </span>
                   </div>
-                  <Card className="border-primary/20 bg-primary/[0.02] p-4">
+                  <Card className="border-primary/20 bg-primary/[0.02] p-4 shadow-none">
                     <p className="mb-3 text-sm font-medium text-primary">{t("bento.roadmap.itemMobile")}</p>
                     <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
                       <div className="h-full w-2/3 bg-primary" />
@@ -135,7 +135,7 @@ const Home = async (_: PageProps<"/">) => {
                       {t("bento.roadmap.colDone")}
                     </span>
                   </div>
-                  <Card className="border-emerald-100 bg-emerald-50/20 p-4 dark:border-emerald-900 dark:bg-emerald-950/20">
+                  <Card className="border-emerald-100/50 bg-emerald-50/20 p-4 shadow-none dark:border-emerald-900/50 dark:bg-emerald-950/20">
                     <p className="mb-3 text-sm font-medium text-muted-foreground line-through">
                       {t("bento.roadmap.itemMultilang")}
                     </p>
@@ -148,14 +148,14 @@ const Home = async (_: PageProps<"/">) => {
             </Card>
 
             {/* Vote citoyen — 4col, 2row */}
-            <Card className="bg-muted/30 p-8 md:col-span-4 md:row-span-2">
+            <Card className="border-border/40 bg-muted/30 p-8 shadow-none md:col-span-4 md:row-span-2">
               <div className="mb-6 flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Vote className="size-6" />
               </div>
               <h3 className="mb-2 text-xl font-semibold">{t("bento.vote.title")}</h3>
               <p className="mb-8 text-sm text-muted-foreground">{t("bento.vote.description")}</p>
 
-              <Card className="space-y-4 bg-background p-5" aria-hidden="true">
+              <Card className="space-y-4 border-border/30 bg-background p-5 shadow-none" aria-hidden="true">
                 <div className="flex items-center justify-between">
                   <label htmlFor="vote-suggest-demo" className="text-xs font-semibold text-muted-foreground">
                     {t("bento.vote.suggestLabel")}
@@ -173,7 +173,7 @@ const Home = async (_: PageProps<"/">) => {
                   <Button variant="outline" className="h-9 flex-1 px-0" tabIndex={-1} aria-label="Dislike">
                     <ThumbsDown className="size-4" />
                   </Button>
-                  <Button className="h-9 flex-1 px-0 shadow-md shadow-primary/20" tabIndex={-1}>
+                  <Button className="h-9 flex-1 px-0" tabIndex={-1}>
                     <ThumbsUp className="mr-2 size-4" />
                     <span className="text-xs">{t("bento.vote.voteButton")}</span>
                   </Button>
@@ -190,7 +190,7 @@ const Home = async (_: PageProps<"/">) => {
             </Card>
 
             {/* Satisfaction — 4col */}
-            <Card className="relative flex flex-col justify-between overflow-hidden p-8 md:col-span-4">
+            <Card className="relative flex flex-col justify-between overflow-hidden border-border/40 p-8 shadow-none md:col-span-4">
               <div>
                 <h3 className="text-base font-semibold">{t("bento.satisfaction.title")}</h3>
                 <p className="text-xs text-muted-foreground">{t("bento.satisfaction.description")}</p>
@@ -208,7 +208,7 @@ const Home = async (_: PageProps<"/">) => {
             </Card>
 
             {/* Intégrations — 8col */}
-            <Card className="flex flex-col justify-center p-8 md:col-span-8">
+            <Card className="flex flex-col justify-center border-border/40 p-8 shadow-none md:col-span-8">
               <div className="mb-8 flex items-center gap-2">
                 <Plug className="size-5 text-primary" />
                 <h3 className="text-base font-semibold">{t("bento.integrations.title")}</h3>
@@ -244,65 +244,28 @@ const Home = async (_: PageProps<"/">) => {
         </div>
       </section>
 
-      {/* Trust bar */}
-      <section className="mb-24 border-y border-border px-6 py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="mb-12 text-center text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-            {t("trust")}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="size-6 rounded bg-muted-foreground/20" />
-              <span className="text-lg font-bold tracking-tight">ECO-TERR</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="size-6 rounded-full bg-muted-foreground/20" />
-              <span className="text-lg font-bold tracking-tight">CITYHUB</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="size-0 border-b-[20px] border-l-[12px] border-r-[12px] border-b-muted-foreground/20 border-l-transparent border-r-transparent" />
-              <span className="text-lg font-bold tracking-tight">VILLA-LAB</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="size-6 rotate-45 bg-muted-foreground/20" />
-              <span className="text-lg font-bold tracking-tight">URBA-DATA</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground/60">
-              <div className="h-5 w-8 rounded-full border-2 border-muted-foreground/20" />
-              <span className="text-lg font-bold tracking-tight">OPEN-GOV</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="px-6 pb-24">
         <div className="mx-auto max-w-7xl">
-          <div className="relative overflow-hidden rounded-2xl bg-cta-background px-12 py-20 text-center text-white md:py-24">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_-20%,rgba(255,255,255,0.1),transparent)]" />
-            <div className="relative z-10">
-              <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-5xl">{t("ctaSection.title")}</h2>
-              <p className="mx-auto mb-10 max-w-xl text-lg font-light text-primary-foreground/80">
-                {t("ctaSection.description")}
-              </p>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="border-white bg-white px-10 py-4 text-lg font-bold !text-cta-background shadow-xl hover:bg-white/90 hover:!text-cta-background"
-                >
-                  <Link href="/tenant">{t("ctaSection.cta")}</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 bg-white/10 px-10 py-4 text-lg font-bold text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                >
-                  <Link href="/doc">{t("ctaSection.contact")}</Link>
-                </Button>
-              </div>
+          <div className="overflow-hidden rounded-2xl bg-primary px-12 py-20 text-center text-primary-foreground md:py-24">
+            <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-5xl">{t("ctaSection.title")}</h2>
+            <p className="mx-auto mb-10 max-w-xl text-lg text-primary-foreground/80">{t("ctaSection.description")}</p>
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="bg-primary-foreground px-10 py-4 text-lg font-bold !text-primary hover:bg-primary-foreground/90 hover:!text-primary"
+              >
+                <Link href="/tenant">{t("ctaSection.cta")}</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="ghost"
+                className="border border-primary-foreground/20 px-10 py-4 text-lg font-bold text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                <Link href="/doc">{t("ctaSection.contact")}</Link>
+              </Button>
             </div>
           </div>
         </div>
