@@ -98,7 +98,7 @@ describe("SaveTenantWithSettings", () => {
     mockSettingsRepo.findById.mockResolvedValue(current);
 
     await expect(useCase.execute({ ...validInput, uiTheme: "Dsfr" })).rejects.toThrow(
-      "DSFR theme requires a validated .gouv.fr custom domain",
+      "DSFR theme requires a .gouv.fr custom domain",
     );
     expect(mockSettingsRepo.update).not.toHaveBeenCalled();
   });
@@ -108,7 +108,7 @@ describe("SaveTenantWithSettings", () => {
     mockSettingsRepo.findById.mockResolvedValue(current);
 
     await expect(useCase.execute({ ...validInput, uiTheme: "Dsfr" })).rejects.toThrow(
-      "DSFR theme requires a validated .gouv.fr custom domain",
+      "DSFR theme requires a .gouv.fr custom domain",
     );
     expect(mockSettingsRepo.update).not.toHaveBeenCalled();
   });
