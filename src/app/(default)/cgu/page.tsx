@@ -1,7 +1,4 @@
-import { fr } from "@codegouvfr/react-dsfr";
 import { type Metadata } from "next";
-
-import { Container } from "@/dsfr";
 
 import { sharedMetadata } from "../../shared-metadata";
 
@@ -26,12 +23,12 @@ export const metadata: Metadata = {
 
 const CguPage = () => {
   return (
-    <Container py="6w">
-      <h1>{title}</h1>
-      <p className={fr.cx("fr-text--lead")}>
+    <div className="mx-auto max-w-4xl px-4 py-12">
+      <h1 className="mb-4 text-3xl font-bold">{title}</h1>
+      <p className="text-lg text-muted-foreground">
         Les conditions générales d'utilisation sont en cours de rédaction et seront publiées prochainement.
       </p>
-    </Container>
+    </div>
   );
 };
 

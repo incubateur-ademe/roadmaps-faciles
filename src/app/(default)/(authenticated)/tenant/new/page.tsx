@@ -1,21 +1,16 @@
 import { getTranslations } from "next-intl/server";
 
-import { Container } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
-
 import { NewTenantForm } from "./NewTenantForm";
 
 const NewTenantPage = async () => {
   const t = await getTranslations("tenant");
 
   return (
-    <DsfrPage>
-      <Container mt="2w">
-        <h1>{t("newTitle")}</h1>
-        <p>{t("newDescription")}</p>
-        <NewTenantForm />
-      </Container>
-    </DsfrPage>
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      <h1 className="mb-2 text-3xl font-bold">{t("newTitle")}</h1>
+      <p className="mb-6 text-muted-foreground">{t("newDescription")}</p>
+      <NewTenantForm />
+    </div>
   );
 };
 

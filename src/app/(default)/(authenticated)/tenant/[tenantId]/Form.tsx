@@ -1,10 +1,5 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import Select from "@codegouvfr/react-dsfr/Select";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -13,13 +8,15 @@ import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
-import { FormFieldset } from "@/dsfr";
 import { type TenantWithSettings } from "@/lib/model/Tenant";
+import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 import { LOCALE_LABELS } from "@/utils/i18n";
 import { createSubdomainSchema, localeSchema } from "@/utils/zod-schema";
 
 import { saveTenant } from "./actions";
-import style from "./TenantMain.module.scss";
 
 interface FormProps {
   tenant: TenantWithSettings;
@@ -99,103 +96,87 @@ export const Form = ({ tenant }: FormProps) => {
 
   return (
     <>
-      <h1>{t.rich("configTitle", { name: tenantName, code: chunks => <code>{chunks}</code> })}</h1>
+      <h1 className="mb-6 text-3xl font-bold">
+        {t.rich("configTitle", { name: tenantName, code: chunks => <code>{chunks}</code> })}
+      </h1>
       <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
         <input type="hidden" {...register("tenantId")} />
-        <FormFieldset
-          legend={<h3>{t("identityLegend")}</h3>}
-          elements={[
+
+        <fieldset className="mb-8 space-y-6 border-0 p-0">
+          <legend className="mb-4">
+            <h3 className="text-xl font-semibold">{t("identityLegend")}</h3>
+          </legend>
+
+          <div className="space-y-2">
+            <Label htmlFor="tenantName">{t("nameLabel")}</Label>
+            <Input id="tenantName" aria-invalid={!!errors.tenantName} {...register("tenantName")} />
+            <p className="text-sm text-muted-foreground">{t("nameHint")}</p>
+            {errors.tenantName && <p className="text-sm text-destructive">{errors.tenantName.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tenantSubdomain">{t("subdomainLabel")}</Label>
+            <div className="flex">
+              <Input
+                id="tenantSubdomain"
+                className="rounded-r-none"
+                aria-invalid={!!errors.tenantSubdomain}
+                {...register("tenantSubdomain")}
+              />
+              <span className="flex items-center rounded-r-md border border-l-0 bg-muted px-3 text-sm text-muted-foreground">
+                .{config.rootDomain}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">{t("subdomainUniqueHint")}</p>
+            {errors.tenantSubdomain && <p className="text-sm text-destructive">{errors.tenantSubdomain.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tenantCustomDomain">{t("customDomain")}</Label>
             <Input
-              key="tenantName"
-              label={t("nameLabel")}
-              hintText={t("nameHint")}
-              state={errors.tenantName ? "error" : "default"}
-              stateRelatedMessage={errors.tenantName?.message}
-              nativeInputProps={{
-                ...register("tenantName"),
-              }}
-            />,
-            {
-              key: "tenantSubdomain",
-              children: (
-                <Input
-                  key="tenantSubdomain"
-                  label={t("subdomainLabel")}
-                  hintText={t("subdomainUniqueHint")}
-                  state={errors?.tenantSubdomain ? "error" : "default"}
-                  stateRelatedMessage={errors?.tenantSubdomain?.message}
-                  nativeInputProps={{
-                    ...register("tenantSubdomain"),
-                  }}
-                  addon={
-                    <Input
-                      classes={{
-                        nativeInputOrTextArea: style.rootDomainInput,
-                      }}
-                      disabled
-                      hideLabel
-                      label=""
-                      nativeInputProps={{
-                        placeholder: `.${config.rootDomain}`,
-                        readOnly: true,
-                      }}
-                    />
-                  }
-                />
-              ),
-              inline: true,
-            },
-            {
-              key: "tenantCustomDomain",
-              children: (
-                <Input
-                  key="tenantCustomDomain"
-                  label={t("customDomain")}
-                  hintText={t("customDomainHint")}
-                  nativeInputProps={{
-                    ...register("tenantCustomDomain"),
-                  }}
-                  state={errors?.tenantCustomDomain ? "error" : "default"}
-                  stateRelatedMessage={errors?.tenantCustomDomain?.message}
-                />
-              ),
-              inline: "grow",
-            },
-            {
-              key: "locale",
-              children: (
-                <Select
-                  label={t("localeLabel")}
-                  state={errors?.locale ? "error" : "default"}
-                  stateRelatedMessage={errors?.locale?.message}
-                  nativeSelectProps={{
-                    ...register("locale"),
-                  }}
-                >
-                  <option value="" disabled>
-                    {t("selectLocale")}
-                  </option>
-                  {Object.entries(LOCALE_LABELS).map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value}
-                    </option>
-                  ))}
-                </Select>
-              ),
-            },
-          ]}
-        />
+              id="tenantCustomDomain"
+              aria-invalid={!!errors.tenantCustomDomain}
+              {...register("tenantCustomDomain")}
+            />
+            <p className="text-sm text-muted-foreground">{t("customDomainHint")}</p>
+            {errors.tenantCustomDomain && (
+              <p className="text-sm text-destructive">{errors.tenantCustomDomain.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="locale">{t("localeLabel")}</Label>
+            <select
+              id="locale"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-invalid={!!errors.locale}
+              {...register("locale")}
+            >
+              <option value="" disabled>
+                {t("selectLocale")}
+              </option>
+              {Object.entries(LOCALE_LABELS).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            {errors.locale && <p className="text-sm text-destructive">{errors.locale.message}</p>}
+          </div>
+        </fieldset>
 
         <ClientAnimate>
           {saveError && (
-            <Alert
-              className={fr.cx("fr-mb-2w")}
-              severity="error"
-              title={t("validationError")}
-              description={saveError}
-            />
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>{t("validationError")}</AlertTitle>
+              <AlertDescription>{saveError}</AlertDescription>
+            </Alert>
           )}
-          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("saveSuccess")} />}
+          {success && (
+            <Alert className="mb-4">
+              <AlertTitle>{t("saveSuccess")}</AlertTitle>
+            </Alert>
+          )}
         </ClientAnimate>
         <Button type="submit" disabled={pending || !isValid || !isDirty}>
           {tc("save")}
