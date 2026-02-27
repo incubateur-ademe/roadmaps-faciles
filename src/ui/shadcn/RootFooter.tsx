@@ -64,7 +64,10 @@ export const RootFooter = ({
             <ul className="space-y-3 text-sm text-muted-foreground">
               {column.links.map(link => (
                 <li key={link.href + link.text}>
-                  <Link href={link.href} className="transition-colors hover:text-primary">
+                  <Link
+                    href={link.href}
+                    className="rounded-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     {link.text}
                   </Link>
                 </li>

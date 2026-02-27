@@ -74,6 +74,7 @@ const Home = async (_: PageProps<"/">) => {
       {/* Bento Grid */}
       <section className="px-6 pb-24">
         <div className="mx-auto max-w-7xl">
+          <h2 className="sr-only">{t("bento.roadmap.title")}</h2>
           <div className="grid auto-rows-min grid-cols-1 gap-6 md:grid-cols-12">
             {/* Roadmap collaborative — 8col, 2row */}
             <Card className="p-8 md:col-span-8 md:row-span-2">
@@ -154,19 +155,22 @@ const Home = async (_: PageProps<"/">) => {
               <h3 className="mb-2 text-xl font-semibold">{t("bento.vote.title")}</h3>
               <p className="mb-8 text-sm text-muted-foreground">{t("bento.vote.description")}</p>
 
-              <Card className="space-y-4 bg-background p-5">
+              <Card className="space-y-4 bg-background p-5" aria-hidden="true">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-muted-foreground">{t("bento.vote.suggestLabel")}</label>
+                  <label htmlFor="vote-suggest-demo" className="text-xs font-semibold text-muted-foreground">
+                    {t("bento.vote.suggestLabel")}
+                  </label>
                   <Lightbulb className="size-4 text-muted-foreground" />
                 </div>
                 <Input
+                  id="vote-suggest-demo"
                   placeholder={t("bento.vote.suggestPlaceholder")}
                   className="text-xs italic"
                   readOnly
                   tabIndex={-1}
                 />
                 <div className="flex gap-2">
-                  <Button variant="outline" className="h-9 flex-1 px-0" tabIndex={-1}>
+                  <Button variant="outline" className="h-9 flex-1 px-0" tabIndex={-1} aria-label="Dislike">
                     <ThumbsDown className="size-4" />
                   </Button>
                   <Button className="h-9 flex-1 px-0 shadow-md shadow-primary/20" tabIndex={-1}>
@@ -278,7 +282,7 @@ const Home = async (_: PageProps<"/">) => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_-20%,rgba(255,255,255,0.1),transparent)]" />
             <div className="relative z-10">
               <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-5xl">{t("ctaSection.title")}</h2>
-              <p className="mx-auto mb-10 max-w-xl text-lg font-light text-blue-100/80">
+              <p className="mx-auto mb-10 max-w-xl text-lg font-light text-primary-foreground/80">
                 {t("ctaSection.description")}
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -286,7 +290,7 @@ const Home = async (_: PageProps<"/">) => {
                   asChild
                   size="lg"
                   variant="secondary"
-                  className="bg-white px-10 py-4 text-lg font-bold text-primary shadow-xl hover:bg-slate-50"
+                  className="bg-white px-10 py-4 text-lg font-bold text-primary shadow-xl hover:bg-white/90"
                 >
                   <Link href="/tenant">{t("ctaSection.cta")}</Link>
                 </Button>
