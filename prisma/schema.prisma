@@ -67,7 +67,7 @@ model Comment {
   updatedAt    DateTime @updatedAt
 
   user       User       @relation(fields: [userId], references: [id])
-  post       Post       @relation(fields: [postId], references: [id])
+  post       Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
   parent     Comment?   @relation("CommentParent", fields: [parentId], references: [id])
   replies    Comment[]  @relation("CommentParent")
   activities Activity[]
@@ -87,7 +87,7 @@ model Follow {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([userId])
@@ -119,7 +119,7 @@ model Like {
   updatedAt   DateTime @updatedAt
 
   user User? @relation(fields: [userId], references: [id])
-  post Post  @relation(fields: [postId], references: [id])
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@unique([anonymousId, postId])
@@ -196,6 +196,7 @@ model Post {
   editedById     String?
   approvalStatus PostApprovalStatus @default(APPROVED)
   tags           String[]
+  sourceLabel    String?
 
   board      Board            @relation(fields: [boardId], references: [id])
   user       User?            @relation(fields: [userId], references: [id])
@@ -261,7 +262,7 @@ model Pin {
   postId  Int @unique
 
   board Board @relation(fields: [boardId], references: [id])
-  post  Post  @relation(fields: [postId], references: [id])
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([boardId, postId])
 }
@@ -584,17 +585,19 @@ model IntegrationSyncLog {
   id            Int           @id @default(autoincrement())
   integrationId Int
   mappingId     Int?
+  syncRunId     String?
   direction     SyncDirection
   status        SyncLogStatus
   message       String?
   details       Json?
   createdAt     DateTime      @default(now())
 
-  integration TenantIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integration TenantIntegration   @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   mapping     IntegrationMapping? @relation(fields: [mappingId], references: [id], onDelete: SetNull)
 
   @@index([integrationId, createdAt])
   @@index([mappingId])
+  @@index([syncRunId])
 }
 
 enum AuditAction {

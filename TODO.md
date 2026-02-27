@@ -45,6 +45,7 @@
   - [ ] Cron manager : implémentation réelle (node-cron ou externe)
 - [ ] Espace d'échange : discussions par tenant, conversion Discussion ↔ Post (#77)
 - [ ] Chat opérateur + base de connaissance par tenant, intégration Chatwoot (#78)
+- [ ] Serveur MCP : interaction programmatique et IA (#100)
 
 ## Fait
 

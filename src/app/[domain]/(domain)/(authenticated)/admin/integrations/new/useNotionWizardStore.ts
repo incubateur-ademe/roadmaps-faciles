@@ -14,7 +14,15 @@ export type WizardStep = 1 | 2 | 3 | 4;
 const SYNC_INTERVAL_OPTIONS = [null, 15, 30, 60, 360, 1440] as const;
 export { SYNC_INTERVAL_OPTIONS };
 
+interface CreatedItem {
+  id: number;
+  name: string;
+}
+
 interface WizardState {
+  // Step 3 — Items created on-the-fly during mapping
+  additionalBoards: CreatedItem[];
+  additionalStatuses: CreatedItem[];
   // Step 1 — Connection
   apiKey: string;
   boardMapping: Record<string, ValueMapping>;
@@ -43,8 +51,11 @@ interface WizardState {
 }
 
 interface WizardActions {
+  addAdditionalBoard: (board: CreatedItem) => void;
+  addAdditionalStatus: (status: CreatedItem) => void;
   buildConfig: () => IntegrationConfig;
   canGoNext: () => boolean;
+  getUnmappedStatusOptions: () => Array<{ id: string; name: string }>;
   goNext: () => void;
   goPrev: () => void;
   reset: () => void;
@@ -79,6 +90,8 @@ const initialState: WizardState = {
   propertyMapping: { title: "" },
   statusMapping: {},
   boardMapping: {},
+  additionalStatuses: [],
+  additionalBoards: [],
   integrationName: "",
   syncDirection: "bidirectional",
   syncIntervalMinutes: null,
@@ -87,6 +100,18 @@ const initialState: WizardState = {
 export const useNotionWizardStore = create<WizardActions & WizardState>()(
   immer((set, get) => ({
     ...initialState,
+
+    addAdditionalStatus: (status: CreatedItem) => {
+      set(draft => {
+        draft.additionalStatuses.push(status);
+      });
+    },
+
+    addAdditionalBoard: (board: CreatedItem) => {
+      set(draft => {
+        draft.additionalBoards.push(board);
+      });
+    },
 
     updateApiKey: (apiKey: string) => {
       set(draft => {
@@ -154,6 +179,13 @@ export const useNotionWizardStore = create<WizardActions & WizardState>()(
         const titleProp = schema.properties.find(p => p.type === "title");
         if (titleProp) {
           draft.propertyMapping.title = titleProp.name;
+        }
+        // Default description to page content
+        draft.propertyMapping.description = { type: "page_content" };
+        // Auto-detect native Notion "status" property
+        const statusProp = schema.properties.find(p => p.type === "status");
+        if (statusProp) {
+          draft.propertyMapping.status = { name: statusProp.name, type: "status" };
         }
       });
     },
@@ -226,6 +258,16 @@ export const useNotionWizardStore = create<WizardActions & WizardState>()(
 
     reset: () => {
       set(() => ({ ...initialState }));
+    },
+
+    getUnmappedStatusOptions: () => {
+      const state = get();
+      if (!state.propertyMapping.status || !state.schema) return [];
+      const statusProp = state.schema.properties.find(p => p.name === state.propertyMapping.status?.name);
+      if (!statusProp?.options) return [];
+      return statusProp.options
+        .filter(opt => !state.statusMapping[opt.id])
+        .map(opt => ({ id: opt.id, name: opt.name }));
     },
 
     buildConfig: (): IntegrationConfig => {

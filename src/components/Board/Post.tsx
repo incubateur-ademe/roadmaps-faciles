@@ -48,7 +48,7 @@ export const BoardPost = ({
       endDetail={
         <span className="flex justify-between items-center w-full">
           <span>
-            {post.user?.name ?? "Anonyme"}
+            {post.user?.name ?? post.sourceLabel ?? "Anonyme"}
             {post.editedAt && <span className="fr-text--xs fr-text--light ml-1">(modifié)</span>}
           </span>
           {post._count.comments > 0 && (

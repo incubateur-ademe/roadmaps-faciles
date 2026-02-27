@@ -134,13 +134,18 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
     const integrationsEnabled = await isFeatureEnabled("integrations", session);
     const postMappings = integrationsEnabled ? await integrationMappingRepo.findMappingsForPost(post.id) : [];
     const notionMapping = postMappings.find(m => m.remoteUrl);
-    const isInbound = postMappings.some(
+    const inboundMapping = postMappings.find(
       m => m.metadata && (m.metadata as Record<string, unknown>).direction === "inbound",
     );
+    const isInbound = !!inboundMapping;
+
+    // Inbound-only integrations: post is fully read-only (no edits, no votes, no comments)
+    const isInboundOnly =
+      isInbound && (inboundMapping.integration.config as Record<string, unknown>)?.syncDirection === "inbound";
 
     let canEdit = false;
     let canDelete = false;
-    if (session?.user && !isInbound) {
+    if (session?.user && !isInboundOnly) {
       const isAuthor = post.userId && post.userId === session.user.uuid;
       if (isAuthor && settings.allowPostEdits) {
         canEdit = true;
@@ -164,9 +169,9 @@ export const PostPageHOP = (page: (props: PostPageComponentProps) => ReactElemen
       canDelete,
       isAdmin: Boolean(isAdmin),
       boardSlug: post.board.slug ?? "",
-      allowVoting: settings.allowVoting,
-      allowAnonymousVoting: settings.allowAnonymousVoting,
-      allowComments: settings.allowComments,
+      allowVoting: isInboundOnly ? false : settings.allowVoting,
+      allowAnonymousVoting: isInboundOnly ? false : settings.allowAnonymousVoting,
+      allowComments: isInboundOnly ? false : settings.allowComments,
       notionUrl: isAdmin && notionMapping ? notionMapping.remoteUrl : undefined,
     });
   });
@@ -216,7 +221,7 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
       </span>
       <Text mt="2w">
         {t.rich("addedBy", {
-          author: post.user?.name ?? t("anonymous"),
+          author: post.user?.name ?? post.sourceLabel ?? t("anonymous"),
           date: formatDate(post.createdAt, locale),
           b: chunks => <b>{chunks}</b>,
         })}
@@ -273,7 +278,7 @@ export const PostPageTitle = ({
   allowAnonymousVoting,
   user,
 }: PostPageComponentProps) => (
-  <span className="flex justify-between items-center gap-[2rem]">
+  <span className="relative z-[1] flex justify-between items-center gap-[2rem]">
     <MarkdownAsync {...reactMarkdownConfig}>{post.title}</MarkdownAsync>
     {allowVoting && (allowAnonymousVoting || user?.id) && (
       <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={user?.id}>

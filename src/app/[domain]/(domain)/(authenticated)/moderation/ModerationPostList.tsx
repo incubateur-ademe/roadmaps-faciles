@@ -101,7 +101,7 @@ export const ModerationPostList = ({ posts, emptyMessage, variant }: ModerationP
             ),
           },
           { children: post.board.name },
-          { children: post.user?.name ?? t("anonymous") },
+          { children: post.user?.name ?? post.sourceLabel ?? t("anonymous") },
           { children: formatDateHour(post.createdAt, locale) },
           {
             children:

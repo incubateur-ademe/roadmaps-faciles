@@ -36,31 +36,31 @@ const typographyProps = <P extends PropsWithoutChildren<TypographyProps>>({
 type HeadingVariant = `h${1 | 2 | 3 | 4 | 5 | 6}`;
 type HeadingDisplay = "lg" | "md" | "sm" | "xl" | "xs";
 type HeadingAttributes = PropsWithoutChildren<React.HTMLAttributes<HTMLHeadingElement>>;
-export type HeadingProps = ({
-  /** The html tag */
-  as: HeadingVariant;
-} & HeadingAttributes &
-  TypographyProps) &
-  (
-    | {
-        /**
-         * Remove `variant` to use `display`
-         * @deprecated
-         */
-        display?: never;
-        /** Should the tag looks like another? */
-        variant?: HeadingVariant;
-      }
-    | {
-        /** How should the tag be displayed? */
-        display?: HeadingDisplay;
-        /**
-         * Remove `display` to use `variant`
-         * @deprecated
-         */
-        variant?: never;
-      }
-  );
+export type HeadingProps = (
+  | {
+      /**
+       * Remove `variant` to use `display`
+       * @deprecated
+       */
+      display?: never;
+      /** Should the tag looks like another? */
+      variant?: HeadingVariant;
+    }
+  | {
+      /** How should the tag be displayed? */
+      display?: HeadingDisplay;
+      /**
+       * Remove `display` to use `variant`
+       * @deprecated
+       */
+      variant?: never;
+    }
+) &
+  ({
+    /** The html tag */
+    as: HeadingVariant;
+  } & HeadingAttributes &
+    TypographyProps);
 
 const headingProps = ({ display, variant, ...rest }: Omit<HeadingProps, "as" | "text">) => {
   const tagProps = typographyProps(rest);

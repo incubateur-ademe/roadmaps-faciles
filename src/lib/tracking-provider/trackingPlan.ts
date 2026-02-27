@@ -120,6 +120,15 @@ export const tenantSettingsUpdated = (props: { setting: string; tenantId: string
 export const memberRoleChanged = (props: { newRole: string; oldRole: string; tenantId: string; userId: string }) =>
   defineEvent("member.role_changed", props);
 
+/** Integration sync completed — server-side. */
+export const integrationSynced = (props: {
+  conflicts: number;
+  errors: number;
+  integrationId: string;
+  synced: number;
+  tenantId: string;
+}) => defineEvent("integration.synced", props);
+
 // ─── All event names (for type safety / autocomplete) ───────────────
 
 export const TRACKING_EVENTS = {
@@ -141,6 +150,7 @@ export const TRACKING_EVENTS = {
   "post.status_changed": postStatusChanged,
   "board.viewed": boardViewed,
   "board.created": boardCreated,
+  "integration.synced": integrationSynced,
   // Retention
   "user.signed_in": userSignedIn,
   // Referral

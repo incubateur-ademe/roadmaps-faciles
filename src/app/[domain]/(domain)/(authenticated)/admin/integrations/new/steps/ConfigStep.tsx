@@ -8,14 +8,7 @@ import { SYNC_INTERVAL_OPTIONS, useNotionWizardStore } from "../useNotionWizardS
 
 export const ConfigStep = () => {
   const t = useTranslations("domainAdmin.integrations.wizard");
-  const {
-    integrationName,
-    syncDirection,
-    syncIntervalMinutes,
-    setIntegrationName,
-    setSyncDirection,
-    setSyncIntervalMinutes,
-  } = useNotionWizardStore();
+  const { integrationName, syncIntervalMinutes, setIntegrationName, setSyncIntervalMinutes } = useNotionWizardStore();
 
   return (
     <div>
@@ -29,19 +22,6 @@ export const ConfigStep = () => {
           onChange: e => setIntegrationName(e.target.value),
         }}
       />
-
-      <Select
-        label={t("syncDirection")}
-        hint={t("syncDirectionHint")}
-        nativeSelectProps={{
-          value: syncDirection,
-          onChange: e => setSyncDirection(e.target.value as typeof syncDirection),
-        }}
-      >
-        <option value="bidirectional">{t("bidirectional")}</option>
-        <option value="inbound">{t("inboundOnly")}</option>
-        <option value="outbound">{t("outboundOnly")}</option>
-      </Select>
 
       <Select
         label={t("syncFrequency")}

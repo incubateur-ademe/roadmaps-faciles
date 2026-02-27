@@ -28,6 +28,8 @@ const NOTION_PROPERTY_TYPES = new Set<RemotePropertyType>([
   "status",
   "multi_select",
   "number",
+  "date",
+  "created_time",
 ]);
 
 type NotionPageProperties = NonNullable<UpdatePageParameters["properties"]>;
@@ -67,13 +69,53 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
       filter: { property: "object", value: "data_source" },
     });
 
+    const parentPageIds = new Set<string>();
+
     for (const item of response.results) {
       if (isFullDataSource(item)) {
+        const icon =
+          item.icon?.type === "emoji"
+            ? { type: "emoji" as const, emoji: item.icon.emoji }
+            : item.icon?.type === "external"
+              ? { type: "url" as const, url: item.icon.external.url }
+              : item.icon?.type === "file"
+                ? { type: "url" as const, url: item.icon.file.url }
+                : undefined;
+        const description = item.description?.map(t => t.plain_text).join("") || undefined;
+        const parentPageId = item.database_parent.type === "page_id" ? item.database_parent.page_id : undefined;
+        if (parentPageId) parentPageIds.add(parentPageId);
         databases.push({
           id: item.id,
           name: item.title.map(t => t.plain_text).join("") || "Untitled",
           url: item.url,
+          icon,
+          description,
+          propertyCount: Object.keys(item.properties).length,
+          parentName: parentPageId,
         });
+      }
+    }
+
+    // Resolve parent page titles in parallel
+    if (parentPageIds.size > 0) {
+      const parentTitles = new Map<string, string>();
+      await Promise.allSettled(
+        [...parentPageIds].map(async pageId => {
+          const page = await this.client.pages.retrieve({ page_id: pageId });
+          if (isFullPage(page)) {
+            const titleProp = Object.values(page.properties).find(p => p.type === "title");
+            if (titleProp?.type === "title") {
+              parentTitles.set(pageId, titleProp.title.map(t => t.plain_text).join("") || "Untitled");
+            }
+          }
+        }),
+      );
+      for (const db of databases) {
+        if (db.parentName && parentTitles.has(db.parentName)) {
+          db.parentName = parentTitles.get(db.parentName);
+        } else {
+          db.parentName = undefined;
+        }
       }
     }
 
@@ -136,33 +178,83 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
     }
   }
 
-  public async syncInbound(since?: Date): Promise<InboundChange[]> {
-    const changes: InboundChange[] = [];
+  public async countInbound(since?: Date): Promise<number> {
     const filter = since
       ? { timestamp: "last_edited_time" as const, last_edited_time: { after: since.toISOString() } }
       : undefined;
 
-    const response = await this.client.dataSources.query({
-      data_source_id: this.config.databaseId,
-      filter,
-      sorts: [{ timestamp: "last_edited_time", direction: "ascending" }],
-    });
+    let count = 0;
+    let cursor: null | string = null;
+    do {
+      const response = await this.client.dataSources.query({
+        data_source_id: this.config.databaseId,
+        filter,
+        page_size: 100,
+        ...(cursor ? { start_cursor: cursor } : {}),
+      });
+      count += response.results.filter(page => isFullPage(page)).length;
+      cursor = response.has_more ? response.next_cursor : null;
+    } while (cursor);
 
-    for (const page of response.results) {
-      if (!isFullPage(page)) continue;
+    return count;
+  }
 
-      const change = this.extractInboundChange(page);
-      if (!change) continue;
-
-      // If description is mapped as page_content, read blocks
-      if (this.config.propertyMapping.description?.type === "page_content") {
-        change.description = await this.readPageContent(page.id);
-      }
-
+  public async syncInbound(since?: Date): Promise<InboundChange[]> {
+    const changes: InboundChange[] = [];
+    for await (const change of this.syncInboundStream(since)) {
       changes.push(change);
     }
-
     return changes;
+  }
+
+  public async *syncInboundStream(since?: Date): AsyncGenerator<InboundChange> {
+    const filter = since
+      ? { timestamp: "last_edited_time" as const, last_edited_time: { after: since.toISOString() } }
+      : undefined;
+
+    let cursor: null | string = null;
+    do {
+      const response = await this.client.dataSources.query({
+        data_source_id: this.config.databaseId,
+        filter,
+        sorts: [{ timestamp: "last_edited_time", direction: "ascending" }],
+        ...(cursor ? { start_cursor: cursor } : {}),
+        page_size: 100,
+      });
+
+      for (const page of response.results) {
+        if (!isFullPage(page)) continue;
+
+        const change = this.extractInboundChange(page);
+        if (!change) continue;
+
+        // Content reading is deferred to getPageContent() for parallel fetching
+        yield change;
+      }
+
+      cursor = response.has_more ? response.next_cursor : null;
+    } while (cursor);
+  }
+
+  public async getInboundChange(remoteId: string): Promise<InboundChange | null> {
+    try {
+      const page = await this.client.pages.retrieve({ page_id: remoteId });
+      if (!isFullPage(page)) return null;
+      const change = this.extractInboundChange(page);
+      if (!change) return null;
+      // Resolve page content if configured
+      if (this.config.propertyMapping.description?.type === "page_content") {
+        change.description = await this.readPageContent(remoteId);
+      }
+      return change;
+    } catch {
+      return null;
+    }
+  }
+
+  public async getPageContent(remoteId: string): Promise<string | undefined> {
+    if (this.config.propertyMapping.description?.type !== "page_content") return undefined;
+    return this.readPageContent(remoteId);
   }
 
   public buildRemoteUrl(remoteId: string): string {
@@ -193,15 +285,34 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
   }
 
   public async updateLikesField(remoteId: string, count: number): Promise<void> {
-    const fieldName = this.config.propertyMapping.likes;
-    if (!fieldName) return;
+    const likesConfig = this.config.propertyMapping.likes;
+    if (!likesConfig) return;
 
-    await this.client.pages.update({
-      page_id: remoteId,
-      properties: {
-        [fieldName]: { number: count },
-      },
-    });
+    // Backward compat: plain string → assume number type
+    const fieldName = typeof likesConfig === "string" ? likesConfig : likesConfig.name;
+    const fieldType = typeof likesConfig === "string" ? "number" : likesConfig.type;
+
+    const numberProp = { number: count };
+    const richTextProp = { rich_text: [{ type: "text" as const, text: { content: String(count) } }] };
+    const primary = fieldType === "rich_text" ? richTextProp : numberProp;
+    const fallback = fieldType === "rich_text" ? numberProp : richTextProp;
+
+    try {
+      await this.client.pages.update({
+        page_id: remoteId,
+        properties: { [fieldName]: primary },
+      });
+    } catch (error) {
+      // Type mismatch (old config or wrong mapping) — try the other type
+      if ((error as { code?: string }).code === "validation_error") {
+        await this.client.pages.update({
+          page_id: remoteId,
+          properties: { [fieldName]: fallback },
+        });
+      } else {
+        throw error;
+      }
+    }
   }
 
   // --- Private helpers ---
@@ -252,6 +363,13 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
     if (propertyMapping.tags && post.tags.length > 0) {
       properties[propertyMapping.tags] = {
         multi_select: post.tags.map(tag => ({ name: tag })),
+      };
+    }
+
+    // Date (only writable for "date" type — "created_time" is read-only in Notion)
+    if (propertyMapping.date?.type === "date") {
+      properties[propertyMapping.date.name] = {
+        date: { start: post.createdAt.toISOString() },
       };
     }
 
@@ -324,50 +442,59 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
   }
 
   private async readPageContent(pageId: string): Promise<string> {
-    const response = await this.client.blocks.children.list({ block_id: pageId });
     const lines: string[] = [];
+    let cursor: null | string = null;
 
-    for (const block of response.results) {
-      const b = block as { type: string } & Record<string, unknown>;
-      const richText = (b[b.type] as { rich_text?: Array<{ plain_text: string }> } | undefined)?.rich_text;
-      const text = richText?.map(t => t.plain_text).join("") ?? "";
+    do {
+      const response = await this.client.blocks.children.list({
+        block_id: pageId,
+        ...(cursor ? { start_cursor: cursor } : {}),
+      });
 
-      switch (b.type) {
-        case "heading_1":
-          lines.push(`# ${text}`);
-          break;
-        case "heading_2":
-          lines.push(`## ${text}`);
-          break;
-        case "heading_3":
-          lines.push(`### ${text}`);
-          break;
-        case "bulleted_list_item":
-          lines.push(`- ${text}`);
-          break;
-        case "numbered_list_item":
-          lines.push(`1. ${text}`);
-          break;
-        case "to_do": {
-          const checked = (b[b.type] as { checked?: boolean } | undefined)?.checked;
-          lines.push(`- [${checked ? "x" : " "}] ${text}`);
-          break;
+      for (const block of response.results) {
+        const b = block as { type: string } & Record<string, unknown>;
+        const richText = (b[b.type] as { rich_text?: Array<{ plain_text: string }> } | undefined)?.rich_text;
+        const text = richText?.map(t => t.plain_text).join("") ?? "";
+
+        switch (b.type) {
+          case "heading_1":
+            lines.push(`# ${text}`);
+            break;
+          case "heading_2":
+            lines.push(`## ${text}`);
+            break;
+          case "heading_3":
+            lines.push(`### ${text}`);
+            break;
+          case "bulleted_list_item":
+            lines.push(`- ${text}`);
+            break;
+          case "numbered_list_item":
+            lines.push(`1. ${text}`);
+            break;
+          case "to_do": {
+            const checked = (b[b.type] as { checked?: boolean } | undefined)?.checked;
+            lines.push(`- [${checked ? "x" : " "}] ${text}`);
+            break;
+          }
+          case "code": {
+            const language = (b[b.type] as { language?: string } | undefined)?.language ?? "";
+            lines.push(`\`\`\`${language}`, text, "```");
+            break;
+          }
+          case "divider":
+            lines.push("---");
+            break;
+          case "paragraph":
+          default:
+            if (text) lines.push(text);
+            else lines.push("");
+            break;
         }
-        case "code": {
-          const language = (b[b.type] as { language?: string } | undefined)?.language ?? "";
-          lines.push(`\`\`\`${language}`, text, "```");
-          break;
-        }
-        case "divider":
-          lines.push("---");
-          break;
-        case "paragraph":
-        default:
-          if (text) lines.push(text);
-          else lines.push("");
-          break;
       }
-    }
+
+      cursor = response.has_more ? response.next_cursor : null;
+    } while (cursor);
 
     return lines.join("\n");
   }
@@ -413,6 +540,12 @@ export class NotionIntegrationProvider implements IIntegrationProvider {
       change.tags = extractMultiSelect(tagsProp);
     }
 
+    // Date
+    if (propertyMapping.date) {
+      const dateProp = props[propertyMapping.date.name];
+      change.date = extractDate(dateProp);
+    }
+
     return change;
   }
 }
@@ -441,4 +574,13 @@ function extractSelectOptionId(prop: PageProperty | undefined): string | undefin
 function extractMultiSelect(prop: PageProperty | undefined): string[] {
   if (!prop || prop.type !== "multi_select") return [];
   return prop.multi_select.map(o => o.name);
+}
+
+function extractDate(prop: PageProperty | undefined): string | undefined {
+  if (!prop) return undefined;
+  // Date property: { start, end } — take start
+  if (prop.type === "date" && prop.date) return prop.date.start;
+  // Created time property: ISO string directly
+  if (prop.type === "created_time") return prop.created_time;
+  return undefined;
 }

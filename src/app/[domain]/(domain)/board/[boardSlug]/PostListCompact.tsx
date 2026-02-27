@@ -126,7 +126,7 @@ export const PostListCompact = ({
                       "flex items-center gap-[.5rem] flex-wrap text-[var(--text-mention-grey)]",
                     )}
                   >
-                    <span>{post.user?.name ?? t("board.anonymous")}</span>
+                    <span>{post.user?.name ?? post.sourceLabel ?? t("board.anonymous")}</span>
                     <span>·</span>
                     <span>{formatRelativeDate(new Date(post.createdAt), locale)}</span>
                     {post.editedAt && (

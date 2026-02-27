@@ -102,8 +102,8 @@
   - Client-side: `useTracking()` hook from `TrackingContext.tsx`, `<TrackPageView event={...} />` for page views
   - Server-side: `void trackServerEvent(distinctId, event)` from `@/lib/tracking-provider/serverTracking` — fire-and-forget like `audit()`
   - Server imports: `import { trackServerEvent } from "@/lib/tracking-provider/serverTracking"` (never from barrel `index.ts` — it's client-safe only)
-  - Tracking plan: `trackingPlan.ts` — 24 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
-  - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`
+  - Tracking plan: `trackingPlan.ts` — 25 typed events organized by AARRI (Acquisition → Activation → Engagement → Retention → Referral → Impact)
+  - Adding a new event: 1) define factory in `trackingPlan.ts`, 2) add to `TRACKING_EVENTS` const, 3) wire in server action with `void trackServerEvent()` or in page with `<TrackPageView>`, 4) update event count in this doc + JSDoc header comment in `trackingPlan.ts`
   - Consent: DSFR consent banner with conditional finalities per provider in `src/consentManagement.tsx`
   - Identity sync: `IdentifyUser.tsx` client component — syncs NextAuth session → Sentry user context + tracking provider identify/group
   - Auth tracking: `user.signed_up`, `user.first_login`, `user.signed_in` fired in NextAuth jwt callback; `invitation.accepted` in signIn callback
@@ -133,6 +133,10 @@
   - Cron: `POST /api/cron/integrations` route handler with Bearer auth (`INTEGRATION_CRON_SECRET`)
   - Inbound posts are readonly — double guard: UI (`canEdit=false`/`canDelete=false` in PostPageHOP) + server actions (reject with i18n error)
   - Notion SDK v5.9.0: uses `dataSources.query()` (not `databases.query()`), `isFullDataSource` type guard, search filter `"data_source"` (not `"database"`)
+  - Sync architecture: `syncRunId` (UUID) groups all logs per sync run; phase markers (SKIPPED + `message: "phase_marker"`) ensure `findSyncRuns` derives correct direction even for empty phases
+  - Bidirectional conflict detection: compares `post.updatedAt > mapping.lastSyncAt` — detected conflicts stored as `CONFLICT` status, resolved via `ResolveSyncConflict` use case (local=push outbound, remote=pull inbound)
+  - SSE sync progress: `/api/integrations/[id]/sync` route uses `ReadableStream` + `TextEncoder` for Server-Sent Events; `onProgress` callback is best-effort (swallows errors so client disconnect doesn't abort sync)
+  - `Post.sourceLabel`: inbound posts display "imported from {integration}" label; field is readonly-guarded in UI + server actions
 - Post approval: `TenantSettings.requirePostApproval` → posts created as PENDING (filtered from board) until moderator approves
   - Anonymous posts: `Post.userId` nullable + `anonymousId` field; always null-check `post.user` in renders
 - Embed mode: `src/app/[domain]/(embed)/` — iframe-embeddable views with minimal layout (no header/footer/nav), controlled by `TenantSettings.allowEmbedding`
@@ -293,3 +297,4 @@
 - Tracking provider `factory.ts` uses CJS `require()` to avoid pulling server code into client bundle — cannot be unit-tested with vitest ESM mocking; test providers directly instead
 - Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
 - Tracking barrel `index.ts` is client-safe only — never import `getServerTrackingProvider` or `serverTracking` from it; use direct path imports for server code
+- Zustand store `reset()` before `router.push()` causes UI flash (synchronous re-render before async navigation) — reset on mount with `useEffect` instead, and keep `submitting=true` on success path to prevent re-render

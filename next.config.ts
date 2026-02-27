@@ -55,6 +55,8 @@ const csp = {
     "data:",
     "espace-membre.incubateur.net",
     ...posthogHostCps,
+    "*.notion.so",
+    "*.notion-static.com",
     process.env.STORAGE_S3_PUBLIC_URL && new URL(process.env.STORAGE_S3_PUBLIC_URL).host,
     !process.env.STORAGE_S3_PUBLIC_URL &&
       process.env.STORAGE_S3_ENDPOINT &&
