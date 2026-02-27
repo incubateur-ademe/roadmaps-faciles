@@ -3,7 +3,7 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
 import { Button } from "@/ui/shadcn/button";
 import { Input } from "@/ui/shadcn/input";
 import { Label } from "@/ui/shadcn/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
 import { LOCALE_LABELS } from "@/utils/i18n";
 import { createSubdomainSchema, localeSchema } from "@/utils/zod-schema";
 
@@ -145,22 +146,25 @@ export const Form = ({ tenant }: FormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="locale">{t("localeLabel")}</Label>
-            <select
-              id="locale"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-invalid={!!errors.locale}
-              {...register("locale")}
-            >
-              <option value="" disabled>
-                {t("selectLocale")}
-              </option>
-              {Object.entries(LOCALE_LABELS).map(([key, value]) => (
-                <option key={key} value={key}>
-                  {value}
-                </option>
-              ))}
-            </select>
+            <Label>{t("localeLabel")}</Label>
+            <Controller
+              control={control}
+              name="locale"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full" aria-invalid={!!errors.locale}>
+                    <SelectValue placeholder={t("selectLocale")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(LOCALE_LABELS).map(([key, value]) => (
+                      <SelectItem key={key} value={key}>
+                        {value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.locale && <p className="text-sm text-destructive">{errors.locale.message}</p>}
           </div>
         </fieldset>

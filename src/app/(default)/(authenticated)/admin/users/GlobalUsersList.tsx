@@ -1,30 +1,37 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge, { type BadgeProps } from "@codegouvfr/react-dsfr/Badge";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Pagination from "@codegouvfr/react-dsfr/Pagination";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { TableCustom, type TableCustomHeadColProps } from "@/dsfr/base/TableCustom";
-import tableStyle from "@/dsfr/base/TableCustom.module.css";
 import { type UserWithTenantCount } from "@/lib/repo/IUserRepo";
 import { UserRole, UserStatus } from "@/prisma/enums";
+import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
+import { Badge } from "@/ui/shadcn/badge";
+import { Button } from "@/ui/shadcn/button";
+import { Label } from "@/ui/shadcn/label";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/ui/shadcn/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
 
 import { updateUserRole, updateUserStatus } from "./actions";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50] as const;
 const DEFAULT_PAGE_SIZE = 10;
 
-const STATUS_BADGE_SEVERITY: Record<UserStatus, BadgeProps["severity"]> = {
-  ACTIVE: "success",
-  BLOCKED: "warning",
-  DELETED: "error",
+const STATUS_BADGE_VARIANT: Record<UserStatus, "default" | "destructive" | "secondary"> = {
+  ACTIVE: "default",
+  BLOCKED: "secondary",
+  DELETED: "destructive",
 };
 
 const ROLE_WEIGHT: Record<UserRole, number> = {
@@ -42,11 +49,10 @@ const STATUS_WEIGHT: Record<UserStatus, number> = {
 };
 
 const ASSIGNABLE_ROLES = [UserRole.USER, UserRole.MODERATOR, UserRole.ADMIN] as const;
-type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 
 const FILTERABLE_ROLES = [UserRole.ADMIN, UserRole.MODERATOR, UserRole.USER] as const;
 
-type SortDirection = string & TableCustomHeadColProps["orderDirection"];
+type SortDirection = "asc" | "desc";
 type SortKey = "createdAt" | "email" | "name" | "role" | "status" | "tenants";
 
 interface GlobalUsersListProps {
@@ -54,6 +60,22 @@ interface GlobalUsersListProps {
   superAdminIds: string[];
   users: UserWithTenantCount[];
 }
+
+const getPageNumbers = (currentPage: number, totalPages: number): Array<"ellipsis" | number> => {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const pages: Array<"ellipsis" | number> = [1];
+  if (currentPage > 3) pages.push("ellipsis");
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (currentPage < totalPages - 2) pages.push("ellipsis");
+  if (totalPages > 1) pages.push(totalPages);
+
+  return pages;
+};
 
 export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdminIds }: GlobalUsersListProps) => {
   const t = useTranslations("adminUsers");
@@ -164,171 +186,244 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
 
   const isSelf = (userId: string) => userId === currentUserId;
 
-  const sortHeader = (label: string, key: SortKey): TableCustomHeadColProps => ({
-    children: label,
-    onClick: () => toggleSort(key),
-    orderDirection: sortKey === key && sortDir,
-  });
+  const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
+    if (sortKey !== columnKey) return <ArrowUpDown className="ml-1 inline size-3 text-muted-foreground" />;
+    return sortDir === "asc" ? (
+      <ArrowUp className="ml-1 inline size-3" />
+    ) : (
+      <ArrowDown className="ml-1 inline size-3" />
+    );
+  };
 
   return (
     <>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={tc("error")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <div className={cx(fr.cx("fr-mb-2w"), "flex items-end justify-between flex-wrap gap-4")}>
-        <p className={fr.cx("fr-mb-1v")}>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
           {t("userCount", {
             filtered: filteredUsers.length === users.length ? "same" : String(filteredUsers.length),
             total: users.length,
           })}
         </p>
-        <div className="flex items-end flex-wrap gap-4 [&_.fr-select-group]:!mb-0">
-          <Select
-            label={t("role")}
-            options={[
-              { value: "all", label: tc("all") },
-              ...FILTERABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
-            ]}
-            nativeSelectProps={{
-              value: filterRole ?? "all",
-              onChange: e => {
-                setFilterRole(e.target.value === "all" ? null : (e.target.value as UserRole));
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="space-y-1">
+            <Label className="text-xs">{t("role")}</Label>
+            <Select
+              value={filterRole ?? "all"}
+              onValueChange={v => {
+                setFilterRole(v === "all" ? null : (v as UserRole));
                 setCurrentPage(1);
-              },
-            }}
-          />
-          <Select
-            label={t("status")}
-            options={[
-              { value: "all", label: tc("all") },
-              ...Object.values(UserStatus).map(status => ({ value: status, label: STATUS_LABELS[status] })),
-            ]}
-            nativeSelectProps={{
-              value: filterStatus ?? "all",
-              onChange: e => {
-                setFilterStatus(e.target.value === "all" ? null : (e.target.value as UserStatus));
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tc("all")}</SelectItem>
+                {FILTERABLE_ROLES.map(role => (
+                  <SelectItem key={role} value={role}>
+                    {ROLE_LABELS[role]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">{t("status")}</Label>
+            <Select
+              value={filterStatus ?? "all"}
+              onValueChange={v => {
+                setFilterStatus(v === "all" ? null : (v as UserStatus));
                 setCurrentPage(1);
-              },
-            }}
-          />
-          <Select
-            className="ml-auto"
-            label={tc("perPage")}
-            options={[
-              ...PAGE_SIZE_OPTIONS.map(size => ({ value: String(size), label: String(size) })),
-              { value: "all", label: tc("all") },
-            ]}
-            nativeSelectProps={{
-              value: pageSize ? String(pageSize) : "all",
-              onChange: e => {
-                const val = e.target.value;
-                setPageSize(val === "all" ? null : Number(val));
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tc("all")}</SelectItem>
+                {Object.values(UserStatus).map(status => (
+                  <SelectItem key={status} value={status}>
+                    {STATUS_LABELS[status]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="ml-auto space-y-1">
+            <Label className="text-xs">{tc("perPage")}</Label>
+            <Select
+              value={pageSize ? String(pageSize) : "all"}
+              onValueChange={v => {
+                setPageSize(v === "all" ? null : Number(v));
                 setCurrentPage(1);
-              },
-            }}
-          />
+              }}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map(size => (
+                  <SelectItem key={size} value={String(size)}>
+                    {String(size)}
+                  </SelectItem>
+                ))}
+                <SelectItem value="all">{tc("all")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       {users.length > 0 ? (
         <>
-          <TableCustom
-            classes={{
-              "col-5": tableStyle.colShrink,
-            }}
-            header={[
-              sortHeader(t("name"), "name"),
-              sortHeader(t("email"), "email"),
-              sortHeader(t("role"), "role"),
-              sortHeader(t("status"), "status"),
-              sortHeader(t("tenants"), "tenants"),
-              sortHeader(t("registeredAt"), "createdAt"),
-              { children: tc("actions") },
-            ]}
-            body={paginatedUsers.map(user => [
-              {
-                children: (
-                  <span className="flex items-center gap-2">
-                    {user.name ?? "—"}
-                    {isSelf(user.id) && <Tag small>{t("you")}</Tag>}
-                    {superAdminIds.includes(user.id) && <Tag small>{t("superAdmin")}</Tag>}
-                  </span>
-                ),
-              },
-              { children: user.email },
-              {
-                children: isSelf(user.id) ? (
-                  <Badge as="span" small noIcon severity="info">
-                    {ROLE_LABELS[user.role]}
-                  </Badge>
-                ) : (
-                  <Select
-                    className="min-w-48"
-                    label={<span className="sr-only">{t("role")}</span>}
-                    options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
-                    nativeSelectProps={{
-                      value: user.role as AssignableRole,
-                      onChange: e => void handleRoleChange(user.id, e.target.value as UserRole),
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {(
+                  [
+                    ["name", t("name")],
+                    ["email", t("email")],
+                    ["role", t("role")],
+                    ["status", t("status")],
+                    ["tenants", t("tenants")],
+                    ["createdAt", t("registeredAt")],
+                  ] as Array<[SortKey, string]>
+                ).map(([key, label]) => (
+                  <TableHead key={key}>
+                    <button
+                      type="button"
+                      className="inline-flex items-center hover:text-foreground"
+                      onClick={() => toggleSort(key)}
+                    >
+                      {label}
+                      <SortIcon columnKey={key} />
+                    </button>
+                  </TableHead>
+                ))}
+                <TableHead>{tc("actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <span className="flex items-center gap-2">
+                      {user.name ?? "—"}
+                      {isSelf(user.id) && <Badge variant="outline">{t("you")}</Badge>}
+                      {superAdminIds.includes(user.id) && <Badge variant="outline">{t("superAdmin")}</Badge>}
+                    </span>
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    {isSelf(user.id) ? (
+                      <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
+                    ) : (
+                      <Select
+                        value={user.role}
+                        onValueChange={v => void handleRoleChange(user.id, v as UserRole)}
+                        disabled={loadingId === user.id}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ASSIGNABLE_ROLES.map(role => (
+                            <SelectItem key={role} value={role}>
+                              {ROLE_LABELS[role]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_BADGE_VARIANT[user.status]}>{STATUS_LABELS[user.status]}</Badge>
+                  </TableCell>
+                  <TableCell>{user._count.memberships}</TableCell>
+                  <TableCell>{dateFormatter.format(new Date(user.createdAt))}</TableCell>
+                  <TableCell>
+                    {!isSelf(user.id) && (
+                      <div className="flex items-center gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/admin/users/${user.id}`}>{tc("edit")}</Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={loadingId === user.id}
+                          onClick={() => void handleToggleStatus(user.id, user.status)}
+                        >
+                          {user.status === UserStatus.BLOCKED ? t("unblock") : t("block")}
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault();
+                      setCurrentPage(p => Math.max(1, p - 1));
                     }}
-                    disabled={loadingId === user.id}
+                    aria-disabled={currentPage === 1}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                   />
-                ),
-              },
-              {
-                children: (
-                  <Badge as="span" small noIcon severity={STATUS_BADGE_SEVERITY[user.status]}>
-                    {STATUS_LABELS[user.status]}
-                  </Badge>
-                ),
-              },
-              { children: user._count.memberships },
-              { children: dateFormatter.format(new Date(user.createdAt)) },
-              {
-                children: isSelf(user.id) ? null : (
-                  <ButtonsGroup
-                    inlineLayoutWhen="always"
-                    buttonsSize="small"
-                    buttons={[
-                      {
-                        children: tc("edit"),
-                        priority: "secondary",
-                        linkProps: { href: `/admin/users/${user.id}` },
-                      },
-                      {
-                        children: user.status === UserStatus.BLOCKED ? t("unblock") : t("block"),
-                        priority: "tertiary",
-                        disabled: loadingId === user.id,
-                        onClick: () => void handleToggleStatus(user.id, user.status),
-                      },
-                    ]}
+                </PaginationItem>
+                {getPageNumbers(currentPage, totalPages).map((page, i) =>
+                  page === "ellipsis" ? (
+                    <PaginationItem key={`e${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={e => {
+                          e.preventDefault();
+                          setCurrentPage(page);
+                        }}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ),
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault();
+                      setCurrentPage(p => Math.min(totalPages, p + 1));
+                    }}
+                    aria-disabled={currentPage === totalPages}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                   />
-                ),
-              },
-            ])}
-          />
-          <Pagination
-            className={fr.cx("fr-mt-2w")}
-            count={totalPages}
-            defaultPage={currentPage}
-            getPageLinkProps={page => ({
-              href: "#",
-              onClick: (e: React.MouseEvent) => {
-                e.preventDefault();
-                setCurrentPage(page);
-              },
-            })}
-          />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </>
       ) : (
-        <Alert severity="info" title={t("noUsers")} description={t("noUsersDescription")} small />
+        <Alert>
+          <AlertTitle>{t("noUsers")}</AlertTitle>
+          <AlertDescription>{t("noUsersDescription")}</AlertDescription>
+        </Alert>
       )}
     </>
   );

@@ -1,24 +1,120 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import Tag from "@codegouvfr/react-dsfr/Tag";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { config } from "@/config";
-import { Grid, GridCol } from "@/dsfr";
-import { EmailAutocomplete } from "@/dsfr/base/EmailAutocomplete";
-import { FormFieldset } from "@/dsfr/base/FormFieldset";
+import { type UserEmailSearchResult } from "@/lib/repo/IUserRepo";
+import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
+import { Badge } from "@/ui/shadcn/badge";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 
 import { searchUsers } from "../../actions";
 import { type CreateTenantResult, createTenant } from "./actions";
+
+const EmailAutocompleteInput = ({
+  disabled,
+  label,
+  onSelectAction,
+  searchAction,
+}: {
+  disabled?: boolean;
+  label: string;
+  onSelectAction: (email: string) => void;
+  searchAction: (query: string) => Promise<UserEmailSearchResult[]>;
+}) => {
+  const [options, setOptions] = useState<UserEmailSearchResult[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const debounceRef = useRef<null | ReturnType<typeof setTimeout>>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setInputValue(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (value.length < 2) {
+        setOptions([]);
+        setIsOpen(false);
+        return;
+      }
+      debounceRef.current = setTimeout(() => {
+        void searchAction(value).then(results => {
+          setOptions(results);
+          setIsOpen(results.length > 0);
+        });
+      }, 300);
+    },
+    [searchAction],
+  );
+
+  const handleSelect = (email: string) => {
+    onSelectAction(email);
+    setInputValue("");
+    setOptions([]);
+    setIsOpen(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && inputValue.trim()) {
+      e.preventDefault();
+      handleSelect(inputValue.trim());
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <Label>{label}</Label>
+      <Input
+        disabled={disabled}
+        value={inputValue}
+        onChange={e => handleInputChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onFocus={() => options.length > 0 && setIsOpen(true)}
+        placeholder="Rechercher par email..."
+      />
+      {isOpen && options.length > 0 && (
+        <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+          {options.map(option => (
+            <li key={option.email}>
+              <button
+                type="button"
+                className="w-full cursor-pointer rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                onClick={() => handleSelect(option.email)}
+              >
+                {option.name ? `${option.name} (${option.email})` : option.email}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 export const CreateTenantForm = () => {
   const router = useRouter();
@@ -98,28 +194,26 @@ export const CreateTenantForm = () => {
 
   if (successResult?.failedInvitations?.length) {
     return (
-      <div>
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="success"
-          title="Tenant créé"
-          description="Le tenant a été créé avec succès."
-        />
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="warning"
-          title="Certaines invitations ont échoué"
-          description={
-            <ul className={fr.cx("fr-mt-1w")}>
+      <div className="space-y-4">
+        <Alert>
+          <AlertTitle>Tenant créé</AlertTitle>
+          <AlertDescription>Le tenant a été créé avec succès.</AlertDescription>
+        </Alert>
+        <Alert variant="destructive">
+          <AlertTitle>Certaines invitations ont échoué</AlertTitle>
+          <AlertDescription>
+            <ul className="mt-2 list-disc pl-4">
               {successResult.failedInvitations.map(f => (
                 <li key={f.email}>
                   <strong>{f.email}</strong> : {f.reason}
                 </li>
               ))}
             </ul>
-          }
-        />
-        <Button linkProps={{ href: "/admin/tenants" }}>Retour à la liste des tenants</Button>
+          </AlertDescription>
+        </Alert>
+        <Button asChild>
+          <Link href="/admin/tenants">Retour à la liste des tenants</Link>
+        </Button>
       </div>
     );
   }
@@ -127,89 +221,65 @@ export const CreateTenantForm = () => {
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title="Erreur"
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Erreur</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <Grid haveGutters>
-        <GridCol md={6}>
-          <Input
-            label="Nom du tenant"
-            hintText="Le nom de votre espace. Il peut être modifié ultérieurement."
-            nativeInputProps={{
-              ...register("name"),
-              placeholder: "Mon espace",
-            }}
-            state={errors.name ? "error" : "default"}
-            stateRelatedMessage={errors.name?.message}
-          />
-        </GridCol>
-        <GridCol md={6}>
-          <Input
-            label="Sous-domaine"
-            hintText={
-              subdomain ? (
-                <span>
-                  URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
-                </span>
-              ) : (
-                "Choisissez un sous-domaine pour votre espace"
-              )
-            }
-            nativeInputProps={{
-              ...register("subdomain"),
-              placeholder: "mon-espace",
-            }}
-            state={errors.subdomain ? "error" : "default"}
-            stateRelatedMessage={errors.subdomain?.message}
-          />
-        </GridCol>
-      </Grid>
+      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nom du tenant</Label>
+          <Input id="name" placeholder="Mon espace" aria-invalid={!!errors.name} {...register("name")} />
+          <p className="text-sm text-muted-foreground">Le nom de votre espace. Il peut être modifié ultérieurement.</p>
+          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="subdomain">Sous-domaine</Label>
+          <Input id="subdomain" placeholder="mon-espace" aria-invalid={!!errors.subdomain} {...register("subdomain")} />
+          <p className="text-sm text-muted-foreground">
+            {subdomain ? (
+              <>
+                URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
+              </>
+            ) : (
+              "Choisissez un sous-domaine pour votre espace"
+            )}
+          </p>
+          {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain.message}</p>}
+        </div>
+      </div>
 
-      <FormFieldset
-        className={fr.cx("fr-my-2w")}
-        legend="Emails des propriétaires"
-        error={emailError}
-        elements={[
-          {
-            children: (
-              <EmailAutocomplete
-                label="Ajouter un propriétaire"
-                searchAction={searchUsers}
-                onSelectAction={handleAddEmail}
-              />
-            ),
-          },
-          ...(ownerEmails.length > 0
-            ? [
-                {
-                  children: (
-                    <ul className="fr-tags-group">
-                      {ownerEmails.map(email => (
-                        <li key={email}>
-                          <Tag
-                            dismissible
-                            as="button"
-                            nativeButtonProps={{ type: "button" }}
-                            onClick={() => handleRemoveEmail(email)}
-                          >
-                            {email}
-                          </Tag>
-                        </li>
-                      ))}
-                    </ul>
-                  ),
-                },
-              ]
-            : []),
-        ]}
-      />
+      <fieldset className="mb-6 space-y-4 border-0 p-0">
+        <legend className="mb-2">
+          <h3 className="text-lg font-medium">Emails des propriétaires</h3>
+        </legend>
+        {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+
+        <EmailAutocompleteInput
+          label="Ajouter un propriétaire"
+          searchAction={searchUsers}
+          onSelectAction={handleAddEmail}
+        />
+
+        {ownerEmails.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {ownerEmails.map(email => (
+              <Badge key={email} variant="secondary" className="gap-1 pl-3 pr-1">
+                {email}
+                <button
+                  type="button"
+                  className="ml-1 rounded-full p-0.5 hover:bg-muted"
+                  onClick={() => handleRemoveEmail(email)}
+                >
+                  <X className="size-3" />
+                  <span className="sr-only">Retirer {email}</span>
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+      </fieldset>
 
       <Button type="submit" disabled={pending}>
         {pending ? "Création…" : "Créer le tenant"}

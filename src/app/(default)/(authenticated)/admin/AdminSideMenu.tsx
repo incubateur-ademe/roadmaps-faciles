@@ -1,54 +1,45 @@
 "use client";
 
-import SideMenu, { type SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Container } from "@/dsfr";
+import { cn } from "@/ui/cn";
 
 export const AdminSideMenu = () => {
   const t = useTranslations("rootAdmin");
   const pathname = usePathname();
 
-  // Extract the current admin page from pathname (e.g., /admin/tenants -> tenants)
   const currentPage = pathname.split("/admin/")[1]?.split("#")[0] || "tenants";
 
-  const menuItems: SideMenuProps.Item[] = [
-    {
-      text: t("tenants"),
-      linkProps: { href: "/admin/tenants" },
-      isActive: currentPage.startsWith("tenants"),
-    },
-    {
-      text: t("users"),
-      linkProps: { href: "/admin/users" },
-      isActive: currentPage === "users",
-    },
-    {
-      text: t("security.menu"),
-      linkProps: { href: "/admin/security" },
-      isActive: currentPage === "security",
-    },
-    {
-      text: t("featureFlags.menu"),
-      linkProps: { href: "/admin/feature-flags" },
-      isActive: currentPage === "feature-flags",
-    },
-    {
-      text: t("prismaStudio"),
-      linkProps: { href: "/admin/prisma" },
-      isActive: currentPage === "prisma",
-    },
-    {
-      text: t("auditLog"),
-      linkProps: { href: "/admin/audit-log" },
-      isActive: currentPage === "audit-log",
-    },
+  const menuItems = [
+    { text: t("tenants"), href: "/admin/tenants", isActive: currentPage.startsWith("tenants") },
+    { text: t("users"), href: "/admin/users", isActive: currentPage === "users" },
+    { text: t("security.menu"), href: "/admin/security", isActive: currentPage === "security" },
+    { text: t("featureFlags.menu"), href: "/admin/feature-flags", isActive: currentPage === "feature-flags" },
+    { text: t("prismaStudio"), href: "/admin/prisma", isActive: currentPage === "prisma" },
+    { text: t("auditLog"), href: "/admin/audit-log", isActive: currentPage === "audit-log" },
   ];
 
   return (
-    <Container className="sticky top-4">
-      <SideMenu burgerMenuButtonText={t("sideMenu")} items={menuItems} />
-    </Container>
+    <nav>
+      <ul className="space-y-1">
+        {menuItems.map(item => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className={cn(
+                "block rounded-md px-3 py-2 text-sm transition-colors",
+                item.isActive
+                  ? "bg-accent font-medium text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )}
+            >
+              {item.text}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 };
