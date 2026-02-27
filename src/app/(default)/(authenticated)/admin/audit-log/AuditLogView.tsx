@@ -124,12 +124,14 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
 
         <div className="mb-4 grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
           <div className="space-y-1">
-            <Label className="text-xs">{t("filterAction")}</Label>
+            <Label htmlFor="filter-action" className="text-xs">
+              {t("filterAction")}
+            </Label>
             <Select
               value={searchParams.get("action") ?? ""}
               onValueChange={v => updateFilter("action", v === "_all" ? "" : v)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="filter-action">
                 <SelectValue placeholder={t("allActions")} />
               </SelectTrigger>
               <SelectContent>
@@ -143,16 +145,22 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">{t("filterDateFrom")}</Label>
+            <Label htmlFor="filter-date-from" className="text-xs">
+              {t("filterDateFrom")}
+            </Label>
             <Input
+              id="filter-date-from"
               type="date"
               value={searchParams.get("dateFrom") ?? ""}
               onChange={e => updateFilter("dateFrom", e.target.value)}
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">{t("filterDateTo")}</Label>
+            <Label htmlFor="filter-date-to" className="text-xs">
+              {t("filterDateTo")}
+            </Label>
             <Input
+              id="filter-date-to"
               type="date"
               value={searchParams.get("dateTo") ?? ""}
               onChange={e => updateFilter("dateTo", e.target.value)}

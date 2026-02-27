@@ -42,9 +42,9 @@ export const SecurityForm = ({ force2FA, force2FAGraceDays }: SecurityFormProps)
 
       {enabled && (
         <div className="space-y-2">
-          <Label>{t("gracePeriod")}</Label>
+          <Label htmlFor="grace-period">{t("gracePeriod")}</Label>
           <Select value={String(graceDays)} onValueChange={v => setGraceDays(Number(v))}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="grace-period" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

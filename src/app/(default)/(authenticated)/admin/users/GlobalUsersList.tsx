@@ -213,7 +213,9 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
         </p>
         <div className="flex flex-wrap items-end gap-4">
           <div className="space-y-1">
-            <Label className="text-xs">{t("role")}</Label>
+            <Label htmlFor="filter-role" className="text-xs">
+              {t("role")}
+            </Label>
             <Select
               value={filterRole ?? "all"}
               onValueChange={v => {
@@ -221,7 +223,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger id="filter-role" className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -235,7 +237,9 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">{t("status")}</Label>
+            <Label htmlFor="filter-status" className="text-xs">
+              {t("status")}
+            </Label>
             <Select
               value={filterStatus ?? "all"}
               onValueChange={v => {
@@ -243,7 +247,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger id="filter-status" className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -257,7 +261,9 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
             </Select>
           </div>
           <div className="ml-auto space-y-1">
-            <Label className="text-xs">{tc("perPage")}</Label>
+            <Label htmlFor="filter-page-size" className="text-xs">
+              {tc("perPage")}
+            </Label>
             <Select
               value={pageSize ? String(pageSize) : "all"}
               onValueChange={v => {
@@ -265,7 +271,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-24">
+              <SelectTrigger id="filter-page-size" className="w-24">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -322,7 +328,7 @@ export const GlobalUsersList = ({ users: initialUsers, currentUserId, superAdmin
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    {isSelf(user.id) ? (
+                    {isSelf(user.id) || !(ASSIGNABLE_ROLES as readonly string[]).includes(user.role) ? (
                       <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
                     ) : (
                       <Select

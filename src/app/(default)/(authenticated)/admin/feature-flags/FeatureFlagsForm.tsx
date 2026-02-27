@@ -48,10 +48,14 @@ export const FeatureFlagsForm = ({ flags }: FeatureFlagsFormProps) => {
         return (
           <div key={key} className="flex items-center justify-between gap-4">
             <div>
-              <Label>{label}</Label>
+              <Label htmlFor={`flag-${key}`}>{label}</Label>
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>
-            <Switch checked={localFlags[key]} onCheckedChange={checked => handleToggle(key, checked)} />
+            <Switch
+              id={`flag-${key}`}
+              checked={localFlags[key]}
+              onCheckedChange={checked => handleToggle(key, checked)}
+            />
           </div>
         );
       })}
