@@ -455,3 +455,248 @@ Phase 3 (wiring layouts) ─── pré-requis pour tout le reste
 | CSS DSFR leak dans les pages shadcn | Styles pollués | `DsfrProvider` conditionnel (Phase 7) résout ça |
 | `legal-pages-react` dépend du DSFR | Pages légales cassées en shadcn | Garder un wrapper DSFR minimal pour ces pages |
 | Dark mode incohérent entre DSFR et shadcn | UX dégradée | Tester systématiquement les deux modes à chaque phase |
+
+---
+
+## Orchestration multi-agents (TeamCreate + Task)
+
+### Architecture de l'équipe
+
+L'implémentation des phases 3-8 se prête parfaitement à une exécution parallélisée avec coordination. La structure d'équipe recommandée :
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    COORDINATEUR (lead)                   │
+│  Rôle : orchestre, dispatch, merge, décisions bloquantes│
+│  Type : general-purpose                                 │
+│  Mode : acceptEdits                                     │
+│  Isolation : aucune (travaille sur la branche principale│
+│              feat/theme-switching)                       │
+└──────────┬──────────────┬──────────────┬────────────────┘
+           │              │              │
+    ┌──────▼──────┐ ┌─────▼──────┐ ┌────▼───────┐
+    │  AGENT-P4   │ │  AGENT-P5  │ │  AGENT-P6  │
+    │ Admin UI    │ │  Bridge    │ │ Root migr. │
+    │ worktree    │ │  worktree  │ │  worktree  │
+    │ isolé       │ │  isolé     │ │  isolé     │
+    └──────┬──────┘ └─────┬──────┘ └────┬───────┘
+           │              │              │
+           └──────────────┼──────────────┘
+                          │
+                   ┌──────▼──────┐
+                   │  REVIEWER   │
+                   │ Code review │
+                   │ + cohérence │
+                   │ cross-agent │
+                   └─────────────┘
+```
+
+### Rôles détaillés
+
+#### 1. Coordinateur (soi-même ou agent dédié)
+
+**Responsabilités** :
+- Exécuter Phase 3 en premier (séquentiel, bloquant — fondation pour tout le reste)
+- Créer l'équipe et les tasks après Phase 3
+- Lancer les agents Phase 4/5/6 en parallèle (worktrees isolés)
+- Merger les branches des worktrees dans `feat/theme-switching` après review
+- Exécuter Phase 7 (séquentiel, dépend de 6)
+- Coordonner Phase 8 (tests) à la fin
+
+**Pattern de lancement** :
+
+```
+# Étape 1 — Phase 3 (le coordinateur fait ça lui-même)
+# Pas de parallélisation possible, c'est la fondation
+
+# Étape 2 — Créer l'équipe
+TeamCreate({ team_name: "theme-switching", description: "Theme switching phases 4-6 parallel" })
+
+# Étape 3 — Créer les tasks
+TaskCreate({ subject: "Phase 4 — Admin UI sélecteur de thème", ... })
+TaskCreate({ subject: "Phase 5 — Composants bridge atomiques", ... })
+TaskCreate({ subject: "Phase 6 — Root site migration shadcn", ... })
+TaskCreate({ subject: "Review Phase 4", ... })  # bloqué par Phase 4
+TaskCreate({ subject: "Review Phase 5", ... })  # bloqué par Phase 5
+TaskCreate({ subject: "Review Phase 6", ... })  # bloqué par Phase 6
+
+# Étape 4 — Lancer les 3 agents en parallèle (worktrees isolés)
+Task({
+  subagent_type: "general-purpose",
+  name: "agent-p4",
+  team_name: "theme-switching",
+  isolation: "worktree",
+  prompt: "Implémenter Phase 4 du plan docs/plans/2026-02-27-theme-switching-phases-3-8.md..."
+})
+Task({
+  subagent_type: "general-purpose",
+  name: "agent-p5",
+  team_name: "theme-switching",
+  isolation: "worktree",
+  prompt: "Implémenter Phase 5 du plan docs/plans/2026-02-27-theme-switching-phases-3-8.md..."
+})
+Task({
+  subagent_type: "general-purpose",
+  name: "agent-p6",
+  team_name: "theme-switching",
+  isolation: "worktree",
+  prompt: "Implémenter Phase 6 du plan docs/plans/2026-02-27-theme-switching-phases-3-8.md..."
+})
+
+# Étape 5 — Reviewer après chaque agent
+# (voir section Reviewer ci-dessous)
+```
+
+#### 2. Agents implémenteurs (agent-p4, agent-p5, agent-p6)
+
+**Type** : `general-purpose` avec `isolation: "worktree"`
+
+Chaque agent reçoit un prompt structuré qui inclut :
+- Le contexte du plan (référence au fichier `.md`)
+- La phase spécifique à implémenter
+- Les conventions du projet (référence à `CLAUDE.md`)
+- Les critères de vérification de la phase
+- L'instruction de lancer `pnpm lint --fix` + `pnpm build` avant de marquer la task comme complétée
+
+**Prompt template pour chaque agent** :
+
+```
+Tu travailles sur le projet Kokatsuna (Next.js 16, multi-tenant).
+Lis CLAUDE.md pour les conventions du projet.
+Lis docs/plans/2026-02-27-theme-switching-phases-3-8.md pour le contexte complet.
+
+Ta mission : implémenter la Phase {N} — {titre}.
+
+Étapes :
+1. Lis les fichiers pertinents listés dans le plan
+2. Implémente chaque sous-étape ({N}.1, {N}.2, etc.)
+3. Lance `pnpm lint --fix` et corrige les erreurs
+4. Lance `pnpm build` et corrige les erreurs TS
+5. Commit avec le message : "feat(ui): {description} (#101)"
+6. Marque ta task comme completed
+
+Critères de vérification : [copier depuis le plan]
+```
+
+**Contraintes worktree** :
+- Chaque worktree part de `feat/theme-switching` (après Phase 3 committée)
+- L'agent commite sur sa branche worktree
+- Le coordinateur merge ensuite dans `feat/theme-switching`
+
+#### 3. Reviewer
+
+**Type** : `feature-dev:code-reviewer`
+
+Le reviewer intervient APRÈS chaque agent, pas en parallèle. Son rôle :
+
+**Vérifications systématiques** :
+1. **Conventions projet** : ESLint clean, imports triés, pas de default exports non autorisés, alias `@/` respectés
+2. **Cohérence cross-agent** : les 3 agents utilisent les mêmes patterns (nommage, structure, imports)
+3. **Pas de régression DSFR** : les pages DSFR existantes ne sont pas cassées
+4. **Sécurité** : audit log présent pour les mutations, feature flag vérifié, pas de données sensibles exposées
+5. **Performance** : pas d'import inutile de DSFR dans le bundle shadcn (et vice-versa)
+6. **Types** : pas de `any`, pas de `as unknown as`, les generics sont corrects
+
+**Prompt du reviewer** :
+
+```
+Tu es le reviewer du projet Kokatsuna (theme switching feature).
+Lis CLAUDE.md pour les conventions du projet.
+Lis docs/plans/2026-02-27-theme-switching-phases-3-8.md pour le contexte.
+
+Review le code de la Phase {N} :
+- Branche worktree : {path}
+- Diff depuis feat/theme-switching : `git diff feat/theme-switching...HEAD`
+
+Checklist :
+1. Conventions ESLint / imports / exports respectées
+2. Cohérence avec les autres phases (bridge wrappers utilisent les mêmes patterns)
+3. Pas de régression DSFR (si applicable)
+4. Audit log pour les mutations (si applicable)
+5. Feature flag gate (si applicable)
+6. CSS variables scopées correctement
+7. Pas de DSFR importé dans le bundle shadcn (tree-shaking)
+
+Signale UNIQUEMENT les problèmes high-confidence. Pas de nit-picking.
+```
+
+### Séquencement complet
+
+```
+Phase 3 ────── (coordinateur, séquentiel)
+  │
+  ├── commit sur feat/theme-switching
+  │
+  ├── TeamCreate "theme-switching"
+  │
+  ├── 3 agents en parallèle (worktrees isolés) :
+  │   ├── agent-p4 : Phase 4 (admin UI)
+  │   ├── agent-p5 : Phase 5 (bridge)
+  │   └── agent-p6 : Phase 6 (root migration)
+  │
+  ├── Reviewer sur chaque agent (séquentiel ou parallèle, 3 reviews) :
+  │   ├── review-p4 → fix si nécessaire → merge dans feat/theme-switching
+  │   ├── review-p5 → fix si nécessaire → merge dans feat/theme-switching
+  │   └── review-p6 → fix si nécessaire → merge dans feat/theme-switching
+  │
+  ├── Phase 7 ──── (coordinateur, séquentiel, dépend de 6 merged)
+  │   └── review-p7 → fix → merge
+  │
+  └── Phase 8 ──── (agent tests, ou coordinateur)
+      ├── unit tests (rapide, coordinateur peut faire)
+      ├── integration tests
+      └── E2E tests (plus lourd, agent dédié possible)
+```
+
+### Configuration TeamCreate
+
+```json
+{
+  "team_name": "theme-switching",
+  "description": "Implémentation parallèle theme switching phases 4-6 + review"
+}
+```
+
+### Tasks à créer (avec dépendances)
+
+| ID | Task | Owner | Bloqué par |
+|----|------|-------|------------|
+| 1 | Phase 4 — Admin UI sélecteur de thème | agent-p4 | — |
+| 2 | Phase 5 — Composants bridge atomiques | agent-p5 | — |
+| 3 | Phase 6 — Root site migration shadcn | agent-p6 | — |
+| 4 | Review Phase 4 | reviewer | 1 |
+| 5 | Review Phase 5 | reviewer | 2 |
+| 6 | Review Phase 6 | reviewer | 3 |
+| 7 | Merge Phase 4 dans feat/theme-switching | coordinateur | 4 |
+| 8 | Merge Phase 5 dans feat/theme-switching | coordinateur | 5 |
+| 9 | Merge Phase 6 dans feat/theme-switching | coordinateur | 6 |
+| 10 | Phase 7 — DsfrProvider conditionnel | coordinateur | 7, 8, 9 |
+| 11 | Review Phase 7 | reviewer | 10 |
+| 12 | Phase 8 — Tests | agent-tests | 7, 8, 9, 11 |
+
+### Gestion des conflits de merge
+
+Les 3 agents travaillent sur des fichiers majoritairement disjoints :
+- **Phase 4** : `src/app/[domain]/.../admin/settings/`, use cases, server actions
+- **Phase 5** : `src/ui/bridge/` (nouveau dossier)
+- **Phase 6** : `src/app/(default)/` pages root
+
+**Zones de conflit potentiel** :
+- `src/app/[domain]/(domain)/layout.tsx` — Phase 4 (settings update) et Phase 6 (imports potentiels). **Mitigation** : Phase 4 ne touche pas le layout, uniquement les settings admin.
+- `messages/fr.json` / `messages/en.json` — Phases 4 et 6 ajoutent des clés i18n. **Mitigation** : les clés sont dans des namespaces différents (`domainAdmin.*` vs `root.*`), merge simple.
+- `package.json` — si une phase ajoute une dépendance. **Mitigation** : rebase + `pnpm install` après merge.
+
+**Protocole de merge** : toujours rebase le worktree sur `feat/theme-switching` avant de merge (pas de merge commits). Le coordinateur fait le rebase et résout les conflits.
+
+### Quand NE PAS utiliser les sub-agents
+
+- **Phase 3** : toujours en séquentiel par le coordinateur. C'est la fondation, pas parallélisable.
+- **Phase 7** : séquentiel, dépend de toutes les phases précédentes mergées.
+- **Phase 8** : peut être un seul agent ou le coordinateur. Les tests doivent voir le code final mergé.
+- Si le projet est petit ou la session courte : un seul agent qui fait tout séquentiellement est plus simple et évite l'overhead de coordination.
+
+### Estimation du gain
+
+- **Séquentiel** : Phase 3 → 4 → 5 → 6 → 7 → 8 (6 étapes séquentielles)
+- **Parallélisé** : Phase 3 → (4 || 5 || 6) → 7 → 8 (4 étapes, dont 1 parallèle ×3)
+- **Gain estimé** : ~30-40% de temps en moins sur les phases 4-6, le bottleneck reste Phase 3 et les reviews
