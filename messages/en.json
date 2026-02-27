@@ -300,6 +300,14 @@
       "seedBannerTitle": "Your space is empty",
       "seedBannerDescription": "Initialize default data to get started: {boards} boards, {statuses} statuses, {extras}.",
       "seedBannerCta": "Configure in settings",
+      "uiTheme": {
+        "label": "UI theme",
+        "description": "Choose the design system used for this space.",
+        "options": {
+          "Default": "Default (shadcn/ui)",
+          "Dsfr": "DSFR (French gov design system)"
+        }
+      },
       "embeddingTitle": "Embedding",
       "allowEmbedding": "Allow iframe embedding",
       "allowEmbeddingHelper": "Allows embedding boards and roadmap on external sites via iframe.",
@@ -786,6 +794,10 @@
         "integrations": {
           "label": "Third-party integrations",
           "description": "Notion connector (bidirectional post sync). When disabled, the admin menu and pages are hidden."
+        },
+        "themeSwitching": {
+          "label": "UI theme switching",
+          "description": "Allows tenants to switch between DSFR theme (gouv.fr) and default theme (shadcn/ui)."
         }
       }
     }

@@ -304,6 +304,11 @@ model Tenant {
   integrations        TenantIntegration[]
 }
 
+enum UiTheme {
+  Default
+  Dsfr
+}
+
 enum EmailRegistrationPolicy {
   ANYONE
   NOONE
@@ -331,6 +336,7 @@ model TenantSettings {
   allowedEmailDomains     String[]
   force2FA                Boolean                 @default(false)
   force2FAGraceDays       Int                     @default(5)
+  uiTheme                 UiTheme                 @default(Default)
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
   rootBoardId             Int?                    @unique

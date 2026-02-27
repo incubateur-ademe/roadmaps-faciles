@@ -2,6 +2,13 @@ import { z } from "zod";
 
 import { localeSchema } from "@/utils/zod-schema";
 
+export const UI_THEME = {
+  Default: "Default",
+  Dsfr: "Dsfr",
+} as const;
+
+export const uiThemeSchema = z.enum(UI_THEME);
+
 export const EMAIL_REGISTRATION_POLICY = {
   ANYONE: "ANYONE",
   NOONE: "NOONE",
@@ -31,6 +38,7 @@ export const TenantSettings = z.object({
   allowedEmailDomains: z.string().array(),
   force2FA: z.boolean(),
   force2FAGraceDays: z.number(),
+  uiTheme: uiThemeSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   rootBoardId: z.number().nullable(),

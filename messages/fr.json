@@ -300,6 +300,14 @@
       "seedBannerTitle": "Votre espace est vide",
       "seedBannerDescription": "Initialisez des données par défaut pour démarrer : {boards} tableaux, {statuses} statuts, {extras}.",
       "seedBannerCta": "Configurer dans les paramètres",
+      "uiTheme": {
+        "label": "Thème d'interface",
+        "description": "Choisissez le système de design utilisé pour cet espace.",
+        "options": {
+          "Default": "Par défaut (shadcn/ui)",
+          "Dsfr": "DSFR (Design Système gouv.fr)"
+        }
+      },
       "embeddingTitle": "Intégration",
       "allowEmbedding": "Autoriser l'intégration iframe",
       "allowEmbeddingHelper": "Permet d'embarquer les boards et la roadmap dans un site externe via iframe.",
@@ -786,6 +794,10 @@
         "integrations": {
           "label": "Intégrations tierces",
           "description": "Connecteur Notion (synchronisation bidirectionnelle des posts). Quand désactivé, le menu et les pages admin sont masqués."
+        },
+        "themeSwitching": {
+          "label": "Changement de thème UI",
+          "description": "Permet aux tenants de basculer entre le thème DSFR (gouv.fr) et le thème par défaut (shadcn/ui)."
         }
       }
     }

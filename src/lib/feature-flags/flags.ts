@@ -6,6 +6,7 @@
  */
 export const FEATURE_FLAGS = {
   integrations: false,
+  themeSwitching: false,
 } as const satisfies Record<string, boolean>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
