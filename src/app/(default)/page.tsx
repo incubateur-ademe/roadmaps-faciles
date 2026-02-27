@@ -1,12 +1,12 @@
-import Button from "@codegouvfr/react-dsfr/Button";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { ArrowRight } from "lucide-react";
 import { type Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { ImgHero } from "@/components/img/ImgHero";
 import { config } from "@/config";
-import { Box, Container, Grid, GridCol } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
+import { cn } from "@/ui/cn";
+import { Button } from "@/ui/shadcn/button";
 
 import { sharedMetadata } from "../shared-metadata";
 import styles from "./index.module.scss";
@@ -28,30 +28,31 @@ const Home = async (_: PageProps<"/">) => {
   const t = await getTranslations("home");
 
   return (
-    <DsfrPage>
-      <Box as="section" pb="4w" pt="9w" className={cx(styles.hero)}>
-        <Container>
-          <Grid haveGutters>
-            <GridCol lg={7} className="fr-my-auto">
-              <h1>{t("title")}</h1>
-              <p>
-                {t.rich("description", {
-                  brandName: config.brand.name,
-                  strong: chunks => <strong>{chunks}</strong>,
-                  u: chunks => <u>{chunks}</u>,
-                })}
-              </p>
-              <Button iconId="fr-icon-arrow-right-line" iconPosition="right" linkProps={{ href: "/tenant" }}>
+    <section className={cn("pb-8 pt-20", styles.hero)}>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+          <div className="my-auto lg:col-span-7">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="mb-6 text-lg text-muted-foreground">
+              {t.rich("description", {
+                brandName: config.brand.name,
+                strong: chunks => <strong>{chunks}</strong>,
+                u: chunks => <u>{chunks}</u>,
+              })}
+            </p>
+            <Button asChild size="lg">
+              <Link href="/tenant">
                 {t("cta")}
-              </Button>
-            </GridCol>
-            <GridCol md={6} lg={5} className="fr-mx-auto">
-              <ImgHero />
-            </GridCol>
-          </Grid>
-        </Container>
-      </Box>
-    </DsfrPage>
+                <ArrowRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="mx-auto md:col-span-6 lg:col-span-5">
+            <ImgHero />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

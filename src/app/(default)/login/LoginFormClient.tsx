@@ -1,11 +1,12 @@
 "use client";
 
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { useTranslations } from "next-intl";
 import { type FormEvent, useState, useTransition } from "react";
 
-import { FormFieldset } from "@/dsfr";
+import { Alert, AlertDescription } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 
 import { loginAction } from "./actions";
 
@@ -85,115 +86,91 @@ export const LoginFormClient = ({ loginWithEmail, defaultEmail }: LoginFormClien
 
   if (step === "otp") {
     return (
-      <form onSubmit={handleOtpSubmit}>
-        <FormFieldset
-          legend={<h2>{t("preLoginOtp.title")}</h2>}
-          elements={[
-            <p key="desc" className="fr-text--sm fr-mb-2w">
-              {t("preLoginOtp.description")}
-            </p>,
-            <Input
-              key="otp"
-              label={t("twoFactor.otpLabel")}
-              state={error ? "error" : "default"}
-              stateRelatedMessage={error}
-              nativeInputProps={{
-                type: "text",
-                inputMode: "numeric",
-                pattern: "[0-9]{6}",
-                maxLength: 6,
-                autoComplete: "one-time-code",
-                required: true,
-                value: otpCode,
-                onChange: e => setOtpCode(e.target.value),
-                autoFocus: true,
-              }}
-            />,
-            <FormFieldset
-              key="buttons"
-              legend={null}
-              elements={[
-                <ButtonsGroup
-                  key="buttons-group"
-                  buttons={[
-                    {
-                      children: t("twoFactor.verify"),
-                      type: "submit",
-                      disabled: isPending,
-                    },
-                    {
-                      children: t("twoFactor.back"),
-                      priority: "secondary",
-                      type: "button",
-                      disabled: isPending,
-                      onClick: () => {
-                        setStep("identifier");
-                        setOtpCode("");
-                        setError(undefined);
-                      },
-                    },
-                  ]}
-                />,
-              ]}
-            />,
-          ]}
-        />
+      <form onSubmit={handleOtpSubmit} className="space-y-4">
+        <h2 className="text-lg font-semibold">{t("preLoginOtp.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("preLoginOtp.description")}</p>
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="otp">{t("twoFactor.otpLabel")}</Label>
+          <Input
+            id="otp"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            autoComplete="one-time-code"
+            required
+            value={otpCode}
+            onChange={e => setOtpCode(e.target.value)}
+            autoFocus
+            aria-invalid={!!error}
+          />
+        </div>
+        <div className="flex gap-3">
+          <Button type="submit" disabled={isPending}>
+            {t("twoFactor.verify")}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isPending}
+            onClick={() => {
+              setStep("identifier");
+              setOtpCode("");
+              setError(undefined);
+            }}
+          >
+            {t("twoFactor.back")}
+          </Button>
+        </div>
       </form>
     );
   }
 
   return (
-    <form onSubmit={handleIdentifierSubmit}>
-      <FormFieldset
-        legend={<h2>{loginWithEmail ? t("loginWithEmail") : t("loginWithUsername")}</h2>}
-        elements={[
-          loginWithEmail ? (
+    <form onSubmit={handleIdentifierSubmit} className="space-y-4">
+      <h2 className="text-lg font-semibold">{loginWithEmail ? t("loginWithEmail") : t("loginWithUsername")}</h2>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <div className="space-y-2">
+        {loginWithEmail ? (
+          <>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input
-              key="email"
-              label={t("emailLabel")}
-              state={error ? "error" : "default"}
-              stateRelatedMessage={error}
-              nativeInputProps={{
-                type: "email",
-                required: true,
-                value: identifier,
-                onChange: e => setIdentifier(e.target.value),
-              }}
+              id="email"
+              type="email"
+              required
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
+              aria-invalid={!!error}
             />
-          ) : (
+          </>
+        ) : (
+          <>
+            <Label htmlFor="username">{t("usernameLabel")}</Label>
             <Input
-              key="username"
-              label={t("usernameLabel")}
-              state={error ? "error" : "default"}
-              stateRelatedMessage={error}
-              nativeInputProps={{
-                type: "text",
-                required: true,
-                pattern: "^[A-Za-z.]+$",
-                title: t("usernameValidation"),
-                value: identifier,
-                onChange: e => setIdentifier(e.target.value),
-              }}
+              id="username"
+              type="text"
+              required
+              pattern="^[A-Za-z.]+$"
+              title={t("usernameValidation")}
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
+              aria-invalid={!!error}
             />
-          ),
-          <FormFieldset
-            key="submit"
-            legend={null}
-            elements={[
-              <ButtonsGroup
-                key="buttons-group"
-                buttons={[
-                  {
-                    children: t("login"),
-                    type: "submit",
-                    disabled: isPending,
-                  },
-                ]}
-              />,
-            ]}
-          />,
-        ]}
-      />
+          </>
+        )}
+      </div>
+      <Button type="submit" disabled={isPending}>
+        {t("login")}
+      </Button>
     </form>
   );
 };
