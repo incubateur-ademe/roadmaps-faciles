@@ -80,4 +80,24 @@ describe("SaveTenantWithSettings", () => {
       allowEmbedding: true,
     });
   });
+
+  it("passes uiTheme to repo when provided", async () => {
+    const updated = fakeTenantSettings({ id: 1, uiTheme: "Dsfr" });
+    mockSettingsRepo.update.mockResolvedValue(updated);
+
+    const result = await useCase.execute({ ...validInput, uiTheme: "Dsfr" });
+
+    expect(result.uiTheme).toBe("Dsfr");
+    expect(mockSettingsRepo.update).toHaveBeenCalledWith(1, expect.objectContaining({ uiTheme: "Dsfr" }));
+  });
+
+  it("does not include uiTheme in repo call when omitted", async () => {
+    const updated = fakeTenantSettings({ id: 1 });
+    mockSettingsRepo.update.mockResolvedValue(updated);
+
+    await useCase.execute(validInput);
+
+    const updateCall = mockSettingsRepo.update.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(updateCall).not.toHaveProperty("uiTheme");
+  });
 });
