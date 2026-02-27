@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { type TenantSettings } from "@/lib/model/TenantSettings";
+import { type TenantSettings, uiThemeSchema } from "@/lib/model/TenantSettings";
 import { type ITenantSettingsRepo } from "@/lib/repo/ITenantSettingsRepo";
 
 import { type UseCase } from "../types";
@@ -17,6 +17,7 @@ export const SaveTenantWithSettingsInput = z.object({
   allowAnonymousVoting: z.boolean(),
   requirePostApproval: z.boolean(),
   allowEmbedding: z.boolean(),
+  uiTheme: uiThemeSchema.optional(),
 });
 export type SaveTenantWithSettingsInput = z.infer<typeof SaveTenantWithSettingsInput>;
 export type SaveTenantWithSettingsOutput = TenantSettings;
@@ -36,6 +37,7 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
       requirePostApproval: tenantSettings.requirePostApproval,
       allowEmbedding: tenantSettings.allowEmbedding,
+      ...(tenantSettings.uiTheme && { uiTheme: tenantSettings.uiTheme }),
     });
 
     return updatedTenantSetting;
