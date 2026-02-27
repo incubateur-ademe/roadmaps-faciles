@@ -1,14 +1,16 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { Alert, AlertDescription } from "@/ui/shadcn/alert";
+import { Badge } from "@/ui/shadcn/badge";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
+import { Switch } from "@/ui/shadcn/switch";
 
 import { removeOtp, removePasskey, toggleEmailTwoFactor } from "./actions";
 
@@ -130,78 +132,81 @@ export const TwoFactorSettings = ({ emailEnabled, otpConfigured, passkeys }: Two
 
   return (
     <div>
-      {error && <Alert severity="error" small description={error} className="fr-mb-2w" />}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {/* Email 2FA */}
-      <h3>{t("emailTitle")}</h3>
-      <p className="fr-text--sm">{t("emailDescription")}</p>
-      <ToggleSwitch
-        label={t("emailToggle")}
-        checked={emailEnabled}
-        onChange={() => void handleToggleEmail()}
-        disabled={loading}
-      />
+      <h3 className="mb-1 text-lg font-semibold">{t("emailTitle")}</h3>
+      <p className="mb-3 text-sm text-muted-foreground">{t("emailDescription")}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">{t("emailToggle")}</p>
+        <Switch checked={emailEnabled} onCheckedChange={() => void handleToggleEmail()} disabled={loading} />
+      </div>
 
-      <hr className="fr-mt-3w fr-pb-2w" />
+      <hr className="my-6" />
 
       {/* OTP (TOTP) */}
-      <h3>{t("otpTitle")}</h3>
-      <p className="fr-text--sm">{t("otpDescription")}</p>
+      <h3 className="mb-1 text-lg font-semibold">{t("otpTitle")}</h3>
+      <p className="mb-3 text-sm text-muted-foreground">{t("otpDescription")}</p>
       {otpConfigured && !otpSetup ? (
         <div className="flex items-center gap-2">
-          <Badge severity="success">{t("active")}</Badge>
-          <Button priority="tertiary" size="small" onClick={() => void handleRemoveOtp()} disabled={loading}>
+          <Badge variant="default">{t("active")}</Badge>
+          <Button variant="ghost" size="sm" onClick={() => void handleRemoveOtp()} disabled={loading}>
             {t("remove")}
           </Button>
         </div>
       ) : otpSetup ? (
-        <div>
-          <p className="fr-text--sm">{t("otpScanQr")}</p>
+        <div className="space-y-4">
+          <p className="text-sm">{t("otpScanQr")}</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={otpSetup.qrCode} alt="QR Code OTP" className="fr-mb-2w" />
-          <p className="fr-text--xs">
+          <img src={otpSetup.qrCode} alt="QR Code OTP" className="mb-4" />
+          <p className="text-xs text-muted-foreground">
             {t("otpManualKey")}: <code>{otpSetup.secret}</code>
           </p>
-          <Input
-            label={t("otpVerifyLabel")}
-            nativeInputProps={{
-              value: otpCode,
-              onChange: e => setOtpCode(e.target.value),
-              maxLength: 6,
-              inputMode: "numeric",
-              autoComplete: "one-time-code",
-              name: "otp-setup-code",
-            }}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="otp-setup-code">{t("otpVerifyLabel")}</Label>
+            <Input
+              id="otp-setup-code"
+              value={otpCode}
+              onChange={e => setOtpCode(e.target.value)}
+              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              name="otp-setup-code"
+            />
+          </div>
           <div className="flex gap-2">
             <Button onClick={() => void handleVerifyOtpSetup()} disabled={loading || otpCode.length !== 6}>
               {t("verify")}
             </Button>
-            <Button priority="tertiary" onClick={() => setOtpSetup(null)}>
+            <Button variant="ghost" onClick={() => setOtpSetup(null)}>
               {t("cancel")}
             </Button>
           </div>
         </div>
       ) : (
-        <Button priority="secondary" onClick={() => void handleSetupOtp()} disabled={loading}>
+        <Button variant="outline" onClick={() => void handleSetupOtp()} disabled={loading}>
           {t("otpSetup")}
         </Button>
       )}
 
-      <hr className="fr-mt-3w fr-pb-2w" />
+      <hr className="my-6" />
 
       {/* Passkeys */}
-      <h3>{t("passkeyTitle")}</h3>
-      <p className="fr-text--sm">{t("passkeyDescription")}</p>
+      <h3 className="mb-1 text-lg font-semibold">{t("passkeyTitle")}</h3>
+      <p className="mb-3 text-sm text-muted-foreground">{t("passkeyDescription")}</p>
       {passkeys.length > 0 && (
-        <ul className="fr-mb-2w">
+        <ul className="mb-4 space-y-2">
           {passkeys.map(pk => (
-            <li key={pk.credentialID} className="flex items-center gap-2 fr-mb-1w">
-              <Badge severity="info">{pk.credentialDeviceType === "multiDevice" ? t("synced") : t("device")}</Badge>
-              <code className="fr-text--xs">{pk.credentialID.slice(0, 16)}...</code>
+            <li key={pk.credentialID} className="flex items-center gap-2">
+              <Badge variant="secondary">{pk.credentialDeviceType === "multiDevice" ? t("synced") : t("device")}</Badge>
+              <code className="text-xs">{pk.credentialID.slice(0, 16)}...</code>
               <Button
-                priority="tertiary no outline"
-                size="small"
+                variant="ghost"
+                size="sm"
                 onClick={() => void handleRemovePasskey(pk.credentialID)}
                 disabled={loading}
               >
@@ -211,7 +216,7 @@ export const TwoFactorSettings = ({ emailEnabled, otpConfigured, passkeys }: Two
           ))}
         </ul>
       )}
-      <Button priority="secondary" onClick={() => void handleAddPasskey()} disabled={loading}>
+      <Button variant="outline" onClick={() => void handleAddPasskey()} disabled={loading}>
         {t("passkeyAdd")}
       </Button>
     </div>

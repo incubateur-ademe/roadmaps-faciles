@@ -1,13 +1,13 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Alert, AlertDescription } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 import { type ServerActionResponse } from "@/utils/next";
 
 interface DeleteAccountSectionProps {
@@ -40,8 +40,10 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
   if (!showConfirm) {
     return (
       <div>
-        <Alert severity="warning" small description={t("deleteWarning")} className={fr.cx("fr-mb-2w")} />
-        <Button priority="tertiary" size="small" onClick={() => setShowConfirm(true)}>
+        <Alert className="mb-4">
+          <AlertDescription>{t("deleteWarning")}</AlertDescription>
+        </Alert>
+        <Button variant="ghost" size="sm" onClick={() => setShowConfirm(true)}>
           {t("deleteAccount")}
         </Button>
       </div>
@@ -50,35 +52,32 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
 
   return (
     <div>
-      <Alert
-        severity="error"
-        small
-        description={t("deleteConfirmPrompt", { text: confirmationWord })}
-        className={fr.cx("fr-mb-2w")}
-      />
-      <Input
-        label={t("confirmation")}
-        nativeInputProps={{
-          value: confirmInput,
-          onChange: e => setConfirmInput(e.target.value),
-          placeholder: confirmationWord,
-          autoComplete: "off",
-        }}
-        disabled={pending}
-      />
-      {errorMessage && <Alert severity="error" small description={errorMessage} className={fr.cx("fr-mb-2w")} />}
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>{t("deleteConfirmPrompt", { text: confirmationWord })}</AlertDescription>
+      </Alert>
+      <div className="mb-4 space-y-2">
+        <Label htmlFor="confirm-delete">{t("confirmation")}</Label>
+        <Input
+          id="confirm-delete"
+          value={confirmInput}
+          onChange={e => setConfirmInput(e.target.value)}
+          placeholder={confirmationWord}
+          autoComplete="off"
+          disabled={pending}
+        />
+      </div>
+      {errorMessage && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex gap-4">
-        <Button
-          priority="primary"
-          size="small"
-          disabled={pending || confirmInput !== confirmationWord}
-          onClick={() => void handleDelete()}
-        >
+        <Button size="sm" disabled={pending || confirmInput !== confirmationWord} onClick={() => void handleDelete()}>
           {t("confirmDelete")}
         </Button>
         <Button
-          priority="tertiary"
-          size="small"
+          variant="ghost"
+          size="sm"
           disabled={pending}
           onClick={() => {
             setShowConfirm(false);

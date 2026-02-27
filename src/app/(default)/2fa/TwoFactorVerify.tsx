@@ -1,15 +1,15 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Container, Grid, GridCol } from "@/dsfr";
+import { Alert, AlertDescription } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 
 interface TwoFactorVerifyProps {
   hasEmail: boolean;
@@ -104,90 +104,91 @@ export const TwoFactorVerify = ({ hasPasskey, hasOtp, hasEmail, redirectUrl = "/
   };
 
   return (
-    <Container my="4w">
-      <Grid haveGutters align="center">
-        <GridCol md={6}>
-          <h1>{t("title")}</h1>
-          <p>{t("description")}</p>
+    <div className="mx-auto max-w-md px-4 py-8">
+      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-6 text-muted-foreground">{t("description")}</p>
 
-          {error && <Alert severity="error" small description={error} className="fr-mb-2w" />}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          {!method && (
-            <div className="flex flex-col gap-4">
-              {hasPasskey && (
-                <Button onClick={() => void handlePasskey()} disabled={loading}>
-                  {t("usePasskey")}
-                </Button>
-              )}
-              {hasOtp && (
-                <Button priority="secondary" onClick={() => setMethod("otp")} disabled={loading}>
-                  {t("useOtp")}
-                </Button>
-              )}
-              {hasEmail && (
-                <Button priority="secondary" onClick={() => void handleSendEmail()} disabled={loading}>
-                  {t("useEmail")}
-                </Button>
-              )}
-            </div>
+      {!method && (
+        <div className="flex flex-col gap-4">
+          {hasPasskey && (
+            <Button onClick={() => void handlePasskey()} disabled={loading}>
+              {t("usePasskey")}
+            </Button>
           )}
-
-          {method === "otp" && (
-            <div>
-              <Input
-                label={t("otpLabel")}
-                nativeInputProps={{
-                  value: code,
-                  onChange: e => setCode(e.target.value),
-                  maxLength: 6,
-                  inputMode: "numeric",
-                  autoComplete: "one-time-code",
-                  name: "otp-code",
-                }}
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => void handleVerifyCode("/api/otp/verify")}
-                  disabled={loading || code.length !== 6}
-                >
-                  {t("verify")}
-                </Button>
-                <Button priority="tertiary" onClick={() => setMethod(null)}>
-                  {t("back")}
-                </Button>
-              </div>
-            </div>
+          {hasOtp && (
+            <Button variant="outline" onClick={() => setMethod("otp")} disabled={loading}>
+              {t("useOtp")}
+            </Button>
           )}
-
-          {method === "email" && emailSent && (
-            <div>
-              <Alert severity="info" small description={t("emailSent")} className="fr-mb-2w" />
-              <Input
-                label={t("emailLabel")}
-                nativeInputProps={{
-                  value: code,
-                  onChange: e => setCode(e.target.value),
-                  maxLength: 6,
-                  inputMode: "numeric",
-                  autoComplete: "one-time-code",
-                  name: "email-code",
-                }}
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => void handleVerifyCode("/api/2fa/email/verify")}
-                  disabled={loading || code.length !== 6}
-                >
-                  {t("verify")}
-                </Button>
-                <Button priority="tertiary" onClick={() => setMethod(null)}>
-                  {t("back")}
-                </Button>
-              </div>
-            </div>
+          {hasEmail && (
+            <Button variant="outline" onClick={() => void handleSendEmail()} disabled={loading}>
+              {t("useEmail")}
+            </Button>
           )}
-        </GridCol>
-      </Grid>
-    </Container>
+        </div>
+      )}
+
+      {method === "otp" && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="otp-code">{t("otpLabel")}</Label>
+            <Input
+              id="otp-code"
+              value={code}
+              onChange={e => setCode(e.target.value)}
+              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              name="otp-code"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => void handleVerifyCode("/api/otp/verify")} disabled={loading || code.length !== 6}>
+              {t("verify")}
+            </Button>
+            <Button variant="ghost" onClick={() => setMethod(null)}>
+              {t("back")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {method === "email" && emailSent && (
+        <div className="space-y-4">
+          <Alert className="mb-4">
+            <AlertDescription>{t("emailSent")}</AlertDescription>
+          </Alert>
+          <div className="space-y-2">
+            <Label htmlFor="email-code">{t("emailLabel")}</Label>
+            <Input
+              id="email-code"
+              value={code}
+              onChange={e => setCode(e.target.value)}
+              maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              name="email-code"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => void handleVerifyCode("/api/2fa/email/verify")}
+              disabled={loading || code.length !== 6}
+            >
+              {t("verify")}
+            </Button>
+            <Button variant="ghost" onClick={() => setMethod(null)}>
+              {t("back")}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

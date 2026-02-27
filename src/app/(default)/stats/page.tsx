@@ -1,8 +1,6 @@
 import { type Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { Container } from "@/dsfr";
-
 import { sharedMetadata } from "../../shared-metadata";
 
 const title = "Statistiques d'utilisation";
@@ -28,10 +26,10 @@ const Stats = async () => {
   const t = await getTranslations("stats");
 
   return (
-    <Container py="6w">
-      <h1>{t("title")}</h1>
+    <div className="mx-auto max-w-7xl px-4 py-12">
+      <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
       {/* <StatsContent /> */}
-    </Container>
+    </div>
   );
 };
 

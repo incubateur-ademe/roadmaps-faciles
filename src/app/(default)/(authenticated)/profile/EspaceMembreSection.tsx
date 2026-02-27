@@ -1,13 +1,13 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
+import { Alert, AlertDescription } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 
 import { requestEmLink, unlinkEspaceMembre } from "./actions";
 
@@ -58,14 +58,22 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
   if (isBetaGouvMember && username) {
     return (
       <div>
-        <Alert severity="success" small description={t("emLinked", { username })} className={fr.cx("fr-mb-2w")} />
+        <Alert className="mb-4">
+          <AlertDescription>{t("emLinked", { username })}</AlertDescription>
+        </Alert>
         <ClientAnimate>
           {successMessage && (
-            <Alert severity="success" small description={successMessage} className={fr.cx("fr-mb-2w")} />
+            <Alert className="mb-4">
+              <AlertDescription>{successMessage}</AlertDescription>
+            </Alert>
           )}
-          {errorMessage && <Alert severity="error" small description={errorMessage} className={fr.cx("fr-mb-2w")} />}
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
         </ClientAnimate>
-        <Button priority="tertiary" size="small" disabled={pending} onClick={() => void handleUnlink()}>
+        <Button variant="ghost" size="sm" disabled={pending} onClick={() => void handleUnlink()}>
           {t("emUnlink")}
         </Button>
       </div>
@@ -74,23 +82,25 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
 
   return (
     <div>
-      <Alert severity="info" small description={t("emLinkDescription")} className={fr.cx("fr-mb-2w")} />
+      <Alert className="mb-4">
+        <AlertDescription>{t("emLinkDescription")}</AlertDescription>
+      </Alert>
       <div className="flex items-end gap-4">
-        <Input
-          label={t("emLoginLabel")}
-          hintText={t("emLoginHint")}
-          nativeInputProps={{
-            value: emLogin,
-            onChange: e => setEmLogin(e.target.value),
-            placeholder: "prenom.nom",
-          }}
-          disabled={pending}
-          className="!mb-0 flex-1"
-        />
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="em-login">{t("emLoginLabel")}</Label>
+          <Input
+            id="em-login"
+            value={emLogin}
+            onChange={e => setEmLogin(e.target.value)}
+            placeholder="prenom.nom"
+            disabled={pending}
+          />
+          <p className="text-sm text-muted-foreground">{t("emLoginHint")}</p>
+        </div>
         <Button
-          className="mb-[1.5rem]"
-          priority="secondary"
-          size="small"
+          variant="outline"
+          size="sm"
+          className="mb-[1.75rem]"
           disabled={pending || !emLogin.trim()}
           onClick={() => void handleRequestLink()}
         >
@@ -99,9 +109,15 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
       </div>
       <ClientAnimate>
         {successMessage && (
-          <Alert severity="success" small description={successMessage} className={fr.cx("fr-mt-2w")} />
+          <Alert className="mt-4">
+            <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
         )}
-        {errorMessage && <Alert severity="error" small description={errorMessage} className={fr.cx("fr-mt-2w")} />}
+        {errorMessage && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
       </ClientAnimate>
     </div>
   );
