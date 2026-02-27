@@ -43,9 +43,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.2(react@19.2.4))
-      '@incubateur-ademe/legal-pages-react':
-        specifier: ^0.6.0
-        version: 0.6.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@incubateur-ademe/next-auth-espace-membre-provider':
         specifier: ^0.3.3
         version: 0.3.3(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.3)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))
@@ -1296,15 +1293,6 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
-
-  '@incubateur-ademe/legal-pages-markdown@0.6.0':
-    resolution: {integrity: sha512-JsbEhgwrijRefIvdrtRfu6Us4XCPzg6D3My7+YHTJGO6OqvqXaEi0fNmYPDcacocAQNVG77uztHsLeJOTUpr5Q==}
-
-  '@incubateur-ademe/legal-pages-react@0.6.0':
-    resolution: {integrity: sha512-EzXiL5c+NwwKewglfqAf8ideD4MHrpTvnxYpekGitx07Zt2OSyOUkL6UpPH46rhoqSPjgZyYc868e6PR3WjD9w==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
 
   '@incubateur-ademe/next-auth-espace-membre-provider@0.3.3':
     resolution: {integrity: sha512-VFgyBC22FaZrmQsfT0FZjX0bK1qtkPCrOAkjfJrI/kIF0rg0VWTVBg1AkeXryH1QAGGHkI012CHaPPjN0MzexQ==}
@@ -6538,10 +6526,6 @@ packages:
       typescript:
         optional: true
 
-  mustache@4.2.0:
-    resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
-    hasBin: true
-
   mute-stream@2.0.0:
     resolution: {integrity: sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==}
     engines: {node: ^18.17.0 || >=20.5.0}
@@ -9647,15 +9631,6 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.5':
     optional: true
-
-  '@incubateur-ademe/legal-pages-markdown@0.6.0': {}
-
-  '@incubateur-ademe/legal-pages-react@0.6.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      '@incubateur-ademe/legal-pages-markdown': 0.6.0
-      mustache: 4.2.0
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
 
   '@incubateur-ademe/next-auth-espace-membre-provider@0.3.3(next-auth@5.0.0-beta.30(@simplewebauthn/browser@13.2.2)(@simplewebauthn/server@13.2.3)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3))(nodemailer@7.0.13)(react@19.2.4))':
     dependencies:
@@ -15676,8 +15651,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@types/node'
-
-  mustache@4.2.0: {}
 
   mute-stream@2.0.0: {}
 

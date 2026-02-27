@@ -1,4 +1,6 @@
 import Header from "@codegouvfr/react-dsfr/Header";
+import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { notFound } from "next/navigation";
 
 import { Brand } from "@/components/Brand";
@@ -69,38 +71,41 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
   return (
     <UIProvider value={theme}>
       <ThemeInjector theme={theme} />
+      <AppRouterCacheProvider>
+        <MuiDsfrThemeProvider>
+          {theme === "Dsfr" ? (
+            <Header
+              navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
+              brandTop={<Brand />}
+              homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+              serviceTitle={tenantSettings.name}
+              quickAccessItems={[
+                <LanguageSelectClient key="hqai-lang" />,
+                <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
+              ]}
+            />
+          ) : (
+            <ShadcnHeader
+              homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+              serviceName={tenantSettings.name}
+              navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
+              quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
+            />
+          )}
 
-      {theme === "Dsfr" ? (
-        <Header
-          navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
-          brandTop={<Brand />}
-          homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-          serviceTitle={tenantSettings.name}
-          quickAccessItems={[
-            <LanguageSelectClient key="hqai-lang" />,
-            <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
-          ]}
-        />
-      ) : (
-        <ShadcnHeader
-          homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-          serviceName={tenantSettings.name}
-          navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
-          quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
-        />
-      )}
+          <ClientAnimate as="main" id="content" className={styles.content}>
+            {children}
+          </ClientAnimate>
 
-      <ClientAnimate as="main" id="content" className={styles.content}>
-        {children}
-      </ClientAnimate>
+          {theme === "Dsfr" ? <PublicFooter id="footer" /> : <ShadcnFooter id="footer" serviceName={tenantSettings.name} />}
 
-      {theme === "Dsfr" ? <PublicFooter id="footer" /> : <ShadcnFooter serviceName={tenantSettings.name} />}
-
-      <ClientOnly>
-        <ClientBodyPortal>
-          <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
-        </ClientBodyPortal>
-      </ClientOnly>
+          <ClientOnly>
+            <ClientBodyPortal>
+              <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
+            </ClientBodyPortal>
+          </ClientOnly>
+        </MuiDsfrThemeProvider>
+      </AppRouterCacheProvider>
     </UIProvider>
   );
 };

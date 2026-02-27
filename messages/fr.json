@@ -40,6 +40,7 @@
     "item": "{count, plural, =0 {0 élément} one {1 élément} other {# éléments}}"
   },
   "skipLinks": {
+    "nav": "Accès rapide",
     "content": "Contenu",
     "footer": "Pied de page"
   },

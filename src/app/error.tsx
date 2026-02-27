@@ -1,16 +1,13 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import * as Sentry from "@sentry/nextjs";
+import { AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect } from "react";
 
-import { ErrorLayout } from "@/components/ErrorLayout";
-import { Container, Grid, GridCol } from "@/dsfr";
+import { Button } from "@/ui/shadcn/button";
 import { clientParseError } from "@/utils/error";
-
-import { artworkMap, normalizeArtwork, artworkOvoidSvgUrl } from "./SystemMessageDisplay";
 
 export default function Error({ error: _error, reset }: { error: Error; reset: () => void }) {
   const error = clientParseError(_error);
@@ -19,59 +16,25 @@ export default function Error({ error: _error, reset }: { error: Error; reset: (
     Sentry.captureException(_error);
   }, [_error]);
   const t = useTranslations("errors");
-  const normalizedPictogram = artworkMap.technicalError;
 
   return (
-    <ErrorLayout>
-      <Container>
-        <Grid haveGutters valign="middle" align="center" my="7w" mtmd="12w" mbmd="10w">
-          <GridCol md={6} py="0">
-            <h1>{t("technicalError")}</h1>
-            <p className="fr-text--lead fr-mb-3w">{error.name}</p>
-            <div className="fr-text--sm fr-mb-5w">
-              <p>{error.message}</p>
-              <Button priority="tertiary" onClick={() => reset()}>
-                {t("retry")}
-              </Button>
-            </div>
-            <ButtonsGroup
-              inlineLayoutWhen="md and up"
-              buttons={[
-                {
-                  children: t("homepage"),
-                  linkProps: {
-                    href: "/",
-                  },
-                },
-              ]}
-            />
-          </GridCol>
-          <GridCol md={3} offsetMd={1} px="6w" pxmd="0" py="0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="fr-responsive-img fr-artwork"
-              aria-hidden="true"
-              width="160"
-              height="200"
-              viewBox="0 0 160 200"
-            >
-              <use
-                className="fr-artwork-motif"
-                href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-motif`}
-              ></use>
-              <use
-                className="fr-artwork-background"
-                href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-background`}
-              ></use>
-              <g transform="translate(40, 60)">
-                <use className="fr-artwork-decorative" href={`${normalizedPictogram.src}#artwork-decorative`}></use>
-                <use className="fr-artwork-minor" href={`${normalizedPictogram.src}#artwork-minor`}></use>
-                <use className="fr-artwork-major" href={`${normalizedPictogram.src}#artwork-major`}></use>
-              </g>
-            </svg>
-          </GridCol>
-        </Grid>
-      </Container>
-    </ErrorLayout>
+    <div className="flex flex-1 items-center justify-center px-4 py-16">
+      <div className="flex max-w-lg flex-col items-center text-center">
+        <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-muted">
+          <AlertTriangle className="size-10 text-muted-foreground" />
+        </div>
+        <h1 className="mb-2 text-3xl font-bold">{t("technicalError")}</h1>
+        <p className="mb-4 text-lg text-muted-foreground">{error.name}</p>
+        <div className="mb-6 text-sm text-muted-foreground">
+          <p>{error.message}</p>
+          <Button variant="ghost" className="mt-2" onClick={() => reset()}>
+            {t("retry")}
+          </Button>
+        </div>
+        <Button asChild>
+          <Link href="/">{t("homepage")}</Link>
+        </Button>
+      </div>
+    </div>
   );
 }

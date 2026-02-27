@@ -13,12 +13,13 @@ interface FooterProps {
   bottomLinks?: FooterLink[];
   className?: string;
   contentDescription?: React.ReactNode;
+  id?: string;
   license?: React.ReactNode;
   serviceName: string;
 }
 
-export const Footer = ({ serviceName, contentDescription, bottomLinks, license, className }: FooterProps) => (
-  <footer className={cn("border-t bg-muted/40", className)}>
+export const Footer = ({ id, serviceName, contentDescription, bottomLinks, license, className }: FooterProps) => (
+  <footer id={id} className={cn("border-t bg-muted/40", className)}>
     <div className="container py-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
