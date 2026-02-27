@@ -20,6 +20,7 @@ import { FeatureFlagProvider } from "@/lib/feature-flags/client";
 import { auth } from "@/lib/next-auth/auth";
 import { IdentifyUser } from "@/lib/tracking-provider/IdentifyUser";
 import { TrackingProvider } from "@/lib/tracking-provider/TrackingProvider";
+import { UIProvider } from "@/ui";
 
 import styles from "./root.module.scss";
 import { sharedMetadata } from "./shared-metadata";
@@ -53,7 +54,7 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
   const effectiveFlags = await getEffectiveFlags(session);
 
   return (
-    <html lang={lang} {...getHtmlAttributes({ lang })} className={cx(styles.app, "snap-y")}>
+    <html lang={lang} {...getHtmlAttributes({ lang })} data-ui-theme="Default" className={cx(styles.app, "snap-y")}>
       <head>
         <DsfrHead
           preloadFonts={[
@@ -109,7 +110,9 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
                         ]}
                       />
                       <FeatureFlagProvider value={effectiveFlags}>
-                        <div className={styles.app}>{children}</div>
+                        <UIProvider value="Default">
+                          <div className={styles.app}>{children}</div>
+                        </UIProvider>
                       </FeatureFlagProvider>
                     </SkeletonTheme>
                   </TrackingProvider>

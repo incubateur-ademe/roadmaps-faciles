@@ -1,40 +1,24 @@
-import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
-import Footer, { type FooterProps } from "@codegouvfr/react-dsfr/Footer";
 import { getTranslations } from "next-intl/server";
 
 import { config } from "@/config";
-import { FooterPersonalDataPolicyItem } from "@/consentManagement";
+import { RootFooter } from "@/ui/shadcn/RootFooter";
 
 export interface DefaultFooterProps {
-  id: FooterProps["id"];
+  id: string;
 }
 
 export const DefaultFooter = async ({ id }: DefaultFooterProps) => {
   const t = await getTranslations("footer");
 
   return (
-    <Footer
+    <RootFooter
       id={id}
-      accessibility="non compliant"
-      accessibilityLinkProps={{ href: "/accessibilite" }}
+      brandName={config.brand.name}
       contentDescription={t("contentDescription", { brandName: config.brand.name })}
-      operatorLogo={config.brand.operator.enable ? config.brand.operator.logo : undefined}
-      bottomItems={[
-        {
-          text: t("cgu"),
-          linkProps: { href: "/cgu" },
-        },
-        <FooterPersonalDataPolicyItem key="FooterPersonalDataPolicyItem" />,
-        headerFooterDisplayItem,
-        // <FooterConsentManagementItem key="FooterConsentManagementItem" />,
-        {
-          text: `Version ${config.appVersion}.${config.appVersionCommit.slice(0, 7)}`,
-          linkProps: {
-            href: `${config.repositoryUrl}/commit/${config.appVersionCommit}` as never,
-          },
-        },
+      bottomLinks={[
+        { text: t("cgu"), href: "/cgu" },
+        { text: t("legalNotice"), href: "/mentions-legales" },
       ]}
-      termsLinkProps={{ href: "/mentions-legales" }}
       license={
         <>
           {t.rich("license", {
@@ -46,6 +30,7 @@ export const DefaultFooter = async ({ id }: DefaultFooterProps) => {
           })}
         </>
       }
+      version={`v${config.appVersion}.${config.appVersionCommit.slice(0, 7)}`}
     />
   );
 };

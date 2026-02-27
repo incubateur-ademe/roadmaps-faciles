@@ -1,51 +1,36 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Header from "@codegouvfr/react-dsfr/Header";
 import { getTranslations } from "next-intl/server";
 
-import { Brand } from "@/components/Brand";
 import { config } from "@/config";
+import { Badge } from "@/ui/shadcn/badge";
+import { RootHeader } from "@/ui/shadcn/RootHeader";
 
-import { UserHeaderItem } from "../AuthHeaderItems";
-import { LanguageSelectClient } from "../LanguageSelectClient";
-import { Navigation } from "./Navigation";
+import { ShadcnNavigation } from "./ShadcnNavigation";
+import { ShadcnUserHeaderItem } from "./ShadcnUserHeaderItem";
 
 export const DefaultHeader = async () => {
   const t = await getTranslations("navigation");
 
   return (
-    <Header
-      navigation={config.maintenance ? null : <Navigation />}
-      brandTop={<Brand />}
-      homeLinkProps={{
-        href: "/",
-        title: `${t("home")} - ${config.brand.name}`,
-      }}
-      serviceTitle={
+    <RootHeader
+      brandName={
         <>
-          {config.brand.name}
-          &nbsp;
-          <Badge as="span" noIcon severity="warning">
+          {config.brand.name}{" "}
+          <Badge variant="outline" className="ml-1 text-xs">
             Alpha
           </Badge>
           {config.maintenance && (
-            <Badge as="span" noIcon severity="warning">
+            <Badge variant="destructive" className="ml-1 text-xs">
               Maintenance
             </Badge>
           )}
         </>
       }
-      serviceTagline={config.brand.tagline}
-      operatorLogo={config.brand.operator.enable ? config.brand.operator.logo : undefined}
-      classes={{
-        operator: "shimmer",
+      homeLinkProps={{
+        href: "/",
+        title: `${t("home")} - ${config.brand.name}`,
       }}
-      quickAccessItems={
-        config.maintenance
-          ? [<LanguageSelectClient key="hqai-lang" />]
-          : [<LanguageSelectClient key="hqai-lang" />, <UserHeaderItem key="hqai-user" variant="root" />].filter(
-              Boolean,
-            )
-      }
+      navigation={config.maintenance ? undefined : <ShadcnNavigation />}
+      quickAccessItems={<ShadcnUserHeaderItem />}
     />
   );
 };

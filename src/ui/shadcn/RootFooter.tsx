@@ -14,6 +14,7 @@ interface RootFooterProps {
   brandName: string;
   className?: string;
   contentDescription?: React.ReactNode;
+  id?: string;
   license?: React.ReactNode;
   version?: string;
 }
@@ -25,8 +26,9 @@ export const RootFooter = ({
   license,
   version,
   className,
+  id,
 }: RootFooterProps) => (
-  <footer className={cn("border-t bg-muted/40", className)}>
+  <footer id={id} className={cn("border-t bg-muted/40", className)}>
     <div className="container py-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>

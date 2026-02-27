@@ -10,7 +10,7 @@ import { Button } from "./button";
 import { Sheet, SheetContent, SheetTrigger } from "./sheet";
 
 interface RootHeaderProps {
-  brandName: string;
+  brandName: React.ReactNode;
   className?: string;
   homeLinkProps: { href: string; title: string };
   navigation?: React.ReactNode;
