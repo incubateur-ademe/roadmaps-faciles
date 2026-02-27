@@ -306,7 +306,8 @@
         "options": {
           "Default": "Par défaut (shadcn/ui)",
           "Dsfr": "DSFR (Design Système gouv.fr)"
-        }
+        },
+        "gouvRequired": "Le thème DSFR est réservé aux espaces disposant d'un domaine personnalisé en .gouv.fr."
       },
       "embeddingTitle": "Intégration",
       "allowEmbedding": "Autoriser l'intégration iframe",

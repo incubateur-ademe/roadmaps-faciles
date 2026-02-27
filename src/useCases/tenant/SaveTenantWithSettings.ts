@@ -26,6 +26,13 @@ export class SaveTenantWithSettings implements UseCase<SaveTenantWithSettingsInp
   constructor(private readonly tenantSettingsRepo: ITenantSettingsRepo) {}
 
   public async execute(tenantSettings: SaveTenantWithSettingsInput): Promise<SaveTenantWithSettingsOutput> {
+    if (tenantSettings.uiTheme === "Dsfr") {
+      const current = await this.tenantSettingsRepo.findById(tenantSettings.id);
+      if (!current?.customDomain?.endsWith(".gouv.fr")) {
+        throw new Error("DSFR theme requires a validated .gouv.fr custom domain");
+      }
+    }
+
     const updatedTenantSetting = await this.tenantSettingsRepo.update(tenantSettings.id, {
       isPrivate: tenantSettings.isPrivate,
       allowAnonymousFeedback: tenantSettings.allowAnonymousFeedback,

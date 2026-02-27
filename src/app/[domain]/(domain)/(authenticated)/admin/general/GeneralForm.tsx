@@ -235,22 +235,29 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
           />
         )}
 
-        {themeSwitchingEnabled && (
-          <section id="ui-theme" className={fr.cx("fr-mb-4w")}>
-            <h3 className={fr.cx("fr-h3")}>{t("uiTheme.label")}</h3>
-            <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>{t("uiTheme.description")}</p>
-            <Select
-              label={t("uiTheme.label")}
-              nativeSelectProps={{
-                value: watchedValues.uiTheme ?? "Default",
-                onChange: e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true }),
-              }}
-            >
-              <option value="Default">{t("uiTheme.options.Default")}</option>
-              <option value="Dsfr">{t("uiTheme.options.Dsfr")}</option>
-            </Select>
-          </section>
-        )}
+        {themeSwitchingEnabled &&
+          (() => {
+            const hasGouvDomain = !!tenantSettings.customDomain?.endsWith(".gouv.fr");
+            return (
+              <section id="ui-theme" className={fr.cx("fr-mb-4w")}>
+                <h3 className={fr.cx("fr-h3")}>{t("uiTheme.label")}</h3>
+                <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>{t("uiTheme.description")}</p>
+                <Select
+                  label={t("uiTheme.label")}
+                  nativeSelectProps={{
+                    value: watchedValues.uiTheme ?? "Default",
+                    onChange: e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true }),
+                  }}
+                >
+                  <option value="Default">{t("uiTheme.options.Default")}</option>
+                  <option value="Dsfr" disabled={!hasGouvDomain}>
+                    {t("uiTheme.options.Dsfr")}
+                  </option>
+                </Select>
+                {!hasGouvDomain && <p className={fr.cx("fr-hint-text", "fr-mt-1v")}>{t("uiTheme.gouvRequired")}</p>}
+              </section>
+            );
+          })()}
 
         <ClientAnimate>
           {saveError && (

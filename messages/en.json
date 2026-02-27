@@ -306,7 +306,8 @@
         "options": {
           "Default": "Default (shadcn/ui)",
           "Dsfr": "DSFR (French gov design system)"
-        }
+        },
+        "gouvRequired": "DSFR theme is restricted to spaces with a verified .gouv.fr custom domain."
       },
       "embeddingTitle": "Embedding",
       "allowEmbedding": "Allow iframe embedding",
