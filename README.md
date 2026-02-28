@@ -16,10 +16,10 @@ Le projet accueille des contributions de développeur·euse·s bénévoles — m
 - **Auth** : NextAuth relié à Prisma (table `User` existante)  
 - **ORM** : Prisma (IDs en `uuid`, modèles multi-tenant)  
 - **Validation** : Zod **v4** (schémas dans `lib/model`)  
-- **UI** : Design System de l’État (DSFR) + classes `fr-*` via React DSFR + MUI , utilitaires Tailwind (ex: `sticky`)  
-- **Multi-tenant** : sous-domaines, contenu servi selon le tenant (rewrite); domaines customs possibles 
+- **UI** : Theme switching tenant-level — DSFR (Design System de l’État) pour les collectivités publiques, shadcn/ui + palette French Blue (oklch) pour les autres. Tailwind CSS 4 + SCSS modules
+- **Multi-tenant** : sous-domaines, contenu servi selon le tenant (rewrite); domaines customs possibles
 
-Ces choix sont détaillés dans les ADR (Architecture Decision Records) / `docs/adr`.
+Ces choix sont détaillés dans les ADR (Architecture Decision Records) / `docs/adr` et DDR (Design Decision Records) / `docs/ddr`.
 
 ---
 
@@ -352,11 +352,13 @@ Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passe
 ```
 /content/docs/              # Documentation utilisateur (MDX, Fumadocs)
 /docs/adr/                  # Architecture Decision Records
+/docs/ddr/                  # Design Decision Records (palette, composants, conventions UI)
+/src/ui/shadcn/             # Composants shadcn/ui (thème Default)
 /prisma                     # Schéma Prisma + seed + migrations + views
 /src/app                    # App Router (Next.js)
 /src/app/(default)          # Site principal
 /src/app/[domain]           # Multi-tenant
-/src/app/doc/               # Documentation (layout, composants MDX, theme DSFR)
+/src/app/doc/               # Documentation (layout, composants MDX, Fumadocs)
 /src/lib/storage-provider    # Abstraction stockage S3 (IStorageProvider, noop, s3)
 /src/lib/model              # Schémas Zod (v4) - objets métier & DTO
 /src/useCases               # Logique métier (use cases DDD)
@@ -371,11 +373,13 @@ Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passe
 
 ---
 
-## 🧩 ADR (Architecture Decision Records)
+## 🧩 ADR / DDR (Decision Records)
 
-Les ADR vivent dans `docs/adr/`.  
-- Nouveau fichier : `docs/adr/00xx-<slug>.md` (numéro séquentiel)  
-- Template : `docs/adr/0000-template.md`  
+Les **ADR** (Architecture Decision Records) vivent dans `docs/adr/` — décisions techniques et structurelles.
+Les **DDR** (Design Decision Records) vivent dans `docs/ddr/` — décisions de design system (palette, composants, conventions UI).
+
+- Nouveau fichier : `docs/{adr,ddr}/00xx-<slug>.md` (numéro séquentiel)
+- Templates : `docs/adr/0000-template.md`, `docs/ddr/0000-template.md`
 - Courtes, factuelles, datées, avec alternatives et conséquences.
 
 ---
