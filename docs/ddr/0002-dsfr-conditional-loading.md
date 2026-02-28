@@ -11,7 +11,7 @@ Le root (pages d'accueil, documentation, profil) n'est pas un service public →
 
 ## Décision
 
-**DSFR chargé uniquement quand `theme === "Dsfr"`**, au niveau du layout tenant (`src/app/[domain]/(domain)/layout.tsx`). Le root layout n'a **aucune dépendance** au DSFR.
+**`DsfrProvider` toujours wrappé dans le tenant layout** car les composants tenant (BoardPost, PostList, etc.) utilisent des hooks DSFR (`useIsDark()`). Seuls le **Header, Footer, et ConsentBanner** switchent en fonction du thème. Le root layout n'a **aucune dépendance** au DSFR.
 
 ## Options envisagées
 
@@ -28,10 +28,10 @@ Le root (pages d'accueil, documentation, profil) n'est pas un service public →
 import { ThemeScript } from "./ThemeScript";
 import { cn } from "@/ui/cn";
 
-<html lang={lang} data-ui-theme="Default" data-fr-theme="light" className={cn(styles.app, "snap-y")}>
-  <head><ThemeScript /></head>
+<html lang={lang} data-ui-theme="Default" className={cn(styles.app, "snap-y")}>
+  <head><ThemeScript /></head>   {/* .dark class toggle avant le 1er paint */}
   <body>
-    {/* SessionProvider, NextIntlClientProvider, TrackingProvider, SkeletonTheme, UIProvider */}
+    {/* SessionProvider, NextIntlClientProvider, TrackingProvider, SkeletonTheme */}
     <UIProvider value="Default">
       {children}
     </UIProvider>
@@ -44,32 +44,34 @@ import { cn } from "@/ui/cn";
 ```tsx
 const theme = getTheme(tenantSettings);
 
-// Header/Footer conditionnels
-{theme === "Dsfr" ? <Header ... /> : <ShadcnHeader ... />}
-{theme === "Dsfr" ? <PublicFooter ... /> : <ShadcnFooter ... />}
-
-// Wrapping conditionnel
+// DsfrProvider TOUJOURS wrappé — les composants tenant (BoardPost, PostList, etc.)
+// utilisent des hooks DSFR (useIsDark, Card, Badge, Tag).
+// Seuls Header/Footer/ConsentBanner switchent.
 return (
   <UIProvider value={theme}>
     <ThemeInjector theme={theme} />
-    {theme === "Dsfr" ? (
-      <DsfrProvider lang={lang}>
-        <ConsentBannerAndConsentManagement />
-        {content}
-      </DsfrProvider>
-    ) : (
-      content
-    )}
+    <DsfrProvider lang={lang}>
+      {theme === "Dsfr" && <ConsentBannerAndConsentManagement />}
+      <AppRouterCacheProvider>
+        <MuiDsfrThemeProvider>
+          {theme === "Dsfr" ? <Header ... /> : <ShadcnHeader ... />}
+          {mainContent}
+          {theme === "Dsfr" ? <PublicFooter ... /> : <ShadcnFooter ... />}
+        </MuiDsfrThemeProvider>
+      </AppRouterCacheProvider>
+    </DsfrProvider>
   </UIProvider>
 );
 ```
 
-### Attribut de thème
+### Attributs de thème
 
 | Attribut | Root | Tenant DSFR | Tenant Default |
 |----------|------|-------------|----------------|
 | `data-ui-theme` | `"Default"` | `"Dsfr"` | `"Default"` |
-| `data-fr-theme` | `"light"/"dark"` | géré par DSFR JS | `"light"/"dark"` |
+| `.dark` class | via ThemeScript | via ThemeScript | via ThemeScript |
+| `DsfrProvider` | Non | Oui (toujours) | Oui (toujours) |
+| `ConsentBanner` | Non | Oui | Non |
 
 ### CSS scoping (`globals.scss`)
 
@@ -93,7 +95,7 @@ Les resets DSFR (link underline, heading sizes) sont aussi scopés sous `[data-u
 
 - **Légal** : conformité assurée — pas de charte État sur les pages non-autorisées.
 - **Performance** : le root ne charge pas le CSS/JS DSFR (~150 Ko+ gzippé).
-- **Complexité** : conditionnels `theme === "Dsfr"` dans le tenant layout — maintenable tant qu'il n'y a que 2 thèmes.
+- **Complexité** : conditionnels `theme === "Dsfr"` pour Header/Footer/ConsentBanner uniquement. `DsfrProvider` et `MuiDsfrThemeProvider` wrappent toujours le tenant content — maintenable tant que les composants tenant dépendent de hooks DSFR.
 - **Consent banner** : le root n'a pas de consent banner DSFR. Si du tracking est actif sur le root en prod, il faudra une alternative shadcn.
 - **DSFR CSS résiduel** : certains styles DSFR leakent via le global scope (link underlines, heading sizes) — les resets dans `globals.scss` les neutralisent pour le scope `[data-ui-theme="Default"]`.
 

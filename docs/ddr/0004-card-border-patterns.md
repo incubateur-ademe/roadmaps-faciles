@@ -50,7 +50,7 @@ Les cartes (composant shadcn `<Card>`) sont utilisées massivement dans la landi
 
 ### Dark mode
 
-Les opacités (`/40`, `/30`, `/20`) fonctionnent automatiquement en dark mode grâce aux tokens oklch qui changent entre `[data-ui-theme="Default"]` et `[data-ui-theme="Default"][data-fr-theme="dark"]`.
+Les opacités (`/40`, `/30`, `/20`) fonctionnent automatiquement en dark mode grâce aux tokens oklch qui changent entre `[data-ui-theme="Default"]` et `.dark[data-ui-theme="Default"]`.
 
 Pour les couleurs sémantiques (emerald, amber), on utilise des classes `dark:` explicites :
 

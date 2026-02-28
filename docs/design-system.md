@@ -45,9 +45,9 @@
                ┌──────────────┼──────────────┐
                ▼                              ▼
         theme === "Dsfr"               theme === "Default"
-        DsfrProvider wraps             Pas de DsfrProvider
+        DsfrProvider wraps (toujours)  DsfrProvider wraps (toujours)
         ConsentBanner                  Header/Footer shadcn
-        Header/Footer DSFR
+        Header/Footer DSFR            Pas de ConsentBanner
 ```
 
 ### Fichiers d'infrastructure
@@ -498,8 +498,8 @@ Le DSFR est **légalement restreint** aux entités publiques autorisées. Le roo
 | Scope | DSFR | shadcn/Default |
 |-------|------|----------------|
 | Root layout (`src/app/layout.tsx`) | Aucun import | `ThemeScript`, `UIProvider("Default")` |
-| Tenant layout (theme=Dsfr) | `DsfrProvider`, `ConsentBanner`, `Header` DSFR, `Footer` DSFR | — |
-| Tenant layout (theme=Default) | — | `ShadcnHeader`, `ShadcnFooter` |
+| Tenant layout (theme=Dsfr) | `DsfrProvider` (toujours), `ConsentBanner`, `Header` DSFR, `Footer` DSFR | — |
+| Tenant layout (theme=Default) | `DsfrProvider` (toujours, hooks DSFR dans les pages) | `ShadcnHeader`, `ShadcnFooter` |
 
 ### CSS resets (`globals.scss`)
 
@@ -546,7 +546,7 @@ Le root layout met `data-ui-theme="Default"` en statique. Le `ThemeInjector` ove
 | `src/app/root.module.scss` | Styles `.app` / `.content` conditionnels par thème |
 | `src/app/layout.tsx` | Root layout — DSFR-free, `ThemeScript`, `UIProvider("Default")` |
 | `src/app/ThemeScript.tsx` | Script anti-FOUC dark mode |
-| `src/app/[domain]/(domain)/layout.tsx` | Tenant layout — conditional `DsfrProvider` |
+| `src/app/[domain]/(domain)/layout.tsx` | Tenant layout — always `DsfrProvider`, conditional Header/Footer |
 | `src/ui/types.ts` | `UiTheme = "Default" \| "Dsfr"` |
 | `src/ui/UIContext.tsx` | `UIProvider` + `useUI()` |
 | `src/ui/server.ts` | `getTheme(settings)` |

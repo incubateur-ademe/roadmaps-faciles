@@ -37,7 +37,7 @@ Palette **French Blue** complète, définie en **oklch** (perceptuellement unifo
 | `--border` | `oklch(0.885 0.020 265)` | Dividers, bordures |
 | `--ring` | `oklch(0.542 0.104 265)` | Focus ring |
 
-### Tokens dark mode (`[data-ui-theme="Default"][data-fr-theme="dark"]`)
+### Tokens dark mode (`.dark[data-ui-theme="Default"]`)
 
 | Token | Valeur oklch | Delta vs light |
 |-------|-------------|----------------|
@@ -54,7 +54,7 @@ Palette **French Blue** complète, définie en **oklch** (perceptuellement unifo
 globals.scss
 ├── @theme inline          → Mappe --color-* pour Tailwind 4 utilities
 ├── [data-ui-theme="Default"]  → Light tokens (CSS custom properties)
-└── [data-ui-theme="Default"][data-fr-theme="dark"]  → Dark tokens
+└── .dark[data-ui-theme="Default"]  → Dark tokens
 ```
 
 Le `--radius: 0.625rem` est global (pas lié à la palette).
