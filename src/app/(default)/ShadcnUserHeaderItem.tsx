@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, LogOut, Settings, User } from "lucide-react";
+import { ArrowRight, LogOut, Settings, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -70,12 +70,21 @@ export const ShadcnUserHeaderItem = () => {
       return <Skeleton className="h-8 w-24" />;
     default:
       return (
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/login">
-            <LogIn className="mr-2 size-4" />
+        <>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
             {t("login")}
           </Link>
-        </Button>
+          {/* CTA links to /login — single auth entry point (magic link handles both new + returning users) */}
+          <Button size="sm" asChild>
+            <Link href="/login">
+              {t("getStarted")}
+              <ArrowRight className="ml-1 size-4" />
+            </Link>
+          </Button>
+        </>
       );
   }
 };

@@ -16,7 +16,7 @@ export const DefaultHeader = async () => {
       brandName={
         <>
           <Map className="size-5 text-primary" />
-          <span className="text-primary">{config.brand.name}</span>
+          <span>{config.brand.name}</span>
           <Badge variant="outline" className="ml-1 text-xs">
             Alpha
           </Badge>

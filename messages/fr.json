@@ -64,7 +64,8 @@
     "roadmap": "Feuille de route"
   },
   "auth": {
-    "login": "Se connecter",
+    "login": "Connexion",
+    "getStarted": "Commencer",
     "logout": "Se déconnecter",
     "mySpace": "Mon espace",
     "myProfile": "Mon profil utilisateur",

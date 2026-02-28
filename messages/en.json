@@ -65,6 +65,7 @@
   },
   "auth": {
     "login": "Sign in",
+    "getStarted": "Get started",
     "logout": "Sign out",
     "mySpace": "My space",
     "myProfile": "My user profile",

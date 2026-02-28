@@ -1,0 +1,23 @@
+[    5779ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  475721ms] [ERROR] %o
+
+%s ReferenceError: LogIn is not defined
+    at ShadcnUserHeaderItem (http://localhost:3001/_next/static/chunks/src_8b35b64f._.js?id=%255Bproject%255D%252Fsrc%252Fapp%252F%2528default%2529%252FShadcnUserHeaderItem.tsx+%255Bapp-client%255D+%2528ecmascript%2529:287:452)
+    at Object.react_stack_bottom_frame (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:15592:24)
+    at renderWithHooks (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:4509:24)
+    at updateFunctionComponent (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:6014:21)
+    at beginWork (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:6606:24)
+    at runWithFiberInDEV (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:759:74)
+    at performUnitOfWork (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:9781:97)
+    at workLoopSync (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:9675:40)
+    at renderRootSync (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:9659:13)
+    at performWorkOnRoot (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:9276:47)
+    at performSyncWorkOnRoot (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:10666:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:10565:336)
+    at flushSyncWork$1 (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:9408:86)
+    at Object.scheduleRefresh (http://localhost:3001/_next/static/chunks/84c7a_dist_compiled_react-dom-experimental_cjs_react-dom-client_development_1eb0f806.js:82:13)
+    at http://localhost:3001/_next/static/chunks/d6f89_next_dist_compiled_63459bd1._.js:391:33
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (http://localhost:3001/_next/static/chunks/d6f89_next_dist_compiled_63459bd1._.js:384:38)
+    at applyUpdate (http://localhost:3001/_next/static/chunks/d6f89_next_dist_compiled_63459bd1._.js:878:31)
+    at http://localhost:3001/_next/static/chunks/d6f89_next_dist_compiled_63459bd1._.js:886:13 The above error occurred in the <ShadcnUserHeaderItem> component. It was handled by the <ErrorBoundaryHandler> error boundary. @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_client_f3f8eda7._.js:1342

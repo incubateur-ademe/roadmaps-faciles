@@ -1,0 +1,113 @@
+[    5856ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[   58833ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  108873ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  193724ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  201596ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  967963ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[  972327ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[ 1210367ms] [WARNING] The resource http://localhost:3001/_next/static/chunks/_6138825e._.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ http://localhost:3001/:0
+[ 1298427ms] [ERROR] ./src/lib/source.ts:2:1
+Export docs doesn't exist in target module
+  1 | import { loader } from "fumadocs-core/source";
+> 2 | import { docs } from "fumadocs-mdx:collections/server";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export const docsSource = loader({
+  5 |   baseUrl: "/doc",
+
+The export docs was not found in module [project]/.source/server.ts [app-rsc] (ecmascript).
+The module has no exports at all.
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  #1 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/[[...slug]]/page.tsx
+
+  #2 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/layout.tsx @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_48d96b86._.js:3127
+[ 1299642ms] [ERROR] ./src/lib/source.ts:2:1
+Export docs doesn't exist in target module
+  1 | import { loader } from "fumadocs-core/source";
+> 2 | import { docs } from "fumadocs-mdx:collections/server";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export const docsSource = loader({
+  5 |   baseUrl: "/doc",
+
+The export docs was not found in module [project]/.source/server.ts [app-rsc] (ecmascript).
+The module has no exports at all.
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  #1 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/[[...slug]]/page.tsx
+
+  #2 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/layout.tsx @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_48d96b86._.js:3127
+[ 1345624ms] [ERROR] ./src/lib/source.ts:2:1
+Export docs doesn't exist in target module
+  1 | import { loader } from "fumadocs-core/source";
+> 2 | import { docs } from "fumadocs-mdx:collections/server";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export const docsSource = loader({
+  5 |   baseUrl: "/doc",
+
+The export docs was not found in module [project]/.source/server.ts [app-rsc] (ecmascript).
+The module has no exports at all.
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  #1 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/[[...slug]]/page.tsx
+
+  #2 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/layout.tsx @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_48d96b86._.js:3127
+[ 1352905ms] [ERROR] ./src/lib/source.ts:2:1
+Export docs doesn't exist in target module
+  1 | import { loader } from "fumadocs-core/source";
+> 2 | import { docs } from "fumadocs-mdx:collections/server";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export const docsSource = loader({
+  5 |   baseUrl: "/doc",
+
+The export docs was not found in module [project]/.source/server.ts [app-rsc] (ecmascript).
+The module has no exports at all.
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  #1 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/[[...slug]]/page.tsx
+
+  #2 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/layout.tsx @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_48d96b86._.js:3127
+[ 1353859ms] [ERROR] ./src/lib/source.ts:2:1
+Export docs doesn't exist in target module
+  1 | import { loader } from "fumadocs-core/source";
+> 2 | import { docs } from "fumadocs-mdx:collections/server";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | export const docsSource = loader({
+  5 |   baseUrl: "/doc",
+
+The export docs was not found in module [project]/.source/server.ts [app-rsc] (ecmascript).
+The module has no exports at all.
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  #1 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/[[...slug]]/page.tsx
+
+  #2 [Server Component]:
+    ./src/lib/source.ts
+    ./src/app/doc/layout.tsx @ http://localhost:3001/_next/static/chunks/d6f89_next_dist_48d96b86._.js:3127

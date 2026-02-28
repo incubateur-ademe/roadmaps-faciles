@@ -700,3 +700,35 @@ Les 3 agents travaillent sur des fichiers majoritairement disjoints :
 - **Séquentiel** : Phase 3 → 4 → 5 → 6 → 7 → 8 (6 étapes séquentielles)
 - **Parallélisé** : Phase 3 → (4 || 5 || 6) → 7 → 8 (4 étapes, dont 1 parallèle ×3)
 - **Gain estimé** : ~30-40% de temps en moins sur les phases 4-6, le bottleneck reste Phase 3 et les reviews
+
+---
+
+## TODO post-design tenant
+
+### Screenshots documentation (`public/doc/screenshots/`)
+
+Tous les screenshots sont obsolètes suite au changement de thème (DSFR → shadcn French Blue). **À refaire une fois le design tenant finalisé.**
+
+30 fichiers PNG (15 pages × light + dark) :
+
+| Page | Fichiers | URL tenant |
+|------|----------|------------|
+| Login | `login-{light,dark}.png` | `/login` |
+| Board cartes | `board-cards-{light,dark}.png` | `/board/[slug]?view=cards` |
+| Board liste | `board-list-{light,dark}.png` | `/board/[slug]?view=list` |
+| Post detail | `post-detail-{light,dark}.png` | `/board/[slug]/post/[id]` |
+| Profile | `profile-{light,dark}.png` | `/profile` |
+| Roadmap | `roadmap-{light,dark}.png` | `/roadmap` |
+| Moderation | `moderation-{light,dark}.png` | `/moderation` |
+| Admin General | `admin-general-{light,dark}.png` | `/admin/general` |
+| Admin Boards | `admin-boards-{light,dark}.png` | `/admin/boards` |
+| Admin Statuses | `admin-statuses-{light,dark}.png` | `/admin/statuses` |
+| Admin Members | `admin-members-{light,dark}.png` | `/admin/members` |
+| Admin API Keys | `admin-api-keys-{light,dark}.png` | `/admin/api-keys` |
+| Admin Webhooks | `admin-webhooks-{light,dark}.png` | `/admin/webhooks` |
+| Admin Audit Log | `admin-audit-log-{light,dark}.png` | `/admin/audit-log` |
+| Admin Auth | `admin-authentication-{light,dark}.png` | `/admin/authentication` |
+
+**Approche recommandée** : script Playwright qui navigue sur chaque page avec le dev server + données seedées, toggle `data-fr-theme` entre light/dark, et capture les screenshots. Similaire aux E2E mais sans assertions — juste des `.screenshot({ path })`.
+
+**Pré-requis** : design tenant terminé (composants shadcn Header/Footer tenant, pages board/admin/profile migrées).

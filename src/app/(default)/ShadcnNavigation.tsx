@@ -29,8 +29,8 @@ export const ShadcnNavigation = () => {
           key={item.href}
           href={item.href}
           className={cn(
-            "transition-colors hover:text-foreground/80",
-            item.isActive ? "text-foreground" : "text-foreground/60",
+            "transition-colors hover:text-primary",
+            item.isActive ? "text-foreground" : "text-muted-foreground",
           )}
         >
           {item.text}

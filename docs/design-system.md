@@ -31,7 +31,7 @@
                  ┌──────────────────────────────────────┐
                  │          src/app/layout.tsx           │
                  │  data-ui-theme="Default"              │
-                 │  data-fr-theme="light" (fallback)     │
+                 │  class="dark" (via ThemeScript)       │
                  │  <ThemeScript /> dans <head>          │
                  │  <UIProvider value="Default">         │
                  └───────────────┬──────────────────────┘
@@ -91,7 +91,7 @@ Palette **French Blue**, toutes les valeurs en **oklch** (espace perceptuellemen
 | `--input` | `oklch(0.885 0.020 265)` | = border | Bordure des inputs |
 | `--ring` | `oklch(0.542 0.104 265)` | Smart Blue | Focus ring |
 
-### Dark mode — `[data-ui-theme="Default"][data-fr-theme="dark"]`
+### Dark mode — `.dark[data-ui-theme="Default"]`
 
 | Token | Valeur | Delta vs light |
 |-------|--------|----------------|
@@ -151,25 +151,27 @@ Le `@theme inline` dans `globals.scss` mappe les CSS custom properties vers les 
 ### Mécanisme
 
 1. **`ThemeScript`** (`src/app/ThemeScript.tsx`) — script inline bloquant dans `<head>`
-   - Lit `localStorage("scheme")` (clé partagée avec DSFR)
+   - Lit `localStorage("theme")` (convention standard shadcn/next-themes)
    - Fallback sur `prefers-color-scheme` media query
-   - Applique `data-fr-theme="dark"|"light"` sur `<html>`
+   - Toggle `classList.toggle("dark", isDark)` sur `<html>`
    - S'exécute **avant le premier paint** → zéro FOUC
 
-2. **Attribut** : `data-fr-theme` (pas `data-ui-theme`) — compatibilité avec les tenants DSFR qui utilisent la même clé localStorage
+2. **Classe** : `.dark` sur `<html>` — convention standard shadcn/next-themes
 
-3. **Sélecteur CSS** : `[data-ui-theme="Default"][data-fr-theme="dark"]` — double sélecteur pour ne matcher que le thème Default en dark
+3. **Sélecteur CSS** : `.dark[data-ui-theme="Default"]` — double sélecteur pour ne matcher que le thème Default en dark
 
-4. **Fallback HTML** : `data-fr-theme="light"` en attribut statique sur `<html>` — si JS désactivé ou script échoue
+4. **Fallback** : pas de classe `.dark` = light mode par défaut (si JS échoue)
 
 ### Comment implémenter un dark mode toggle
 
 ```ts
 // 1. Écrire la préférence
-localStorage.setItem("scheme", "dark" | "light");
+localStorage.setItem("theme", "dark" | "light");
 // 2. Appliquer immédiatement
-document.documentElement.setAttribute("data-fr-theme", "dark" | "light");
+document.documentElement.classList.toggle("dark", isDark);
 ```
+
+Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle automatiquement via `storageKey: "theme"` et `attribute: "class"`.
 
 ---
 

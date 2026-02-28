@@ -5,28 +5,22 @@ import { type ReactNode } from "react";
 import { docsSource } from "@/lib/source";
 
 import { DefaultFooter } from "../(default)/DefaultFooter";
-import { DocHeader } from "./DocHeader";
+import { DefaultHeader } from "../(default)/DefaultHeader";
 import "./docs.css";
-import { CustomSeparator } from "./layout.client";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <RootProvider theme={{ enabled: false }}>
-      <DocHeader />
-      <DocsLayout
-        tree={docsSource.pageTree}
-        nav={{ enabled: false }}
-        sidebar={{
-          collapsible: true,
-          components: {
-            Separator: CustomSeparator,
-          },
-        }}
-        themeSwitch={{ enabled: false }}
-        searchToggle={{
-          enabled: true,
-        }}
-      >
+    <RootProvider
+      theme={{
+        attribute: "class",
+        defaultTheme: "light",
+        enableSystem: true,
+        storageKey: "theme",
+        enableColorScheme: false,
+      }}
+    >
+      <DefaultHeader />
+      <DocsLayout tree={docsSource.pageTree} nav={{ enabled: false }} sidebar={{ collapsible: true }}>
         {children}
       </DocsLayout>
       <DefaultFooter id="footer" />

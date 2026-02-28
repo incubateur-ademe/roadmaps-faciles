@@ -11,7 +11,9 @@ Contrainte critique : **pas de FOUC** (Flash of Unstyled Content) — le thème 
 
 ## Décision
 
-Un **script inline bloquant** dans `<head>` (`ThemeScript`) qui lit `localStorage("scheme")` et `prefers-color-scheme`, puis applique `data-fr-theme="dark"|"light"` sur `<html>` avant que le navigateur ne rende quoi que ce soit.
+Un **script inline bloquant** dans `<head>` (`ThemeScript`) qui lit `localStorage("theme")` et `prefers-color-scheme`, puis toggle la classe `.dark` sur `<html>` avant que le navigateur ne rende quoi que ce soit.
+
+Convention standard shadcn/next-themes : classe `.dark` sur `<html>`, clé localStorage `"theme"`.
 
 ## Options envisagées
 
@@ -28,50 +30,50 @@ Le composant injecte un IIFE minifié via React `script` + innerHTML. Le contenu
 ### Logique de détection
 
 ```
-1. Lire localStorage("scheme")
+1. Lire localStorage("theme")
 2. Si "dark"  → dark mode
 3. Si "light" → light mode
 4. Sinon      → prefers-color-scheme media query (system preference)
-5. Appliquer data-fr-theme="dark"|"light" sur <html>
+5. Toggle classList.toggle("dark", isDark) sur <html>
 ```
 
 ### Clé localStorage
 
-On réutilise la clé `"scheme"` (identique au DSFR) pour la compatibilité :
-- Un user qui passe d'un tenant DSFR au root garde sa préférence.
-- Le DSFR JS sur les tenants lit/écrit la même clé → pas de désync.
+On utilise la clé `"theme"` (convention standard shadcn/next-themes). Les tenants DSFR utilisent leur propre clé `"scheme"` — les deux systèmes sont indépendants.
 
-### Attribut CSS
+### Sélecteur CSS
 
-On utilise `data-fr-theme` (pas `data-ui-theme`) comme sélecteur dark mode pour deux raisons :
-1. **Compatibilité DSFR** : les tenants DSFR utilisent déjà `data-fr-theme` pour le dark mode.
-2. **Un seul sélecteur** : `[data-ui-theme="Default"][data-fr-theme="dark"]` fonctionne pour les tokens CSS.
+On utilise la classe `.dark` sur `<html>` (convention standard shadcn/next-themes) :
+- Le sélecteur dark mode dans `globals.scss` est `.dark[data-ui-theme="Default"]`
+- Fumadocs utilise next-themes avec `attribute: "class"` et `storageKey: "theme"`
 
 ### Placement dans le layout
 
 Le script est placé dans `<head>` du root layout (`src/app/layout.tsx`), avant le `<body>`.
 
 ```html
-<html lang="fr" data-ui-theme="Default" data-fr-theme="light">
+<html lang="fr" data-ui-theme="Default">
   <head>
     <!-- ThemeScript — bloquant, s'exécute avant le paint -->
   </head>
 ```
 
-Le `data-fr-theme="light"` en attribut statique est le fallback si le script échoue (try/catch) ou si JavaScript est désactivé.
+Pas de fallback statique nécessaire — si le script échoue, l'absence de classe `.dark` donne le mode clair par défaut.
 
 ### Intégration avec le switch thème
 
 Le composant de switch dark/light (à implémenter) devra :
-1. Écrire dans `localStorage.setItem("scheme", "dark"|"light")`
-2. Appliquer `document.documentElement.setAttribute("data-fr-theme", "dark"|"light")`
+1. Écrire dans `localStorage.setItem("theme", "dark"|"light")`
+2. Appliquer `document.documentElement.classList.toggle("dark", isDark)`
+
+Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle automatiquement via `storageKey: "theme"` et `attribute: "class"`.
 
 ## Conséquences
 
 - **Zéro FOUC** : le thème est correct dès le premier pixel affiché.
 - **Zéro dépendance** : pas de DSFR JS, pas de framework, pas de cookie.
 - **Taille négligeable** : ~200 bytes inline, aucun blocking network request.
-- **Compatibilité DSFR** : la même clé `"scheme"` est partagée → transition seamless entre root et tenants.
+- **Standard shadcn** : `.dark` class + `localStorage("theme")` — convention partagée avec next-themes.
 - **Sécurité** : le contenu du script est une string statique codée en dur, aucune donnée user n'est interpolée. Le innerHTML React est utilisé uniquement pour injecter ce script statique.
 - **Limitation** : pas de sync temps réel si l'user change son system theme pendant la session — il faut un `matchMedia` listener (à ajouter au composant switch).
 
