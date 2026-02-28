@@ -1,51 +1,75 @@
-import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
-import Footer, { type FooterProps } from "@codegouvfr/react-dsfr/Footer";
+import { Map } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { config } from "@/config";
-import { FooterPersonalDataPolicyItem } from "@/consentManagement";
+import { Badge } from "@/ui/shadcn/badge";
+import { RootFooter } from "@/ui/shadcn/RootFooter";
 
 export interface DefaultFooterProps {
-  id: FooterProps["id"];
+  id: string;
 }
 
 export const DefaultFooter = async ({ id }: DefaultFooterProps) => {
   const t = await getTranslations("footer");
 
+  const columns = [
+    {
+      title: t("columns.product.title"),
+      links: [
+        { text: t("columns.product.features"), href: "#" },
+        { text: t("columns.product.publicRoadmap"), href: "#" },
+        { text: t("columns.product.hosting"), href: "#" },
+      ],
+    },
+    {
+      title: t("columns.resources.title"),
+      links: [
+        { text: t("columns.resources.documentation"), href: "/doc" },
+        { text: t("columns.resources.api"), href: "#" },
+        { text: t("columns.resources.github"), href: config.repositoryUrl },
+      ],
+    },
+    {
+      title: t("columns.legal.title"),
+      links: [
+        { text: t("columns.legal.legalNotice"), href: "/mentions-legales" },
+        { text: t("columns.legal.privacy"), href: "/politique-de-confidentialite" },
+        { text: t("columns.legal.accessibility"), href: "/accessibilite" },
+        { text: t("columns.legal.cgu"), href: "/cgu" },
+      ],
+    },
+  ];
+
   return (
-    <Footer
+    <RootFooter
       id={id}
-      accessibility="non compliant"
-      accessibilityLinkProps={{ href: "/accessibilite" }}
-      contentDescription={t("contentDescription", { brandName: config.brand.name })}
-      operatorLogo={config.brand.operator.enable ? config.brand.operator.logo : undefined}
-      bottomItems={[
-        {
-          text: t("cgu"),
-          linkProps: { href: "/cgu" },
-        },
-        <FooterPersonalDataPolicyItem key="FooterPersonalDataPolicyItem" />,
-        headerFooterDisplayItem,
-        // <FooterConsentManagementItem key="FooterConsentManagementItem" />,
-        {
-          text: `Version ${config.appVersion}.${config.appVersionCommit.slice(0, 7)}`,
-          linkProps: {
-            href: `${config.repositoryUrl}/commit/${config.appVersionCommit}` as never,
-          },
-        },
-      ]}
-      termsLinkProps={{ href: "/mentions-legales" }}
+      brandName={config.brand.name}
+      brandIcon={<Map className="size-5" />}
+      contentDescription={t("contentDescription")}
+      columns={columns}
+      badges={
+        <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground">
+          Apache 2.0
+        </Badge>
+      }
+      copyright={t("copyright", { year: new Date().getFullYear(), brandName: config.brand.name })}
       license={
         <>
           {t.rich("license", {
             a: chunks => (
-              <a href={`${config.repositoryUrl}/main/LICENSE`} target="_blank" rel="noreferrer">
+              <a
+                href={`${config.repositoryUrl}/blob/main/LICENSE`}
+                target="_blank"
+                rel="noreferrer"
+                className="underline hover:text-foreground"
+              >
                 {chunks}
               </a>
             ),
           })}
         </>
       }
+      version={`v${config.appVersion}.${config.appVersionCommit.slice(0, 7)}`}
     />
   );
 };

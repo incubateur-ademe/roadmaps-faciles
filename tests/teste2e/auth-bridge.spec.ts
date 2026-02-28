@@ -18,16 +18,16 @@ import { E2E_TENANT_URL, expect, test } from "./fixtures";
 // ---------------------------------------------------------------------------
 async function hasRootSession(page: import("@playwright/test").Page): Promise<boolean> {
   await page.goto("/");
-  // AuthHeaderItems is a "use client" component using useSession().
-  // On first render, status is "loading" (shows a Skeleton).
-  // We must wait for the session to resolve before checking auth state.
-  const loginLink = page.getByRole("link", { name: /se connecter/i });
-  const userNav = page.locator("nav.fr-user-menu");
-  // Wait for either the login link (unauthenticated) or user menu (authenticated) to appear.
-  // .catch() on both to prevent unhandled rejection from the losing racer.
+  // Root uses shadcn Header — ShadcnUserHeaderItem renders:
+  //   loading: Skeleton
+  //   authenticated: DropdownMenu trigger (button with aria-haspopup="menu")
+  //   unauthenticated: "Connexion" link
+  const loginLink = page.locator("header").getByRole("link", { name: /connexion/i });
+  const userDropdown = page.locator('header [aria-haspopup="menu"]');
+  // Wait for either the login link (unauthenticated) or user dropdown (authenticated).
   await Promise.race([
     loginLink.waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    userNav.waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
+    userDropdown.waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
   ]);
   return !(await loginLink.isVisible());
 }

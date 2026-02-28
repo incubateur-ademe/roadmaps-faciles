@@ -1,9 +1,5 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -11,7 +7,10 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { config } from "@/config";
-import { Grid, GridCol } from "@/dsfr";
+import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
 
 import { createTenantForUser } from "./actions";
 
@@ -58,52 +57,37 @@ export const NewTenantForm = () => {
   };
 
   return (
-    <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)} className={fr.cx("fr-mb-2w")}>
+    <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)} className="mb-4">
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={t("createError")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{t("createError")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <Grid haveGutters>
-        <GridCol md={6}>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="name">{t("nameLabel2")}</Label>
+          <Input id="name" placeholder="Mon espace" aria-invalid={!!errors.name} {...register("name")} />
+          <p className="text-sm text-muted-foreground">{t("nameHint2")}</p>
+          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="subdomain">{t("subdomain")}</Label>
           <Input
-            label={t("nameLabel2")}
-            hintText={t("nameHint2")}
-            nativeInputProps={{
-              ...register("name"),
-              placeholder: "Mon espace",
-            }}
-            state={errors.name ? "error" : "default"}
-            stateRelatedMessage={errors.name?.message}
+            id="subdomain"
+            placeholder={t("subdomainPlaceholder")}
+            aria-invalid={!!errors.subdomain}
+            {...register("subdomain")}
           />
-        </GridCol>
-        <GridCol md={6}>
-          <Input
-            label={t("subdomain")}
-            hintText={
-              subdomain ? (
-                <span>{t("subdomainPreview", { url: `${subdomain}.${config.rootDomain}` })}</span>
-              ) : (
-                t("subdomainHint")
-              )
-            }
-            nativeInputProps={{
-              ...register("subdomain"),
-              placeholder: t("subdomainPlaceholder"),
-            }}
-            state={errors.subdomain ? "error" : "default"}
-            stateRelatedMessage={errors.subdomain?.message}
-          />
-        </GridCol>
-      </Grid>
+          <p className="text-sm text-muted-foreground">
+            {subdomain ? t("subdomainPreview", { url: `${subdomain}.${config.rootDomain}` }) : t("subdomainHint")}
+          </p>
+          {errors.subdomain && <p className="text-sm text-destructive">{errors.subdomain.message}</p>}
+        </div>
+      </div>
 
-      <Button type="submit" disabled={pending} className={fr.cx("fr-mt-2w")}>
+      <Button type="submit" disabled={pending} className="mt-6">
         {pending ? t("creating") : t("createTenant")}
       </Button>
     </form>

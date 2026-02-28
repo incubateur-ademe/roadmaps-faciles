@@ -80,4 +80,56 @@ describe("SaveTenantWithSettings", () => {
       allowEmbedding: true,
     });
   });
+
+  it("passes uiTheme Dsfr to repo when tenant has .gouv.fr custom domain", async () => {
+    const current = fakeTenantSettings({ id: 1, customDomain: "feedback.gouv.fr" });
+    const updated = fakeTenantSettings({ id: 1, uiTheme: "Dsfr", customDomain: "feedback.gouv.fr" });
+    mockSettingsRepo.findById.mockResolvedValue(current);
+    mockSettingsRepo.update.mockResolvedValue(updated);
+
+    const result = await useCase.execute({ ...validInput, uiTheme: "Dsfr" });
+
+    expect(result.uiTheme).toBe("Dsfr");
+    expect(mockSettingsRepo.update).toHaveBeenCalledWith(1, expect.objectContaining({ uiTheme: "Dsfr" }));
+  });
+
+  it("rejects uiTheme Dsfr when tenant has no custom domain", async () => {
+    const current = fakeTenantSettings({ id: 1, customDomain: null });
+    mockSettingsRepo.findById.mockResolvedValue(current);
+
+    await expect(useCase.execute({ ...validInput, uiTheme: "Dsfr" })).rejects.toThrow(
+      "DSFR theme requires a .gouv.fr custom domain",
+    );
+    expect(mockSettingsRepo.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects uiTheme Dsfr when custom domain is not .gouv.fr", async () => {
+    const current = fakeTenantSettings({ id: 1, customDomain: "feedback.example.com" });
+    mockSettingsRepo.findById.mockResolvedValue(current);
+
+    await expect(useCase.execute({ ...validInput, uiTheme: "Dsfr" })).rejects.toThrow(
+      "DSFR theme requires a .gouv.fr custom domain",
+    );
+    expect(mockSettingsRepo.update).not.toHaveBeenCalled();
+  });
+
+  it("allows uiTheme Default without .gouv.fr domain", async () => {
+    const updated = fakeTenantSettings({ id: 1, uiTheme: "Default" });
+    mockSettingsRepo.update.mockResolvedValue(updated);
+
+    const result = await useCase.execute({ ...validInput, uiTheme: "Default" });
+
+    expect(result.uiTheme).toBe("Default");
+    expect(mockSettingsRepo.findById).not.toHaveBeenCalled();
+  });
+
+  it("does not include uiTheme in repo call when omitted", async () => {
+    const updated = fakeTenantSettings({ id: 1 });
+    mockSettingsRepo.update.mockResolvedValue(updated);
+
+    await useCase.execute(validInput);
+
+    const updateCall = mockSettingsRepo.update.mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(updateCall).not.toHaveProperty("uiTheme");
+  });
 });

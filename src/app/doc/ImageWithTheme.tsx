@@ -1,15 +1,15 @@
 "use client";
 
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { Moon, Sun } from "lucide-react";
 import { type ImgHTMLAttributes, useCallback, useEffect, useRef, useState } from "react";
 
-import { Icon } from "@/dsfr/base/Icon";
+import { cn } from "@/ui/cn";
 
 const OVERRIDE_ATTR = "data-img-preview-override";
 
 /**
  * Hook that tracks which image theme is currently displayed
- * (DSFR theme or manual override) and provides a toggle function.
+ * (system/user theme or manual override) and provides a toggle function.
  */
 function useImagePreviewTheme() {
   const [showing, setShowing] = useState<"dark" | "light">("light");
@@ -17,26 +17,26 @@ function useImagePreviewTheme() {
   useEffect(() => {
     const update = () => {
       const override = document.documentElement.getAttribute(OVERRIDE_ATTR);
-      const dsfr = document.documentElement.getAttribute("data-fr-theme") || "light";
-      setShowing((override || dsfr) as "dark" | "light");
+      const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+      setShowing((override || theme) as "dark" | "light");
     };
     update();
 
     const observer = new MutationObserver(update);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: [OVERRIDE_ATTR, "data-fr-theme"],
+      attributeFilter: [OVERRIDE_ATTR, "class"],
     });
     return () => observer.disconnect();
   }, []);
 
   const toggle = useCallback(() => {
     const override = document.documentElement.getAttribute(OVERRIDE_ATTR);
-    const dsfr = document.documentElement.getAttribute("data-fr-theme") || "light";
-    const current = override || dsfr;
+    const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+    const current = override || theme;
     const next = current === "dark" ? "light" : "dark";
 
-    if (next === dsfr) {
+    if (next === theme) {
       document.documentElement.removeAttribute(OVERRIDE_ATTR);
     } else {
       document.documentElement.setAttribute(OVERRIDE_ATTR, next);
@@ -59,9 +59,9 @@ function usePreloadHiddenImage(srcLight: string, srcDark: string) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          const dsfr = document.documentElement.getAttribute("data-fr-theme") || "light";
+          const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
           const override = document.documentElement.getAttribute(OVERRIDE_ATTR);
-          const current = override || dsfr;
+          const current = override || theme;
           const hiddenSrc = current === "light" ? srcDark : srcLight;
 
           const img = new Image();
@@ -83,12 +83,6 @@ function usePreloadHiddenImage(srcLight: string, srcDark: string) {
 /**
  * MDX component that renders theme-aware screenshots with a toggle button.
  *
- * - Displays light or dark image based on DSFR theme
- * - Hover reveals a toggle button to preview the other theme
- * - Toggle is global: all ImageWithTheme instances switch together
- * - Crossfade transition between light and dark versions
- * - Hidden variant is preloaded when approaching the viewport
- *
  * Usage in MDX:
  * ```mdx
  * <ImageWithTheme
@@ -109,7 +103,7 @@ export const ImageWithTheme = ({
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src">) => {
   const { showing, toggle } = useImagePreviewTheme();
   const wrapperRef = usePreloadHiddenImage(srcLight, srcDark);
-  const className = cx("rounded-lg", props.className);
+  const className = cn("rounded-lg", props.className);
 
   return (
     <div ref={wrapperRef} className="image-with-theme">
@@ -124,7 +118,7 @@ export const ImageWithTheme = ({
         aria-label={showing === "light" ? "Voir en mode sombre" : "Voir en mode clair"}
         title={showing === "light" ? "Voir en mode sombre" : "Voir en mode clair"}
       >
-        <Icon icon={showing === "light" ? "fr-icon-moon-line" : "fr-icon-sun-line"} size="xs" />
+        {showing === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
       </button>
     </div>
   );

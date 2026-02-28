@@ -1,5 +1,5 @@
-import { LegalNotice } from "@incubateur-ademe/legal-pages-react/LegalNotice";
 import { type Metadata } from "next";
+import Link from "next/link";
 
 import { config } from "@/config";
 
@@ -26,21 +26,58 @@ export const metadata: Metadata = {
 
 const MentionsLegalesPage = () => {
   return (
-    <div className="fr-container fr-my-4w">
-      <LegalNotice
-        includeBetaGouv
-        siteName={config.brand.name}
-        siteUrl={config.host}
-        siteHost={{
-          name: "Scalingo SAS",
-          address: "15 avenue du Rhin, 67100 Strasbourg, France",
-          email: "support@scalingo.com",
-          country: "France",
-        }}
-        contactEmail="accelerateurdelatransitionecologique@ademe.fr"
-        licenceUrl={`${config.repositoryUrl}/blob/main/LICENSE`}
-        privacyPolicyUrl="/politique-de-confidentialite"
-      />
+    <div className="mx-auto max-w-4xl px-4 py-12 [&_a]:text-primary [&_a]:underline [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-medium [&_p+p]:mt-3 [&_p]:text-sm [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:text-sm">
+      <h1 className="mb-8 text-3xl font-bold">{title}</h1>
+
+      <h2>Éditeur du site</h2>
+      <p>
+        Le site <strong>{config.brand.name}</strong> ({config.host}) est édité par l&apos;Accélérateur de la Transition
+        Écologique de l&apos;ADEME (Agence de la transition écologique), un service de l&apos;incubateur beta.gouv.fr de
+        la Direction interministérielle du numérique (DINUM).
+      </p>
+      <p>
+        ADEME
+        <br />
+        20, avenue du Grésillé
+        <br />
+        BP 90406 — 49004 Angers Cedex 01
+        <br />
+        Téléphone : 02 41 20 41 20
+      </p>
+
+      <h2>Directeur de la publication</h2>
+      <p>Le directeur de la publication est le Président-directeur général de l&apos;ADEME.</p>
+
+      <h2>Hébergement</h2>
+      <p>
+        Ce site est hébergé par :
+        <br />
+        Scalingo SAS
+        <br />
+        15 avenue du Rhin, 67100 Strasbourg, France
+        <br />
+        <a href="mailto:support@scalingo.com">support@scalingo.com</a>
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Pour toute question, vous pouvez nous contacter à :{" "}
+        <a href="mailto:accelerateurdelatransitionecologique@ademe.fr">accelerateurdelatransitionecologique@ademe.fr</a>
+      </p>
+
+      <h2>Code source</h2>
+      <p>
+        Le code source de ce site est disponible sous licence open source :{" "}
+        <a href={`${config.repositoryUrl}/blob/main/LICENSE`} target="_blank" rel="noreferrer">
+          voir la licence
+        </a>
+      </p>
+
+      <h2>Politique de confidentialité</h2>
+      <p>
+        Consultez notre <Link href="/politique-de-confidentialite">politique de confidentialité</Link> pour en savoir
+        plus sur la gestion de vos données personnelles.
+      </p>
     </div>
   );
 };

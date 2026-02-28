@@ -1,20 +1,28 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Input from "@codegouvfr/react-dsfr/Input";
-import Pagination from "@codegouvfr/react-dsfr/Pagination";
-import SelectNext from "@codegouvfr/react-dsfr/SelectNext";
-import MuiTooltip from "@mui/material/Tooltip";
+import { Download, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { Container, Grid, GridCol } from "@/dsfr";
-import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type AuditLogWithUser } from "@/lib/repo/IAuditLogRepo";
 import { type AuditAction } from "@/prisma/enums";
+import { Badge } from "@/ui/shadcn/badge";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/ui/shadcn/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/shadcn/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/ui/shadcn/tooltip";
 import { formatDateHour } from "@/utils/date";
 
 import { exportAuditLogCSV } from "./actions";
@@ -35,6 +43,22 @@ const formatMetadata = (metadata: unknown): string => {
   } catch {
     return JSON.stringify(metadata);
   }
+};
+
+const getPageNumbers = (currentPage: number, totalPages: number): Array<"ellipsis" | number> => {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const pages: Array<"ellipsis" | number> = [1];
+  if (currentPage > 3) pages.push("ellipsis");
+
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (currentPage < totalPages - 2) pages.push("ellipsis");
+  if (totalPages > 1) pages.push(totalPages);
+
+  return pages;
 };
 
 export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: AuditLogViewProps) => {
@@ -94,153 +118,181 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
   };
 
   return (
-    <Container fluid>
-      <h1>{t("title")}</h1>
+    <TooltipProvider>
+      <div>
+        <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
 
-      <Grid haveGutters valign="bottom" mb="2w">
-        <GridCol md={3}>
-          <SelectNext
-            label={t("filterAction")}
-            options={[
-              { value: "", label: t("allActions") },
-              ...actions.map(action => ({ value: action, label: action })),
-            ]}
-            nativeSelectProps={{
-              value: searchParams.get("action") ?? "",
-              onChange: e => updateFilter("action", e.target.value),
-            }}
-          />
-        </GridCol>
-        <GridCol md={3}>
-          <Input
-            label={t("filterDateFrom")}
-            nativeInputProps={{
-              type: "date",
-              value: searchParams.get("dateFrom") ?? "",
-              onChange: e => updateFilter("dateFrom", e.target.value),
-            }}
-          />
-        </GridCol>
-        <GridCol md={3}>
-          <Input
-            label={t("filterDateTo")}
-            nativeInputProps={{
-              type: "date",
-              value: searchParams.get("dateTo") ?? "",
-              onChange: e => updateFilter("dateTo", e.target.value),
-            }}
-          />
-        </GridCol>
-        <GridCol base={false} className="fr-col-auto">
-          <ButtonsGroup
-            inlineLayoutWhen="always"
-            buttons={[
-              {
-                children: t("resetFilters"),
-                priority: "secondary",
-                size: "small",
-                onClick: resetFilters,
-                className: fr.cx("fr-mb-0"),
-              },
-              {
-                children: exporting ? t("exporting") : t("export"),
-                priority: "tertiary",
-                size: "small",
-                onClick: () => void handleExport(),
-                disabled: exporting,
-                iconId: "fr-icon-download-line",
-                className: fr.cx("fr-mb-0"),
-              },
-            ]}
-          />
-        </GridCol>
-      </Grid>
+        <div className="mb-4 grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
+          <div className="space-y-1">
+            <Label htmlFor="filter-action" className="text-xs">
+              {t("filterAction")}
+            </Label>
+            <Select
+              value={searchParams.get("action") ?? ""}
+              onValueChange={v => updateFilter("action", v === "_all" ? "" : v)}
+            >
+              <SelectTrigger id="filter-action">
+                <SelectValue placeholder={t("allActions")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all">{t("allActions")}</SelectItem>
+                {actions.map(action => (
+                  <SelectItem key={action} value={action}>
+                    {action}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="filter-date-from" className="text-xs">
+              {t("filterDateFrom")}
+            </Label>
+            <Input
+              id="filter-date-from"
+              type="date"
+              value={searchParams.get("dateFrom") ?? ""}
+              onChange={e => updateFilter("dateFrom", e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="filter-date-to" className="text-xs">
+              {t("filterDateTo")}
+            </Label>
+            <Input
+              id="filter-date-to"
+              type="date"
+              value={searchParams.get("dateTo") ?? ""}
+              onChange={e => updateFilter("dateTo", e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={resetFilters}>
+              {t("resetFilters")}
+            </Button>
+            <Button variant="ghost" size="sm" disabled={exporting} onClick={() => void handleExport()}>
+              <Download className="mr-2 size-4" />
+              {exporting ? t("exporting") : t("export")}
+            </Button>
+          </div>
+        </div>
 
-      <p className="fr-text--sm fr-mb-1w">
-        {total} {t("results")}
-      </p>
+        <p className="mb-2 text-sm text-muted-foreground">
+          {total} {t("results")}
+        </p>
 
-      <TableCustom
-        header={[
-          { children: t("date") },
-          { children: t("action") },
-          { children: t("user") },
-          { children: t("tenant") },
-          { children: t("target") },
-          { children: t("details") },
-          { children: t("status") },
-          { children: t("ip") },
-        ]}
-        body={items.map(item => {
-          const userName = item.user?.name ?? item.user?.email ?? null;
-          const metadata = formatMetadata(item.metadata);
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("date")}</TableHead>
+              <TableHead>{t("action")}</TableHead>
+              <TableHead>{t("user")}</TableHead>
+              <TableHead>{t("tenant")}</TableHead>
+              <TableHead>{t("target")}</TableHead>
+              <TableHead>{t("details")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("ip")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map(item => {
+              const userName = item.user?.name ?? item.user?.email ?? null;
+              const metadata = formatMetadata(item.metadata);
 
-          return [
-            { children: formatDateHour(new Date(item.createdAt), locale) },
-            { children: <code className="fr-text--xs">{item.action}</code> },
-            {
-              children: item.userId ? (
-                <MuiTooltip title={item.userId} arrow>
-                  <span className="fr-text--xs" style={{ cursor: "help" }}>
-                    {userName ?? `${item.userId.slice(0, 8)}…`}
-                  </span>
-                </MuiTooltip>
-              ) : (
-                <span className="fr-text--xs">—</span>
-              ),
-            },
-            { children: item.tenantId ? `#${item.tenantId}` : "—" },
-            {
-              children: item.targetType ? (
-                <span className="fr-text--xs">
-                  {item.targetType}
-                  {item.targetId ? ` #${item.targetId}` : ""}
-                </span>
-              ) : (
-                "—"
-              ),
-            },
-            {
-              children: metadata ? (
-                <MuiTooltip
-                  title={<pre style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: "0.75rem" }}>{metadata}</pre>}
-                  arrow
-                  slotProps={{ tooltip: { sx: { maxWidth: 400 } } }}
-                >
-                  <span
-                    className={fr.cx("fr-icon--sm", "fr-icon-information-line")}
-                    style={{ cursor: "help" }}
-                    role="img"
-                    aria-label={t("details")}
-                  />
-                </MuiTooltip>
-              ) : (
-                "—"
-              ),
-            },
-            {
-              children: item.success ? (
-                <Badge severity="success" small>
-                  {t("successLabel")}
-                </Badge>
-              ) : (
-                <Badge severity="error" small>
-                  {t("errorLabel")}
-                </Badge>
-              ),
-            },
-            { children: <span className="fr-text--xs">{item.ipAddress ?? "—"}</span> },
-          ];
-        })}
-      />
+              return (
+                <TableRow key={item.id}>
+                  <TableCell className="text-xs">{formatDateHour(new Date(item.createdAt), locale)}</TableCell>
+                  <TableCell>
+                    <code className="text-xs">{item.action}</code>
+                  </TableCell>
+                  <TableCell>
+                    {item.userId ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help text-xs">{userName ?? `${item.userId.slice(0, 8)}…`}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>{item.userId}</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-xs">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{item.tenantId ? `#${item.tenantId}` : "—"}</TableCell>
+                  <TableCell>
+                    {item.targetType ? (
+                      <span className="text-xs">
+                        {item.targetType}
+                        {item.targetId ? ` #${item.targetId}` : ""}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {metadata ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help">
+                            <Info className="size-4 text-muted-foreground" />
+                            <span className="sr-only">{t("details")}</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[400px]">
+                          <pre className="whitespace-pre-wrap text-xs">{metadata}</pre>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {item.success ? (
+                      <Badge variant="default">{t("successLabel")}</Badge>
+                    ) : (
+                      <Badge variant="destructive">{t("errorLabel")}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs">{item.ipAddress ?? "—"}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
 
-      {totalPages > 1 && (
-        <Pagination
-          count={totalPages}
-          defaultPage={page}
-          getPageLinkProps={pageNum => ({ href: getPageUrl(pageNum) })}
-        />
-      )}
-    </Container>
+        {totalPages > 1 && (
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href={getPageUrl(Math.max(1, page - 1))}
+                  aria-disabled={page === 1}
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {getPageNumbers(page, totalPages).map((p, i) =>
+                p === "ellipsis" ? (
+                  <PaginationItem key={`e${i}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={p}>
+                    <PaginationLink href={getPageUrl(p)} isActive={p === page}>
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+              <PaginationItem>
+                <PaginationNext
+                  href={getPageUrl(Math.min(totalPages, page + 1))}
+                  aria-disabled={page === totalPages}
+                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+      </div>
+    </TooltipProvider>
   );
 };

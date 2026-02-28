@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 
@@ -36,11 +35,7 @@ const TwoFactorPage = async () => {
   const hasOtp = !!user?.otpVerifiedAt;
   const hasEmail = !!user?.emailTwoFactorEnabled;
 
-  return (
-    <DsfrPage>
-      <TwoFactorVerify hasPasskey={hasPasskey} hasOtp={hasOtp} hasEmail={hasEmail} />
-    </DsfrPage>
-  );
+  return <TwoFactorVerify hasPasskey={hasPasskey} hasOtp={hasOtp} hasEmail={hasEmail} />;
 };
 
 export default TwoFactorPage;

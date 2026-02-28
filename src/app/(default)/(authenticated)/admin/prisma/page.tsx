@@ -6,18 +6,16 @@ import { createPostgresAdapter } from "@prisma/studio-core/data/postgres-core";
 import dynamic from "next/dynamic";
 import { Suspense, useMemo } from "react";
 
-import { Box, Container } from "@/dsfr";
-
 // Dynamically import Studio with no SSR to avoid hydration issues
 const Studio = dynamic(() => import("@prisma/studio-core/ui").then(mod => mod.Studio), {
   ssr: false,
 });
 
 const StudioLoading = () => (
-  <div className="flex items-center justify-center h-full">
+  <div className="flex h-full items-center justify-center">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading Studio...</p>
+      <div className="mx-auto size-12 animate-spin rounded-full border-b-2 border-primary"></div>
+      <p className="mt-4 text-muted-foreground">Loading Studio...</p>
     </div>
   </div>
 );
@@ -40,11 +38,9 @@ const ClientOnlyStudio = () => {
 export default function PrismaPage() {
   return (
     <Suspense fallback={<StudioLoading />}>
-      <Container className="max-w-7xl mx-auto bisou">
-        <Box className="h-[calc(100vh-80px)] coucou">
-          <ClientOnlyStudio />
-        </Box>
-      </Container>
+      <div className="h-[calc(100vh-80px)]">
+        <ClientOnlyStudio />
+      </div>
     </Suspense>
   );
 }

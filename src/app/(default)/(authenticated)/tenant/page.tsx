@@ -1,15 +1,13 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { ArrowRight, Plus, Settings } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { config } from "@/config";
-import { Container } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { userOnTenantRepo } from "@/lib/repo";
 import { type UserOnTenantWithTenantSettings } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole } from "@/prisma/enums";
+import { Badge } from "@/ui/shadcn/badge";
+import { Button } from "@/ui/shadcn/button";
 import { ListMembershipsForUser } from "@/useCases/user_on_tenant/ListMembershipsForUser";
 import { assertSession } from "@/utils/auth";
 
@@ -32,24 +30,25 @@ const TenantPage = async () => {
   const member = memberships.filter(m => !MANAGED_ROLES.includes(m.role));
 
   return (
-    <DsfrPage>
-      <Container mt="2w">
-        <div className={fr.cx("fr-mb-4w")}>
-          <div className="flex items-center justify-between">
-            <h1 className={fr.cx("fr-mb-0")}>{t("myWorkspaces")}</h1>
-            <Button linkProps={{ href: "/tenant/new" }} iconId="fr-icon-add-line">
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">{t("myWorkspaces")}</h1>
+          <Button asChild>
+            <Link href="/tenant/new">
+              <Plus className="mr-2 size-4" />
               {t("newWorkspace")}
-            </Button>
-          </div>
+            </Link>
+          </Button>
         </div>
+      </div>
 
-        {memberships.length === 0 && <p>{t("noWorkspaces")}</p>}
+      {memberships.length === 0 && <p className="text-muted-foreground">{t("noWorkspaces")}</p>}
 
-        {managed.length > 0 && <TenantSection title={t("managedWorkspaces")} memberships={managed} showConfigure />}
+      {managed.length > 0 && <TenantSection title={t("managedWorkspaces")} memberships={managed} showConfigure />}
 
-        {member.length > 0 && <TenantSection title={t("memberWorkspaces")} memberships={member} />}
-      </Container>
-    </DsfrPage>
+      {member.length > 0 && <TenantSection title={t("memberWorkspaces")} memberships={member} />}
+    </div>
   );
 };
 
@@ -66,45 +65,36 @@ const TenantSection = async ({
   const tRoles = await getTranslations("roles");
 
   return (
-    <section className={fr.cx("fr-mb-4w")}>
-      <h2 className={fr.cx("fr-mb-2w")}>{title}</h2>
-      <div>
+    <section className="mb-8">
+      <h2 className="mb-4 text-xl font-semibold">{title}</h2>
+      <div className="space-y-2">
         {memberships.map(membership => (
-          <div
-            key={`${membership.userId}-${membership.tenantId}`}
-            className={cx(fr.cx("fr-p-2w", "fr-mb-1w"), "rounded border border-[var(--border-default-grey)]")}
-          >
+          <div key={`${membership.userId}-${membership.tenantId}`} className="rounded-lg border p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={fr.cx("fr-text--bold")}>{membership.tenant.settings.name}</span>
-                  <Badge severity="info" small noIcon>
-                    {tRoles(membership.role)}
-                  </Badge>
+                  <span className="font-bold">{membership.tenant.settings.name}</span>
+                  <Badge variant="secondary">{tRoles(membership.role)}</Badge>
                 </div>
-                <p className={cx(fr.cx("fr-text--xs", "fr-mb-0", "fr-mt-1v"), "text-[var(--text-mention-grey)]")}>
+                <p className="mt-1 text-xs text-muted-foreground">
                   {membership.tenant.settings.customDomain ??
                     `${membership.tenant.settings.subdomain}.${config.rootDomain}`}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 {showConfigure && (
-                  <Button
-                    size="small"
-                    priority="secondary"
-                    linkProps={{ href: `/tenant/${membership.tenantId}` }}
-                    iconId="fr-icon-settings-5-line"
-                  >
-                    {t("configure")}
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/tenant/${membership.tenantId}`}>
+                      <Settings className="mr-2 size-4" />
+                      {t("configure")}
+                    </Link>
                   </Button>
                 )}
-                <Button
-                  size="small"
-                  priority="tertiary no outline"
-                  linkProps={{ href: getRoadmapUrl(membership.tenant.settings) }}
-                  iconId="fr-icon-arrow-right-line"
-                >
-                  {t("viewRoadmap")}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={getRoadmapUrl(membership.tenant.settings)}>
+                    {t("viewRoadmap")}
+                    <ArrowRight className="ml-2 size-4" />
+                  </Link>
                 </Button>
               </div>
             </div>

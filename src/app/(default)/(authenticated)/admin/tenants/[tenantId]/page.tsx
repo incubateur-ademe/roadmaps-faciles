@@ -1,14 +1,13 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
+import { ExternalLink } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { config } from "@/config";
-import { Grid, GridCol } from "@/dsfr";
 import { auth } from "@/lib/next-auth/auth";
 import { tenantRepo, userOnTenantRepo } from "@/lib/repo";
+import { Button } from "@/ui/shadcn/button";
 import { ListUsersForTenant } from "@/useCases/user_on_tenant/ListUsersForTenant";
 import { type NextServerPageProps } from "@/utils/next";
 
@@ -44,61 +43,52 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
 
   return (
     <div>
-      <Grid haveGutters valign="middle" mb="4w">
-        <GridCol>
-          <h1 className={fr.cx("fr-mb-0")}>{tenant.settings.name ?? `Tenant #${tenant.id}`}</h1>
-          <h2 className={fr.cx("fr-h3", "fr-mb-0")}>
-            <Link href={tenantUrl} target="_blank">
-              {tenantUrl}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{tenant.settings.name ?? `Tenant #${tenant.id}`}</h1>
+          <Link href={tenantUrl} target="_blank" className="text-lg text-primary hover:underline">
+            {tenantUrl}
+          </Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href={`${tenantUrl}/admin`} target="_blank">
+              <ExternalLink className="mr-2 size-4" />
+              {t("tenantAdmin")}
             </Link>
-          </h2>
-        </GridCol>
-        <GridCol base={false} className="fr-col-auto">
-          <ButtonsGroup
-            inlineLayoutWhen="always"
-            buttonsSize="small"
-            buttons={[
-              {
-                children: t("tenantAdmin"),
-                priority: "tertiary",
-                linkProps: { href: `${tenantUrl}/admin`, target: "_blank" },
-              },
-              {
-                children: t("back"),
-                priority: "secondary",
-                linkProps: { href: "/admin/tenants" },
-              },
-            ]}
-          />
-        </GridCol>
-      </Grid>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/tenants">{t("back")}</Link>
+          </Button>
+        </div>
+      </div>
 
-      <div className={fr.cx("fr-mb-4w")}>
-        <h2>{t("information")}</h2>
-        <dl>
-          <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">{t("id")} :</dt> <dd className="inline">{tenant.id}</dd>
+      <div className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold">{t("information")}</h2>
+        <dl className="space-y-1">
+          <div>
+            <dt className="inline font-bold">{t("id")} :</dt> <dd className="inline">{tenant.id}</dd>
           </div>
-          <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">{t("subdomain")} :</dt>{" "}
+          <div>
+            <dt className="inline font-bold">{t("subdomain")} :</dt>{" "}
             <dd className="inline">{tenant.settings.subdomain}</dd>
           </div>
-          <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">{t("customDomain")} :</dt>{" "}
+          <div>
+            <dt className="inline font-bold">{t("customDomain")} :</dt>{" "}
             <dd className="inline">{tenant.settings.customDomain ?? "—"}</dd>
           </div>
-          <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">{t("private")} :</dt>{" "}
+          <div>
+            <dt className="inline font-bold">{t("private")} :</dt>{" "}
             <dd className="inline">{tenant.settings.isPrivate ? tc("yes") : tc("no")}</dd>
           </div>
-          <div className={fr.cx("fr-mb-1v")}>
-            <dt className="font-bold inline">{t("createdAt")} :</dt>{" "}
+          <div>
+            <dt className="inline font-bold">{t("createdAt")} :</dt>{" "}
             <dd className="inline">{dateFormatter.format(new Date(tenant.createdAt))}</dd>
           </div>
         </dl>
       </div>
 
-      <h2>{t("members")}</h2>
+      <h2 className="mb-4 text-xl font-semibold">{t("members")}</h2>
       <RootMembersList
         currentUserId={session?.user.uuid ?? ""}
         members={members}

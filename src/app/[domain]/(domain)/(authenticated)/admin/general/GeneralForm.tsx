@@ -5,6 +5,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Input from "@codegouvfr/react-dsfr/Input";
+import Select from "@codegouvfr/react-dsfr/Select";
 import { type ToggleSwitchProps } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { type ToggleSwitchGroupProps } from "@codegouvfr/react-dsfr/ToggleSwitchGroup";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
@@ -18,6 +19,8 @@ import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
 import { ToggleSwitchGroup } from "@/dsfr/client";
 import { type DNSStatus } from "@/lib/domain-provider/dns";
+import { useFeatureFlag } from "@/lib/feature-flags/client";
+import { UI_THEME } from "@/lib/model/TenantSettings";
 import { type TenantSettings } from "@/prisma/client";
 import { WELCOME_DATA_PREVIEW } from "@/workflows/welcomeDataPreview";
 
@@ -42,6 +45,7 @@ const formSchema = z.object({
   allowAnonymousVoting: z.boolean(),
   requirePostApproval: z.boolean(),
   allowEmbedding: z.boolean(),
+  uiTheme: z.enum(UI_THEME),
 });
 
 type FormType = z.infer<typeof formSchema>;
@@ -152,6 +156,7 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
   const t = useTranslations("domainAdmin.general");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
+  const themeSwitchingEnabled = useFeatureFlag("themeSwitching");
   const SECTIONS = getSections(t);
 
   const [saveError, setSaveError] = useState<null | string>(null);
@@ -179,6 +184,7 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
       allowAnonymousVoting: tenantSettings.allowAnonymousVoting,
       requirePostApproval: tenantSettings.requirePostApproval,
       allowEmbedding: tenantSettings.allowEmbedding,
+      uiTheme: tenantSettings.uiTheme,
     },
   });
 
@@ -207,7 +213,7 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
             id: item.name,
             label: item.label,
             helperText: item.helperText,
-            checked: !!watchedValues[item.name],
+            checked: !!watchedValues[item.name as keyof typeof watchedValues],
             disabled: item.disabled ?? false,
             onChange: (checked: boolean) => setValue(item.name, checked, { shouldDirty: true }),
           }));
@@ -228,6 +234,30 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
             description={t("allowEmbeddingPrivateWarning")}
           />
         )}
+
+        {themeSwitchingEnabled &&
+          (() => {
+            const hasGouvDomain = !!tenantSettings.customDomain?.endsWith(".gouv.fr");
+            return (
+              <section id="ui-theme" className={fr.cx("fr-mb-4w")}>
+                <h3 className={fr.cx("fr-h3")}>{t("uiTheme.label")}</h3>
+                <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>{t("uiTheme.description")}</p>
+                <Select
+                  label={t("uiTheme.label")}
+                  nativeSelectProps={{
+                    value: watchedValues.uiTheme ?? "Default",
+                    onChange: e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true }),
+                  }}
+                >
+                  <option value="Default">{t("uiTheme.options.Default")}</option>
+                  <option value="Dsfr" disabled={!hasGouvDomain}>
+                    {t("uiTheme.options.Dsfr")}
+                  </option>
+                </Select>
+                {!hasGouvDomain && <p className={fr.cx("fr-hint-text", "fr-mt-1v")}>{t("uiTheme.gouvRequired")}</p>}
+              </section>
+            );
+          })()}
 
         <ClientAnimate>
           {saveError && (

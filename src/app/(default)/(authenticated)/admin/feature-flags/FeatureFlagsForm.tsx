@@ -1,12 +1,13 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { FEATURE_FLAGS, type FeatureFlagKey, type FeatureFlagsMap } from "@/lib/feature-flags/flags";
+import { Button } from "@/ui/shadcn/button";
+import { Label } from "@/ui/shadcn/label";
+import { Switch } from "@/ui/shadcn/switch";
 
 import { saveFeatureFlags } from "./actions";
 
@@ -23,7 +24,7 @@ export const FeatureFlagsForm = ({ flags }: FeatureFlagsFormProps) => {
   const [localFlags, setLocalFlags] = useState<FeatureFlagsMap>(flags);
 
   if (flagKeys.length === 0) {
-    return <p>{t("noFlags")}</p>;
+    return <p className="text-muted-foreground">{t("noFlags")}</p>;
   }
 
   const handleToggle = (key: FeatureFlagKey, checked: boolean) => {
@@ -40,25 +41,26 @@ export const FeatureFlagsForm = ({ flags }: FeatureFlagsFormProps) => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {flagKeys.map(key => {
         const label = t(`flags.${key}.label` as never);
-
         const description = t(`flags.${key}.description` as never);
         return (
-          <ToggleSwitch
-            key={key}
-            label={label}
-            helperText={description}
-            checked={localFlags[key]}
-            onChange={checked => handleToggle(key, checked)}
-          />
+          <div key={key} className="flex items-center justify-between gap-4">
+            <div>
+              <Label htmlFor={`flag-${key}`}>{label}</Label>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            <Switch
+              id={`flag-${key}`}
+              checked={localFlags[key]}
+              onCheckedChange={checked => handleToggle(key, checked)}
+            />
+          </div>
         );
       })}
 
-      <Button onClick={() => void handleSave()} className="fr-mt-2w">
-        {tc("save")}
-      </Button>
+      <Button onClick={() => void handleSave()}>{tc("save")}</Button>
     </div>
   );
 };

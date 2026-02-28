@@ -11,6 +11,12 @@
       "@/config": [
         "src/config.ts"
       ],
+      "@/ui": [
+        "src/ui/index.ts"
+      ],
+      "@/ui/*": [
+        "src/ui/*"
+      ],
       "@/dsfr": [
         "src/dsfr/server.ts"
       ],

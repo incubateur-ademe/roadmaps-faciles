@@ -1,11 +1,13 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { Button } from "@/ui/shadcn/button";
+import { Label } from "@/ui/shadcn/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/shadcn/select";
+import { Switch } from "@/ui/shadcn/switch";
 
 import { saveSecuritySettings } from "./actions";
 
@@ -32,23 +34,31 @@ export const SecurityForm = ({ force2FA, force2FAGraceDays }: SecurityFormProps)
   };
 
   return (
-    <div>
-      <ToggleSwitch label={t("force2FAToggle")} checked={enabled} onChange={setEnabled} />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Label htmlFor="force-2fa">{t("force2FAToggle")}</Label>
+        <Switch id="force-2fa" checked={enabled} onCheckedChange={setEnabled} />
+      </div>
 
       {enabled && (
-        <Select
-          label={t("gracePeriod")}
-          nativeSelectProps={{
-            value: String(graceDays),
-            onChange: e => setGraceDays(Number(e.target.value)),
-          }}
-          options={graceOptions}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="grace-period">{t("gracePeriod")}</Label>
+          <Select value={String(graceDays)} onValueChange={v => setGraceDays(Number(v))}>
+            <SelectTrigger id="grace-period" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {graceOptions.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
 
-      <Button onClick={() => void handleSave()} className="fr-mt-2w">
-        {tc("save")}
-      </Button>
+      <Button onClick={() => void handleSave()}>{tc("save")}</Button>
     </div>
   );
 };

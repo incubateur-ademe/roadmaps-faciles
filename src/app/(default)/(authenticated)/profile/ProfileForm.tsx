@@ -1,10 +1,5 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -12,7 +7,11 @@ import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
-import { FormFieldset } from "@/dsfr";
+import { Alert, AlertDescription, AlertTitle } from "@/ui/shadcn/alert";
+import { Button } from "@/ui/shadcn/button";
+import { Input } from "@/ui/shadcn/input";
+import { Label } from "@/ui/shadcn/label";
+import { Switch } from "@/ui/shadcn/switch";
 
 import { deleteAccount, switchToEmEmail, updateProfile } from "./actions";
 import { DeleteAccountSection } from "./DeleteAccountSection";
@@ -117,36 +116,34 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
 
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
-      <FormFieldset
-        legend={t("identity")}
-        elements={[
-          ...(variant === "tenant"
-            ? [
-                <Input
-                  key="name"
-                  label={t("fullName")}
-                  nativeInputProps={{ ...register("name") }}
-                  state={errors.name ? "error" : "default"}
-                  stateRelatedMessage={errors.name?.message}
-                />,
-              ]
-            : []),
-          variant === "tenant" ? (
-            <div key="email">
-              <Input
-                label={t("emailAddress")}
-                nativeInputProps={{ type: "email", ...register("email") }}
-                state={errors.email ? "error" : "default"}
-                stateRelatedMessage={errors.email?.message}
-                hintText={getEmailHintText()}
-              />
+      <fieldset className="mb-8 space-y-6 border-0 p-0">
+        <legend className="mb-4">
+          <h3 className="text-lg font-semibold">{t("identity")}</h3>
+        </legend>
+
+        {variant === "tenant" && (
+          <div className="space-y-2">
+            <Label htmlFor="name">{t("fullName")}</Label>
+            <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email">{t("emailAddress")}</Label>
+          {variant === "tenant" ? (
+            <>
+              <Input id="email" type="email" aria-invalid={!!errors.email} {...register("email")} />
+              {getEmailHintText() && <p className="text-sm text-muted-foreground">{getEmailHintText()}</p>}
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
               {showEmEmailHint && !emailsAreSame && (
-                <p className={fr.cx("fr-text--xs", "fr-mt-n2w", "fr-mb-2w")}>
+                <p className="text-xs text-muted-foreground">
                   {t("emEmailPrefix")} <strong>{user.emEmail}</strong>{" "}
                   <Button
                     type="button"
-                    priority="tertiary no outline"
-                    size="small"
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0"
                     disabled={switchPending}
                     onClick={() => void handleSwitchToEmEmail()}
                   >
@@ -154,58 +151,67 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
                   </Button>
                 </p>
               )}
-            </div>
+            </>
           ) : (
-            <Input
-              key="email"
-              label={t("emailAddress")}
-              disabled
-              nativeInputProps={{ type: "email", value: user.email }}
-              hintText={t("managedByEm")}
-            />
-          ),
-        ]}
-      />
+            <>
+              <Input id="email" type="email" disabled value={user.email} />
+              <p className="text-sm text-muted-foreground">{t("managedByEm")}</p>
+            </>
+          )}
+        </div>
+      </fieldset>
 
-      <FormFieldset
-        legend={t("notifications")}
-        elements={[
-          <ToggleSwitch
-            key="notificationsEnabled"
-            label={t("emailNotifications")}
-            helperText={t("emailNotificationsHelper")}
+      <fieldset className="mb-8 space-y-4 border-0 p-0">
+        <legend className="mb-4">
+          <h3 className="text-lg font-semibold">{t("notifications")}</h3>
+        </legend>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">{t("emailNotifications")}</p>
+            <p className="text-sm text-muted-foreground">{t("emailNotificationsHelper")}</p>
+          </div>
+          <Switch
             checked={notificationsEnabled}
-            onChange={checked => setValue("notificationsEnabled", checked, { shouldDirty: true })}
-          />,
-        ]}
-      />
+            onCheckedChange={checked => setValue("notificationsEnabled", checked, { shouldDirty: true })}
+          />
+        </div>
+      </fieldset>
 
       {variant === "tenant" && (
-        <FormFieldset
-          legend={t("espaceMembre")}
-          elements={[
-            <EspaceMembreSection key="em-section" isBetaGouvMember={user.isBetaGouvMember} username={user.username} />,
-          ]}
-        />
+        <fieldset className="mb-8 space-y-4 border-0 p-0">
+          <legend className="mb-4">
+            <h3 className="text-lg font-semibold">{t("espaceMembre")}</h3>
+          </legend>
+          <EspaceMembreSection isBetaGouvMember={user.isBetaGouvMember} username={user.username} />
+        </fieldset>
       )}
 
       <ClientAnimate>
         {saveError && (
-          <Alert className={fr.cx("fr-mb-2w")} severity="error" title={te("saveError")} description={saveError} />
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>{te("saveError")}</AlertTitle>
+            <AlertDescription>{saveError}</AlertDescription>
+          </Alert>
         )}
-        {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={tc("success")} />}
+        {success && (
+          <Alert className="mb-4">
+            <AlertTitle>{tc("success")}</AlertTitle>
+          </Alert>
+        )}
       </ClientAnimate>
 
       <Button type="submit" disabled={pending || !isDirty}>
         {t("saveChanges")}
       </Button>
 
-      <hr className={fr.cx("fr-hr", "fr-mt-4w")} />
+      <hr className="my-8" />
 
-      <FormFieldset
-        legend={t("dangerZone")}
-        elements={[<DeleteAccountSection key="delete-account" deleteAccount={deleteAccount} />]}
-      />
+      <fieldset className="space-y-4 border-0 p-0">
+        <legend className="mb-4">
+          <h3 className="text-lg font-semibold">{t("dangerZone")}</h3>
+        </legend>
+        <DeleteAccountSection deleteAccount={deleteAccount} />
+      </fieldset>
     </form>
   );
 };

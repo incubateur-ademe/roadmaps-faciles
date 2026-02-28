@@ -82,3 +82,7 @@ certificates
 /.claude/.worktree-monitor-root
 /next-env.d.ts
 CLAUDE.local.md
+
+# playwright MCP logs & debug screenshots
+.playwright-mcp/
+header-*.png

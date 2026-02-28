@@ -147,7 +147,7 @@
   - App: `src/app/doc/` — layout, MDX component registration, DSFR theme bridge
   - Custom MDX components: registered in `src/app/doc/mdx-components.ts` via `getDocMDXComponents()`
   - `ImageWithTheme`: client component for theme-aware screenshots (crossfade toggle, IntersectionObserver preload)
-  - DSFR theme bridge: `src/app/doc/dsfr-theme.css` maps DSFR tokens → Fumadocs CSS variables, handles `data-fr-theme` dark mode
+  - Theme bridge: `src/app/doc/theme.css` maps design tokens → Fumadocs CSS variables, handles `.dark` class dark mode
 - Legal pages: `@incubateur-ademe/legal-pages-react` (LegalNotice, PrivacyPolicy) — routes `/mentions-legales`, `/politique-de-confidentialite`, `/accessibilite`, `/cgu`
 - Caching: Redis via ioredis + unstorage
 - Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
@@ -288,7 +288,7 @@
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
 - Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
 - `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
-- DSFR theme persistence: stored in localStorage key `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs on `<html>` — persists across navigations, must be explicitly forced in Playwright/automation scripts
+- Dark mode persistence: root uses localStorage `"theme"` + `.dark` class on `<html>` (via ThemeScript). DSFR tenant pages additionally use localStorage `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs — both must be explicitly forced in Playwright/automation scripts
 - Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
 - release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
 - GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment

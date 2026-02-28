@@ -44,4 +44,23 @@ describe("SaveTenantWithSettingsInput schema", () => {
     const { isPrivate: _, ...data } = valid;
     expectZodFailure(SaveTenantWithSettingsInput, data);
   });
+
+  it('accepts optional uiTheme set to "Default"', () => {
+    const data = expectZodSuccess(SaveTenantWithSettingsInput, { ...valid, uiTheme: "Default" });
+    expect(data.uiTheme).toBe("Default");
+  });
+
+  it('accepts optional uiTheme set to "Dsfr"', () => {
+    const data = expectZodSuccess(SaveTenantWithSettingsInput, { ...valid, uiTheme: "Dsfr" });
+    expect(data.uiTheme).toBe("Dsfr");
+  });
+
+  it("accepts missing uiTheme (optional)", () => {
+    const data = expectZodSuccess(SaveTenantWithSettingsInput, valid);
+    expect(data.uiTheme).toBeUndefined();
+  });
+
+  it("rejects invalid uiTheme value", () => {
+    expectZodFailure(SaveTenantWithSettingsInput, { ...valid, uiTheme: "invalid" });
+  });
 });

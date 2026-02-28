@@ -1,8 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
-import { Container, Grid, GridCol } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 
@@ -30,21 +28,17 @@ const SecurityPage = async () => {
   if (!user) return null;
 
   return (
-    <DsfrPage>
-      <Container my="4w">
-        <h1>{t("title")}</h1>
-        <p>{t("description")}</p>
-        <Grid haveGutters>
-          <GridCol md={8}>
-            <TwoFactorSettings
-              emailEnabled={user.emailTwoFactorEnabled}
-              otpConfigured={!!user.otpVerifiedAt}
-              passkeys={authenticators}
-            />
-          </GridCol>
-        </Grid>
-      </Container>
-    </DsfrPage>
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-6 text-muted-foreground">{t("description")}</p>
+      <div className="max-w-2xl">
+        <TwoFactorSettings
+          emailEnabled={user.emailTwoFactorEnabled}
+          otpConfigured={!!user.otpVerifiedAt}
+          passkeys={authenticators}
+        />
+      </div>
+    </div>
   );
 };
 

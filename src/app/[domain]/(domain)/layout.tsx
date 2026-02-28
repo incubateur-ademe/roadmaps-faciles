@@ -1,14 +1,23 @@
 import Header from "@codegouvfr/react-dsfr/Header";
+import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
+import { ConsentBannerAndConsentManagement } from "@/consentManagement";
+import { DsfrProvider } from "@/dsfr-bootstrap";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
-import { type Tenant } from "@/lib/model/Tenant";
-import { type TenantSettings } from "@/prisma/client";
+import { type Board, type TenantSettings } from "@/prisma/client";
+import { UIProvider } from "@/ui";
+import { getTheme } from "@/ui/server";
+import { Footer as ShadcnFooter } from "@/ui/shadcn/Footer";
+import { Header as ShadcnHeader } from "@/ui/shadcn/Header";
+import { ThemeInjector } from "@/ui/ThemeInjector";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 import { getTenantFromDomain } from "@/utils/tenant";
@@ -18,6 +27,8 @@ import { UserHeaderItem } from "../../AuthHeaderItems";
 import { LanguageSelectClient } from "../../LanguageSelectClient";
 import styles from "../../root.module.scss";
 import { DomainNavigation } from "./DomainNavigation";
+import { PublicFooter } from "./PublicFooter";
+import { ShadcnDomainNavigation } from "./ShadcnDomainNavigation";
 
 export interface DomainParams {
   domain: string;
@@ -27,21 +38,22 @@ export interface DomainProps<Params extends object = EmptyObject> {
   params: Promise<DomainParams & Params>;
 }
 
-const Navigation = async ({ tenant, tenantSettings }: { tenant: Tenant; tenantSettings: TenantSettings }) => {
-  const boards = await prisma.board.findMany({
-    where: {
-      tenantId: tenant.id,
-    },
-    orderBy: {
-      order: "asc",
-    },
+const getBoards = (tenantId: number) =>
+  prisma.board.findMany({
+    where: { tenantId },
+    orderBy: { order: "asc" },
   });
 
-  return <DomainNavigation boards={boards} tenantSettings={tenantSettings} />;
-};
+const DsfrNavigation = ({ boards, tenantSettings }: { boards: Board[]; tenantSettings: TenantSettings }) => (
+  <DomainNavigation boards={boards} tenantSettings={tenantSettings} />
+);
 
 const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
-  const [dirtyDomain, tenant] = await Promise.all([getDirtyDomain(), getTenantFromDomain((await params).domain)]);
+  const [dirtyDomain, tenant, lang] = await Promise.all([
+    getDirtyDomain(),
+    getTenantFromDomain((await params).domain),
+    getLocale(),
+  ]);
 
   const dirtyDomainFixer = dirtyDomain ? dirtySafePathname(dirtyDomain) : (pathname: string) => pathname;
 
@@ -55,34 +67,69 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     notFound();
   }
 
-  const pendingModerationCount = await prisma.post.count({
-    where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING },
-  });
+  const [boards, pendingModerationCount] = await Promise.all([
+    getBoards(tenant.id),
+    prisma.post.count({ where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING } }),
+  ]);
 
-  return (
+  const theme = getTheme(tenantSettings);
+  const homeHref = dirtyDomainFixer("/");
+
+  const mainContent = (
     <>
-      <Header
-        navigation={<Navigation tenant={tenant} tenantSettings={tenantSettings} />}
-        brandTop={<Brand />}
-        homeLinkProps={{
-          href: dirtyDomainFixer("/"),
-          title: tenantSettings.name,
-        }}
-        serviceTitle={tenantSettings.name}
-        quickAccessItems={[
-          <LanguageSelectClient key="hqai-lang" />,
-          <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
-        ]}
-      />
       <ClientAnimate as="main" id="content" className={styles.content}>
         {children}
       </ClientAnimate>
+
       <ClientOnly>
         <ClientBodyPortal>
           <ClientAnimate animateOptions={{ duration: 300 }}>{modal}</ClientAnimate>
         </ClientBodyPortal>
       </ClientOnly>
     </>
+  );
+
+  // DsfrProvider + MuiDsfrThemeProvider always wrap content because tenant page
+  // components (BoardPost, PostList, etc.) still use DSFR hooks (useIsDark) and
+  // components (Card, Badge, Tag). Only Header/Footer switch based on theme.
+  return (
+    <UIProvider value={theme}>
+      <ThemeInjector theme={theme} />
+      <DsfrProvider lang={lang}>
+        {theme === "Dsfr" && <ConsentBannerAndConsentManagement />}
+        <AppRouterCacheProvider>
+          <MuiDsfrThemeProvider>
+            {theme === "Dsfr" ? (
+              <Header
+                navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
+                brandTop={<Brand />}
+                homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+                serviceTitle={tenantSettings.name}
+                quickAccessItems={[
+                  <LanguageSelectClient key="hqai-lang" />,
+                  <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
+                ]}
+              />
+            ) : (
+              <ShadcnHeader
+                homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+                serviceName={tenantSettings.name}
+                navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
+                quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
+              />
+            )}
+
+            {mainContent}
+
+            {theme === "Dsfr" ? (
+              <PublicFooter id="footer" />
+            ) : (
+              <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
+            )}
+          </MuiDsfrThemeProvider>
+        </AppRouterCacheProvider>
+      </DsfrProvider>
+    </UIProvider>
   );
 };
 

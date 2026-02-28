@@ -10,7 +10,7 @@ test.describe("Root Admin", () => {
   test("create tenant page is accessible", async ({ page }) => {
     await page.goto("/admin/tenants/new");
 
-    await expect(page.getByRole("heading")).toContainText(/tenant|créer/i);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/tenant|créer/i);
   });
 
   test("users list shows test users", async ({ page }) => {

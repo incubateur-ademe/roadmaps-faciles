@@ -1,40 +1,38 @@
-import Card from "@codegouvfr/react-dsfr/Card";
-
-import { Grid, GridCol } from "@/dsfr";
 import { fetchMatomoData } from "@/lib/matomo";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/shadcn/card";
 
 export const StatsContent = async () => {
   const matomoData = await fetchMatomoData();
 
   return (
-    <Grid haveGutters>
-      <GridCol md={4}>
-        <Card
-          title="Nombre de visites"
-          desc="Nombre de visites total du site sur les 12 derniers mois"
-          start={<strong className="fr-display--md">{matomoData.nbVisits}</strong>}
-          size="large"
-          grey
-        />
-      </GridCol>
-      <GridCol md={4}>
-        <Card
-          title="Nombre de pages vues (total)"
-          desc="Nombre de pages vues au total sur le site sur les 12 derniers mois"
-          start={<strong className="fr-display--md">{matomoData.nbPageViews}</strong>}
-          size="large"
-          grey
-        />
-      </GridCol>
-      <GridCol md={4}>
-        <Card
-          title="Nombre de pages vues (uniques)"
-          desc="Nombre de pages vues uniques sur le site sur les 12 derniers mois"
-          start={<strong className="fr-display--md">{matomoData.nbUniqPageViews}</strong>}
-          size="large"
-          grey
-        />
-      </GridCol>
-    </Grid>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardTitle>Nombre de visites</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-4xl font-bold">{matomoData.nbVisits}</p>
+          <p className="text-sm text-muted-foreground">Sur les 12 derniers mois</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Nombre de pages vues (total)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-4xl font-bold">{matomoData.nbPageViews}</p>
+          <p className="text-sm text-muted-foreground">Sur les 12 derniers mois</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Nombre de pages vues (uniques)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-4xl font-bold">{matomoData.nbUniqPageViews}</p>
+          <p className="text-sm text-muted-foreground">Sur les 12 derniers mois</p>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

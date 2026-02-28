@@ -1,5 +1,5 @@
-import { SystemMessageDisplay } from "../SystemMessageDisplay";
+import { RootSystemMessage } from "./RootSystemMessage";
 
-const Unauthorized = () => <SystemMessageDisplay code="unauthorized" />;
+const Unauthorized = () => <RootSystemMessage code="unauthorized" />;
 
 export default Unauthorized;

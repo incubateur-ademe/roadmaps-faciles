@@ -1,12 +1,9 @@
 import { notFound } from "next/navigation";
 
-import { CenteredContainer } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { tenantRepo } from "@/lib/repo";
 import { GetTenantWithSettings } from "@/useCases/tenant/GetTenantWithSettings";
 
 import { Form } from "./Form";
-import style from "./TenantMain.module.scss";
 
 interface Params {
   tenantId: string;
@@ -31,11 +28,9 @@ const TenantMainPage = async ({ params }: Props) => {
   }
 
   return (
-    <DsfrPage>
-      <CenteredContainer py="4w" className={style.indentity}>
-        <Form tenant={{ ...tenant, settings }} />
-      </CenteredContainer>
-    </DsfrPage>
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <Form tenant={{ ...tenant, settings }} />
+    </div>
   );
 };
 
