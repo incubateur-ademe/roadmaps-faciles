@@ -12,7 +12,7 @@ test.describe("Magic Link Authentication (tenant)", () => {
     await expect(emailInput).toBeVisible();
     await emailInput.fill("test-user@test.local");
 
-    await page.getByRole("button", { name: /se connecter/i }).click();
+    await page.getByRole("button", { name: /connexion/i }).click();
 
     // Wait for redirect to verify-request page
     await page.waitForURL("**/login/verify-request*");
@@ -33,8 +33,8 @@ test.describe("Magic Link Authentication (tenant)", () => {
     await page.goto(magicLink);
     await page.waitForURL(`${E2E_TENANT_URL}/**`, { timeout: 15_000 });
 
-    // Verify authenticated state: the "Se connecter" button should no longer be visible
-    await expect(page.getByRole("button", { name: /se connecter/i })).not.toBeVisible();
+    // Verify authenticated state: the "Connexion" button should no longer be visible
+    await expect(page.getByRole("button", { name: /connexion/i })).not.toBeVisible();
   });
 
   test("invalid/expired callback token shows error page", async ({ page }) => {
@@ -59,7 +59,7 @@ test.describe("Magic Link Authentication (tenant)", () => {
     await expect(emailInput).toBeVisible();
     await emailInput.fill("test-otp@test.local");
 
-    await page.getByRole("button", { name: /se connecter/i }).click();
+    await page.getByRole("button", { name: /connexion/i }).click();
 
     // The pre-login-check API should return requiresOtp: true,
     // causing the form to show an OTP code input instead of sending the magic link.

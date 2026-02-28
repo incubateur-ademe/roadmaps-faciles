@@ -54,6 +54,7 @@ async function main() {
       allowPostEdits: true,
       allowPostDeletion: true,
       allowEmbedding: true,
+      uiTheme: $Enums.UiTheme.Dsfr,
     },
   });
 

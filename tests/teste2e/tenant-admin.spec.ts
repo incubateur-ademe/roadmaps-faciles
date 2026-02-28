@@ -50,6 +50,6 @@ test.describe("Tenant Admin", () => {
   test("general settings page shows tenant name", async ({ page }) => {
     await page.goto("/admin/general");
 
-    await expect(page.locator("main").getByText("E2E Test Tenant")).toBeVisible();
+    await expect(page.getByText("E2E Test Tenant")).toBeVisible();
   });
 });
