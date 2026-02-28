@@ -89,14 +89,17 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     </>
   );
 
+  // DsfrProvider + MuiDsfrThemeProvider always wrap content because tenant page
+  // components (BoardPost, PostList, etc.) still use DSFR hooks (useIsDark) and
+  // components (Card, Badge, Tag). Only Header/Footer switch based on theme.
   return (
     <UIProvider value={theme}>
       <ThemeInjector theme={theme} />
-      {theme === "Dsfr" ? (
-        <DsfrProvider lang={lang}>
-          <ConsentBannerAndConsentManagement />
-          <AppRouterCacheProvider>
-            <MuiDsfrThemeProvider>
+      <DsfrProvider lang={lang}>
+        {theme === "Dsfr" && <ConsentBannerAndConsentManagement />}
+        <AppRouterCacheProvider>
+          <MuiDsfrThemeProvider>
+            {theme === "Dsfr" ? (
               <Header
                 navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
                 brandTop={<Brand />}
@@ -107,23 +110,25 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
                   <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
                 ]}
               />
-              {mainContent}
+            ) : (
+              <ShadcnHeader
+                homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
+                serviceName={tenantSettings.name}
+                navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
+                quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
+              />
+            )}
+
+            {mainContent}
+
+            {theme === "Dsfr" ? (
               <PublicFooter id="footer" />
-            </MuiDsfrThemeProvider>
-          </AppRouterCacheProvider>
-        </DsfrProvider>
-      ) : (
-        <>
-          <ShadcnHeader
-            homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-            serviceName={tenantSettings.name}
-            navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
-            quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
-          />
-          {mainContent}
-          <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
-        </>
-      )}
+            ) : (
+              <ShadcnFooter id="footer" serviceName={tenantSettings.name} />
+            )}
+          </MuiDsfrThemeProvider>
+        </AppRouterCacheProvider>
+      </DsfrProvider>
     </UIProvider>
   );
 };
