@@ -1,128 +1,91 @@
+/**
+ * Root ESLint config — monorepo shared rules.
+ *
+ * Architecture ESLint du monorepo :
+ *
+ * ```
+ * eslint.config.ts (ce fichier)
+ * ├── export base        → règles partagées (TS, prettier, import, perfectionist)
+ * ├── export default     → config complète pour workspaces sans config locale
+ * │                        (ex: packages/ui hérite automatiquement via ESLint walk-up)
+ * │
+ * apps/web/eslint.config.ts
+ * └── import { base }    → base + nextConfig + lodash + overrides app-specific
+ *
+ * packages/ui/
+ * └── (pas de config)    → ESLint remonte et utilise le default export ci-dessous
+ * ```
+ *
+ * Contrainte clé : les plugins `import` et `react` ne sont PAS dans `base` car
+ * `eslint-config-next` bundle ses propres instances. ESLint 9 interdit de redéfinir
+ * un plugin avec une référence objet différente ("Cannot redefine plugin").
+ * Solution : `base` déclare les rules import/react, mais seul le default export (ou
+ * nextConfig côté web) enregistre les plugins.
+ */
 import js from "@eslint/js";
-import nextConfig from "eslint-config-next/core-web-vitals";
 import prettierConfig from "eslint-config-prettier";
-// @ts-expect-error — pas de types publiés pour ce plugin
-import lodashPlugin from "eslint-plugin-lodash";
+import importPlugin from "eslint-plugin-import";
 import perfectionist from "eslint-plugin-perfectionist";
 import prettierPlugin from "eslint-plugin-prettier";
+import reactPlugin from "eslint-plugin-react";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 
-const nextFiles = [
-  "page",
-  "head",
-  "error",
-  "template",
-  "layout",
-  "route",
-  "loading",
-  "opengraph-image",
-  "twitter-image",
-  "not-found",
-  "forbidden",
-  "unauthorized",
-  "default",
-  "icon",
-  "apple-icon",
-  "sitemap",
-  "robots",
-  "global-error",
-  "middleware",
-  "proxy",
-].join("|");
+/** Options Prettier partagées — utilisées par le plugin ESLint prettier/prettier. */
+export const prettierOptions = {
+  tabWidth: 2,
+  trailingComma: "all",
+  printWidth: 120,
+  singleQuote: false,
+  parser: "typescript",
+  arrowParens: "avoid",
+};
 
-const config = [
-  // ─── Ignores globaux ──────────────────────────────────────────────────────
-  {
-    ignores: [
-      "node_modules/**",
-      "src/generated/**",
-      "next-env.d.ts",
-      ".next/**",
-      ".source/**",
-      "out/**",
-      "dist/**",
-      "coverage/**",
-      "public/**",
-      "prisma/**",
-    ],
-  },
-
-  // ─── Base ─────────────────────────────────────────────────────────────────
+/**
+ * Base ESLint config partagée entre tous les workspaces.
+ *
+ * Importée par les workspaces qui ont leur propre config (ex: apps/web) :
+ * ```ts
+ * import { base } from "../../eslint.config";
+ * export default [...base, ...nextConfig, { rules: { ... } }];
+ * ```
+ *
+ * Contient : js.recommended, typescript-eslint type-checked, prettier,
+ * unused-imports, import rules, react rules, perfectionist.
+ *
+ * NE contient PAS les plugins `import` et `react` (voir JSDoc du fichier).
+ * Les rules import/* et react/* fonctionnent car ESLint 9 flat config merge
+ * les plugins de tout l'array — le consommateur doit les enregistrer.
+ */
+export const base = [
+  // ─── Base JS ────────────────────────────────────────────────────────────────
   js.configs.recommended,
-  ...nextConfig, // react, react-hooks, import, jsx-a11y, @next/next, @typescript-eslint (parser sur *.ts)
 
-  // ─── @typescript-eslint / recommended-type-checked (TS uniquement) ────────
-  // [0] skippé : base + parser — déjà fourni par nextConfig[1]
-  tseslint.configs.recommendedTypeChecked[1], // règles scoped à *.ts / *.tsx par le package
-  { ...tseslint.configs.recommendedTypeChecked[2], files: ["**/*.ts", "**/*.tsx"] }, // règles sans scope → on en scope
+  // ─── @typescript-eslint / recommended-type-checked ───────────────────────────
+  // [0] : parser + plugin registration (nécessaire pour les workspaces sans nextConfig)
+  // [1] : règles scoped *.ts(x) par le package
+  // [2] : règles sans scope → on en scope manuellement
+  ...tseslint.configs.recommendedTypeChecked.slice(0, 2),
+  { ...tseslint.configs.recommendedTypeChecked[2], files: ["**/*.ts", "**/*.tsx"] },
 
-  // ─── Prettier : désactive les règles de formatting en conflit ─────────────
+  // ─── Prettier : désactive les règles de formatting en conflit ───────────────
   prettierConfig,
 
-  // ─── Plugins supplémentaires + règles principales ────────────────────────
+  // ─── Plugins + règles communes ──────────────────────────────────────────────
+  // Note: les plugins `import` et `react` ne sont PAS enregistrés ici pour éviter
+  // "Cannot redefine plugin" quand apps/web spread `...base` + `...nextConfig`
+  // (nextConfig bundle ses propres instances de ces plugins).
+  // Le default export les enregistre pour les workspaces sans nextConfig (packages/ui).
   {
     plugins: {
       prettier: prettierPlugin,
       "unused-imports": unusedImportsPlugin,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      lodash: lodashPlugin,
     },
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
     rules: {
-      // import/recommended — pas inclus par nextConfig, on les pose manuellement
-      "import/no-unresolved": ["error", { commonjs: true }],
-      "import/named": "error",
-      "import/namespace": "error",
-      "import/default": "error",
-
-      "@next/next/no-html-link-for-pages": ["error", ["src/app", "src/pages"]],
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-      "react/no-unescaped-entities": [
-        "error",
-        {
-          forbid: [">", "}"],
-        },
-      ],
-      // Enable only for CSP inline-style
-      // "react/forbid-component-props": [
-      //   "error",
-      //   {
-      //     forbid: [
-      //       {
-      //         propName: "style",
-      //         message: "Utiliser className à la place de style (react-dsfr ou global.css).",
-      //       },
-      //     ],
-      //   },
-      // ],
-      // "react/forbid-dom-props": [
-      //   "error",
-      //   {
-      //     forbid: [
-      //       {
-      //         propName: "style",
-      //         message: "Utiliser className à la place de style (react-dsfr ou global.css).",
-      //       },
-      //     ],
-      //   },
-      // ],
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "react",
-              importNames: ["default"],
-              message: 'Import "React" par défaut déjà géré par Next.',
-            },
-          ],
-        },
-      ],
-      "no-unused-vars": "off",
+      "prettier/prettier": ["error", prettierOptions],
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
@@ -133,12 +96,10 @@ const config = [
           argsIgnorePattern: "^_",
         },
       ],
+      "no-unused-vars": "off",
       "import/order": "off",
       "import/no-default-export": "error",
-      "import/no-extraneous-dependencies": "off",
-      "import/no-internal-modules": "off",
       "import/newline-after-import": "error",
-      "import/export": "off",
       "import/no-useless-path-segments": "warn",
       "import/no-absolute-path": "warn",
       "import/no-named-as-default": "off",
@@ -149,30 +110,36 @@ const config = [
           "prefer-inline": true,
         },
       ],
-      "lodash/import-scope": ["error", "member"],
-      "prettier/prettier": [
+      "import/export": "off",
+      "import/no-extraneous-dependencies": "off",
+      "import/no-internal-modules": "off",
+      "no-restricted-imports": [
         "error",
         {
-          tabWidth: 2,
-          trailingComma: "all",
-          printWidth: 120,
-          singleQuote: false,
-          parser: "typescript",
-          arrowParens: "avoid",
+          paths: [
+            {
+              name: "react",
+              importNames: ["default"],
+              message: 'Import "React" par défaut déjà géré par le bundler.',
+            },
+          ],
+        },
+      ],
+      "react/no-unescaped-entities": [
+        "error",
+        {
+          forbid: [">", "}"],
         },
       ],
     },
   },
 
-  // ─── TypeScript ───────────────────────────────────────────────────────────
+  // ─── TypeScript-scoped rules ────────────────────────────────────────────────
+  // Ces règles ne s'appliquent qu'aux fichiers .ts/.tsx.
+  // `import/named: "off"` car TypeScript gère nativement la vérification des imports nommés.
+  // apps/web le réactive ("error") car eslint-plugin-import avec resolver peut catcher des cas edge.
   {
     files: ["**/*.ts", "**/*.tsx"],
-    languageOptions: {
-      parserOptions: {
-        project: "./tsconfig.json",
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
     rules: {
       "import/named": "off",
       "@typescript-eslint/adjacent-overload-signatures": "error",
@@ -182,23 +149,17 @@ const config = [
           default: "array-simple",
         },
       ],
-      "no-restricted-imports": "off",
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "react",
-              importNames: ["default"],
-              message: 'Import "React" par défaut déjà géré par Next.',
-              allowTypeImports: true,
-            },
-          ],
-        },
-      ],
       "@typescript-eslint/ban-ts-comment": "error",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-namespace": "off",
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+          disallowTypeAnnotations: false,
+        },
+      ],
       "@typescript-eslint/explicit-member-accessibility": [
         "error",
         {
@@ -222,82 +183,24 @@ const config = [
           },
         },
       ],
-      "@typescript-eslint/consistent-type-imports": [
+      "no-restricted-imports": "off",
+      "@typescript-eslint/no-restricted-imports": [
         "error",
         {
-          prefer: "type-imports",
-          fixStyle: "inline-type-imports",
-          disallowTypeAnnotations: false,
+          paths: [
+            {
+              name: "react",
+              importNames: ["default"],
+              message: 'Import "React" par défaut déjà géré par le bundler.',
+              allowTypeImports: true,
+            },
+          ],
         },
       ],
     },
   },
 
-  // ─── Fichiers Next.js / configs — default export autorisé ────────────────
-  {
-    files: [
-      "src/pages/**/*.ts",
-      "src/pages/**/*.tsx",
-      `src/app/**/+(${nextFiles}).ts`,
-      `src/app/**/+(${nextFiles}).tsx`,
-      "next.config.ts",
-      "source.config.ts",
-      "eslint.config.ts",
-      "prisma.config.ts",
-      "tailwind.config.ts",
-      "vitest.config.ts",
-      "vitest.config.db.ts",
-      "playwright.config.ts",
-      "next-sitemap.config.js",
-      "postcss.config.js",
-    ],
-    rules: {
-      "import/no-default-export": "off",
-    },
-  },
-
-  // ─── Scripts — tsconfig séparé ────────────────────────────────────────────
-  {
-    files: ["scripts/**/*.ts"],
-    languageOptions: {
-      parserOptions: {
-        project: "./scripts/tsconfig.json",
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-
-  // ─── Tests — tsconfig séparé + globals vitest ──────────────────────────────
-  {
-    files: ["tests/**/*.ts", "vitest.setup.ts"],
-    languageOptions: {
-      globals: {
-        afterAll: "readonly",
-        afterEach: "readonly",
-        beforeAll: "readonly",
-        beforeEach: "readonly",
-        describe: "readonly",
-        expect: "readonly",
-        it: "readonly",
-        test: "readonly",
-        vi: "readonly",
-      },
-      parserOptions: {
-        project: "./tests/tsconfig.json",
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    rules: {
-      "import/no-default-export": "off",
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-call": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off",
-      "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/require-await": "off",
-    },
-  },
-
-  // ─── Perfectionist ────────────────────────────────────────────────────────
+  // ─── Perfectionist ──────────────────────────────────────────────────────────
   {
     plugins: {
       perfectionist,
@@ -318,4 +221,48 @@ const config = [
   },
 ];
 
-export default config;
+/**
+ * Default export — utilisé par les workspaces sans eslint.config.ts (héritage naturel).
+ * Ex: packages/ui/ n'a pas de config → ESLint remonte et trouve celle-ci.
+ */
+export default [
+  {
+    ignores: [
+      "node_modules/**",
+      "**/node_modules/**",
+      "apps/**",
+      ".next/**",
+      "dist/**",
+      "out/**",
+      "coverage/**",
+    ],
+  },
+  // Enregistrement des plugins import + react — requis ici car `base` ne les inclut pas
+  // (conflit "Cannot redefine plugin" avec nextConfig qui bundle ses propres instances).
+  // Pour apps/web, c'est nextConfig qui les fournit ; ici on les fournit pour packages/*.
+  {
+    plugins: {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- eslint-plugin-import n'a pas de types flat config propres
+      import: importPlugin,
+      react: reactPlugin,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
+  ...base,
+  // TypeScript parser avec project:true — auto-découverte du tsconfig le plus proche.
+  // Pour packages/ui/src/Button.tsx → trouve packages/ui/tsconfig.json.
+  // tsconfigRootDir = monorepo root = limite haute de la recherche.
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+];

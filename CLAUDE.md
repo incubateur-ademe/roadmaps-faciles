@@ -35,7 +35,11 @@
 - Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
-- ESLint 9 flat config (`eslint.config.ts`) — strict rules enforced:
+- ESLint 9 flat config — monorepo setup:
+  - Root `eslint.config.ts` : base partagée (`export const base`) + default export (héritage naturel pour packages sans config)
+  - `apps/web/eslint.config.ts` : importe `base` du root + ajoute `eslint-config-next`, lodash, tests/scripts overrides
+  - `packages/ui/` : pas de config locale → hérite du root automatiquement (ESLint remonte au root)
+  - Plugins `import` et `react` : enregistrés dans le root default export (pas dans `base`) pour éviter "Cannot redefine plugin" avec `nextConfig` qui bundle ses propres instances
   - No default exports except Next.js special files (page, layout, error, loading, template, route, metadata)
   - Imports must be sorted (perfectionist plugin) — group external/internal with blank line between
   - Array types: use `Array<{...}>` for complex types, not `T[]`
@@ -61,6 +65,13 @@
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
+- Monorepo pnpm workspaces + Turborepo:
+  - `apps/web/` — Next.js 16 app (multi-tenant, DSFR + shadcn)
+  - `packages/ui/` — `@kokatsuna/ui` : 27 composants shadcn/Radix UI, design tokens French Blue (oklch), utilitaire `cn()`, hook `useIsMobile()`
+    - Composants : accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, dialog, dropdown-menu, input, label, navigation-menu, pagination, popover, progress, radio-group, select, separator, sheet, sidebar, skeleton, switch, table, tabs, textarea, tooltip
+    - Imports : `@kokatsuna/ui` (barrel), `@kokatsuna/ui/components/*` (direct), `@kokatsuna/ui/lib/cn`, `@kokatsuna/ui/tokens/theme.css`
+    - Design tokens : scopés à `[data-ui-theme="Default"]`, light + dark (`.dark[data-ui-theme="Default"]`)
+    - Pas de `eslint.config.ts` local — hérite du root (ESLint 9 flat config walk-up)
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
   - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
   - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
