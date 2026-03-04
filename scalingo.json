@@ -20,7 +20,7 @@
     }
   ],
   "scripts": {
-    "first-deploy": "npm install --prefix /tmp/prisma prisma @next/env && NODE_PATH=/tmp/prisma/node_modules /tmp/prisma/node_modules/.bin/prisma migrate reset --force && rm -rf /tmp/prisma"
+    "first-deploy": "npm install --prefix /tmp/prisma prisma @next/env && NODE_PATH=/tmp/prisma/node_modules /tmp/prisma/node_modules/.bin/prisma migrate reset --force --schema apps/web/prisma/schema.prisma && rm -rf /tmp/prisma"
   },
   "env": {
     "APP_ENV": {
@@ -31,9 +31,6 @@
     },
     "DATABASE_URL": {
       "value": "$SCALINGO_POSTGRESQL_URL"
-    },
-    "NODE_ENV": {
-      "value": "production"
     },
     "NEXT_PUBLIC_BRAND_NAME": {
       "generator": "template",

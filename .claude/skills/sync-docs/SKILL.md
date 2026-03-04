@@ -167,7 +167,7 @@ Mettre a jour `docs/design-system.md` si les changements de la session touchent 
 
 ### Procedure
 
-1. Lis `docs/design-system.md` et compare avec l'etat actuel du code (composants `src/ui/shadcn/`, `globals.scss`, layouts)
+1. Lis `docs/design-system.md` et compare avec l'etat actuel du code (composants `packages/ui/src/components/`, `apps/web/src/app/globals.scss`, layouts)
 2. Identifie les sections obsoletes ou incompletes
 3. Propose les modifications necessaires
 4. Applique apres validation utilisateur

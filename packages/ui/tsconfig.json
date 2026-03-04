@@ -16,6 +16,15 @@
       "@kokatsuna/ui/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx",
+    "vitest.config.ts",
+    "vitest.config.unit.ts",
+    "vitest.config.storybook.ts",
+    "vitest.setup.ts"
+  ],
+  "exclude": ["node_modules", "src/**/*.stories.*", "src/**/*.test.*"]
 }

@@ -1,9 +1,22 @@
+/** Inline status label rendered as a pill. Supports `asChild` for custom element composition. */
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
 
+/**
+ * Badge style variants.
+ * - `default` -- Primary filled
+ * - `secondary` -- Muted fill
+ * - `destructive` -- Red danger
+ * - `outline` -- Bordered, transparent background
+ * - `success` -- Green positive
+ * - `warning` -- Amber caution
+ * - `ghost` -- No background, hover fill
+ * - `link` -- Text-only with underline on hover
+ */
 const badgeVariants = cva(
   "inline-flex items-center justify-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
@@ -26,6 +39,7 @@ const badgeVariants = cva(
   },
 );
 
+/** @param asChild When `true`, merges props onto the child element via Radix `Slot`. */
 function Badge({
   className,
   variant = "default",

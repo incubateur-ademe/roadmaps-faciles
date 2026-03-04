@@ -1,11 +1,25 @@
+/** Polymorphic button with variant and size support. Supports `asChild` for custom element composition. */
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
 
+/**
+ * Button style variants.
+ * - `default` -- Primary filled button
+ * - `destructive` -- Red danger action
+ * - `outline` -- Bordered, transparent background
+ * - `secondary` -- Muted fill
+ * - `ghost` -- No background, hover fill
+ * - `link` -- Text-only with underline
+ *
+ * Sizes: `default` (h-9), `xs` (h-6), `sm` (h-8), `lg` (h-10),
+ * `icon` (square 36px), `icon-xs` (24px), `icon-sm` (32px), `icon-lg` (40px)
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -36,6 +50,7 @@ const buttonVariants = cva(
   },
 );
 
+/** @param asChild When `true`, merges props onto the child element via Radix `Slot`. */
 function Button({
   className,
   variant = "default",

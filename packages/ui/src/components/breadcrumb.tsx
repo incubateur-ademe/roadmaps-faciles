@@ -1,3 +1,9 @@
+/**
+ * Navigation breadcrumb trail.
+ * Compound: `Breadcrumb` > `BreadcrumbList` > `BreadcrumbItem` > `BreadcrumbLink` | `BreadcrumbPage`.
+ * Includes `BreadcrumbSeparator` (auto chevron) and `BreadcrumbEllipsis` for overflow.
+ */
+
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 import { Slot } from "radix-ui";
 import { type ComponentProps } from "react";
@@ -25,6 +31,7 @@ function BreadcrumbItem({ className, ...props }: ComponentProps<"li">) {
   return <li data-slot="breadcrumb-item" className={cn("inline-flex items-center gap-1.5", className)} {...props} />;
 }
 
+/** @param asChild When `true`, merges props onto the child element (e.g. Next.js `Link`). */
 function BreadcrumbLink({
   asChild,
   className,

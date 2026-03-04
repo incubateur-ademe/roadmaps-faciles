@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Collapsible sidebar layout with mobile sheet fallback and keyboard shortcut (Cmd+B).
+ * Compound: `SidebarProvider` > `Sidebar` > `SidebarHeader` / `SidebarContent` / `SidebarFooter`.
+ * Menus: `SidebarMenu` > `SidebarMenuItem` > `SidebarMenuButton` (with optional `tooltip`).
+ */
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
 import { Slot } from "radix-ui";
@@ -143,6 +149,11 @@ function SidebarProvider({
   );
 }
 
+/**
+ * @param side `"left"` (default) or `"right"` edge placement.
+ * @param variant `"sidebar"` (default border), `"floating"` (detached with shadow), `"inset"` (nested in content).
+ * @param collapsible `"offcanvas"` (slides out), `"icon"` (collapses to icon strip), `"none"` (always expanded).
+ */
 function Sidebar({
   side = "left",
   variant = "sidebar",
@@ -445,8 +456,15 @@ function SidebarMenuItem({ className, ...props }: ComponentProps<"li">) {
   );
 }
 
+/**
+ * SidebarMenuButton style variants.
+ * - `default` -- Accent background on hover/active
+ * - `outline` -- Bordered with shadow, accent on hover
+ *
+ * Sizes: `default` (h-8), `sm` (h-7, xs text), `lg` (h-12)
+ */
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:cursor-not-allowed disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -467,6 +485,11 @@ const sidebarMenuButtonVariants = cva(
   },
 );
 
+/**
+ * @param isActive Marks the button as the current/active item (accent background + font-medium).
+ * @param tooltip Tooltip shown when sidebar is collapsed. String or `TooltipContent` props.
+ * @param asChild Merge props onto child element via Radix `Slot`.
+ */
 function SidebarMenuButton({
   asChild = false,
   isActive = false,
@@ -621,6 +644,10 @@ function SidebarMenuSubItem({ className, ...props }: ComponentProps<"li">) {
   );
 }
 
+/**
+ * @param isActive Marks the sub-button as the current/active item.
+ * @param size `"md"` (default) or `"sm"` (xs text).
+ */
 function SidebarMenuSubButton({
   asChild = false,
   size = "md",
@@ -641,7 +668,7 @@ function SidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
         "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
         size === "sm" && "text-xs",
         size === "md" && "text-sm",

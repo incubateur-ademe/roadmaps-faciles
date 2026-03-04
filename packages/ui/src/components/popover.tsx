@@ -1,5 +1,7 @@
 "use client";
 
+/** Floating content panel anchored to a trigger. Compound: `Popover` > `PopoverTrigger` + `PopoverContent`. */
+
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 

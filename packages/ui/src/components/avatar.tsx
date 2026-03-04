@@ -1,10 +1,16 @@
 "use client";
 
+/**
+ * User avatar with image, fallback initials, badge, and group support.
+ * Compound: `Avatar` > `AvatarImage` + `AvatarFallback` + `AvatarBadge`. Groupable via `AvatarGroup`.
+ */
+
 import { Avatar as AvatarPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
 
+/** @param size `"default"` (32px), `"lg"` (40px), `"sm"` (24px) -- propagated to badge/fallback via data attribute. */
 function Avatar({
   className,
   size = "default",
@@ -17,7 +23,7 @@ function Avatar({
       data-slot="avatar"
       data-size={size}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 overflow-hidden rounded-full select-none data-[size=lg]:size-10 data-[size=sm]:size-6",
+        "group/avatar relative flex size-8 shrink-0 rounded-full select-none data-[size=lg]:size-10 data-[size=sm]:size-6",
         className,
       )}
       {...props}
@@ -27,7 +33,11 @@ function Avatar({
 
 function AvatarImage({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
-    <AvatarPrimitive.Image data-slot="avatar-image" className={cn("aspect-square size-full", className)} {...props} />
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      className={cn("aspect-square size-full rounded-[inherit]", className)}
+      {...props}
+    />
   );
 }
 

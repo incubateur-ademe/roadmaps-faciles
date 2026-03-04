@@ -43,6 +43,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
+export { Hint } from "./hint";
 export { Input } from "./input";
 export { Label } from "./label";
 export {
@@ -68,6 +69,7 @@ export {
 export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "./popover";
 export { Progress } from "./progress";
 export { RadioGroup, RadioGroupItem } from "./radio-group";
+export { SegmentedControl, SegmentedControlItem } from "./segmented-control";
 export {
   Select,
   SelectContent,
@@ -118,6 +120,7 @@ export {
   useSidebar,
 } from "./sidebar";
 export { Skeleton } from "./skeleton";
+export { toast, Toaster } from "./sonner";
 export { Switch } from "./switch";
 export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "./table";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";

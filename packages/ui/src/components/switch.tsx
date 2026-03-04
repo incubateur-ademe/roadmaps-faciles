@@ -1,10 +1,13 @@
 "use client";
 
+/** Accessible toggle with smooth thumb transition. Supports `sm` size variant. */
+
 import { Switch as SwitchPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
 
+/** @param size `"default"` or `"sm"` (compact track + thumb). */
 function Switch({
   className,
   size = "default",

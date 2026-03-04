@@ -235,6 +235,7 @@ export default [
       "dist/**",
       "out/**",
       "coverage/**",
+      "**/storybook-static/**",
     ],
   },
   // Enregistrement des plugins import + react — requis ici car `base` ne les inclut pas
@@ -263,6 +264,26 @@ export default [
         project: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  // Stories, tests et configs : autorise le default export + relax des règles type-checked
+  {
+    files: [
+      "**/*.stories.ts",
+      "**/*.stories.tsx",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/.storybook/*.ts",
+      "**/.storybook/*.tsx",
+      "**/vitest.config.ts",
+      "**/vitest.config.*.ts",
+      "**/vitest.setup.ts",
+      "**/postcss.config.js",
+    ],
+    rules: {
+      "import/no-default-export": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
     },
   },
 ];

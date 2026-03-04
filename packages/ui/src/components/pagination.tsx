@@ -1,3 +1,8 @@
+/**
+ * Page navigation controls using anchor-based links.
+ * Compound: `Pagination` > `PaginationContent` > `PaginationItem` > `PaginationLink` | `PaginationPrevious` | `PaginationNext` | `PaginationEllipsis`.
+ */
+
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import { type ComponentProps } from "react";
 
@@ -29,6 +34,7 @@ type PaginationLinkProps = {
 } & ComponentProps<"a"> &
   Pick<ComponentProps<typeof Button>, "size">;
 
+/** @param isActive Highlights the link as the current page (outline variant + `aria-current="page"`). */
 function PaginationLink({ className, isActive, size = "icon", ...props }: PaginationLinkProps) {
   return (
     <a

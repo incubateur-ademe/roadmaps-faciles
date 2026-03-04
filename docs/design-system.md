@@ -54,13 +54,13 @@
 
 | Fichier | Rôle |
 |---------|------|
-| `src/ui/types.ts` | Type `UiTheme = "Default" \| "Dsfr"` |
-| `src/ui/UIContext.tsx` | `UIProvider` + `useUI()` — React context pour le thème actif |
-| `src/ui/server.ts` | `getTheme(settings)` — résolution server-side |
-| `src/ui/ThemeInjector.tsx` | Client component — injecte `data-ui-theme` sur `<html>` au mount |
-| `src/app/ThemeScript.tsx` | Script inline bloquant — dark mode sans FOUC |
-| `src/app/globals.scss` | Tokens CSS + Tailwind bridge + DSFR resets |
-| `src/app/root.module.scss` | Styles `.app` / `.content` conditionnels par thème |
+| `apps/web/src/ui/types.ts` | Type `UiTheme = "Default" \| "Dsfr"` |
+| `apps/web/src/ui/UIContext.tsx` | `UIProvider` + `useUI()` — React context pour le thème actif |
+| `apps/web/src/ui/server.ts` | `getTheme(settings)` — résolution server-side |
+| `apps/web/src/ui/ThemeInjector.tsx` | Client component — injecte `data-ui-theme` sur `<html>` au mount |
+| `apps/web/src/app/ThemeScript.tsx` | Script inline bloquant — dark mode sans FOUC |
+| `apps/web/src/app/globals.scss` | Tokens CSS + Tailwind bridge + DSFR resets |
+| `apps/web/src/app/root.module.scss` | Styles `.app` / `.content` conditionnels par thème |
 
 ---
 
@@ -150,7 +150,7 @@ Le `@theme inline` dans `globals.scss` mappe les CSS custom properties vers les 
 
 ### Mécanisme
 
-1. **`ThemeScript`** (`src/app/ThemeScript.tsx`) — script inline bloquant dans `<head>`
+1. **`ThemeScript`** (`apps/web/src/app/ThemeScript.tsx`) — script inline bloquant dans `<head>`
    - Lit `localStorage("theme")` (convention standard shadcn/next-themes)
    - Fallback sur `prefers-color-scheme` media query
    - Toggle `classList.toggle("dark", isDark)` sur `<html>`
@@ -179,7 +179,7 @@ Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle 
 
 ### Button
 
-**Source** : `src/ui/shadcn/button.tsx` — cva avec 6 variants × 8 sizes.
+**Source** : `packages/ui/src/components/button.tsx` — cva avec 6 variants × 8 sizes.
 
 #### Variants
 
@@ -233,7 +233,7 @@ Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle 
 
 ### Card
 
-**Source** : `src/ui/shadcn/card.tsx` — sub-components : `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`.
+**Source** : `packages/ui/src/components/card.tsx` — sub-components : `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`.
 
 **Defaults du composant** : `bg-card text-card-foreground rounded-xl border py-6 shadow-sm`.
 
@@ -276,7 +276,7 @@ Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle 
 
 ### Badge
 
-**Source** : `src/ui/shadcn/badge.tsx` — cva avec 6 variants.
+**Source** : `packages/ui/src/components/badge.tsx` — cva avec 6 variants.
 
 | Variant | Usage |
 |---------|-------|
@@ -314,7 +314,7 @@ Sur les pages `/doc`, next-themes (via Fumadocs `RootProvider`) gère le toggle 
 
 Deux variantes : **RootHeader** (root pages) et **Header** (tenant pages).
 
-#### RootHeader (`src/ui/shadcn/RootHeader.tsx`)
+#### RootHeader (`apps/web/src/ui/RootHeader.tsx`)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -335,7 +335,7 @@ Deux variantes : **RootHeader** (root pages) et **Header** (tenant pages).
 - **Brand** : `flex items-center gap-2 text-lg font-bold tracking-tight`
 - **Mobile** : `Sheet` slide-out (< `md`)
 
-#### Header tenant (`src/ui/shadcn/Header.tsx`)
+#### Header tenant (`apps/web/src/ui/Header.tsx`)
 
 Même structure mais :
 - **Hauteur** : `h-14` (plus compact)
@@ -348,7 +348,7 @@ Même structure mais :
 
 Deux variantes : **RootFooter** (root pages) et **Footer** (tenant pages).
 
-#### RootFooter (`src/ui/shadcn/RootFooter.tsx`)
+#### RootFooter (`apps/web/src/ui/RootFooter.tsx`)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -367,7 +367,7 @@ Deux variantes : **RootFooter** (root pages) et **Footer** (tenant pages).
 - **Links** : `text-muted-foreground hover:text-primary` + focus-visible ring
 - **Bottom** : `Separator` + copyright/license en `text-xs text-muted-foreground`
 
-#### Footer tenant (`src/ui/shadcn/Footer.tsx`)
+#### Footer tenant (`apps/web/src/ui/Footer.tsx`)
 
 Plus simple : `serviceName` + `contentDescription` + `bottomLinks` (flat) + `license`.
 - **Background** : `border-t bg-muted/40` (légèrement plus transparent que le root)
@@ -376,7 +376,7 @@ Plus simple : `serviceName` + `contentDescription` + `bottomLinks` (flat) + `lic
 
 ### SkipLinks
 
-**Source** : `src/ui/shadcn/SkipLinks.tsx` — navigation d'accessibilité.
+**Source** : `apps/web/src/ui/SkipLinks.tsx` — navigation d'accessibilité.
 
 - Deux liens : `#content` (main) et `#footer`
 - `sr-only` par défaut, visible au `focus-within`
@@ -497,7 +497,7 @@ Le DSFR est **légalement restreint** aux entités publiques autorisées. Le roo
 
 | Scope | DSFR | shadcn/Default |
 |-------|------|----------------|
-| Root layout (`src/app/layout.tsx`) | Aucun import | `ThemeScript`, `UIProvider("Default")` |
+| Root layout (`apps/web/src/app/layout.tsx`) | Aucun import | `ThemeScript`, `UIProvider("Default")` |
 | Tenant layout (theme=Dsfr) | `DsfrProvider` (toujours), `ConsentBanner`, `Header` DSFR, `Footer` DSFR | — |
 | Tenant layout (theme=Default) | `DsfrProvider` (toujours, hooks DSFR dans les pages) | `ShadcnHeader`, `ShadcnFooter` |
 
@@ -509,7 +509,7 @@ Le DSFR injecte des styles base non-layered qui battent Tailwind `@layer utiliti
 - `h1-h6 { font-size: revert-layer; line-height: revert-layer; }` — DSFR override les tailles de heading
 - `ul, ol { list-style: revert-layer; padding: revert-layer; }` — DSFR strip les puces de liste
 
-### ThemeInjector (`src/ui/ThemeInjector.tsx`)
+### ThemeInjector (`apps/web/src/ui/ThemeInjector.tsx`)
 
 Client component qui injecte `data-ui-theme` sur `<html>` quand un tenant a un thème différent de Default :
 
@@ -542,23 +542,23 @@ Le root layout met `data-ui-theme="Default"` en statique. Le `ThemeInjector` ove
 
 | Fichier | Contenu |
 |---------|---------|
-| `src/app/globals.scss` | Tokens CSS (palette light+dark), Tailwind bridge, DSFR resets |
-| `src/app/root.module.scss` | Styles `.app` / `.content` conditionnels par thème |
-| `src/app/layout.tsx` | Root layout — DSFR-free, `ThemeScript`, `UIProvider("Default")` |
-| `src/app/ThemeScript.tsx` | Script anti-FOUC dark mode |
-| `src/app/[domain]/(domain)/layout.tsx` | Tenant layout — always `DsfrProvider`, conditional Header/Footer |
-| `src/ui/types.ts` | `UiTheme = "Default" \| "Dsfr"` |
-| `src/ui/UIContext.tsx` | `UIProvider` + `useUI()` |
-| `src/ui/server.ts` | `getTheme(settings)` |
-| `src/ui/ThemeInjector.tsx` | Client-side `data-ui-theme` injection |
-| `src/ui/cn.ts` | `cn()` — wrapper `clsx` + `tailwind-merge` |
-| `src/ui/shadcn/button.tsx` | Button (cva, 6 variants, 8 sizes) |
-| `src/ui/shadcn/card.tsx` | Card + sub-components |
-| `src/ui/shadcn/badge.tsx` | Badge (cva, 6 variants) |
-| `src/ui/shadcn/RootHeader.tsx` | Header root (h-16, brandName ReactNode) |
-| `src/ui/shadcn/Header.tsx` | Header tenant (h-14, serviceName string) |
-| `src/ui/shadcn/RootFooter.tsx` | Footer root multi-colonnes |
-| `src/ui/shadcn/Footer.tsx` | Footer tenant simple |
-| `src/ui/shadcn/SkipLinks.tsx` | Navigation accessibilité |
-| `src/app/(default)/page.tsx` | Landing page (hero, bento, CTA) |
+| `apps/web/src/app/globals.scss` | Tokens CSS (palette light+dark), Tailwind bridge, DSFR resets |
+| `apps/web/src/app/root.module.scss` | Styles `.app` / `.content` conditionnels par thème |
+| `apps/web/src/app/layout.tsx` | Root layout — DSFR-free, `ThemeScript`, `UIProvider("Default")` |
+| `apps/web/src/app/ThemeScript.tsx` | Script anti-FOUC dark mode |
+| `apps/web/src/app/[domain]/(domain)/layout.tsx` | Tenant layout — always `DsfrProvider`, conditional Header/Footer |
+| `apps/web/src/ui/types.ts` | `UiTheme = "Default" \| "Dsfr"` |
+| `apps/web/src/ui/UIContext.tsx` | `UIProvider` + `useUI()` |
+| `apps/web/src/ui/server.ts` | `getTheme(settings)` |
+| `apps/web/src/ui/ThemeInjector.tsx` | Client-side `data-ui-theme` injection |
+| `packages/ui/src/lib/cn.ts` | `cn()` — wrapper `clsx` + `tailwind-merge` |
+| `packages/ui/src/components/button.tsx` | Button (cva, 6 variants, 8 sizes) |
+| `packages/ui/src/components/card.tsx` | Card + sub-components |
+| `packages/ui/src/components/badge.tsx` | Badge (cva, 6 variants) |
+| `apps/web/src/ui/RootHeader.tsx` | Header root (h-16, brandName ReactNode) |
+| `apps/web/src/ui/Header.tsx` | Header tenant (h-14, serviceName string) |
+| `apps/web/src/ui/RootFooter.tsx` | Footer root multi-colonnes |
+| `apps/web/src/ui/Footer.tsx` | Footer tenant simple |
+| `apps/web/src/ui/SkipLinks.tsx` | Navigation accessibilité |
+| `apps/web/src/app/(default)/page.tsx` | Landing page (hero, bento, CTA) |
 | `docs/ddr/` | Design Decision Records |

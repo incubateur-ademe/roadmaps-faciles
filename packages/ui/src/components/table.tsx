@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Responsive data table with horizontal scroll container.
+ * Compound: `Table` > `TableHeader` / `TableBody` / `TableFooter` > `TableRow` > `TableHead` | `TableCell`. Optional `TableCaption`.
+ */
+
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";

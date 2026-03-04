@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Modal dialog with overlay, animated open/close, and optional close button.
+ * Compound: `Dialog` > `DialogTrigger` + `DialogContent` (`DialogHeader` + `DialogFooter`).
+ */
+
 import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
@@ -36,6 +41,7 @@ function DialogOverlay({ className, ...props }: ComponentProps<typeof DialogPrim
   );
 }
 
+/** @param showCloseButton Show the top-right X button (default `true`). */
 function DialogContent({
   className,
   children,
@@ -59,7 +65,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -80,6 +86,7 @@ function DialogHeader({ className, ...props }: ComponentProps<"div">) {
   );
 }
 
+/** @param showCloseButton Append an outline "Close" button at the end of the footer (default `false`). */
 function DialogFooter({
   className,
   showCloseButton = false,

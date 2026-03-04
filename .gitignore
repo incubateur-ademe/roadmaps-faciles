@@ -6,6 +6,7 @@ node_modules
 # testing
 coverage
 playwright-report
+storybook-static
 test-results
 **/tests/teste2e/.auth/*.json
 

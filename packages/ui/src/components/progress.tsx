@@ -1,5 +1,7 @@
 "use client";
 
+/** Horizontal progress bar with animated fill based on `value` (0-100). */
+
 import { Progress as ProgressPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 

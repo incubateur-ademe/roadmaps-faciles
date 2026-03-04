@@ -1,5 +1,7 @@
 "use client";
 
+/** Visual divider, horizontal or vertical. Decorative by default (hidden from a11y tree). */
+
 import { Separator as SeparatorPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 

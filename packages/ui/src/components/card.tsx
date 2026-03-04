@@ -1,3 +1,8 @@
+/**
+ * Content container with header, body, footer sections.
+ * Compound: `Card` > `CardHeader` (`CardTitle` + `CardDescription` + `CardAction`) + `CardContent` + `CardFooter`.
+ */
+
 import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";

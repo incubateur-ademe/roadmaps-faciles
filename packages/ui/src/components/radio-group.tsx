@@ -1,5 +1,7 @@
 "use client";
 
+/** Accessible radio button group. Compound: `RadioGroup` > `RadioGroupItem`. */
+
 import { CircleIcon } from "lucide-react";
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";

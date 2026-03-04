@@ -1,4 +1,5 @@
 import "./globals.scss";
+import "./tw-animate.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import { cn } from "@kokatsuna/ui";
 import { type Metadata } from "next";

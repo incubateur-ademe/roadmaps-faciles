@@ -1,5 +1,7 @@
 "use client";
 
+/** Accessible checkbox with check icon indicator. Supports indeterminate state via Radix. */
+
 import { CheckIcon } from "lucide-react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";

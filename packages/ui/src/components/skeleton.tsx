@@ -1,3 +1,5 @@
+/** Pulsing placeholder block for loading states. */
+
 import { cn } from "../lib/cn";
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {

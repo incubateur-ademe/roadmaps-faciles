@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Hoverable tooltip with arrow indicator and animated open/close.
+ * Compound: `TooltipProvider` > `Tooltip` > `TooltipTrigger` + `TooltipContent`.
+ */
+
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 import { type ComponentProps } from "react";
 

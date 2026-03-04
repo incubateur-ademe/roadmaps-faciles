@@ -1,3 +1,8 @@
+/**
+ * Horizontal navigation with dropdown content panels.
+ * Compound: `NavigationMenu` > `NavigationMenuList` > `NavigationMenuItem` > `NavigationMenuTrigger` + `NavigationMenuContent`.
+ */
+
 import { cva } from "class-variance-authority";
 import { ChevronDownIcon } from "lucide-react";
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui";
@@ -5,6 +10,7 @@ import { type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
 
+/** @param viewport When `false`, content renders inline (no floating viewport). Default `true`. */
 function NavigationMenu({
   className,
   children,
@@ -30,7 +36,7 @@ function NavigationMenuList({ className, ...props }: ComponentProps<typeof Navig
   return (
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"
-      className={cn("group flex flex-1 list-none items-center justify-center gap-1", className)}
+      className={cn("group relative flex flex-1 list-none items-center justify-center gap-1", className)}
       {...props}
     />
   );
@@ -42,10 +48,12 @@ function NavigationMenuItem({ className, ...props }: ComponentProps<typeof Navig
   );
 }
 
+/** Reusable CVA style for standalone navigation links that match the trigger appearance. */
 const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=open]:hover:bg-accent data-[state=open]:text-accent-foreground data-[state=open]:focus:bg-accent data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1",
+  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50 data-[state=open]:hover:bg-accent data-[state=open]:text-accent-foreground data-[state=open]:focus:bg-accent data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 outline-none transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1",
 );
 
+/** Hover-only trigger — `onPointerDown` is prevented to avoid click-toggle flicker. Keyboard (Enter/Space) still works. */
 function NavigationMenuTrigger({
   className,
   children,
@@ -55,6 +63,8 @@ function NavigationMenuTrigger({
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
       className={cn(navigationMenuTriggerStyle(), "group", className)}
+      onPointerDown={e => e.preventDefault()}
+      onClick={e => e.preventDefault()}
       {...props}
     >
       {children}{" "}
@@ -113,7 +123,7 @@ function NavigationMenuIndicator({ className, ...props }: ComponentProps<typeof 
     <NavigationMenuPrimitive.Indicator
       data-slot="navigation-menu-indicator"
       className={cn(
-        "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden",
+        "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[51] flex h-1.5 items-end justify-center overflow-hidden",
         className,
       )}
       {...props}

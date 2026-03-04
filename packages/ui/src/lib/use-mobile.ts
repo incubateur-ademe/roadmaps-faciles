@@ -1,4 +1,6 @@
-import { useEffect, useSyncExternalStore } from "react";
+/** Reactive hook that returns `true` when viewport width < 768px. SSR-safe (defaults to `false`). */
+
+import { useSyncExternalStore } from "react";
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -13,7 +15,5 @@ const getSnapshot = () => window.innerWidth < MOBILE_BREAKPOINT;
 const getServerSnapshot = () => false;
 
 export function useIsMobile() {
-  // Force a re-render after hydration to sync with actual viewport
-  useEffect(() => {}, []);
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

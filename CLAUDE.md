@@ -8,6 +8,8 @@
 ## Tooling & environment
 - `pnpm` is the package manager; lock file is `pnpm-lock.yaml`
 - Node 24 required (`engines` in package.json); `.nvmrc` locks the exact version (CI + local aligned)
+- `.nvmrc` and `.editorconfig` live at monorepo root (not in `apps/web/`)
+- Shared devDependencies (vitest, typescript, eslint, tailwind, postcss, tw-animate-css, etc.) hoisted to root `package.json` — workspace packages inherit via pnpm resolution
 - Next.js 16 App Router, standalone output, React Compiler enabled
 - Prisma 7 — client is auto-generated into `src/generated/prisma/`; never edit manually
   - NEVER use `prisma db push` — always use `prisma migrate dev --name <name>` to create proper migration files (CI uses `prisma migrate deploy` which only applies committed migrations)
@@ -67,10 +69,12 @@
 ## Architecture
 - Monorepo pnpm workspaces + Turborepo:
   - `apps/web/` — Next.js 16 app (multi-tenant, DSFR + shadcn)
-  - `packages/ui/` — `@kokatsuna/ui` : 27 composants shadcn/Radix UI, design tokens French Blue (oklch), utilitaire `cn()`, hook `useIsMobile()`
-    - Composants : accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, dialog, dropdown-menu, input, label, navigation-menu, pagination, popover, progress, radio-group, select, separator, sheet, sidebar, skeleton, switch, table, tabs, textarea, tooltip
+  - `packages/ui/` — `@kokatsuna/ui` : 30 composants shadcn/Radix UI, design tokens French Blue (oklch), utilitaire `cn()`, hook `useIsMobile()`
+    - Composants : accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, dialog, dropdown-menu, hint, input, label, navigation-menu, pagination, popover, progress, radio-group, segmented-control, select, separator, sheet, sidebar, skeleton, sonner, switch, table, tabs, textarea, tooltip
     - Imports : `@kokatsuna/ui` (barrel), `@kokatsuna/ui/components/*` (direct), `@kokatsuna/ui/lib/cn`, `@kokatsuna/ui/tokens/theme.css`
     - Design tokens : scopés à `[data-ui-theme="Default"]`, light + dark (`.dark[data-ui-theme="Default"]`)
+    - Storybook 10 : `.storybook/` in packages/ui, dark mode toggle (`@vueless/storybook-dark-mode`), addon-a11y, addon-vitest (browser tests in Chromium)
+    - Tests : Vitest unit tests (happy-dom) + Storybook browser tests (Playwright) — `vitest.config.unit.ts` + `vitest.config.storybook.ts`
     - Pas de `eslint.config.ts` local — hérite du root (ESLint 9 flat config walk-up)
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
   - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
@@ -257,6 +261,8 @@
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
   - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
+- Deployment (Scalingo): `Procfile`, `scalingo.json`, `.slugignore` live at monorepo root — standalone build path is `apps/web/.next/standalone/apps/web/server.js`
+- release-please: configs (`release-please-config.*.json`, `.release-please-manifest.json`) at monorepo root — `packages` key is `"apps/web"`, `exclude-paths` must be repo-root-relative (release-please blocks `../../` path traversal)
 - Vitest alias `@/dsfr` resolves to `src/dsfr/server.ts` barrel — deep client imports fail in tests; use relative paths for non-barrel modules
 - `vi.doMock()` + dynamic `await import()` required for testing modules with module-level singleton state (e.g., `getStorageProvider()` factory)
 
@@ -309,3 +315,6 @@
 - Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
 - Tracking barrel `index.ts` is client-safe only — never import `getServerTrackingProvider` or `serverTracking` from it; use direct path imports for server code
 - Zustand store `reset()` before `router.push()` causes UI flash (synchronous re-render before async navigation) — reset on mount with `useEffect` instead, and keep `submitting=true` on success path to prevent re-render
+- `tw-animate-css` is incompatible with Sass — Sass cannot parse Tailwind 4 `@utility`/`@property` directives. Import via a separate `.css` file (processed by PostCSS directly), not inside `.scss` files
+- ESLint 10: NOT yet compatible with `eslint-plugin-import`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` — stay on ESLint 9 until ecosystem catches up
+- Vitest 4 browser provider: API changed from `provider: "playwright"` (string) to `provider: playwright()` (function import from `@vitest/browser-playwright`)
