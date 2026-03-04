@@ -16,10 +16,10 @@ Le projet accueille des contributions de développeur·euse·s bénévoles — m
 - **Auth** : NextAuth relié à Prisma (table `User` existante)  
 - **ORM** : Prisma (IDs en `uuid`, modèles multi-tenant)  
 - **Validation** : Zod **v4** (schémas dans `lib/model`)  
-- **UI** : Design System de l’État (DSFR) + classes `fr-*` via React DSFR + MUI , utilitaires Tailwind (ex: `sticky`)  
-- **Multi-tenant** : sous-domaines, contenu servi selon le tenant (rewrite); domaines customs possibles 
+- **UI** : Theme switching tenant-level — DSFR (Design System de l’État) pour les collectivités publiques, shadcn/ui + palette French Blue (oklch) pour les autres. Tailwind CSS 4 + SCSS modules
+- **Multi-tenant** : sous-domaines, contenu servi selon le tenant (rewrite); domaines customs possibles
 
-Ces choix sont détaillés dans les ADR (Architecture Decision Records) / `docs/adr`.
+Ces choix sont détaillés dans les ADR (Architecture Decision Records) / `docs/adr` et DDR (Design Decision Records) / `docs/ddr`.
 
 ---
 
@@ -312,7 +312,8 @@ L’application est servie sur **http://localhost:3000** pour le site principal,
 ## ⚙️ Scripts utiles
 
 ```bash
-pnpm lint                       # ESLint + format
+pnpm lint                       # ESLint + format (tous les workspaces via Turbo)
+pnpm build                      # Build production (apps/web via Turbo)
 pnpm generateEnvDeclaration     # Générer env.d.ts à partir de .env.development
 
 # Prisma
@@ -321,10 +322,14 @@ pnpm prisma:reset               # Reset DB (migrations, pas de seed)
 pnpm run-script xx.ts           # Permet d'exécuter un script TS présent dans /scripts/xx.ts
 
 # Tests
-pnpm test                       # Tests unitaires + intégration (Vitest)
+pnpm test                       # Tests unitaires + intégration (tous les workspaces via Turbo)
 pnpm test:coverage              # Idem avec couverture de code
 pnpm test:db                    # Tests d'intégration DB (nécessite DATABASE_URL_TEST)
 pnpm test:e2e                   # Tests E2E Playwright (nécessite dev server + docker services)
+
+# packages/ui (Storybook)
+pnpm --filter @kokatsuna/ui storybook        # Lancer Storybook en dev
+pnpm --filter @kokatsuna/ui build-storybook  # Build statique Storybook
 
 # Déploiement
 ./scripts/setup-github-environments.sh  # Setup one-shot des GitHub Environments + secrets Scalingo
@@ -350,32 +355,39 @@ Le workflow `.github/workflows/deploy.yml` attend que Build, Lint et Tests passe
 ## 🗂️ Structure de répertoires (extrait)
 
 ```
-/content/docs/              # Documentation utilisateur (MDX, Fumadocs)
-/docs/adr/                  # Architecture Decision Records
-/prisma                     # Schéma Prisma + seed + migrations + views
-/src/app                    # App Router (Next.js)
-/src/app/(default)          # Site principal
-/src/app/[domain]           # Multi-tenant
-/src/app/doc/               # Documentation (layout, composants MDX, theme DSFR)
-/src/lib/storage-provider    # Abstraction stockage S3 (IStorageProvider, noop, s3)
-/src/lib/model              # Schémas Zod (v4) - objets métier & DTO
-/src/useCases               # Logique métier (use cases DDD)
-/src/emails                 # Templates email react-email (DSFR Mail)
-/src/lib/integration-provider # Connecteurs tiers (Notion) — provider pattern
-/src/lib/repo               # Accès DB (Prisma) - fonctions CRUD
-/tests/testu                # Tests unitaires (Vitest)
-/tests/testi                # Tests d'intégration (use cases, mocks)
-/tests/testdb               # Tests d'intégration DB (Prisma, PostgreSQL)
-/tests/teste2e              # Tests E2E (Playwright, 7 projets)
+/apps/web/                    # Next.js 16 app (multi-tenant, DSFR + shadcn)
+  /content/docs/              #   Documentation utilisateur (MDX, Fumadocs)
+  /prisma/                    #   Schéma Prisma + seed + migrations + views
+  /src/app/                   #   App Router (Next.js)
+  /src/app/(default)/         #   Site principal
+  /src/app/[domain]/          #   Multi-tenant
+  /src/app/doc/               #   Documentation (layout, composants MDX, Fumadocs)
+  /src/lib/model/             #   Schémas Zod (v4) - objets métier & DTO
+  /src/useCases/              #   Logique métier (use cases DDD)
+  /src/emails/                #   Templates email react-email (DSFR Mail)
+  /src/lib/integration-provider/ # Connecteurs tiers (Notion)
+  /src/lib/repo/              #   Accès DB (Prisma) - fonctions CRUD
+  /tests/testu/               #   Tests unitaires (Vitest)
+  /tests/testi/               #   Tests d'intégration (use cases, mocks)
+  /tests/testdb/              #   Tests d'intégration DB (Prisma, PostgreSQL)
+  /tests/teste2e/             #   Tests E2E (Playwright, 7 projets)
+/packages/ui/                 # @kokatsuna/ui — 30 composants shadcn/Radix UI
+  /src/components/            #   Composants + stories + tests co-localisés
+  /src/tokens/                #   Design tokens CSS (French Blue, oklch)
+  /.storybook/                #   Storybook 10 config (dark mode, a11y, vitest)
+/docs/adr/                    # Architecture Decision Records
+/docs/ddr/                    # Design Decision Records (palette, composants, conventions UI)
 ```
 
 ---
 
-## 🧩 ADR (Architecture Decision Records)
+## 🧩 ADR / DDR (Decision Records)
 
-Les ADR vivent dans `docs/adr/`.  
-- Nouveau fichier : `docs/adr/00xx-<slug>.md` (numéro séquentiel)  
-- Template : `docs/adr/0000-template.md`  
+Les **ADR** (Architecture Decision Records) vivent dans `docs/adr/` — décisions techniques et structurelles.
+Les **DDR** (Design Decision Records) vivent dans `docs/ddr/` — décisions de design system (palette, composants, conventions UI).
+
+- Nouveau fichier : `docs/{adr,ddr}/00xx-<slug>.md` (numéro séquentiel)
+- Templates : `docs/adr/0000-template.md`, `docs/ddr/0000-template.md`
 - Courtes, factuelles, datées, avec alternatives et conséquences.
 
 ---

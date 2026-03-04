@@ -26,5 +26,8 @@
   ],
   "json.format.keepLines": true,
   "loccy.annotations.previewLocale": "fr",
-  "loccy.sourceLocale": "fr"
+  "loccy.sourceLocale": "fr",
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+  ]
 }

@@ -8,6 +8,8 @@
 ## Tooling & environment
 - `pnpm` is the package manager; lock file is `pnpm-lock.yaml`
 - Node 24 required (`engines` in package.json); `.nvmrc` locks the exact version (CI + local aligned)
+- `.nvmrc` and `.editorconfig` live at monorepo root (not in `apps/web/`)
+- Shared devDependencies (vitest, typescript, eslint, tailwind, postcss, tw-animate-css, etc.) hoisted to root `package.json` — workspace packages inherit via pnpm resolution
 - Next.js 16 App Router, standalone output, React Compiler enabled
 - Prisma 7 — client is auto-generated into `src/generated/prisma/`; never edit manually
   - NEVER use `prisma db push` — always use `prisma migrate dev --name <name>` to create proper migration files (CI uses `prisma migrate deploy` which only applies committed migrations)
@@ -35,7 +37,11 @@
 - Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
-- ESLint 9 flat config (`eslint.config.ts`) — strict rules enforced:
+- ESLint 9 flat config — monorepo setup:
+  - Root `eslint.config.ts` : base partagée (`export const base`) + default export (héritage naturel pour packages sans config)
+  - `apps/web/eslint.config.ts` : importe `base` du root + ajoute `eslint-config-next`, lodash, tests/scripts overrides
+  - `packages/ui/` : pas de config locale → hérite du root automatiquement (ESLint remonte au root)
+  - Plugins `import` et `react` : enregistrés dans le root default export (pas dans `base`) pour éviter "Cannot redefine plugin" avec `nextConfig` qui bundle ses propres instances
   - No default exports except Next.js special files (page, layout, error, loading, template, route, metadata)
   - Imports must be sorted (perfectionist plugin) — group external/internal with blank line between
   - Array types: use `Array<{...}>` for complex types, not `T[]`
@@ -61,6 +67,15 @@
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
+- Monorepo pnpm workspaces + Turborepo:
+  - `apps/web/` — Next.js 16 app (multi-tenant, DSFR + shadcn)
+  - `packages/ui/` — `@kokatsuna/ui` : 30 composants shadcn/Radix UI, design tokens French Blue (oklch), utilitaire `cn()`, hook `useIsMobile()`
+    - Composants : accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, dialog, dropdown-menu, hint, input, label, navigation-menu, pagination, popover, progress, radio-group, segmented-control, select, separator, sheet, sidebar, skeleton, sonner, switch, table, tabs, textarea, tooltip
+    - Imports : `@kokatsuna/ui` (barrel), `@kokatsuna/ui/components/*` (direct), `@kokatsuna/ui/lib/cn`, `@kokatsuna/ui/tokens/theme.css`
+    - Design tokens : scopés à `[data-ui-theme="Default"]`, light + dark (`.dark[data-ui-theme="Default"]`)
+    - Storybook 10 : `.storybook/` in packages/ui, dark mode toggle (`@vueless/storybook-dark-mode`), addon-a11y, addon-vitest (browser tests in Chromium)
+    - Tests : Vitest unit tests (happy-dom) + Storybook browser tests (Playwright) — `vitest.config.unit.ts` + `vitest.config.storybook.ts`
+    - Pas de `eslint.config.ts` local — hérite du root (ESLint 9 flat config walk-up)
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
   - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
   - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
@@ -147,7 +162,7 @@
   - App: `src/app/doc/` — layout, MDX component registration, DSFR theme bridge
   - Custom MDX components: registered in `src/app/doc/mdx-components.ts` via `getDocMDXComponents()`
   - `ImageWithTheme`: client component for theme-aware screenshots (crossfade toggle, IntersectionObserver preload)
-  - DSFR theme bridge: `src/app/doc/dsfr-theme.css` maps DSFR tokens → Fumadocs CSS variables, handles `data-fr-theme` dark mode
+  - Theme bridge: `src/app/doc/theme.css` maps design tokens → Fumadocs CSS variables, handles `.dark` class dark mode
 - Legal pages: `@incubateur-ademe/legal-pages-react` (LegalNotice, PrivacyPolicy) — routes `/mentions-legales`, `/politique-de-confidentialite`, `/accessibilite`, `/cgu`
 - Caching: Redis via ioredis + unstorage
 - Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
@@ -246,6 +261,8 @@
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
   - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
+- Deployment (Scalingo): `Procfile`, `scalingo.json`, `.slugignore` live at monorepo root — standalone build path is `apps/web/.next/standalone/apps/web/server.js`
+- release-please: configs (`release-please-config.*.json`, `.release-please-manifest.json`) at monorepo root — `packages` key is `"apps/web"`, `exclude-paths` must be repo-root-relative (release-please blocks `../../` path traversal)
 - Vitest alias `@/dsfr` resolves to `src/dsfr/server.ts` barrel — deep client imports fail in tests; use relative paths for non-barrel modules
 - `vi.doMock()` + dynamic `await import()` required for testing modules with module-level singleton state (e.g., `getStorageProvider()` factory)
 
@@ -288,7 +305,7 @@
 - OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
 - Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
 - `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
-- DSFR theme persistence: stored in localStorage key `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs on `<html>` — persists across navigations, must be explicitly forced in Playwright/automation scripts
+- Dark mode persistence: root uses localStorage `"theme"` + `.dark` class on `<html>` (via ThemeScript). DSFR tenant pages additionally use localStorage `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs — both must be explicitly forced in Playwright/automation scripts
 - Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
 - release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
 - GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
@@ -298,3 +315,6 @@
 - Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
 - Tracking barrel `index.ts` is client-safe only — never import `getServerTrackingProvider` or `serverTracking` from it; use direct path imports for server code
 - Zustand store `reset()` before `router.push()` causes UI flash (synchronous re-render before async navigation) — reset on mount with `useEffect` instead, and keep `submitting=true` on success path to prevent re-render
+- `tw-animate-css` is incompatible with Sass — Sass cannot parse Tailwind 4 `@utility`/`@property` directives. Import via a separate `.css` file (processed by PostCSS directly), not inside `.scss` files
+- ESLint 10: NOT yet compatible with `eslint-plugin-import`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` — stay on ESLint 9 until ecosystem catches up
+- Vitest 4 browser provider: API changed from `provider: "playwright"` (string) to `provider: playwright()` (function import from `@vitest/browser-playwright`)

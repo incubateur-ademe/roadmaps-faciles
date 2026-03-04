@@ -1,22 +1,21 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+node_modules
 
 # testing
-/coverage
-/playwright-report
-/test-results
-tests/teste2e/.auth/*.json
+coverage
+playwright-report
+storybook-static
+test-results
+**/tests/teste2e/.auth/*.json
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
 
 # misc
 .DS_Store
@@ -56,29 +55,38 @@ robots.txt
 !.yarn/sdks
 !.yarn/versions
 
-/public/dsfr/
+**/public/dsfr/
 
-/public/sitemap.xml
-/public/sitemap*.xml
+**/public/sitemap.xml
+**/public/sitemap*.xml
 
 templates_tmp/
 
 # logos
-
-/public/images/custom/*
-!/public/images/custom/.gitkeep
+**/public/images/custom/*
+!**/public/images/custom/.gitkeep
 
 certificates
 
-/src/generated/*
-!/src/generated/.gitattributes
+**/src/generated/*
+!**/src/generated/.gitattributes
 
 # fumadocs generated
-/.source/
+.source/
 
 # claude local files
 /.claude.local/
 /.claude/**/*.local.json
 /.claude/.worktree-monitor-root
-/next-env.d.ts
+next-env.d.ts
 CLAUDE.local.md
+
+# playwright MCP logs & debug screenshots
+.playwright-mcp/
+header-*.png
+
+# stitch artifacts
+.stitch/
+
+# turbo
+.turbo
