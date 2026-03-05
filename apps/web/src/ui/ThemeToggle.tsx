@@ -26,10 +26,13 @@ const iconMap = {
   system: Monitor,
 } as const;
 
-// Storage event listener for useSyncExternalStore
+// Storage event listener for useSyncExternalStore — filter on "theme" key only
 const subscribe = (cb: () => void) => {
-  window.addEventListener("storage", cb);
-  return () => window.removeEventListener("storage", cb);
+  const handler = (e: StorageEvent) => {
+    if (e.key === "theme" || e.key === null) cb();
+  };
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
 };
 
 export const ThemeToggle = () => {

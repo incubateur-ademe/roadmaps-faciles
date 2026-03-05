@@ -1,6 +1,7 @@
 import { SidebarInset, SidebarProvider } from "@kokatsuna/ui";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { auth } from "@/lib/next-auth/auth";
@@ -10,6 +11,7 @@ import { assertTenantAdmin } from "@/utils/auth";
 import { AdminSideMenu } from "./AdminSideMenu";
 
 const TenantAdminLayout = async ({ children, params }: LayoutProps<"/[domain]/admin">) => {
+  await connection();
   const session = await auth();
   if (!session) redirect("/login");
 
