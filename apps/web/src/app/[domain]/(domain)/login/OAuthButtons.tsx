@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
+import { Button } from "@kokatsuna/ui";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
@@ -20,9 +20,9 @@ export const OAuthButtons = ({ providers }: OAuthButtonsProps) => {
   if (providers.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2 fr-mt-2w">
+    <div className="flex flex-col gap-2">
       {providers.map(provider => (
-        <Button key={provider} priority="secondary" onClick={() => void signIn(provider)} className="w-full">
+        <Button key={provider} variant="outline" onClick={() => void signIn(provider)} className="w-full">
           {t(PROVIDER_KEYS[provider as keyof typeof PROVIDER_KEYS] ?? "provider.github")}
         </Button>
       ))}

@@ -1,12 +1,11 @@
+import { Card, CardContent, CardHeader, CardTitle, Separator } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
+import Link from "next/link";
 import crypto from "node:crypto";
 
-import style from "@/app/(default)/login/login.module.scss";
 import { LoginForm } from "@/app/(default)/login/LoginForm";
 import { config } from "@/config";
-import { Box, Container, Grid, GridCol } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { tenantDefaultOAuthRepo } from "@/lib/repo";
 
@@ -16,7 +15,6 @@ import { OAuthButtons } from "./OAuthButtons";
 
 const TenantLoginPage = DomainPageHOP()(async props => {
   const t = await getTranslations("auth");
-  // Validate invitation token if present in URL
   const searchParams = await (props as unknown as { searchParams: Promise<Record<string, string | undefined>> })
     .searchParams;
   let invitationEmail: string | undefined;
@@ -37,21 +35,13 @@ const TenantLoginPage = DomainPageHOP()(async props => {
   const bridgeToken = searchParams?.bridge_token;
   if (bridgeToken) {
     return (
-      <DsfrPage>
-        <Container ptmd="14v" mbmd="14v" fluid>
-          <Grid haveGutters align="center">
-            <GridCol md={8} lg={6}>
-              <Container pxmd="0" py="10v" mymd="14v" className={style.login}>
-                <Grid haveGutters align="center">
-                  <GridCol md={9} lg={8}>
-                    <BridgeAutoLogin token={bridgeToken} />
-                  </GridCol>
-                </Grid>
-              </Container>
-            </GridCol>
-          </Grid>
-        </Container>
-      </DsfrPage>
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
+        <Card className="w-full max-w-md">
+          <CardContent className="py-8">
+            <BridgeAutoLogin token={bridgeToken} />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -67,36 +57,34 @@ const TenantLoginPage = DomainPageHOP()(async props => {
   const providerNames = enabledOAuthProviders.map(p => p.provider);
 
   return (
-    <DsfrPage>
-      <Container ptmd="14v" mbmd="14v" fluid>
-        <Grid haveGutters align="center">
-          <GridCol md={8} lg={6}>
-            <Container pxmd="0" py="10v" mymd="14v" className={style.login}>
-              <Grid haveGutters align="center">
-                <GridCol md={9} lg={8}>
-                  <h1>{t("tenantLogin", { name: props._data.settings.name })}</h1>
-                  <Box>
-                    <LoginForm loginWithEmail defaultEmail={invitationEmail} />
-                  </Box>
-                  {providerNames.length > 0 && (
-                    <>
-                      <hr className="fr-mt-4w fr-pb-2w" />
-                      <p className="fr-text--sm">{t("oauthPrompt")}</p>
-                      <OAuthButtons providers={providerNames} />
-                    </>
-                  )}
-                  <hr className="fr-mt-4w fr-pb-2w" />
-                  <p className="fr-text--sm">
-                    {t("bridgePrompt", { brand: config.brand.name })}{" "}
-                    <a href={bridgeUrl}>{t("bridgeLink", { brand: config.brand.name })}</a>
-                  </p>
-                </GridCol>
-              </Grid>
-            </Container>
-          </GridCol>
-        </Grid>
-      </Container>
-    </DsfrPage>
+    <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">{t("tenantLogin", { name: props._data.settings.name })}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <LoginForm loginWithEmail defaultEmail={invitationEmail} />
+
+          {providerNames.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">{t("oauthPrompt")}</p>
+                <OAuthButtons providers={providerNames} />
+              </div>
+            </>
+          )}
+
+          <Separator />
+          <p className="text-sm text-muted-foreground">
+            {t("bridgePrompt", { brand: config.brand.name })}{" "}
+            <Link href={bridgeUrl} className="text-primary underline hover:text-primary/80">
+              {t("bridgeLink", { brand: config.brand.name })}
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 });
 
