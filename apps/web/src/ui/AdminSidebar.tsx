@@ -17,7 +17,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@kokatsuna/ui";
-import { type LucideIcon } from "lucide-react";
+import { type LucideIcon, MapIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -75,10 +75,15 @@ export const AdminSidebar = ({ title, subtitle, groups, activeSection }: AdminSi
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader className="px-4 py-3">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <span className="text-sm font-semibold truncate">{title}</span>
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+            <MapIcon className="size-4" />
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="truncate text-sm font-bold leading-tight">{title}</span>
+            {subtitle && <span className="truncate text-[10px] font-medium text-muted-foreground">{subtitle}</span>}
+          </div>
         </div>
-        {subtitle && <span className="text-xs text-muted-foreground truncate">{subtitle}</span>}
       </SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>

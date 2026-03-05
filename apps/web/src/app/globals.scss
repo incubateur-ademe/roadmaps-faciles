@@ -1,12 +1,17 @@
 @use "tailwindcss";
 
 @import "@kokatsuna/ui/tokens/theme.css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import "@kokatsuna/ui/tokens/tailwind-theme.css";
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border);
+  }
+}
 
 /* ==============================
    DSFR global resets for shadcn scope

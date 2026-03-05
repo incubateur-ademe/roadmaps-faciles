@@ -11,10 +11,14 @@ html[data-ui-theme="Default"] {
 }
 
 /* shadcn default: border-color tracks the --border token */
-*,
-::after,
-::before {
-  border-color: var(--border);
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border);
+  }
 }
 
 /*

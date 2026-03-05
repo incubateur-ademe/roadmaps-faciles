@@ -11,6 +11,7 @@ import { ClientOnly } from "@/components/utils/ClientOnly";
 import { ConsentBannerAndConsentManagement } from "@/consentManagement";
 import { DsfrProvider } from "@/dsfr-bootstrap";
 import { prisma } from "@/lib/db/prisma";
+import { type DomainParams, type DomainProps } from "@/lib/DomainPage";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { type Board, type TenantSettings } from "@/prisma/client";
 import { UIProvider } from "@/ui";
@@ -21,7 +22,6 @@ import { ThemeInjector } from "@/ui/ThemeInjector";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 import { getTenantFromDomain } from "@/utils/tenant";
-import { type EmptyObject } from "@/utils/types";
 
 import { UserHeaderItem } from "../../AuthHeaderItems";
 import { LanguageSelectClient } from "../../LanguageSelectClient";
@@ -30,13 +30,7 @@ import { DomainNavigation } from "./DomainNavigation";
 import { PublicFooter } from "./PublicFooter";
 import { ShadcnDomainNavigation } from "./ShadcnDomainNavigation";
 
-export interface DomainParams {
-  domain: string;
-}
-
-export interface DomainProps<Params extends object = EmptyObject> {
-  params: Promise<DomainParams & Params>;
-}
+export type { DomainParams, DomainProps };
 
 const getBoards = (tenantId: number) =>
   prisma.board.findMany({

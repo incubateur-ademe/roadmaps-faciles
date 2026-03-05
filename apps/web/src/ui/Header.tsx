@@ -5,6 +5,8 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { ThemeToggle } from "./ThemeToggle";
+
 export interface HeaderProps {
   brandName?: React.ReactNode;
   className?: string;
@@ -55,7 +57,10 @@ export const Header = ({
           {navigation}
         </nav>
 
-        <div className={cn("hidden items-center md:flex", isRoot ? "gap-4" : "space-x-2")}>{quickAccessItems}</div>
+        <div className={cn("hidden items-center md:flex", isRoot ? "gap-4" : "space-x-2")}>
+          <ThemeToggle />
+          {quickAccessItems}
+        </div>
 
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -70,7 +75,10 @@ export const Header = ({
               <SheetTitle>Menu</SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col space-y-4 mt-6">{navigation}</nav>
-            <div className="mt-6 flex flex-col space-y-2">{quickAccessItems}</div>
+            <div className="mt-6 flex flex-col space-y-2">
+              <ThemeToggle />
+              {quickAccessItems}
+            </div>
           </SheetContent>
         </Sheet>
       </div>

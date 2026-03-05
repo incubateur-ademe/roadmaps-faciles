@@ -131,9 +131,9 @@
     --surface-alt: oklch(0.280 0.020 264);
     --surface-alt-foreground: oklch(0.920 0.015 265);
 
-    /* Borders & inputs — subtle Twilight */
-    --border: oklch(0.350 0.050 264);
-    --input: oklch(0.350 0.050 264);
+    /* Borders & inputs — subtle, low-contrast (matched to Stitch #334155) */
+    --border: oklch(0.310 0.025 260);
+    --input: oklch(0.310 0.025 260);
     --ring: oklch(0.542 0.104 265);
 
     /* Sidebar */
@@ -143,7 +143,7 @@
     --sidebar-primary-foreground: oklch(1 0 0);
     --sidebar-accent: oklch(0.340 0.060 264);
     --sidebar-accent-foreground: oklch(0.853 0.031 265);
-    --sidebar-border: oklch(0.350 0.050 264);
+    --sidebar-border: oklch(0.310 0.025 260);
     --sidebar-ring: oklch(0.542 0.104 265);
 
     /* Charts */

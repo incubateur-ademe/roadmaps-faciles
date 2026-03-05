@@ -13,6 +13,12 @@
     "percentagePositive": "Le pourcentage doit être positif.",
     "percentageMax": "Le pourcentage doit être inférieur à 100."
   },
+  "themeToggle": {
+    "label": "Changer de thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
   "common": {
     "save": "Sauvegarder",
     "cancel": "Annuler",

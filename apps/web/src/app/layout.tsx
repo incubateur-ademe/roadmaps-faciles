@@ -42,7 +42,7 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
   const effectiveFlags = await getEffectiveFlags(session);
 
   return (
-    <html lang={lang} data-ui-theme="Default" className={cn(styles.app, "snap-y")}>
+    <html lang={lang} suppressHydrationWarning data-ui-theme="Default" className={cn(styles.app, "snap-y")}>
       <head>
         <ThemeScript />
       </head>
