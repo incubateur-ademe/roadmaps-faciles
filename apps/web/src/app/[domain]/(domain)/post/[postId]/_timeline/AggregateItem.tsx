@@ -1,10 +1,6 @@
-import { type FrIconClassName } from "@codegouvfr/react-dsfr";
-import TimelineConnector from "@mui/lab/TimelineConnector";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
+import { TimelineConnector, TimelineContent, TimelineDot, TimelineSeparator } from "@kokatsuna/ui";
+import { Rss, ThumbsUp } from "lucide-react";
 
-import { Icon } from "@/dsfr";
 import { type Activity } from "@/prisma/client";
 
 import { type AggregateActivity } from "./activityHelpers";
@@ -12,21 +8,25 @@ import { ItemDate } from "./ItemDate";
 
 const ICONS = {
   LIKE: {
-    icon: "fr-icon-thumb-up-fill",
+    icon: ThumbsUp,
     wordAction: "aimé",
   },
   FOLLOW: {
-    icon: "fr-icon-rss-fill",
+    icon: Rss,
     wordAction: "suivi",
   },
-} satisfies Partial<Record<Activity["type"], { icon: FrIconClassName; wordAction: string }>>;
+} satisfies Partial<
+  Record<Activity["type"], { icon: React.ComponentType<{ className?: string }>; wordAction: string }>
+>;
 
 export const AggregateItem = ({ activity }: { activity: AggregateActivity }) => {
+  const IconComponent = ICONS[activity.type].icon;
+
   return (
     <>
       <TimelineSeparator>
-        <TimelineDot variant="outlined">
-          <Icon icon={ICONS[activity.type].icon} color="text-title-blue-france" />
+        <TimelineDot variant="outline" size="icon">
+          <IconComponent className="size-4" />
         </TimelineDot>
         <TimelineConnector />
       </TimelineSeparator>

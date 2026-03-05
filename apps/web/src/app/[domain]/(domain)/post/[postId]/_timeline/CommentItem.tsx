@@ -1,9 +1,6 @@
-import TimelineConnector from "@mui/lab/TimelineConnector";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
+import { TimelineConnector, TimelineContent, TimelineDot, TimelineSeparator } from "@kokatsuna/ui";
+import { MessageCircle } from "lucide-react";
 
-import { Icon } from "@/dsfr";
 import { type UserRole } from "@/prisma/enums";
 
 import { type CommentActivity } from "./activityHelpers";
@@ -32,8 +29,8 @@ export const CommentItem = ({
   return (
     <>
       <TimelineSeparator>
-        <TimelineDot variant="outlined">
-          <Icon icon="fr-icon-chat-2-fill" color="text-title-blue-france" />
+        <TimelineDot variant="outline" size="icon">
+          <MessageCircle className="size-4" />
         </TimelineDot>
         <TimelineConnector />
       </TimelineSeparator>

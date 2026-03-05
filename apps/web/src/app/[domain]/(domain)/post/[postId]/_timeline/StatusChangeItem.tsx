@@ -1,10 +1,11 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import TimelineConnector from "@mui/lab/TimelineConnector";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
-
-import { Icon } from "@/dsfr";
+import {
+  Badge as ShadcnBadge,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineSeparator,
+} from "@kokatsuna/ui";
+import { Table } from "lucide-react";
 
 import { type StatusChangeActivity } from "./activityHelpers";
 import { ItemDate } from "./ItemDate";
@@ -13,8 +14,8 @@ export const StatusChangeItem = ({ activity }: { activity: StatusChangeActivity 
   return (
     <>
       <TimelineSeparator>
-        <TimelineDot variant="outlined">
-          <Icon icon="fr-icon-table-fill" color="text-title-blue-france" />
+        <TimelineDot variant="outline" size="icon">
+          <Table className="size-4" />
         </TimelineDot>
         <TimelineConnector />
       </TimelineSeparator>
@@ -22,9 +23,7 @@ export const StatusChangeItem = ({ activity }: { activity: StatusChangeActivity 
         <ItemDate activity={activity} />
         <span>
           <b>Le post est passé en statut</b> :{" "}
-          <Badge className={`fr-badge--color-${activity.statusChange.postStatus.color}`}>
-            {activity.statusChange.postStatus.name}
-          </Badge>
+          <ShadcnBadge variant="outline">{activity.statusChange.postStatus.name}</ShadcnBadge>
         </span>
       </TimelineContent>
     </>

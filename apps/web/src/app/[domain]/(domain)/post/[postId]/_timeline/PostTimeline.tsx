@@ -1,12 +1,7 @@
-import Timeline from "@mui/lab/Timeline";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import TimelineItem, { timelineItemClasses } from "@mui/lab/TimelineItem";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
+import { Timeline, TimelineContent, TimelineDot, TimelineItem, TimelineSeparator } from "@kokatsuna/ui";
+import { Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { ClientOnly } from "@/components/utils/ClientOnly";
-import { Icon } from "@/dsfr";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logger";
 import { auth } from "@/lib/next-auth/auth";
@@ -54,50 +49,40 @@ export const PostTimeline = async ({ post, isAdmin }: PostTimelineProps) => {
   const roleMap: Record<string, UserRole> = Object.fromEntries(memberships.map(m => [m.userId, m.role]));
 
   return (
-    <ClientOnly>
-      <Timeline
-        sx={{
-          [`& .${timelineItemClasses.root}:before`]: {
-            flex: 0,
-            padding: 0,
-          },
-        }}
-      >
-        {post.activities.map(activity => (
-          <TimelineItem key={`activity-${activity.id}`}>
-            {isCommentActivity(activity) ? (
-              <CommentItem
-                activity={activity}
-                userId={userId}
-                userName={userName}
-                userImage={userImage}
-                roleMap={roleMap}
-                postAuthorId={post.userId ?? undefined}
-                isAdmin={isAdmin}
-              />
-            ) : isStatusChangeActivity(activity) ? (
-              <StatusChangeItem activity={activity} />
-            ) : isAggregateActivity(activity) ? (
-              <AggregateItem activity={activity} />
-            ) : (
-              (logger.warn({ activityType: activity.type, activityId: activity.id }, "Unrecognized activity type"),
-              null)
-            )}
-          </TimelineItem>
-        ))}
-        <TimelineItem>
-          <TimelineSeparator>
-            <TimelineDot variant="outlined">
-              <Icon icon="fr-icon-star-fill" color="text-default-success" />
-            </TimelineDot>
-          </TimelineSeparator>
-
-          <TimelineContent className="flex flex-col gap-[.5rem]">
-            <ItemDate activity={{ id: post.id, startTime: post.createdAt } as Activity} />
-            {t("postCreated", { author: post.user?.name ?? post.sourceLabel ?? t("anonymous") })}
-          </TimelineContent>
+    <Timeline>
+      {post.activities.map(activity => (
+        <TimelineItem key={`activity-${activity.id}`}>
+          {isCommentActivity(activity) ? (
+            <CommentItem
+              activity={activity}
+              userId={userId}
+              userName={userName}
+              userImage={userImage}
+              roleMap={roleMap}
+              postAuthorId={post.userId ?? undefined}
+              isAdmin={isAdmin}
+            />
+          ) : isStatusChangeActivity(activity) ? (
+            <StatusChangeItem activity={activity} />
+          ) : isAggregateActivity(activity) ? (
+            <AggregateItem activity={activity} />
+          ) : (
+            (logger.warn({ activityType: activity.type, activityId: activity.id }, "Unrecognized activity type"), null)
+          )}
         </TimelineItem>
-      </Timeline>
-    </ClientOnly>
+      ))}
+      <TimelineItem>
+        <TimelineSeparator>
+          <TimelineDot variant="success" size="icon">
+            <Star className="size-4" />
+          </TimelineDot>
+        </TimelineSeparator>
+
+        <TimelineContent className="flex flex-col gap-2">
+          <ItemDate activity={{ id: post.id, startTime: post.createdAt } as Activity} />
+          {t("postCreated", { author: post.user?.name ?? post.sourceLabel ?? t("anonymous") })}
+        </TimelineContent>
+      </TimelineItem>
+    </Timeline>
   );
 };
