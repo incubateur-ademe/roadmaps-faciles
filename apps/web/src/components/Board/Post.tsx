@@ -8,7 +8,7 @@ import remarkDirective from "remark-directive";
 import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGfm from "remark-gfm";
 
-import { type EnrichedPost } from "@/app/[domain]/(domain)/board/[boardSlug]/actions";
+import { type EnrichedPost } from "@/app/[domain]/(default)/board/[boardSlug]/actions";
 
 import { LikeButton } from "./LikeButton";
 

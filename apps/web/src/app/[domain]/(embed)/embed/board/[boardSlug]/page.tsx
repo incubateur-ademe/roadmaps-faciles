@@ -17,10 +17,10 @@ import { embedViewed } from "@/lib/tracking-provider/trackingPlan";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { getTenantFromDomain } from "@/utils/tenant";
 
-import { type EnrichedPost, fetchPostsForBoard } from "../../../../(domain)/board/[boardSlug]/actions";
-import { PostList } from "../../../../(domain)/board/[boardSlug]/PostList";
-import { PostListCompact } from "../../../../(domain)/board/[boardSlug]/PostListCompact";
-import { defaultOrder, defaultView, ORDER_ENUM, VIEW_ENUM } from "../../../../(domain)/board/[boardSlug]/types";
+import { type EnrichedPost, fetchPostsForBoard } from "../../../../(default)/board/[boardSlug]/actions";
+import { PostList } from "../../../../(default)/board/[boardSlug]/PostList";
+import { PostListCompact } from "../../../../(default)/board/[boardSlug]/PostListCompact";
+import { defaultOrder, defaultView, ORDER_ENUM, VIEW_ENUM } from "../../../../(default)/board/[boardSlug]/types";
 
 const searchParamsSchema = z.object({
   hideVotes: z.coerce.boolean().default(false),
