@@ -1,37 +1,61 @@
 "use client";
 
-import { Button, cn, Sheet, SheetContent, SheetTrigger } from "@kokatsuna/ui";
+import { Button, cn, Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@kokatsuna/ui";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-interface HeaderProps {
+export interface HeaderProps {
+  brandName?: React.ReactNode;
   className?: string;
   homeLinkProps: { href: string; title: string };
   navigation?: React.ReactNode;
   quickAccessItems?: React.ReactNode;
-  serviceName: string;
+  serviceName?: string;
+  variant?: "root" | "tenant";
 }
 
-export const Header = ({ homeLinkProps, serviceName, navigation, quickAccessItems, className }: HeaderProps) => {
+/**
+ * Unified header — root and tenant variants.
+ *
+ * Root: h-16, max-w-7xl, brandName ReactNode (icon + name + badge).
+ * Tenant: h-14, container, serviceName string.
+ */
+export const Header = ({
+  homeLinkProps,
+  serviceName,
+  brandName,
+  navigation,
+  quickAccessItems,
+  className,
+  variant = "tenant",
+}: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isRoot = variant === "root";
 
   return (
     <header
       className={cn(
         "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        isRoot && "border-border/40",
         className,
       )}
     >
-      <div className="container mx-auto flex h-14 items-center px-4 sm:px-6 lg:px-8">
-        <Link href={homeLinkProps.href} title={homeLinkProps.title} className="mr-6 flex items-center space-x-2">
-          <span className="font-bold">{serviceName}</span>
+      <div className={cn("mx-auto flex items-center", isRoot ? "h-16 max-w-7xl px-6" : "h-14 px-4 sm:px-6 lg:px-8")}>
+        <Link
+          href={homeLinkProps.href}
+          title={homeLinkProps.title}
+          className={cn("flex items-center", isRoot ? "mr-8 gap-2 text-lg font-bold tracking-tight" : "mr-6 space-x-2")}
+        >
+          {isRoot && brandName ? brandName : <span className="font-bold">{serviceName}</span>}
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden flex-1 items-center space-x-6 text-sm font-medium md:flex">{navigation}</nav>
+        <nav className={cn("hidden flex-1 items-center text-sm font-medium md:flex", isRoot ? "gap-6" : "space-x-6")}>
+          {navigation}
+        </nav>
 
-        <div className="hidden items-center space-x-2 md:flex">{quickAccessItems}</div>
+        <div className={cn("hidden items-center md:flex", isRoot ? "gap-4" : "space-x-2")}>{quickAccessItems}</div>
 
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -42,6 +66,9 @@ export const Header = ({ homeLinkProps, serviceName, navigation, quickAccessItem
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
             <nav className="flex flex-col space-y-4 mt-6">{navigation}</nav>
             <div className="mt-6 flex flex-col space-y-2">{quickAccessItems}</div>
           </SheetContent>
