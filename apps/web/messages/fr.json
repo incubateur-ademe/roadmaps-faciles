@@ -631,7 +631,11 @@
       "resetFilters": "Réinitialiser",
       "export": "Exporter",
       "exporting": "Export…",
-      "results": "résultat(s)"
+      "results": "résultat(s)",
+      "statTotal": "Total événements",
+      "statToday": "Aujourd'hui",
+      "statUniqueUsers": "Utilisateurs uniques",
+      "statErrorRate": "Taux d'erreur"
     },
     "invitations": {
       "title": "Invitations",

@@ -1,6 +1,7 @@
 import { getLocale } from "next-intl/server";
 import { Suspense } from "react";
 
+import { prisma } from "@/lib/db/prisma";
 import { auditLogRepo } from "@/lib/repo";
 import { type AuditAction } from "@/prisma/enums";
 
@@ -8,6 +9,27 @@ import { DomainPageHOP } from "../../../DomainPage";
 import { AuditLogView } from "./AuditLogView";
 
 const PAGE_SIZE = 25;
+
+const getAuditStats = async (tenantId: number) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [totalCount, todayCount, uniqueUsers, errorCount] = await Promise.all([
+    prisma.auditLog.count({ where: { tenantId } }),
+    prisma.auditLog.count({ where: { tenantId, createdAt: { gte: today } } }),
+    prisma.auditLog
+      .findMany({ where: { tenantId, userId: { not: null } }, select: { userId: true }, distinct: ["userId"] })
+      .then(r => r.length),
+    prisma.auditLog.count({ where: { tenantId, success: false } }),
+  ]);
+
+  return {
+    totalCount,
+    todayCount,
+    uniqueUsers,
+    errorRate: totalCount > 0 ? (errorCount / totalCount) * 100 : 0,
+  };
+};
 
 const AuditLogPage = DomainPageHOP()(async props => {
   const { tenant } = props._data;
@@ -20,9 +42,10 @@ const AuditLogPage = DomainPageHOP()(async props => {
   const dateFrom = searchParams.dateFrom ? new Date(searchParams.dateFrom) : undefined;
   const dateTo = searchParams.dateTo ? new Date(`${searchParams.dateTo}T23:59:59`) : undefined;
 
-  const [result, actions] = await Promise.all([
+  const [result, actions, stats] = await Promise.all([
     auditLogRepo.findPaginated({ tenantId: tenant.id, action, dateFrom, dateTo }, page, PAGE_SIZE),
     auditLogRepo.getDistinctActions(tenant.id),
+    getAuditStats(tenant.id),
   ]);
 
   return (
@@ -34,6 +57,7 @@ const AuditLogPage = DomainPageHOP()(async props => {
         pageSize={PAGE_SIZE}
         actions={actions}
         locale={locale}
+        stats={stats}
       />
     </Suspense>
   );
