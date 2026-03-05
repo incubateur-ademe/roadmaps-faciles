@@ -1,7 +1,8 @@
 "use client";
 
-import Button, { type ButtonProps } from "@codegouvfr/react-dsfr/Button";
+import { Button } from "@kokatsuna/ui";
 import * as Sentry from "@sentry/nextjs";
+import { ThumbsUp } from "lucide-react";
 import { type PropsWithChildren, startTransition, useState } from "react";
 
 import { likePost } from "./actions";
@@ -9,7 +10,7 @@ import { likePost } from "./actions";
 interface LikeButtonProps {
   alreadyLiked: boolean;
   postId: number;
-  size?: ButtonProps["size"];
+  size?: "default" | "icon" | "lg" | "sm";
   tenantId: number;
   userId?: string;
 }
@@ -20,12 +21,11 @@ export const LikeButton = ({
   tenantId,
   alreadyLiked,
   children,
-  size = "large",
+  size = "default",
 }: PropsWithChildren<LikeButtonProps>) => {
   const [liked, setLiked] = useState(alreadyLiked);
 
   const handleLikeToggle = () => {
-    // Optimistically update the state
     startTransition(() => {
       setLiked(prevLiked => !prevLiked);
     });
@@ -46,7 +46,6 @@ export const LikeButton = ({
       .catch(error => {
         Sentry.captureException(error);
 
-        // Rollback the optimistic update if the request fails
         startTransition(() => {
           setLiked(prevLiked => !prevLiked);
         });
@@ -57,14 +56,12 @@ export const LikeButton = ({
     <Button
       data-testid="like-button"
       title="Vote"
-      iconId={liked ? "fr-icon-thumb-up-fill" : "fr-icon-thumb-up-line"}
-      priority={liked ? "secondary" : "tertiary no outline"}
+      variant={liked ? "secondary" : "ghost"}
       size={size}
       onClick={handleLikeToggle}
     >
+      <ThumbsUp className={liked ? "size-4 fill-current" : "size-4"} />
       {children}
     </Button>
   );
-
-  //   return <button onClick={handleLikeToggle}>{liked ? "Unlike" : "Like"}</button>;
 };

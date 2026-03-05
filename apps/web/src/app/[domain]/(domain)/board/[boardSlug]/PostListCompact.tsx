@@ -95,7 +95,7 @@ export const PostListCompact = ({
                       postId={post.id}
                       tenantId={post.tenantId}
                       userId={userId}
-                      size="small"
+                      size="sm"
                     >
                       {post._count.likes}
                     </LikeButton>

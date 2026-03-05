@@ -164,7 +164,7 @@ const EmbedRoadmapPageInner = async ({ params, searchParams }: EmbedRoadmapPageP
                         <LikeButton
                           postId={post.id}
                           tenantId={tenant.id}
-                          size="small"
+                          size="sm"
                           userId={userId}
                           alreadyLiked={post.likes.some(
                             like => userId === like.userId || like.anonymousId === anonymousId,
