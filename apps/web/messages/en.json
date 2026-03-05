@@ -664,6 +664,12 @@
     "filterComing": "Coming soon",
     "viewCards": "Cards view",
     "viewList": "List view",
+    "viewKanban": "Kanban view",
+    "viewKanbanAccordion": "Kanban accordion view",
+    "search": "Search…",
+    "noPosts": "No posts",
+    "unclassified": "Unclassified",
+    "comments": "comments",
     "commentCount": "{count, plural, one {# comment} other {# comments}}",
     "voteCount": "{count, plural, one {# vote} other {# votes}}",
     "edited": "(edited)"
