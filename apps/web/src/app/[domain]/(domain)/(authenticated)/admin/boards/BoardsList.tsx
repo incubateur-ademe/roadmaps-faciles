@@ -43,6 +43,9 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
     if (result.ok && result.data) {
       setBoards([...boards, result.data]);
       setFormState(prev => ({ ...prev, new: { name: "", description: "" } }));
+      setError(null);
+    } else if (!result.ok) {
+      setError(result.error);
     }
   };
 
@@ -51,6 +54,9 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
     if (result.ok && result.data) {
       setBoards(boards.map(b => (b.id === id ? result.data : b)));
       setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } }));
+      setError(null);
+    } else if (!result.ok) {
+      setError(result.error);
     }
   };
 

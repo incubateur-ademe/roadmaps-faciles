@@ -209,6 +209,16 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
 
       <h4 className="text-lg font-semibold">{t("propertyMappings")}</h4>
 
+      {/* Title (auto-detected, read-only display) */}
+      {propertyMapping.title && (
+        <div className="space-y-1">
+          <Label>{t("titleField")}</Label>
+          <p className="text-sm text-muted-foreground">
+            {propertyMapping.title}
+          </p>
+        </div>
+      )}
+
       {/* Description mapping */}
       <div className="space-y-2">
         <Label>{t("descriptionField")}</Label>
@@ -481,7 +491,7 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
               const usedByField = isUsedBy(p.name, "likesField");
               return (
                 <option key={p.id} value={`${p.name}::rich_text`} disabled={!!usedByField}>
-                  {p.name} (texte){usedByField ? ` (${t(usedByField)})` : ""}
+                  {p.name} ({t("richTextType")}){usedByField ? ` (${t(usedByField)})` : ""}
                 </option>
               );
             })}

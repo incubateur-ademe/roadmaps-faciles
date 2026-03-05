@@ -47,4 +47,12 @@
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
     --radius: 0.625rem;
+
+    --animate-progress-indeterminate: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(200%); }
+    100% { transform: translateX(-100%); }
 }

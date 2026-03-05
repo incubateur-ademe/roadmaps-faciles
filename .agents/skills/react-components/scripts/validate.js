@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import swc from '@swc/core';
-import fs from 'node:fs';
-import path from 'node:path';
+import swc from "@swc/core";
+import fs from "node:fs";
+import path from "node:path";
 
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}/;
 
 async function validateComponent(filePath) {
-  const code = fs.readFileSync(filePath, 'utf-8');
+  const code = fs.readFileSync(filePath, "utf-8");
   const filename = path.basename(filePath);
   try {
     const ast = await swc.parse(code, { syntax: "typescript", tsx: true });
@@ -30,13 +30,15 @@ async function validateComponent(filePath) {
 
     console.log("🔍 Scanning AST...");
 
-    const walk = (node) => {
+    const walk = node => {
       if (!node) return;
-      if (node.type === 'TsInterfaceDeclaration' && node.id.value.endsWith('Props')) hasInterface = true;
-      if (node.type === 'JSXAttribute' && node.name.name === 'className') {
+      if (node.type === "TsInterfaceDeclaration" && node.id.value.endsWith("Props")) hasInterface = true;
+      if (node.type === "JSXAttribute" && node.name.name === "className") {
         if (node.value?.value && HEX_COLOR_REGEX.test(node.value.value)) tailwindIssues.push(node.value.value);
       }
-      for (const key in node) { if (node[key] && typeof node[key] === 'object') walk(node[key]); }
+      for (const key in node) {
+        if (node[key] && typeof node[key] === "object") walk(node[key]);
+      }
     };
     walk(ast);
 

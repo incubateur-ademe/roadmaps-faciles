@@ -544,7 +544,8 @@
         "cancel": "Annuler",
         "defaultBoardInfo": "Sans correspondance de board, un tableau par défaut sera créé automatiquement à la soumission.",
         "inboundHidesOutboundFields": "En mode entrant, les champs commentaires et votes ne sont pas disponibles (ils servent uniquement à pousser des données vers Notion).",
-        "titleField": "Titre"
+        "titleField": "Titre",
+        "richTextType": "texte"
       },
       "detail": {
         "enabled": "Actif",

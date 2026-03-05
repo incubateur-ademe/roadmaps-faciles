@@ -41,6 +41,7 @@ interface IntegrationDetailProps {
 
 export const IntegrationDetail = ({ integration, mappings, syncRuns }: IntegrationDetailProps) => {
   const t = useTranslations("domainAdmin.integrations.detail");
+  const tc = useTranslations("common");
   const router = useRouter();
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ conflicts: number; errors: number; synced: number } | null>(null);
@@ -289,6 +290,9 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
             <div className="mt-4 flex gap-4">
               <Button variant="destructive" onClick={() => void handleDelete()}>
                 {t("confirmDelete")}
+              </Button>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                {tc("cancel")}
               </Button>
             </div>
           </DialogContent>

@@ -544,7 +544,8 @@
         "cancel": "Cancel",
         "defaultBoardInfo": "Without board mapping, a default board will be created automatically on submission.",
         "inboundHidesOutboundFields": "In inbound mode, comments and votes fields are unavailable (they only push data to Notion).",
-        "titleField": "Title"
+        "titleField": "Title",
+        "richTextType": "text"
       },
       "detail": {
         "enabled": "Active",
