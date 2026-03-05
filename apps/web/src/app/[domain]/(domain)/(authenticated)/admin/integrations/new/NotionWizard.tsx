@@ -1,8 +1,7 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Stepper from "@codegouvfr/react-dsfr/Stepper";
+import { Alert, AlertDescription, Button } from "@kokatsuna/ui";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -41,7 +40,6 @@ export const NotionWizard = ({ boards, statuses }: NotionWizardProps) => {
     propertyMapping,
   } = useNotionWizardStore();
 
-  // Reset store on mount so stale state from a previous submission doesn't linger
   useEffect(() => {
     reset();
   }, [reset]);
@@ -84,43 +82,68 @@ export const NotionWizard = ({ boards, statuses }: NotionWizardProps) => {
       return;
     }
 
-    // Navigate away — do NOT reset() here: it would set step=1 and cause a flash
-    // before the navigation completes. The store is module-scoped, but the next visit
-    // to /new will call reset() on mount if needed.
     router.push(`/admin/integrations/${result.data.id}`);
   }, [buildConfig, getUnmappedStatusOptions, integrationName, syncIntervalMinutes, router]);
 
   return (
     <div>
-      <Stepper
-        currentStep={step}
-        stepCount={STEP_COUNT}
-        title={stepTitles[step - 1]}
-        nextTitle={step < STEP_COUNT ? stepTitles[step] : undefined}
-      />
+      {/* Stepper */}
+      <nav aria-label="progress" className="mb-8">
+        <ol className="flex items-center gap-2">
+          {stepTitles.map((title, i) => {
+            const stepNum = i + 1;
+            const isCurrent = stepNum === step;
+            const isCompleted = stepNum < step;
+            return (
+              <li key={i} className="flex items-center gap-2">
+                <span
+                  className={`flex size-8 items-center justify-center rounded-full text-sm font-medium ${
+                    isCurrent
+                      ? "bg-primary text-primary-foreground"
+                      : isCompleted
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {stepNum}
+                </span>
+                <span className={`text-sm ${isCurrent ? "font-medium" : "text-muted-foreground"}`}>{title}</span>
+                {i < stepTitles.length - 1 && <span className="mx-2 h-px w-8 bg-border" />}
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
 
-      <div className="fr-mt-4w">
+      <div className="mb-8">
         {step === 1 && <ConnectionStep />}
         {step === 2 && <DatabaseStep />}
         {step === 3 && <MappingStep boards={boards} statuses={statuses} />}
         {step === 4 && <ConfigStep />}
       </div>
 
-      {error && <Alert severity="error" small description={error} className="fr-mt-2w" />}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      <div className="fr-mt-4w flex gap-4">
+      <div className="flex gap-4">
         {step > 1 && (
-          <Button onClick={goPrev} priority="secondary">
+          <Button variant="outline" onClick={goPrev}>
+            <ChevronLeft className="mr-1 size-4" />
             {t("previous")}
           </Button>
         )}
         {step < STEP_COUNT && step !== 2 && (
           <Button onClick={goNext} disabled={!canGoNext}>
             {t("next")}
+            <ChevronRight className="ml-1 size-4" />
           </Button>
         )}
         {step === STEP_COUNT && (
           <Button onClick={() => void handleSubmit()} disabled={!canGoNext || submitting}>
+            {submitting && <Loader2 className="mr-1 size-4 animate-spin" />}
             {submitting ? t("creating") : t("create")}
           </Button>
         )}

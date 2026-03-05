@@ -1,7 +1,6 @@
 "use client";
 
-import Input from "@codegouvfr/react-dsfr/Input";
-import Select from "@codegouvfr/react-dsfr/Select";
+import { Hint, Input, Label } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 
 import { SYNC_INTERVAL_OPTIONS, useNotionWizardStore } from "../useNotionWizardStore";
@@ -12,42 +11,41 @@ export const ConfigStep = () => {
 
   return (
     <div>
-      <p>{t("configDescription")}</p>
+      <p className="mb-4">{t("configDescription")}</p>
 
-      <Input
-        label={t("integrationName")}
-        hintText={t("integrationNameHint")}
-        nativeInputProps={{
-          value: integrationName,
-          onChange: e => setIntegrationName(e.target.value),
-        }}
-      />
+      <div className="mb-4 space-y-2">
+        <Label htmlFor="integration-name">{t("integrationName")}</Label>
+        <Input id="integration-name" value={integrationName} onChange={e => setIntegrationName(e.target.value)} />
+        <Hint>{t("integrationNameHint")}</Hint>
+      </div>
 
-      <Select
-        label={t("syncFrequency")}
-        hint={t("syncFrequencyHint")}
-        nativeSelectProps={{
-          value: syncIntervalMinutes ?? "",
-          onChange: e => {
+      <div className="space-y-2">
+        <Label htmlFor="sync-frequency">{t("syncFrequency")}</Label>
+        <select
+          id="sync-frequency"
+          value={syncIntervalMinutes ?? ""}
+          onChange={e => {
             const val = e.target.value;
             setSyncIntervalMinutes(val ? Number(val) : null);
-          },
-        }}
-      >
-        {SYNC_INTERVAL_OPTIONS.map(opt => (
-          <option key={opt ?? "manual"} value={opt ?? ""}>
-            {opt === null
-              ? t("manualOnly")
-              : opt < 60
-                ? t("everyMinutes", { count: opt })
-                : opt === 60
-                  ? t("everyHour")
-                  : opt < 1440
-                    ? t("everyHours", { count: opt / 60 })
-                    : t("everyDay")}
-          </option>
-        ))}
-      </Select>
+          }}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          {SYNC_INTERVAL_OPTIONS.map(opt => (
+            <option key={opt ?? "manual"} value={opt ?? ""}>
+              {opt === null
+                ? t("manualOnly")
+                : opt < 60
+                  ? t("everyMinutes", { count: opt })
+                  : opt === 60
+                    ? t("everyHour")
+                    : opt < 1440
+                      ? t("everyHours", { count: opt / 60 })
+                      : t("everyDay")}
+            </option>
+          ))}
+        </select>
+        <Hint>{t("syncFrequencyHint")}</Hint>
+      </div>
     </div>
   );
 };

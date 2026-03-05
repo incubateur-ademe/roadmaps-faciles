@@ -20,8 +20,8 @@ const IntegrationsAdminPage = DomainPageHOP()(async props => {
 
   return (
     <div>
-      <h1>{t("title")}</h1>
-      <p className="fr-text--lead">{t("description")}</p>
+      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-6 text-lg text-muted-foreground">{t("description")}</p>
       <IntegrationsList integrations={integrations} />
     </div>
   );

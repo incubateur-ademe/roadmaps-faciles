@@ -1,8 +1,7 @@
 "use client";
 
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@kokatsuna/ui";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -17,43 +16,43 @@ export const IntegrationsList = ({ integrations }: IntegrationsListProps) => {
 
   return (
     <div>
-      <div className="fr-mb-3w">
-        <Button linkProps={{ href: "/admin/integrations/new" }} priority="primary">
-          {t("addNotion")}
+      <div className="mb-6">
+        <Button asChild>
+          <Link href="/admin/integrations/new">
+            <Plus className="mr-1 size-4" />
+            {t("addNotion")}
+          </Link>
         </Button>
       </div>
 
       {integrations.length === 0 ? (
-        <div className={cx("fr-callout")}>
-          <p>{t("empty")}</p>
-        </div>
+        <Card>
+          <CardContent className="py-6">
+            <p className="text-muted-foreground">{t("empty")}</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="flex flex-col gap-4">
           {integrations.map(integration => (
-            <Link
-              key={integration.id}
-              href={`/admin/integrations/${integration.id}`}
-              className={cx("fr-card", "fr-card--horizontal", "fr-enlarge-link")}
-            >
-              <div className="fr-card__body">
-                <div className="fr-card__content">
-                  <h3 className="fr-card__title">{integration.name}</h3>
-                  <p className="fr-card__desc">
-                    <Badge severity={integration.enabled ? "success" : "warning"} small>
+            <Link key={integration.id} href={`/admin/integrations/${integration.id}`} className="block">
+              <Card className="transition-colors hover:bg-accent">
+                <CardHeader>
+                  <CardTitle>{integration.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={integration.enabled ? "default" : "secondary"}>
                       {integration.enabled ? t("enabled") : t("disabled")}
-                    </Badge>{" "}
-                    <Badge severity="info" small noIcon>
-                      {integration.type}
                     </Badge>
+                    <Badge variant="outline">{integration.type}</Badge>
                     {integration.lastSyncAt && (
-                      <>
-                        {" — "}
+                      <span className="text-sm text-muted-foreground">
                         {t("lastSync", { date: new Date(integration.lastSyncAt).toLocaleString() })}
-                      </>
+                      </span>
                     )}
-                  </p>
-                </div>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>

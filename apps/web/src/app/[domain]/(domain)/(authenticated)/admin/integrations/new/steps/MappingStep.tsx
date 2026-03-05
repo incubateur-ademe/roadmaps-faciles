@@ -1,9 +1,7 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import Select from "@codegouvfr/react-dsfr/Select";
+import { Alert, AlertDescription, Button, Hint, Input, Label } from "@kokatsuna/ui";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -17,6 +15,14 @@ interface MappingStepProps {
   boards: Board[];
   statuses: PostStatus[];
 }
+
+/** Native select styled to match shadcn */
+const NativeSelect = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select
+    {...props}
+    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+  />
+);
 
 export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
   const t = useTranslations("domainAdmin.integrations.wizard");
@@ -36,7 +42,6 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
     addAdditionalBoard,
   } = useNotionWizardStore();
 
-  // Build set of already-used property names for uniqueness constraints
   type MappingFieldKey =
     | "boardField"
     | "commentsField"
@@ -48,7 +53,7 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
     | "titleField";
 
   const usedProperties = useMemo(() => {
-    const used = new Map<string, MappingFieldKey>(); // property name → field label key
+    const used = new Map<string, MappingFieldKey>();
     if (propertyMapping.title) {
       used.set(propertyMapping.title, "titleField");
     }
@@ -91,7 +96,6 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
     [boards, additionalBoards],
   );
 
-  // Clear outbound-only fields when switching to inbound mode
   useEffect(() => {
     if (syncDirection === "inbound") {
       const pm = useNotionWizardStore.getState().propertyMapping;
@@ -100,7 +104,6 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
     }
   }, [syncDirection, setPropertyMapping]);
 
-  // Auto-match Notion status options to existing PostStatus by name
   const lastAutoMatchedStatus = useRef<null | string>(null);
   useEffect(() => {
     const statusName = propertyMapping.status?.name;
@@ -120,7 +123,6 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
     }
   }, [propertyMapping.status?.name, schema, statuses, setStatusMapping]);
 
-  // Inline creation state
   const [creatingStatusForOptionId, setCreatingStatusForOptionId] = useState<null | string>(null);
   const [newStatusName, setNewStatusName] = useState("");
   const [creatingStatusLoading, setCreatingStatusLoading] = useState(false);
@@ -166,7 +168,11 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
   );
 
   if (!schema) {
-    return <Alert severity="error" small description={t("noSchema")} />;
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{t("noSchema")}</AlertDescription>
+      </Alert>
+    );
   }
 
   const richTextProps = schema.properties.filter(p => p.type === "rich_text");
@@ -175,7 +181,6 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
   const numberProps = schema.properties.filter(p => p.type === "number");
   const dateProps = schema.properties.filter(p => p.type === "date" || p.type === "created_time");
 
-  /** Check if a property name is used by another field (not the current one) */
   const isUsedBy = (propName: string, currentField: MappingFieldKey): false | MappingFieldKey =>
     usedProperties.has(propName) && usedProperties.get(propName) !== currentField
       ? usedProperties.get(propName)!
@@ -184,38 +189,40 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
   const showOutboundFields = syncDirection !== "inbound";
 
   return (
-    <div>
-      {/* Sync direction — moved here from ConfigStep so mapping fields adapt */}
-      <Select
-        label={t("syncDirection")}
-        hint={t("syncDirectionHint")}
-        nativeSelectProps={{
-          value: syncDirection,
-          onChange: e => setSyncDirection(e.target.value as typeof syncDirection),
-        }}
-      >
-        <option value="bidirectional">{t("bidirectional")}</option>
-        <option value="inbound">{t("inboundOnly")}</option>
-        <option value="outbound">{t("outboundOnly")}</option>
-      </Select>
+    <div className="space-y-6">
+      {/* Sync direction */}
+      <div className="space-y-2">
+        <Label htmlFor="sync-direction">{t("syncDirection")}</Label>
+        <NativeSelect
+          id="sync-direction"
+          value={syncDirection}
+          onChange={e => setSyncDirection(e.target.value as typeof syncDirection)}
+        >
+          <option value="bidirectional">{t("bidirectional")}</option>
+          <option value="inbound">{t("inboundOnly")}</option>
+          <option value="outbound">{t("outboundOnly")}</option>
+        </NativeSelect>
+        <Hint>{t("syncDirectionHint")}</Hint>
+      </div>
 
       <p>{t("mappingDescription")}</p>
 
-      <h4>{t("propertyMappings")}</h4>
+      <h4 className="text-lg font-semibold">{t("propertyMappings")}</h4>
 
       {/* Description mapping */}
-      <Select
-        label={t("descriptionField")}
-        hint={t("descriptionFieldHint")}
-        nativeSelectProps={{
-          value: propertyMapping.description
-            ? typeof propertyMapping.description === "object" && propertyMapping.description.type === "page_content"
-              ? "__page_content__"
-              : typeof propertyMapping.description === "object"
-                ? propertyMapping.description.name
-                : ""
-            : "",
-          onChange: e => {
+      <div className="space-y-2">
+        <Label>{t("descriptionField")}</Label>
+        <NativeSelect
+          value={
+            propertyMapping.description
+              ? typeof propertyMapping.description === "object" && propertyMapping.description.type === "page_content"
+                ? "__page_content__"
+                : typeof propertyMapping.description === "object" && "name" in propertyMapping.description
+                  ? propertyMapping.description.name
+                  : ""
+              : ""
+          }
+          onChange={e => {
             const val = e.target.value;
             if (val === "__page_content__") {
               setPropertyMapping("description", { type: "page_content" });
@@ -224,29 +231,29 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
             } else {
               setPropertyMapping("description", undefined);
             }
-          },
-        }}
-      >
-        <option value="">{t("notMapped")}</option>
-        <option value="__page_content__">{t("pageContent")}</option>
-        {richTextProps.map(p => {
-          const usedByField = isUsedBy(p.name, "descriptionField");
-          return (
-            <option key={p.id} value={p.name} disabled={!!usedByField}>
-              {p.name}
-              {usedByField ? ` (${t(usedByField)})` : ""}
-            </option>
-          );
-        })}
-      </Select>
+          }}
+        >
+          <option value="">{t("notMapped")}</option>
+          <option value="__page_content__">{t("pageContent")}</option>
+          {richTextProps.map(p => {
+            const usedByField = isUsedBy(p.name, "descriptionField");
+            return (
+              <option key={p.id} value={p.name} disabled={!!usedByField}>
+                {p.name}
+                {usedByField ? ` (${t(usedByField)})` : ""}
+              </option>
+            );
+          })}
+        </NativeSelect>
+        <Hint>{t("descriptionFieldHint")}</Hint>
+      </div>
 
       {/* Date mapping */}
-      <Select
-        label={t("dateField")}
-        hint={t("dateFieldHint")}
-        nativeSelectProps={{
-          value: propertyMapping.date?.name ?? "",
-          onChange: e => {
+      <div className="space-y-2">
+        <Label>{t("dateField")}</Label>
+        <NativeSelect
+          value={propertyMapping.date?.name ?? ""}
+          onChange={e => {
             const val = e.target.value;
             if (val) {
               const prop = dateProps.find(p => p.name === val);
@@ -257,27 +264,28 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
             } else {
               setPropertyMapping("date", undefined);
             }
-          },
-        }}
-      >
-        <option value="">{t("notMapped")}</option>
-        {dateProps.map(p => {
-          const usedByField = isUsedBy(p.name, "dateField");
-          return (
-            <option key={p.id} value={p.name} disabled={!!usedByField}>
-              {p.name} ({p.type === "created_time" ? t("dateCreatedTime") : t("dateType")})
-              {usedByField ? ` (${t(usedByField)})` : ""}
-            </option>
-          );
-        })}
-      </Select>
+          }}
+        >
+          <option value="">{t("notMapped")}</option>
+          {dateProps.map(p => {
+            const usedByField = isUsedBy(p.name, "dateField");
+            return (
+              <option key={p.id} value={p.name} disabled={!!usedByField}>
+                {p.name} ({p.type === "created_time" ? t("dateCreatedTime") : t("dateType")})
+                {usedByField ? ` (${t(usedByField)})` : ""}
+              </option>
+            );
+          })}
+        </NativeSelect>
+        <Hint>{t("dateFieldHint")}</Hint>
+      </div>
 
       {/* Status mapping */}
-      <Select
-        label={t("statusField")}
-        nativeSelectProps={{
-          value: propertyMapping.status?.name ?? "",
-          onChange: e => {
+      <div className="space-y-2">
+        <Label>{t("statusField")}</Label>
+        <NativeSelect
+          value={propertyMapping.status?.name ?? ""}
+          onChange={e => {
             const val = e.target.value;
             if (val) {
               const prop = selectProps.find(p => p.name === val);
@@ -285,19 +293,19 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
             } else {
               setPropertyMapping("status", undefined);
             }
-          },
-        }}
-      >
-        <option value="">{t("notMapped")}</option>
-        {selectProps.map(p => {
-          const usedByField = isUsedBy(p.name, "statusField");
-          return (
-            <option key={p.id} value={p.name} disabled={!!usedByField}>
-              {p.name} ({p.type}){usedByField ? ` (${t(usedByField)})` : ""}
-            </option>
-          );
-        })}
-      </Select>
+          }}
+        >
+          <option value="">{t("notMapped")}</option>
+          {selectProps.map(p => {
+            const usedByField = isUsedBy(p.name, "statusField");
+            return (
+              <option key={p.id} value={p.name} disabled={!!usedByField}>
+                {p.name} ({p.type}){usedByField ? ` (${t(usedByField)})` : ""}
+              </option>
+            );
+          })}
+        </NativeSelect>
+      </div>
 
       {/* Status value mapping */}
       {propertyMapping.status &&
@@ -305,39 +313,38 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
           const statusProp = selectProps.find(p => p.name === propertyMapping.status?.name);
           if (!statusProp?.options) return null;
           return (
-            <div className="fr-ml-4w fr-mb-3w">
-              <h5>{t("statusValues")}</h5>
+            <div className="ml-8 space-y-4">
+              <h5 className="font-medium">{t("statusValues")}</h5>
               {statusProp.options.map(opt => (
                 <div key={opt.id}>
                   {creatingStatusForOptionId === opt.id ? (
-                    <div className="fr-mb-2w">
-                      <p className="fr-text--bold fr-mb-1w">{opt.name}</p>
+                    <div className="space-y-2">
+                      <p className="font-medium">{opt.name}</p>
                       <div className="flex items-end gap-2">
-                        <Input
-                          label={t("newStatusName")}
-                          className="flex-1"
-                          nativeInputProps={{
-                            value: newStatusName,
-                            onChange: e => setNewStatusName(e.target.value),
-                            onKeyDown: e => {
+                        <div className="flex-1 space-y-1">
+                          <Label>{t("newStatusName")}</Label>
+                          <Input
+                            value={newStatusName}
+                            onChange={e => setNewStatusName(e.target.value)}
+                            onKeyDown={e => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
                                 void handleCreateStatus(opt.id, opt.name);
                               }
-                            },
-                            autoFocus: true,
-                          }}
-                        />
+                            }}
+                            autoFocus
+                          />
+                        </div>
                         <Button
-                          size="small"
+                          size="sm"
                           onClick={() => void handleCreateStatus(opt.id, opt.name)}
                           disabled={!newStatusName.trim() || creatingStatusLoading}
                         >
                           {creatingStatusLoading ? t("creating") : t("create")}
                         </Button>
                         <Button
-                          size="small"
-                          priority="tertiary"
+                          size="sm"
+                          variant="outline"
                           onClick={() => {
                             setCreatingStatusForOptionId(null);
                             setNewStatusName("");
@@ -349,17 +356,15 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
                     </div>
                   ) : (
                     <div className="flex items-end gap-2">
-                      <div className="flex-1">
-                        <Select
-                          label={opt.name}
-                          nativeSelectProps={{
-                            value: statusMapping[opt.id]?.localId ?? "",
-                            onChange: e => {
-                              const localId = Number(e.target.value);
-                              if (localId) {
-                                setStatusMapping(opt.id, { localId, notionName: opt.name });
-                              }
-                            },
+                      <div className="flex-1 space-y-1">
+                        <Label>{opt.name}</Label>
+                        <NativeSelect
+                          value={statusMapping[opt.id]?.localId ?? ""}
+                          onChange={e => {
+                            const localId = Number(e.target.value);
+                            if (localId) {
+                              setStatusMapping(opt.id, { localId, notionName: opt.name });
+                            }
                           }}
                         >
                           <option value="">{t("notMapped")}</option>
@@ -368,18 +373,17 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
                               {s.name}
                             </option>
                           ))}
-                        </Select>
+                        </NativeSelect>
                       </div>
                       <Button
-                        size="small"
-                        priority="tertiary"
-                        iconId="ri-add-line"
-                        className="fr-mb-3v"
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
                           setCreatingStatusForOptionId(opt.id);
                           setNewStatusName(opt.name);
                         }}
                       >
+                        <Plus className="mr-1 size-3" />
                         {t("createNew")}
                       </Button>
                     </div>
@@ -391,42 +395,15 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
         })()}
 
       {/* Tags mapping */}
-      <Select
-        label={t("tagsField")}
-        nativeSelectProps={{
-          value: propertyMapping.tags ?? "",
-          onChange: e => setPropertyMapping("tags", e.target.value || undefined),
-        }}
-      >
-        <option value="">{t("notMapped")}</option>
-        {multiSelectProps.map(p => {
-          const usedByField = isUsedBy(p.name, "tagsField");
-          return (
-            <option key={p.id} value={p.name} disabled={!!usedByField}>
-              {p.name}
-              {usedByField ? ` (${t(usedByField)})` : ""}
-            </option>
-          );
-        })}
-      </Select>
-
-      {!showOutboundFields && (
-        <Alert severity="info" small description={t("inboundHidesOutboundFields")} className="fr-mt-2w fr-mb-2w" />
-      )}
-
-      {/* Comments info field — hidden in inbound mode (outbound-only: pushes comment count to Notion) */}
-      {showOutboundFields && (
-        <Select
-          label={t("commentsField")}
-          hint={t("commentsFieldHint")}
-          nativeSelectProps={{
-            value: propertyMapping.commentsInfo ?? "",
-            onChange: e => setPropertyMapping("commentsInfo", e.target.value || undefined),
-          }}
+      <div className="space-y-2">
+        <Label>{t("tagsField")}</Label>
+        <NativeSelect
+          value={propertyMapping.tags ?? ""}
+          onChange={e => setPropertyMapping("tags", e.target.value || undefined)}
         >
           <option value="">{t("notMapped")}</option>
-          {richTextProps.map(p => {
-            const usedByField = isUsedBy(p.name, "commentsField");
+          {multiSelectProps.map(p => {
+            const usedByField = isUsedBy(p.name, "tagsField");
             return (
               <option key={p.id} value={p.name} disabled={!!usedByField}>
                 {p.name}
@@ -434,20 +411,51 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
               </option>
             );
           })}
-        </Select>
+        </NativeSelect>
+      </div>
+
+      {!showOutboundFields && (
+        <Alert>
+          <AlertDescription>{t("inboundHidesOutboundFields")}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Likes field — hidden in inbound mode (outbound-only: pushes vote count to Notion) */}
+      {/* Comments info field */}
       {showOutboundFields && (
-        <Select
-          label={t("likesField")}
-          nativeSelectProps={{
-            value: propertyMapping.likes
-              ? typeof propertyMapping.likes === "string"
-                ? `${propertyMapping.likes}::number`
-                : `${propertyMapping.likes.name}::${propertyMapping.likes.type}`
-              : "",
-            onChange: e => {
+        <div className="space-y-2">
+          <Label>{t("commentsField")}</Label>
+          <NativeSelect
+            value={propertyMapping.commentsInfo ?? ""}
+            onChange={e => setPropertyMapping("commentsInfo", e.target.value || undefined)}
+          >
+            <option value="">{t("notMapped")}</option>
+            {richTextProps.map(p => {
+              const usedByField = isUsedBy(p.name, "commentsField");
+              return (
+                <option key={p.id} value={p.name} disabled={!!usedByField}>
+                  {p.name}
+                  {usedByField ? ` (${t(usedByField)})` : ""}
+                </option>
+              );
+            })}
+          </NativeSelect>
+          <Hint>{t("commentsFieldHint")}</Hint>
+        </div>
+      )}
+
+      {/* Likes field */}
+      {showOutboundFields && (
+        <div className="space-y-2">
+          <Label>{t("likesField")}</Label>
+          <NativeSelect
+            value={
+              propertyMapping.likes
+                ? typeof propertyMapping.likes === "string"
+                  ? `${propertyMapping.likes}::number`
+                  : `${propertyMapping.likes.name}::${propertyMapping.likes.type}`
+                : ""
+            }
+            onChange={e => {
               const val = e.target.value;
               if (!val) {
                 setPropertyMapping("likes", undefined);
@@ -457,39 +465,39 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
                 const type = val.slice(lastSep + 2) as "number" | "rich_text";
                 setPropertyMapping("likes", { name, type });
               }
-            },
-          }}
-        >
-          <option value="">{t("notMapped")}</option>
-          {numberProps.map(p => {
-            const usedByField = isUsedBy(p.name, "likesField");
-            return (
-              <option key={p.id} value={`${p.name}::number`} disabled={!!usedByField}>
-                {p.name}
-                {usedByField ? ` (${t(usedByField)})` : ""}
-              </option>
-            );
-          })}
-          {richTextProps.map(p => {
-            const usedByField = isUsedBy(p.name, "likesField");
-            return (
-              <option key={p.id} value={`${p.name}::rich_text`} disabled={!!usedByField}>
-                {p.name} (texte){usedByField ? ` (${t(usedByField)})` : ""}
-              </option>
-            );
-          })}
-        </Select>
+            }}
+          >
+            <option value="">{t("notMapped")}</option>
+            {numberProps.map(p => {
+              const usedByField = isUsedBy(p.name, "likesField");
+              return (
+                <option key={p.id} value={`${p.name}::number`} disabled={!!usedByField}>
+                  {p.name}
+                  {usedByField ? ` (${t(usedByField)})` : ""}
+                </option>
+              );
+            })}
+            {richTextProps.map(p => {
+              const usedByField = isUsedBy(p.name, "likesField");
+              return (
+                <option key={p.id} value={`${p.name}::rich_text`} disabled={!!usedByField}>
+                  {p.name} (texte){usedByField ? ` (${t(usedByField)})` : ""}
+                </option>
+              );
+            })}
+          </NativeSelect>
+        </div>
       )}
 
-      <h4 className="fr-mt-4w">{t("boardMapping")}</h4>
+      <h4 className="text-lg font-semibold">{t("boardMapping")}</h4>
       <p>{t("boardMappingDescription")}</p>
 
-      {/* Board mapping — map select options to RF boards */}
-      <Select
-        label={t("boardField")}
-        nativeSelectProps={{
-          value: propertyMapping.board?.name ?? "",
-          onChange: e => {
+      {/* Board mapping */}
+      <div className="space-y-2">
+        <Label>{t("boardField")}</Label>
+        <NativeSelect
+          value={propertyMapping.board?.name ?? ""}
+          onChange={e => {
             const val = e.target.value;
             if (val) {
               const prop = selectProps.find(p => p.name === val);
@@ -497,59 +505,58 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
             } else {
               setPropertyMapping("board", undefined);
             }
-          },
-        }}
-      >
-        <option value="">{t("notMapped")}</option>
-        {selectProps.map(p => {
-          const usedByField = isUsedBy(p.name, "boardField");
-          return (
-            <option key={p.id} value={p.name} disabled={!!usedByField}>
-              {p.name} ({p.type}){usedByField ? ` (${t(usedByField)})` : ""}
-            </option>
-          );
-        })}
-      </Select>
+          }}
+        >
+          <option value="">{t("notMapped")}</option>
+          {selectProps.map(p => {
+            const usedByField = isUsedBy(p.name, "boardField");
+            return (
+              <option key={p.id} value={p.name} disabled={!!usedByField}>
+                {p.name} ({p.type}){usedByField ? ` (${t(usedByField)})` : ""}
+              </option>
+            );
+          })}
+        </NativeSelect>
+      </div>
 
-      {/* Board value mapping — from the selected board property */}
+      {/* Board value mapping */}
       {propertyMapping.board &&
         (() => {
           const boardProp = selectProps.find(p => p.name === propertyMapping.board?.name);
           if (!boardProp?.options) return null;
           return (
-            <div className="fr-ml-4w fr-mb-3w">
-              <h5>{t("boardValues")}</h5>
+            <div className="ml-8 space-y-4">
+              <h5 className="font-medium">{t("boardValues")}</h5>
               {boardProp.options.map(opt => (
                 <div key={opt.id}>
                   {creatingBoardForOptionId === opt.id ? (
-                    <div className="fr-mb-2w">
-                      <p className="fr-text--bold fr-mb-1w">{opt.name}</p>
+                    <div className="space-y-2">
+                      <p className="font-medium">{opt.name}</p>
                       <div className="flex items-end gap-2">
-                        <Input
-                          label={t("newBoardName")}
-                          className="flex-1"
-                          nativeInputProps={{
-                            value: newBoardName,
-                            onChange: e => setNewBoardName(e.target.value),
-                            onKeyDown: e => {
+                        <div className="flex-1 space-y-1">
+                          <Label>{t("newBoardName")}</Label>
+                          <Input
+                            value={newBoardName}
+                            onChange={e => setNewBoardName(e.target.value)}
+                            onKeyDown={e => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
                                 void handleCreateBoard(opt.id, opt.name);
                               }
-                            },
-                            autoFocus: true,
-                          }}
-                        />
+                            }}
+                            autoFocus
+                          />
+                        </div>
                         <Button
-                          size="small"
+                          size="sm"
                           onClick={() => void handleCreateBoard(opt.id, opt.name)}
                           disabled={!newBoardName.trim() || creatingBoardLoading}
                         >
                           {creatingBoardLoading ? t("creating") : t("create")}
                         </Button>
                         <Button
-                          size="small"
-                          priority="tertiary"
+                          size="sm"
+                          variant="outline"
                           onClick={() => {
                             setCreatingBoardForOptionId(null);
                             setNewBoardName("");
@@ -561,17 +568,15 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
                     </div>
                   ) : (
                     <div className="flex items-end gap-2">
-                      <div className="flex-1">
-                        <Select
-                          label={opt.name}
-                          nativeSelectProps={{
-                            value: boardMapping[opt.id]?.localId ?? "",
-                            onChange: e => {
-                              const localId = Number(e.target.value);
-                              if (localId) {
-                                setBoardMapping(opt.id, { localId, notionName: opt.name });
-                              }
-                            },
+                      <div className="flex-1 space-y-1">
+                        <Label>{opt.name}</Label>
+                        <NativeSelect
+                          value={boardMapping[opt.id]?.localId ?? ""}
+                          onChange={e => {
+                            const localId = Number(e.target.value);
+                            if (localId) {
+                              setBoardMapping(opt.id, { localId, notionName: opt.name });
+                            }
                           }}
                         >
                           <option value="">{t("notMapped")}</option>
@@ -580,18 +585,17 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
                               {b.name}
                             </option>
                           ))}
-                        </Select>
+                        </NativeSelect>
                       </div>
                       <Button
-                        size="small"
-                        priority="tertiary"
-                        iconId="ri-add-line"
-                        className="fr-mb-3v"
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
                           setCreatingBoardForOptionId(opt.id);
                           setNewBoardName(opt.name);
                         }}
                       >
+                        <Plus className="mr-1 size-3" />
                         {t("createNew")}
                       </Button>
                     </div>
@@ -604,7 +608,9 @@ export const MappingStep = ({ boards, statuses }: MappingStepProps) => {
 
       {/* No board mapping info */}
       {!propertyMapping.board && (
-        <Alert severity="info" small description={t("defaultBoardInfo")} className="fr-mt-2w" />
+        <Alert>
+          <AlertDescription>{t("defaultBoardInfo")}</AlertDescription>
+        </Alert>
       )}
     </div>
   );

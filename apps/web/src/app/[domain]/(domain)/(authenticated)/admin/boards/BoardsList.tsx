@@ -1,11 +1,20 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Card from "@codegouvfr/react-dsfr/Card";
-import Input from "@codegouvfr/react-dsfr/Input";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Textarea,
+} from "@kokatsuna/ui";
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Markdown from "react-markdown";
@@ -77,141 +86,143 @@ export const BoardsList = ({ boards: initialBoards }: BoardsListProps) => {
   return (
     <div>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={tc("error")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+          <Button variant="ghost" size="icon" className="absolute right-2 top-2 size-6" onClick={() => setError(null)}>
+            <X className="size-4" />
+          </Button>
+        </Alert>
       )}
 
-      <div className={fr.cx("fr-mb-4w")}>
+      <div className="mb-8 space-y-4">
         {boards.map((board, index) => (
-          <Card
-            key={board.id}
-            className={fr.cx("fr-mb-2w")}
-            border
-            title={
-              formState.edit.id === board.id ? (
-                <Input
-                  label={t("name")}
-                  nativeInputProps={{
-                    value: formState.edit.name,
-                    onChange: e => setFormState(prev => ({ ...prev, edit: { ...prev.edit, name: e.target.value } })),
-                    autoComplete: "off",
-                    name: "name",
-                  }}
-                />
-              ) : (
-                board.name
-              )
-            }
-            desc={
-              formState.edit.id === board.id ? (
-                <Input
-                  label={t("description")}
-                  textArea
-                  nativeTextAreaProps={{
-                    value: formState.edit.description,
-                    onChange: e =>
-                      setFormState(prev => ({ ...prev, edit: { ...prev.edit, description: e.target.value } })),
-                    autoComplete: "off",
-                    name: "description",
-                    rows: 4,
-                  }}
-                />
-              ) : board.description ? (
-                <Markdown {...reactMarkdownConfig}>{board.description}</Markdown>
-              ) : (
-                <em className={fr.cx("fr-text--xs")}>{t("noDescription")}</em>
-              )
-            }
-            footer={
-              formState.edit.id === board.id ? (
-                <ButtonsGroup
-                  inlineLayoutWhen="always"
-                  buttons={[
-                    {
-                      children: tc("save"),
-                      onClick: () => void handleUpdate(board.id),
-                    },
-                    {
-                      children: tc("cancel"),
-                      priority: "secondary",
-                      onClick: () => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } })),
-                    },
-                  ]}
-                />
-              ) : (
-                <ButtonsGroup
-                  inlineLayoutWhen="always"
-                  buttons={[
-                    {
-                      children: "↑",
-                      title: t("moveUp"),
-                      size: "small",
-                      onClick: () => void handleMoveUp(index),
-                      disabled: index === 0,
-                      priority: "tertiary no outline",
-                    },
-                    {
-                      children: "↓",
-                      title: t("moveDown"),
-                      size: "small",
-                      onClick: () => void handleMoveDown(index),
-                      disabled: index === boards.length - 1,
-                      priority: "tertiary no outline",
-                    },
-                    {
-                      children: t("modify"),
-                      size: "small",
-                      onClick: () => {
-                        setFormState(prev => ({
-                          ...prev,
-                          edit: { id: board.id, name: board.name, description: board.description ?? "" },
-                        }));
-                      },
-                    },
-                    {
-                      children: tc("delete"),
-                      size: "small",
-                      priority: "secondary",
-                      onClick: () => void handleDelete(board.id),
-                    },
-                  ]}
-                />
-              )
-            }
-          />
+          <Card key={board.id}>
+            {formState.edit.id === board.id ? (
+              <>
+                <CardHeader>
+                  <div className="space-y-2">
+                    <Label htmlFor={`edit-name-${board.id}`}>{t("name")}</Label>
+                    <Input
+                      id={`edit-name-${board.id}`}
+                      value={formState.edit.name}
+                      onChange={e => setFormState(prev => ({ ...prev, edit: { ...prev.edit, name: e.target.value } }))}
+                      autoComplete="off"
+                      name="name"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Label htmlFor={`edit-desc-${board.id}`}>{t("description")}</Label>
+                    <Textarea
+                      id={`edit-desc-${board.id}`}
+                      value={formState.edit.description}
+                      onChange={e =>
+                        setFormState(prev => ({ ...prev, edit: { ...prev.edit, description: e.target.value } }))
+                      }
+                      autoComplete="off"
+                      name="description"
+                      rows={4}
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="gap-2">
+                  <Button size="sm" onClick={() => void handleUpdate(board.id)}>
+                    {tc("save")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormState(prev => ({ ...prev, edit: { id: null, name: "", description: "" } }))}
+                  >
+                    {tc("cancel")}
+                  </Button>
+                </CardFooter>
+              </>
+            ) : (
+              <>
+                <CardHeader>
+                  <CardTitle>{board.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {board.description ? (
+                    <Markdown {...reactMarkdownConfig}>{board.description}</Markdown>
+                  ) : (
+                    <em className="text-xs text-muted-foreground">{t("noDescription")}</em>
+                  )}
+                </CardContent>
+                <CardFooter className="gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("moveUp")}
+                    onClick={() => void handleMoveUp(index)}
+                    disabled={index === 0}
+                  >
+                    <ArrowUp className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("moveDown")}
+                    onClick={() => void handleMoveDown(index)}
+                    disabled={index === boards.length - 1}
+                  >
+                    <ArrowDown className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFormState(prev => ({
+                        ...prev,
+                        edit: { id: board.id, name: board.name, description: board.description ?? "" },
+                      }));
+                    }}
+                  >
+                    <Pencil className="mr-1 size-3" />
+                    {t("modify")}
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={() => void handleDelete(board.id)}>
+                    <Trash2 className="mr-1 size-3" />
+                    {tc("delete")}
+                  </Button>
+                </CardFooter>
+              </>
+            )}
+          </Card>
         ))}
       </div>
 
-      <h2>{t("addBoard")}</h2>
-      <Input
-        label={t("name")}
-        nativeInputProps={{
-          value: formState.new.name,
-          onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, name: e.target.value } })),
-          autoComplete: "off",
-          name: "new-name",
-        }}
-      />
-      <Input
-        label={t("descriptionMarkdown")}
-        textArea
-        nativeTextAreaProps={{
-          value: formState.new.description,
-          onChange: e => setFormState(prev => ({ ...prev, new: { ...prev.new, description: e.target.value } })),
-          autoComplete: "off",
-          name: "new-description",
-          rows: 4,
-        }}
-      />
-      <Button onClick={() => void handleCreate()} disabled={!formState.new.name}>
-        {tc("create")}
-      </Button>
+      <h2 className="mb-4 text-xl font-semibold">{t("addBoard")}</h2>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="new-name">{t("name")}</Label>
+          <Input
+            id="new-name"
+            value={formState.new.name}
+            onChange={e => setFormState(prev => ({ ...prev, new: { ...prev.new, name: e.target.value } }))}
+            autoComplete="off"
+            name="new-name"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="new-description">{t("descriptionMarkdown")}</Label>
+          <Textarea
+            id="new-description"
+            value={formState.new.description}
+            onChange={e => setFormState(prev => ({ ...prev, new: { ...prev.new, description: e.target.value } }))}
+            autoComplete="off"
+            name="new-description"
+            rows={4}
+          />
+        </div>
+        <Button onClick={() => void handleCreate()} disabled={!formState.new.name}>
+          <Plus className="mr-1 size-4" />
+          {tc("create")}
+        </Button>
+      </div>
     </div>
   );
 };

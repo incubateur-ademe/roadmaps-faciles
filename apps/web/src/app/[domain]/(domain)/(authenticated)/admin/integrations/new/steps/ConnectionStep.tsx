@@ -1,8 +1,6 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
+import { Alert, AlertDescription, Button, Hint, Input, Label } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 
@@ -41,33 +39,37 @@ export const ConnectionStep = () => {
 
   return (
     <div>
-      <p>{t("connectionDescription")}</p>
+      <p className="mb-4">{t("connectionDescription")}</p>
 
-      <Input
-        label={t("apiKeyLabel")}
-        hintText={t("apiKeyHint")}
-        nativeInputProps={{
-          type: "password",
-          value: apiKey,
-          onChange: e => updateApiKey(e.target.value),
-          placeholder: "ntn_...",
-        }}
-      />
+      <div className="mb-4 space-y-2">
+        <Label htmlFor="api-key">{t("apiKeyLabel")}</Label>
+        <Input
+          id="api-key"
+          type="password"
+          value={apiKey}
+          onChange={e => updateApiKey(e.target.value)}
+          placeholder="ntn_..."
+        />
+        <Hint>{t("apiKeyHint")}</Hint>
+      </div>
 
       <Button
+        variant="outline"
         onClick={() => void handleTest()}
         disabled={!apiKey.trim() || connectionStatus === "testing"}
-        priority="secondary"
-        className="fr-mt-2w"
       >
         {connectionStatus === "testing" ? t("testing") : t("testConnection")}
       </Button>
 
       {connectionStatus === "success" && (
-        <Alert severity="success" small description={t("connectionSuccess", { botName })} className="fr-mt-2w" />
+        <Alert className="mt-4">
+          <AlertDescription>{t("connectionSuccess", { botName })}</AlertDescription>
+        </Alert>
       )}
       {connectionStatus === "error" && (
-        <Alert severity="error" small description={errorMessage || t("connectionFailed")} className="fr-mt-2w" />
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>{errorMessage || t("connectionFailed")}</AlertDescription>
+        </Alert>
       )}
     </div>
   );

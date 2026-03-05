@@ -1,7 +1,5 @@
 import { getTranslations } from "next-intl/server";
 
-import { Container, Grid, GridCol } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { espaceMembreClient, getEmUserEmail } from "@/lib/espaceMembre";
 import { auth } from "@/lib/next-auth/auth";
 import { userRepo } from "@/lib/repo";
@@ -26,26 +24,20 @@ const TenantProfilePage = DomainPageHOP()(async () => {
   }
 
   return (
-    <DsfrPage>
-      <Container my="4w">
-        <h1>{t("title")}</h1>
-        <Grid haveGutters>
-          <GridCol md={6}>
-            <ProfileForm
-              variant="tenant"
-              user={{
-                name: user.name,
-                email: user.email,
-                notificationsEnabled: user.notificationsEnabled,
-                isBetaGouvMember: user.isBetaGouvMember,
-                username: user.username,
-                emEmail,
-              }}
-            />
-          </GridCol>
-        </Grid>
-      </Container>
-    </DsfrPage>
+    <div className="mx-auto max-w-2xl py-8">
+      <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
+      <ProfileForm
+        variant="tenant"
+        user={{
+          name: user.name,
+          email: user.email,
+          notificationsEnabled: user.notificationsEnabled,
+          isBetaGouvMember: user.isBetaGouvMember,
+          username: user.username,
+          emEmail,
+        }}
+      />
+    </div>
   );
 });
 

@@ -1,10 +1,17 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Card from "@codegouvfr/react-dsfr/Card";
-import Input from "@codegouvfr/react-dsfr/Input";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Input,
+} from "@kokatsuna/ui";
+import { ChevronRight, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -72,14 +79,17 @@ export const DatabaseStep = () => {
   );
 
   if (loadingDatabases) {
-    return <p>{t("loadingDatabases")}</p>;
+    return <p className="text-muted-foreground">{t("loadingDatabases")}</p>;
   }
 
   if (databases.length === 0) {
     return (
       <div className="flex flex-col items-start gap-4">
-        <Alert severity="warning" small description={t("noDatabases")} />
-        <Button priority="secondary" iconId="fr-icon-refresh-fill" onClick={() => void loadDatabases()}>
+        <Alert variant="destructive">
+          <AlertDescription>{t("noDatabases")}</AlertDescription>
+        </Alert>
+        <Button variant="outline" onClick={() => void loadDatabases()}>
+          <RefreshCw className="mr-1 size-4" />
           {t("refreshDatabases")}
         </Button>
       </div>
@@ -91,15 +101,11 @@ export const DatabaseStep = () => {
       <div className="flex items-center justify-between">
         <p>{t("databaseDescription")}</p>
         <div className="flex gap-2">
-          <Button priority="tertiary" onClick={goPrev} size="small">
+          <Button variant="outline" onClick={goPrev} size="sm">
             {t("cancel")}
           </Button>
-          <Button
-            priority="tertiary no outline"
-            iconId="fr-icon-refresh-fill"
-            onClick={() => void loadDatabases()}
-            size="small"
-          >
+          <Button variant="ghost" onClick={() => void loadDatabases()} size="sm">
+            <RefreshCw className="mr-1 size-4" />
             {t("refreshDatabases")}
           </Button>
         </div>
@@ -107,15 +113,11 @@ export const DatabaseStep = () => {
 
       {databases.length >= 5 && (
         <Input
-          label={t("searchDatabases")}
-          hideLabel
-          nativeInputProps={{
-            placeholder: t("searchDatabases"),
-            value: search,
-            onChange: e => setSearch(e.target.value),
-            type: "search",
-          }}
-          className="fr-mb-2w"
+          placeholder={t("searchDatabases")}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          type="search"
+          className="my-4"
         />
       )}
 
@@ -125,45 +127,45 @@ export const DatabaseStep = () => {
           return (
             <Card
               key={db.id}
-              size="small"
-              title={
-                <>
-                  {db.icon?.type === "emoji" && <span className="fr-mr-1w">{db.icon.emoji}</span>}
+              className={`cursor-pointer transition-colors hover:bg-accent ${isSelected ? "ring-2 ring-primary" : ""}`}
+              onClick={() => void handleSelect(db.id)}
+            >
+              <CardHeader className="py-3">
+                <CardTitle className="text-base">
+                  {db.icon?.type === "emoji" && <span className="mr-2">{db.icon.emoji}</span>}
                   {db.icon?.type === "url" && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={db.icon.url} alt="" className="fr-mr-1w inline-block size-5" />
+                    <img src={db.icon.url} alt="" className="mr-2 inline-block size-5" />
                   )}
                   {db.name}
-                  {db.parentName && (
-                    <span className="fr-text--sm fr-text--mention-grey fr-ml-1w">({db.parentName})</span>
-                  )}
-                </>
-              }
-              titleAs="h4"
-              desc={db.description}
-              detail={t("propertyCount", { count: db.propertyCount })}
-              footer={
-                isSelected ? (
-                  loadingSchema ? (
-                    <p className="fr-text--sm fr-mb-0">{t("loadingSchema")}</p>
+                  {db.parentName && <span className="ml-2 text-sm text-muted-foreground">({db.parentName})</span>}
+                </CardTitle>
+              </CardHeader>
+              {(db.description || isSelected) && (
+                <CardContent className="pb-3 pt-0">
+                  {db.description && <p className="text-sm text-muted-foreground">{db.description}</p>}
+                  <p className="text-xs text-muted-foreground">{t("propertyCount", { count: db.propertyCount })}</p>
+                </CardContent>
+              )}
+              {isSelected && (
+                <CardFooter className="pb-3 pt-0">
+                  {loadingSchema ? (
+                    <p className="text-sm text-muted-foreground">{t("loadingSchema")}</p>
                   ) : schema ? (
                     <Button
-                      size="small"
-                      iconId="fr-icon-arrow-right-line"
-                      iconPosition="right"
+                      size="sm"
                       onClick={e => {
                         e.stopPropagation();
                         goNext();
                       }}
                     >
                       {t("next")}
+                      <ChevronRight className="ml-1 size-4" />
                     </Button>
-                  ) : null
-                ) : undefined
-              }
-              className={cx(isSelected && "outline outline-2 outline-blue-france-sun-113", "cursor-pointer")}
-              nativeDivProps={{ onClick: () => void handleSelect(db.id) }}
-            />
+                  ) : null}
+                </CardFooter>
+              )}
+            </Card>
           );
         })}
       </div>

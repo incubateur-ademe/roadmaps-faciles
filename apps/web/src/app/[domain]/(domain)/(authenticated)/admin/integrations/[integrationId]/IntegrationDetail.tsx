@@ -1,10 +1,20 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Label,
+  Progress,
+  Switch,
+} from "@kokatsuna/ui";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,8 +25,6 @@ import { type IntegrationMapping, type TenantIntegration } from "@/prisma/client
 
 import { deleteIntegration, updateIntegration } from "../actions";
 import { SyncRunTable } from "./SyncRunTable";
-
-const deleteModal = createModal({ id: "delete-integration-modal", isOpenedByDefault: false });
 
 const formatDuration = (ms: number): string => {
   const totalSec = Math.floor(ms / 1000);
@@ -42,6 +50,7 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
   const [syncStartedAt, setSyncStartedAt] = useState<null | number>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [remoteSyncing, setRemoteSyncing] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const processStartedAtRef = useRef<null | number>(null);
@@ -54,9 +63,9 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
   const conflictCount = mappings.filter(m => m.syncStatus === "CONFLICT").length;
   const errorCount = mappings.filter(m => m.syncStatus === "ERROR").length;
 
-  // Check if a sync is already running server-side (e.g. user navigated away and came back)
+  // Check if a sync is already running server-side
   useEffect(() => {
-    if (syncing) return; // Already tracking locally, no need to poll
+    if (syncing) return;
 
     let cancelled = false;
     const checkSyncStatus = async () => {
@@ -72,7 +81,6 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
           }
           if (data.startedAt) setSyncStartedAt(data.startedAt);
         } else if (remoteSyncingRef.current) {
-          // Sync just finished — refresh data
           remoteSyncingRef.current = false;
           setRemoteSyncing(false);
           setSyncStartedAt(null);
@@ -173,18 +181,15 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
             const progress = JSON.parse(eventData) as SyncProgress;
             setSyncProgress(progress);
 
-            // Reset ETA tracking on phase/total change
             const phaseKey = `${progress.phase}:${progress.total}`;
             if (lastPhaseRef.current !== phaseKey) {
               lastPhaseRef.current = phaseKey;
               processStartedAtRef.current = progress.total !== null && progress.current > 0 ? Date.now() : null;
             }
-            // Start ETA tracking when first determinate progress arrives
             if (progress.total !== null && progress.current > 0 && !processStartedAtRef.current) {
               processStartedAtRef.current = Date.now();
             }
           } else if (eventType === "done") {
-            // TODO: envoyer une notification (toast/push) quand la sync se termine en arrière-plan
             setSyncResult(JSON.parse(eventData) as { conflicts: number; errors: number; synced: number });
             setSyncing(false);
             setSyncProgress(null);
@@ -201,7 +206,6 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
         }
       }
 
-      // Safety: if stream ended without done/error event
       setSyncing(false);
       setSyncStartedAt(null);
     } catch (error) {
@@ -221,22 +225,25 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
     }
   }, [integration.id, cleanupPosts, router]);
 
+  const progressPercent =
+    syncProgress?.total != null && syncProgress.total > 0
+      ? Math.round((syncProgress.current / syncProgress.total) * 100)
+      : null;
+
   return (
     <div>
       {/* Status badges */}
-      <div className="fr-mb-3w flex gap-2">
-        <Badge severity={integration.enabled ? "success" : "warning"}>
+      <div className="mb-6 flex gap-2">
+        <Badge variant={integration.enabled ? "default" : "secondary"}>
           {integration.enabled ? t("enabled") : t("disabled")}
         </Badge>
-        <Badge severity="info" noIcon>
-          {integration.type}
-        </Badge>
-        {conflictCount > 0 && <Badge severity="warning">{t("conflicts", { count: conflictCount })}</Badge>}
-        {errorCount > 0 && <Badge severity="error">{t("errors", { count: errorCount })}</Badge>}
+        <Badge variant="outline">{integration.type}</Badge>
+        {conflictCount > 0 && <Badge variant="secondary">{t("conflicts", { count: conflictCount })}</Badge>}
+        {errorCount > 0 && <Badge variant="destructive">{t("errors", { count: errorCount })}</Badge>}
       </div>
 
       {/* Info */}
-      <div className="fr-mb-3w">
+      <div className="mb-6 space-y-1 text-sm">
         <p>
           {integration.lastSyncAt
             ? t("lastSyncAt", { date: new Date(integration.lastSyncAt).toLocaleString() })
@@ -247,32 +254,55 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
       </div>
 
       {/* Actions */}
-      <div className="fr-mb-4w flex gap-4">
-        <ToggleSwitch
-          label={t("enabledToggle")}
-          checked={integration.enabled}
-          onChange={() => void handleToggleEnabled()}
-        />
+      <div className="mb-8 flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Switch
+            id="toggle-enabled"
+            checked={integration.enabled}
+            onCheckedChange={() => void handleToggleEnabled()}
+          />
+          <Label htmlFor="toggle-enabled">{t("enabledToggle")}</Label>
+        </div>
 
-        <Button
-          onClick={() => void handleSync()}
-          disabled={syncing || remoteSyncing || !integration.enabled}
-          priority="primary"
-        >
+        <Button onClick={() => void handleSync()} disabled={syncing || remoteSyncing || !integration.enabled}>
           {syncing || remoteSyncing ? t("syncing") : t("syncNow")}
         </Button>
 
-        <Button onClick={() => deleteModal.open()} priority="tertiary" className="fr-text--error">
-          {t("delete")}
-        </Button>
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="mr-1 size-4" />
+              {t("delete")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("deleteTitle")}</DialogTitle>
+            </DialogHeader>
+            <p>{t("deleteWarning")}</p>
+            {inboundPostCount > 0 && (
+              <div className="flex items-center gap-2">
+                <Switch id="cleanup-posts" checked={cleanupPosts} onCheckedChange={setCleanupPosts} />
+                <Label htmlFor="cleanup-posts">{t("cleanupInboundPosts", { count: inboundPostCount })}</Label>
+              </div>
+            )}
+            <div className="mt-4 flex gap-4">
+              <Button variant="destructive" onClick={() => void handleDelete()}>
+                {t("confirmDelete")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Remote sync detected (navigated away and came back) */}
+      {/* Remote sync detected */}
       {remoteSyncing && !syncing && (
-        <div className="fr-mb-3w">
-          <Alert severity="info" small description={t("syncRemoteInProgress")} />
-          <progress className="fr-mt-1w w-full" />
-          <div className="fr-mt-1w fr-text--xs text-[var(--text-mention-grey)]">
+        <div className="mb-6">
+          <Alert>
+            <AlertDescription>{t("syncRemoteInProgress")}</AlertDescription>
+          </Alert>
+          <Progress className="mt-2" />
+          <div className="mt-1 text-xs text-muted-foreground">
             <span>{t("syncElapsed", { time: formatDuration(elapsedMs) })}</span>
           </div>
         </div>
@@ -280,35 +310,34 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
 
       {/* Sync feedback */}
       {syncing && syncProgress && syncProgress.total === null && syncProgress.current === 0 && (
-        <div className="fr-mb-3w">
-          <Alert
-            severity="info"
-            small
-            description={syncProgress.phase === "outbound" ? t("syncFetchingOutbound") : t("syncFetchingInbound")}
-          />
-          <progress className="fr-mt-1w w-full" />
+        <div className="mb-6">
+          <Alert>
+            <AlertDescription>
+              {syncProgress.phase === "outbound" ? t("syncFetchingOutbound") : t("syncFetchingInbound")}
+            </AlertDescription>
+          </Alert>
+          <Progress className="mt-2" />
         </div>
       )}
       {syncing && syncProgress && syncProgress.total === null && syncProgress.current > 0 && (
-        <div className="fr-mb-3w">
-          <Alert severity="info" small description={t("syncStreamingProgress", { count: syncProgress.current })} />
-          <progress className="fr-mt-1w w-full" />
+        <div className="mb-6">
+          <Alert>
+            <AlertDescription>{t("syncStreamingProgress", { count: syncProgress.current })}</AlertDescription>
+          </Alert>
+          <Progress className="mt-2" />
         </div>
       )}
       {syncing && syncProgress && syncProgress.total !== null && syncProgress.total > 0 && (
-        <div className="fr-mb-3w">
-          <Alert
-            severity="info"
-            small
-            description={
-              syncProgress.phase === "outbound"
+        <div className="mb-6">
+          <Alert>
+            <AlertDescription>
+              {syncProgress.phase === "outbound"
                 ? t("syncProgressOutbound", { current: syncProgress.current, total: syncProgress.total })
-                : t("syncProgressInbound", { current: syncProgress.current, total: syncProgress.total })
-            }
-          />
-          <progress value={syncProgress.current} max={syncProgress.total} className="fr-mt-1w w-full" />
-          {/* Timer + ETA */}
-          <div className="fr-mt-1w fr-text--xs flex gap-4 text-[var(--text-mention-grey)]">
+                : t("syncProgressInbound", { current: syncProgress.current, total: syncProgress.total })}
+            </AlertDescription>
+          </Alert>
+          <Progress value={progressPercent ?? undefined} className="mt-2" />
+          <div className="mt-1 flex gap-4 text-xs text-muted-foreground">
             <span>{t("syncElapsed", { time: formatDuration(elapsedMs) })}</span>
             {(() => {
               if (!processStartedAtRef.current || syncProgress.current < 3) return null;
@@ -321,15 +350,19 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
         </div>
       )}
       {syncing && !syncProgress && (
-        <Alert severity="info" small description={t("syncInProgress")} className="fr-mb-3w" />
+        <Alert className="mb-6">
+          <AlertDescription>{t("syncInProgress")}</AlertDescription>
+        </Alert>
       )}
       {/* Leave message + cancel button */}
       {(syncing || remoteSyncing) && (
-        <div className="fr-mb-3w flex items-center gap-4">
-          <Alert severity="info" small description={t("syncCanLeave")} className="flex-1" />
+        <div className="mb-6 flex items-center gap-4">
+          <Alert className="flex-1">
+            <AlertDescription>{t("syncCanLeave")}</AlertDescription>
+          </Alert>
           <Button
-            priority="tertiary"
-            size="small"
+            variant="outline"
+            size="sm"
             onClick={() => {
               handleCancelMonitoring();
               remoteSyncingRef.current = false;
@@ -341,39 +374,25 @@ export const IntegrationDetail = ({ integration, mappings, syncRuns }: Integrati
         </div>
       )}
       {syncResult && (
-        <Alert
-          severity={syncResult.errors > 0 ? "warning" : "success"}
-          small
-          description={t("syncResultMessage", {
-            synced: syncResult.synced,
-            errors: syncResult.errors,
-            conflicts: syncResult.conflicts,
-          })}
-          className="fr-mb-3w"
-        />
+        <Alert variant={syncResult.errors > 0 ? "destructive" : "default"} className="mb-6">
+          <AlertDescription>
+            {t("syncResultMessage", {
+              synced: syncResult.synced,
+              errors: syncResult.errors,
+              conflicts: syncResult.conflicts,
+            })}
+          </AlertDescription>
+        </Alert>
       )}
-      {syncError && <Alert severity="error" small description={syncError} className="fr-mb-3w" />}
+      {syncError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{syncError}</AlertDescription>
+        </Alert>
+      )}
 
       {/* Sync logs */}
-      <h2 className="fr-mt-4w">{t("syncHistory")}</h2>
+      <h2 className="mb-4 mt-8 text-xl font-semibold">{t("syncHistory")}</h2>
       <SyncRunTable runs={syncRuns} />
-
-      {/* Delete modal */}
-      <deleteModal.Component title={t("deleteTitle")}>
-        <p>{t("deleteWarning")}</p>
-        {inboundPostCount > 0 && (
-          <ToggleSwitch
-            label={t("cleanupInboundPosts", { count: inboundPostCount })}
-            checked={cleanupPosts}
-            onChange={setCleanupPosts}
-          />
-        )}
-        <div className="fr-mt-3w flex gap-4">
-          <Button onClick={() => void handleDelete()} priority="primary" className="fr-btn--error">
-            {t("confirmDelete")}
-          </Button>
-        </div>
-      </deleteModal.Component>
     </div>
   );
 };
