@@ -884,6 +884,11 @@
   },
   "rootAdmin": {
     "sideMenu": "Administration",
+    "groups": {
+      "management": "Gestion",
+      "security": "Sécurité",
+      "developers": "Développeurs"
+    },
     "tenants": "Tenants",
     "users": "Utilisateurs",
     "prismaStudio": "Prisma Studio",

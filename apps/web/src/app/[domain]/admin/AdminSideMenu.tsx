@@ -1,6 +1,18 @@
 "use client";
 
-import { Columns3, KeyRound, Map, Plug, ScrollText, Settings, Shield, Tag, Users, Webhook } from "lucide-react";
+import {
+  Columns3,
+  KeyRound,
+  Map,
+  Plug,
+  ScrollText,
+  Settings,
+  Shield,
+  ShieldAlert,
+  Tag,
+  Users,
+  Webhook,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -20,7 +32,11 @@ const GENERAL_SECTIONS = [
 
 const GENERAL_SECTION_IDS = GENERAL_SECTIONS.map(([id]) => id);
 
-export const AdminSideMenu = () => {
+interface AdminSideMenuProps {
+  pendingModerationCount?: number;
+}
+
+export const AdminSideMenu = ({ pendingModerationCount }: AdminSideMenuProps) => {
   const pathname = usePathname();
   const [activeSection, setActiveSection] = useState<null | string>(null);
   const visibleSections = useRef(new Set<string>());
@@ -70,7 +86,6 @@ export const AdminSideMenu = () => {
             href: `/admin/general#${id}`,
           })),
         },
-        { label: t("authentication"), href: "/admin/authentication", icon: Shield },
         { label: t("boards"), href: "/admin/boards", icon: Columns3 },
         { label: t("statuses"), href: "/admin/statuses", icon: Tag },
         { label: t("roadmap"), href: "/admin/roadmap", icon: Map },
@@ -89,22 +104,36 @@ export const AdminSideMenu = () => {
             { label: t("invitations"), href: "/admin/users/invitations" },
           ],
         },
-        { label: t("auditLog"), href: "/admin/audit-log", icon: ScrollText },
+        { label: t("authentication"), href: "/admin/authentication", icon: Shield },
+        { label: t("api"), href: "/admin/api", icon: KeyRound },
       ],
     },
     {
       label: t("developers"),
       items: [
-        { label: t("api"), href: "/admin/api", icon: KeyRound },
         { label: t("webhooks"), href: "/admin/webhooks", icon: Webhook },
         ...(integrationsEnabled
           ? [{ label: t("integrations"), href: "/admin/integrations", icon: Plug, matchPrefix: true as const }]
           : []),
+        { label: t("auditLog"), href: "/admin/audit-log", icon: ScrollText },
       ],
     },
   ];
 
   return (
-    <AdminSidebar title={t("title")} groups={groups} activeSection={currentPage === "general" ? activeSection : null} />
+    <AdminSidebar
+      title={t("title")}
+      subtitle="Administration"
+      groups={groups}
+      activeSection={currentPage === "general" ? activeSection : null}
+      extraItems={[
+        {
+          label: t("moderation"),
+          href: "/moderation",
+          icon: ShieldAlert,
+          ...(pendingModerationCount ? { badge: pendingModerationCount } : {}),
+        },
+      ]}
+    />
   );
 };
