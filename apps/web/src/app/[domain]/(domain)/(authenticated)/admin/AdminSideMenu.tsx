@@ -1,14 +1,25 @@
 "use client";
 
-import SideMenu, { type SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
+import { SidebarTrigger } from "@kokatsuna/ui";
+import { Columns3, KeyRound, Map, Plug, ScrollText, Settings, Shield, Tag, Users, Webhook } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Container } from "@/dsfr";
 import { useFeatureFlag } from "@/lib/feature-flags/client";
+import { AdminSidebar, type NavGroup } from "@/ui/AdminSidebar";
 
-const GENERAL_SECTION_IDS = ["privacy", "localization", "moderation", "header", "visibility", "embedding"];
+/** [sectionId, i18nKey] — sectionId used for IntersectionObserver + URL hash, i18nKey for translation */
+const GENERAL_SECTIONS = [
+  ["privacy", "privacy"],
+  ["localization", "localization"],
+  ["moderation", "moderation"],
+  ["header", "headerSection"],
+  ["visibility", "visibility"],
+  ["embedding", "embedding"],
+] as const;
+
+const GENERAL_SECTION_IDS = GENERAL_SECTIONS.map(([id]) => id);
 
 export const AdminSideMenu = () => {
   const pathname = usePathname();
@@ -17,10 +28,9 @@ export const AdminSideMenu = () => {
   const t = useTranslations("domainAdmin.sideMenu");
   const integrationsEnabled = useFeatureFlag("integrations");
 
-  // Extract the current admin page from pathname (e.g., /admin/general -> general)
   const currentPage = pathname.split("/admin/")[1]?.split("#")[0] || "general";
 
-  // Track visible sections with IntersectionObserver
+  // Track visible sections with IntersectionObserver for general page quick-nav
   useEffect(() => {
     if (currentPage !== "general") return;
 
@@ -38,8 +48,6 @@ export const AdminSideMenu = () => {
             visibleSections.current.delete(entry.target.id);
           }
         }
-
-        // Pick the topmost visible section (by DOM order)
         const topmost = GENERAL_SECTION_IDS.find(id => visibleSections.current.has(id));
         setActiveSection(topmost ?? null);
       },
@@ -50,116 +58,56 @@ export const AdminSideMenu = () => {
     return () => observer.disconnect();
   }, [currentPage]);
 
-  // Only relevant when on the general page
-  const currentSection = currentPage === "general" ? activeSection : null;
-
-  // Define menu structure with dynamic active states
-  const menuItems: SideMenuProps.Item[] = [
+  const groups: NavGroup[] = [
     {
-      text: t("general"),
-      linkProps: { href: `/admin/general` },
-      isActive: currentPage === "general",
-      expandedByDefault: currentPage === "general",
+      label: t("configuration"),
       items: [
         {
-          linkProps: { href: `/admin/general#privacy` },
-          text: t("privacy"),
-          isActive: currentPage === "general" && currentSection === "privacy",
+          label: t("general"),
+          href: "/admin/general",
+          icon: Settings,
+          subItems: GENERAL_SECTIONS.map(([id, key]) => ({
+            label: t(key),
+            href: `/admin/general#${id}`,
+          })),
         },
-        {
-          linkProps: { href: `/admin/general#localization` },
-          text: t("localization"),
-          isActive: currentPage === "general" && currentSection === "localization",
-        },
-        {
-          linkProps: { href: `/admin/general#moderation` },
-          text: t("moderation"),
-          isActive: currentPage === "general" && currentSection === "moderation",
-        },
-        {
-          linkProps: { href: `/admin/general#header` },
-          text: t("headerSection"),
-          isActive: currentPage === "general" && currentSection === "header",
-        },
-        {
-          linkProps: { href: `/admin/general#visibility` },
-          text: t("visibility"),
-          isActive: currentPage === "general" && currentSection === "visibility",
-        },
-        {
-          linkProps: { href: `/admin/general#embedding` },
-          text: t("embedding"),
-          isActive: currentPage === "general" && currentSection === "embedding",
-        },
+        { label: t("authentication"), href: "/admin/authentication", icon: Shield },
+        { label: t("boards"), href: "/admin/boards", icon: Columns3 },
+        { label: t("statuses"), href: "/admin/statuses", icon: Tag },
+        { label: t("roadmap"), href: "/admin/roadmap", icon: Map },
       ],
     },
     {
-      text: t("authentication"),
-      linkProps: { href: `/admin/authentication` },
-      isActive: currentPage === "authentication",
-    },
-    {
-      text: t("boards"),
-      linkProps: { href: `/admin/boards` },
-      isActive: currentPage === "boards",
-    },
-    {
-      text: t("statuses"),
-      linkProps: { href: `/admin/statuses` },
-      isActive: currentPage === "statuses",
-    },
-    {
-      text: t("roadmap"),
-      linkProps: { href: `/admin/roadmap` },
-      isActive: currentPage === "roadmap",
-    },
-    {
-      text: t("webhooks"),
-      linkProps: { href: `/admin/webhooks` },
-      isActive: currentPage === "webhooks",
-    },
-    ...(integrationsEnabled
-      ? [
-          {
-            text: t("integrations"),
-            linkProps: { href: `/admin/integrations` },
-            isActive: currentPage.startsWith("integrations"),
-          },
-        ]
-      : []),
-    {
-      text: t("users"),
-      linkProps: { href: `/admin/users` },
-      isActive: currentPage.startsWith("users"),
-      expandedByDefault: currentPage.startsWith("users"),
+      label: t("securityAccess"),
       items: [
         {
-          text: t("members"),
-          linkProps: { href: `/admin/users` },
-          isActive: currentPage === "users",
+          label: t("users"),
+          href: "/admin/users",
+          icon: Users,
+          matchPrefix: true,
+          subItems: [
+            { label: t("members"), href: "/admin/users" },
+            { label: t("invitations"), href: "/admin/users/invitations" },
+          ],
         },
-        {
-          text: t("invitations"),
-          linkProps: { href: `/admin/users/invitations` },
-          isActive: currentPage === "users/invitations",
-        },
+        { label: t("auditLog"), href: "/admin/audit-log", icon: ScrollText },
       ],
     },
     {
-      text: t("api"),
-      linkProps: { href: `/admin/api` },
-      isActive: currentPage === "api",
-    },
-    {
-      text: t("auditLog"),
-      linkProps: { href: `/admin/audit-log` },
-      isActive: currentPage === "audit-log",
+      label: t("developers"),
+      items: [
+        { label: t("api"), href: "/admin/api", icon: KeyRound },
+        { label: t("webhooks"), href: "/admin/webhooks", icon: Webhook },
+        ...(integrationsEnabled
+          ? [{ label: t("integrations"), href: "/admin/integrations", icon: Plug, matchPrefix: true as const }]
+          : []),
+      ],
     },
   ];
 
   return (
-    <Container style={{ position: "sticky", top: "1rem" }}>
-      <SideMenu burgerMenuButtonText={t("title")} items={menuItems} />
-    </Container>
+    <AdminSidebar title={t("title")} groups={groups} activeSection={currentPage === "general" ? activeSection : null} />
   );
 };
+
+export { SidebarTrigger as AdminSidebarTrigger };

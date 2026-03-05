@@ -1,3 +1,4 @@
+import { SidebarInset, SidebarProvider } from "@kokatsuna/ui";
 import { connection } from "next/server";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
@@ -10,16 +11,14 @@ const AdminLayout = async ({ children }: LayoutProps<"/admin">) => {
   await assertAdmin();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="flex gap-8">
-        <div className="sticky top-4 hidden w-56 shrink-0 self-start md:block">
-          <AdminSideMenu />
-        </div>
-        <div className="min-w-0 flex-1">
+    <SidebarProvider>
+      <AdminSideMenu />
+      <SidebarInset>
+        <div className="mx-auto max-w-7xl px-4 py-8">
           <ClientAnimate>{children}</ClientAnimate>
         </div>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 

@@ -302,6 +302,9 @@
   "domainAdmin": {
     "sideMenu": {
       "title": "Administration",
+      "configuration": "Configuration",
+      "securityAccess": "Security & Access",
+      "developers": "Developers",
       "general": "General",
       "privacy": "Privacy",
       "localization": "Localization",
