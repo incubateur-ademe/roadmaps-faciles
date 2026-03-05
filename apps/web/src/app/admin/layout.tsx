@@ -28,7 +28,7 @@ const AdminLayout = async ({ children }: LayoutProps<"/admin">) => {
   return (
     <SidebarProvider>
       <AdminSideMenu />
-      <SidebarInset className="overflow-auto">
+      <SidebarInset id="content" className="overflow-auto">
         <div className="mx-auto w-full max-w-7xl px-4 py-8">
           <ClientAnimate>{children}</ClientAnimate>
         </div>

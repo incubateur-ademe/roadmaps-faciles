@@ -18,6 +18,7 @@ const getStoredTheme = (): Theme => {
 const applyTheme = (theme: Theme) => {
   const isDark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme:dark)").matches);
   document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.style.colorScheme = isDark ? "dark" : "light";
 };
 
 const iconMap = {

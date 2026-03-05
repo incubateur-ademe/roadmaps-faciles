@@ -122,7 +122,11 @@ export const Footer = ({
         <div className="flex flex-col gap-2 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-4">
             {bottomLinks?.map(link => (
-              <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground">
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 {link.text}
               </Link>
             ))}

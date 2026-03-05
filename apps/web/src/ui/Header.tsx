@@ -53,7 +53,10 @@ export const Header = ({
         </Link>
 
         {/* Desktop nav */}
-        <nav className={cn("hidden flex-1 items-center text-sm font-medium md:flex", isRoot ? "gap-6" : "space-x-6")}>
+        <nav
+          aria-label="Main navigation"
+          className={cn("hidden flex-1 items-center text-sm font-medium md:flex", isRoot ? "gap-6" : "space-x-6")}
+        >
           {navigation}
         </nav>
 
@@ -65,7 +68,7 @@ export const Header = ({
         {/* Mobile menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden ml-auto">
+            <Button variant="ghost" size="icon" className="md:hidden ml-auto" aria-expanded={mobileOpen}>
               {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
               <span className="sr-only">Menu</span>
             </Button>
