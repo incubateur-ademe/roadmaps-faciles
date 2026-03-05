@@ -125,4 +125,15 @@ export { Switch } from "./switch";
 export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "./table";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 export { Textarea } from "./textarea";
+export {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  timelineDotVariants,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineSubConnector,
+  TimelineSubItem,
+} from "./timeline";
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
