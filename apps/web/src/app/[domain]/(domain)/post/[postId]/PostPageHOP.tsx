@@ -1,6 +1,5 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Tag from "@codegouvfr/react-dsfr/Tag";
+import { Badge as ShadcnBadge, Separator } from "@kokatsuna/ui";
+import { Bookmark, ExternalLink, MessageCircle } from "lucide-react";
 import { type User } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -8,7 +7,6 @@ import { type ReactElement } from "react";
 import { MarkdownAsync } from "react-markdown";
 
 import { LikeButton } from "@/components/Board/LikeButton";
-import { Text } from "@/dsfr/base/Typography";
 import { prisma } from "@/lib/db/prisma";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
@@ -199,27 +197,29 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
 
   return (
     <>
-      <span className="flex gap-[.5rem] items-center">
+      <div className="flex flex-wrap items-center gap-2">
         {post.postStatus ? (
-          <Badge className={`fr-badge--color-${post.postStatus.color}`}>{post.postStatus.name}</Badge>
+          <ShadcnBadge variant="outline">{post.postStatus.name}</ShadcnBadge>
         ) : (
-          <Badge className={"fr-badge--color-grey"}>{t("unclassified")}</Badge>
+          <ShadcnBadge variant="secondary">{t("unclassified")}</ShadcnBadge>
         )}
-        <Badge className={`fr-badge--color-blueFrance`}>{post.board.name}</Badge>
+        <ShadcnBadge>{post.board.name}</ShadcnBadge>
         {post.tags?.map(tag => (
-          <Tag key={tag} small iconId="fr-icon-bookmark-line">
+          <ShadcnBadge key={tag} variant="outline" className="gap-1">
+            <Bookmark className="size-3" />
             {tag}
-          </Tag>
+          </ShadcnBadge>
         ))}
         {notionUrl && (
           <a href={notionUrl} target="_blank" rel="noopener noreferrer">
-            <Badge severity="info" noIcon>
+            <ShadcnBadge variant="secondary" className="gap-1">
+              <ExternalLink className="size-3" />
               {t("viewOnNotion")}
-            </Badge>
+            </ShadcnBadge>
           </a>
         )}
-      </span>
-      <Text mt="2w">
+      </div>
+      <p className="mt-4 text-sm text-muted-foreground">
         {t.rich("addedBy", {
           author: post.user?.name ?? post.sourceLabel ?? t("anonymous"),
           date: formatDate(post.createdAt, locale),
@@ -228,12 +228,12 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         {post.editedAt && (
           <>
             {" "}
-            <span className={fr.cx("fr-text--sm", "fr-text--light")}>
+            <span className="text-xs text-muted-foreground/70">
               {post.editedBy?.name ? t("editedBy", { editor: post.editedBy.name }) : t("edited")}
             </span>
           </>
         )}
-      </Text>
+      </p>
       <PostEditToggle
         canEdit={canEdit}
         canDelete={canDelete}
@@ -243,9 +243,9 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
         title={post.title}
         description={post.description}
       >
-        <Text mt="2w" variant="lg">
+        <div className="prose prose-sm mt-4 max-w-none dark:prose-invert">
           <MarkdownAsync {...reactMarkdownConfig}>{post.description}</MarkdownAsync>
-        </Text>
+        </div>
       </PostEditToggle>
       {allowComments && (
         <CommentForm postId={post.id} tenantId={post.tenantId} userId={props.userId} uploadImageAction={uploadImage} />
@@ -253,15 +253,19 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
       {isModal ? (
         <>
           {post._count.comments > 0 && (
-            <Tag as="span" iconId="fr-icon-discuss-line" small>
+            <ShadcnBadge variant="secondary" className="gap-1">
+              <MessageCircle className="size-3" />
               {t.rich("comment", { count: post._count.comments, b: chunks => <b>{chunks}</b> })}
-            </Tag>
+            </ShadcnBadge>
           )}
         </>
       ) : (
         <>
-          <div className={fr.cx("fr-hr-or")}>
-            <span className="text-nowrap">{t("activityFeed")}</span>
+          <div className="relative my-6">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-background px-3 text-sm text-muted-foreground">
+              {t("activityFeed")}
+            </span>
           </div>
 
           <PostTimeline {...props} />
