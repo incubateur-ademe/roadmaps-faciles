@@ -7,6 +7,8 @@
    ============================== */
 
 [data-ui-theme="Default"] {
+    color-scheme: light;
+
     /* Sticky offset = RootHeader height (h-16) */
     --sticky-offset: 4rem;
 
@@ -64,14 +66,14 @@
     --ring: oklch(0.542 0.104 265);
     --radius: 0.625rem;
 
-    /* Sidebar */
-    --sidebar-background: oklch(0.975 0.005 265);
+    /* Sidebar — light bg matches Stitch #E5EAF4 */
+    --sidebar-background: oklch(0.936 0.015 264);
     --sidebar-foreground: oklch(0.252 0.041 264);
     --sidebar-primary: oklch(0.386 0.146 263);
     --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.920 0.020 265);
+    --sidebar-accent: oklch(0.900 0.020 265);
     --sidebar-accent-foreground: oklch(0.350 0.114 263);
-    --sidebar-border: oklch(0.885 0.020 265);
+    --sidebar-border: oklch(0.860 0.020 265);
     --sidebar-ring: oklch(0.542 0.104 265);
 
     /* Charts — use palette spread */
@@ -83,6 +85,8 @@
 }
 
 .dark[data-ui-theme="Default"] {
+    color-scheme: dark;
+
     /* Lighter blue for dark mode contrast */
     --primary: oklch(0.620 0.130 264);  /* between Smart Blue and Wisteria */
     --primary-foreground: oklch(1 0 0);
@@ -136,14 +140,14 @@
     --input: oklch(0.310 0.025 260);
     --ring: oklch(0.542 0.104 265);
 
-    /* Sidebar */
-    --sidebar-background: oklch(0.240 0.020 264);
+    /* Sidebar — darker than background for visible distinction */
+    --sidebar-background: oklch(0.200 0.025 264);
     --sidebar-foreground: oklch(0.920 0.015 265);
     --sidebar-primary: oklch(0.620 0.130 264);
     --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.340 0.060 264);
+    --sidebar-accent: oklch(0.300 0.050 264);
     --sidebar-accent-foreground: oklch(0.853 0.031 265);
-    --sidebar-border: oklch(0.310 0.025 260);
+    --sidebar-border: oklch(0.280 0.025 260);
     --sidebar-ring: oklch(0.542 0.104 265);
 
     /* Charts */

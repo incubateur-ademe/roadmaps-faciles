@@ -126,15 +126,16 @@ describe("TimelineConnector", () => {
     expect(screen.getByTestId("connector")).toHaveAttribute("data-slot", "timeline-connector");
   });
 
-  it("defaults to connected variant", () => {
+  it("defaults to spaced variant", () => {
     render(<TimelineConnector data-testid="connector" />);
-    expect(screen.getByTestId("connector").className).toContain("-mb-8");
+    expect(screen.getByTestId("connector").className).toContain("mt-2");
+    expect(screen.getByTestId("connector").className).toContain("-mb-6");
   });
 
-  it("supports spaced variant", () => {
-    render(<TimelineConnector data-testid="connector" variant="spaced" />);
-    expect(screen.getByTestId("connector").className).toContain("my-2");
-    expect(screen.getByTestId("connector").className).not.toContain("-mb-8");
+  it("supports connected variant", () => {
+    render(<TimelineConnector data-testid="connector" variant="connected" />);
+    expect(screen.getByTestId("connector").className).toContain("-mb-8");
+    expect(screen.getByTestId("connector").className).not.toContain("-mb-6");
   });
 });
 

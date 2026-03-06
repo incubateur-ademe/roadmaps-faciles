@@ -1,5 +1,6 @@
 import "./globals.scss";
 import "./tw-animate.css";
+import "./ui-utilities.css";
 import "react-loading-skeleton/dist/skeleton.css";
 import { cn } from "@kokatsuna/ui";
 import { type Metadata } from "next";
@@ -46,7 +47,7 @@ const RootLayout = async ({ children }: LayoutProps<"/">) => {
       <head>
         <ThemeScript />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <SessionProvider refetchOnWindowFocus>
           <NextIntlClientProvider messages={messages}>
             <TrackingProvider

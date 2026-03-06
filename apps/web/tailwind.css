@@ -1,0 +1,12 @@
+/*
+ * Tailwind CSS IntelliSense entry point for apps/web/.
+ * NOT imported in the app — exists solely for the VS Code extension.
+ * Mirrors globals.scss context as plain CSS (IntelliSense can't parse Sass).
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@kokatsuna/ui/tokens/theme.css";
+@import "@kokatsuna/ui/tokens/tailwind-theme.css";
+@import "@kokatsuna/ui/tokens/utilities.css";
+@source "./src";

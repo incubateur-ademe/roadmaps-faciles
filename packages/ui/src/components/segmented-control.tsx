@@ -33,8 +33,8 @@ function SegmentedControlItem({ className, ...props }: ComponentProps<typeof Tog
         "text-muted-foreground hover:text-foreground",
         "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm",
         "focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "ui-disabled",
+        "ui-svg-icon",
         className,
       )}
       {...props}

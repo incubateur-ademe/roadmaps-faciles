@@ -16,6 +16,7 @@
     ".": "./src/index.ts",
     "./tokens/theme.css": "./src/tokens/theme.css",
     "./tokens/tailwind-theme.css": "./src/tokens/tailwind-theme.css",
+    "./tokens/utilities.css": "./src/tokens/utilities.css",
     "./lib/cn": "./src/lib/cn.ts",
     "./components/*": "./src/components/*.tsx"
   },

@@ -92,6 +92,7 @@ export {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  sheetContentVariants,
 } from "./sheet";
 export {
   Sidebar,

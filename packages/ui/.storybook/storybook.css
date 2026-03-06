@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "../src/tokens/theme.css";
 @import "../src/tokens/tailwind-theme.css";
+@import "../src/tokens/utilities.css";
 @source "../src/**/*.tsx";
 
 /* Root theme — background/foreground suivent les tokens */
