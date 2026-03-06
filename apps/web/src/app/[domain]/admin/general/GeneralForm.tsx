@@ -1,15 +1,15 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import Select from "@codegouvfr/react-dsfr/Select";
-import { type ToggleSwitchProps } from "@codegouvfr/react-dsfr/ToggleSwitch";
-import { type ToggleSwitchGroupProps } from "@codegouvfr/react-dsfr/ToggleSwitchGroup";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { cn } from "@kokatsuna/ui";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Input } from "@kokatsuna/ui/components/input";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Separator } from "@kokatsuna/ui/components/separator";
+import { Switch } from "@kokatsuna/ui/components/switch";
+import { RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -17,7 +17,6 @@ import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
-import { ToggleSwitchGroup } from "@/dsfr/client";
 import { type DNSStatus } from "@/lib/domain-provider/dns";
 import { useFeatureFlag } from "@/lib/feature-flags/client";
 import { UI_THEME } from "@/lib/model/TenantSettings";
@@ -208,62 +207,75 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
     <>
       <SeedSection hasData={hasData} />
       <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
-        {SECTIONS.map(section => {
-          const toggles = section.toggles.map<ToggleSwitchProps.Controlled>(item => ({
-            id: item.name,
-            label: item.label,
-            helperText: item.helperText,
-            checked: !!watchedValues[item.name as keyof typeof watchedValues],
-            disabled: item.disabled ?? false,
-            onChange: (checked: boolean) => setValue(item.name, checked, { shouldDirty: true }),
-          }));
-
-          return (
-            <section id={section.id} key={section.id} className={fr.cx("fr-mb-4w")}>
-              <h3 className={fr.cx("fr-h3")}>{section.title}</h3>
-              <ToggleSwitchGroup toggles={toggles as ToggleSwitchGroupProps["toggles"]} />
-            </section>
-          );
-        })}
+        {SECTIONS.map(section => (
+          <section id={section.id} key={section.id} className="mb-8">
+            <h3 className="text-xl font-bold mb-4">{section.title}</h3>
+            <div className="space-y-4">
+              {section.toggles.map(toggle => (
+                <div key={toggle.name} className="flex items-start gap-3">
+                  <Switch
+                    id={toggle.name}
+                    checked={!!watchedValues[toggle.name as keyof typeof watchedValues]}
+                    disabled={toggle.disabled ?? false}
+                    onCheckedChange={(checked: boolean) => setValue(toggle.name, checked, { shouldDirty: true })}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <Label htmlFor={toggle.name} className="cursor-pointer">
+                      {toggle.label}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">{toggle.helperText}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
 
         {watchedValues.allowEmbedding && watchedValues.isPrivate && (
-          <Alert
-            className={fr.cx("fr-mb-2w")}
-            severity="warning"
-            small
-            description={t("allowEmbeddingPrivateWarning")}
-          />
+          <Alert className="mb-4">
+            <AlertDescription>{t("allowEmbeddingPrivateWarning")}</AlertDescription>
+          </Alert>
         )}
 
         {themeSwitchingEnabled &&
           (() => {
             const hasGouvDomain = !!tenantSettings.customDomain?.endsWith(".gouv.fr");
             return (
-              <section id="ui-theme" className={fr.cx("fr-mb-4w")}>
-                <h3 className={fr.cx("fr-h3")}>{t("uiTheme.label")}</h3>
-                <p className={fr.cx("fr-text--sm", "fr-mb-2w")}>{t("uiTheme.description")}</p>
-                <Select
-                  label={t("uiTheme.label")}
-                  nativeSelectProps={{
-                    value: watchedValues.uiTheme ?? "Default",
-                    onChange: e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true }),
-                  }}
-                >
-                  <option value="Default">{t("uiTheme.options.Default")}</option>
-                  <option value="Dsfr" disabled={!hasGouvDomain}>
-                    {t("uiTheme.options.Dsfr")}
-                  </option>
-                </Select>
-                {!hasGouvDomain && <p className={fr.cx("fr-hint-text", "fr-mt-1v")}>{t("uiTheme.gouvRequired")}</p>}
+              <section id="ui-theme" className="mb-8">
+                <h3 className="text-xl font-bold mb-4">{t("uiTheme.label")}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{t("uiTheme.description")}</p>
+                <div className="space-y-2 max-w-xs">
+                  <Label htmlFor="ui-theme-select">{t("uiTheme.label")}</Label>
+                  <select
+                    id="ui-theme-select"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value={watchedValues.uiTheme ?? "Default"}
+                    onChange={e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true })}
+                  >
+                    <option value="Default">{t("uiTheme.options.Default")}</option>
+                    <option value="Dsfr" disabled={!hasGouvDomain}>
+                      {t("uiTheme.options.Dsfr")}
+                    </option>
+                  </select>
+                  {!hasGouvDomain && <p className="text-sm text-muted-foreground mt-1">{t("uiTheme.gouvRequired")}</p>}
+                </div>
               </section>
             );
           })()}
 
         <ClientAnimate>
           {saveError && (
-            <Alert className={fr.cx("fr-mb-2w")} severity="error" title={te("saveError")} description={saveError} />
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>{te("saveError")}</AlertTitle>
+              <AlertDescription>{saveError}</AlertDescription>
+            </Alert>
           )}
-          {success && <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("saveSuccess")} />}
+          {success && (
+            <Alert className="mb-4">
+              <AlertTitle>{t("saveSuccess")}</AlertTitle>
+            </Alert>
+          )}
         </ClientAnimate>
 
         <Button type="submit" disabled={pending || !isDirty}>
@@ -306,16 +318,18 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
   }
 
   return (
-    <section id="seed" className={fr.cx("fr-mb-6w")}>
-      <h3 className={fr.cx("fr-h3")}>{t("seedTitle")}</h3>
+    <section id="seed" className="mb-12">
+      <h3 className="text-xl font-bold mb-4">{t("seedTitle")}</h3>
       {seedSuccess ? (
-        <Alert severity="success" title={t("seedSuccess")} className={fr.cx("fr-mb-2w")} />
+        <Alert className="mb-4">
+          <AlertTitle>{t("seedSuccess")}</AlertTitle>
+        </Alert>
       ) : (
         <>
-          <p className={fr.cx("fr-mb-2w")}>{t("seedEmpty")}</p>
-          <div className={fr.cx("fr-mb-2w")}>
-            <p className={fr.cx("fr-text--bold", "fr-mb-1w")}>{t("seedPreview")}</p>
-            <ul className={fr.cx("fr-mb-1w")}>
+          <p className="mb-4">{t("seedEmpty")}</p>
+          <div className="mb-4">
+            <p className="font-bold mb-2">{t("seedPreview")}</p>
+            <ul className="mb-2 list-disc pl-5">
               {WELCOME_DATA_PREVIEW.boards.map(board => (
                 <li key={board.name}>
                   {t.rich("seedBoard", {
@@ -326,18 +340,21 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
                 </li>
               ))}
             </ul>
-            <ul className={fr.cx("fr-mb-1w")}>
+            <ul className="mb-2 list-disc pl-5">
               {WELCOME_DATA_PREVIEW.statuses.map(status => (
                 <li key={status.name}>
                   {t.rich("seedStatus", { name: status.name, strong: chunks => <strong>{chunks}</strong> })}
                 </li>
               ))}
             </ul>
-            <p className={fr.cx("fr-text--sm")}>{WELCOME_DATA_PREVIEW.extras}</p>
+            <p className="text-sm text-muted-foreground">{WELCOME_DATA_PREVIEW.extras}</p>
           </div>
           <ClientAnimate>
             {seedError && (
-              <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={seedError} />
+              <Alert variant="destructive" className="mb-4">
+                <AlertTitle>{tc("error")}</AlertTitle>
+                <AlertDescription>{seedError}</AlertDescription>
+              </Alert>
             )}
           </ClientAnimate>
           <Button disabled={seeding} onClick={() => void handleSeed()}>
@@ -349,10 +366,10 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
   );
 };
 
-const DNS_STATUS_SEVERITY: Record<DNSStatus, "error" | "info" | "success" | "warning"> = {
-  valid: "success",
-  invalid: "warning",
-  error: "error",
+const DNS_STATUS_VARIANT: Record<DNSStatus, "default" | "destructive" | "outline" | "secondary"> = {
+  valid: "default",
+  invalid: "secondary",
+  error: "destructive",
 };
 
 const DNS_STATUS_KEY: Record<DNSStatus, "dnsError" | "dnsInvalid" | "dnsValid"> = {
@@ -478,55 +495,41 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
   const showDnsStatus = savedCustomDomain && !isDomainDirty && dnsStatus;
 
   return (
-    <section id="domain" className={fr.cx("fr-mt-6w")}>
-      <h3 className={fr.cx("fr-h3")}>{t("domains")}</h3>
-      <form noValidate onSubmit={e => void handleSubmit(onDomainSubmit)(e)}>
-        <Input
-          label={t("subdomainLabel")}
-          hintText={
-            subdomain ? (
-              <span>
-                URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
-              </span>
-            ) : undefined
-          }
-          nativeInputProps={{
-            ...register("subdomain"),
-          }}
-          state={domainErrors.subdomain ? "error" : "default"}
-          stateRelatedMessage={domainErrors.subdomain?.message}
-        />
+    <section id="domain" className="mt-12">
+      <Separator className="mb-8" />
+      <h3 className="text-xl font-bold mb-4">{t("domains")}</h3>
+      <form noValidate onSubmit={e => void handleSubmit(onDomainSubmit)(e)} className="space-y-4 max-w-lg">
+        <div className="space-y-2">
+          <Label htmlFor="subdomain">{t("subdomainLabel")}</Label>
+          <Input id="subdomain" {...register("subdomain")} />
+          {subdomain && (
+            <p className="text-sm text-muted-foreground">
+              URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
+            </p>
+          )}
+          {domainErrors.subdomain && <p className="text-sm text-destructive">{domainErrors.subdomain.message}</p>}
+        </div>
 
-        <Input
-          label={t("customDomain")}
-          hintText={t("customDomainHint")}
-          nativeInputProps={{
-            ...register("customDomain"),
-            placeholder: "feedback.example.com",
-          }}
-          state={domainErrors.customDomain ? "error" : "default"}
-          stateRelatedMessage={domainErrors.customDomain?.message}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="custom-domain">{t("customDomain")}</Label>
+          <Input id="custom-domain" {...register("customDomain")} placeholder="feedback.example.com" />
+          <p className="text-sm text-muted-foreground">{t("customDomainHint")}</p>
+          {domainErrors.customDomain && <p className="text-sm text-destructive">{domainErrors.customDomain.message}</p>}
+        </div>
 
         {showDnsStatus && (
-          <div className={fr.cx("fr-mb-2w")}>
-            <div className={cx("flex items-center gap-2")}>
-              <Badge severity={DNS_STATUS_SEVERITY[dnsStatus]}>{t(DNS_STATUS_KEY[dnsStatus])}</Badge>
-              <Button
-                type="button"
-                priority="tertiary no outline"
-                size="small"
-                disabled={dnsChecking}
-                iconId="ri-refresh-line"
-                onClick={() => void runDNSCheck()}
-              >
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant={DNS_STATUS_VARIANT[dnsStatus]}>{t(DNS_STATUS_KEY[dnsStatus])}</Badge>
+              <Button type="button" variant="ghost" size="sm" disabled={dnsChecking} onClick={() => void runDNSCheck()}>
+                <RefreshCw className={cn("mr-1 size-4", dnsChecking && "animate-spin")} />
                 {dnsChecking ? t("dnsChecking") : t("checkDns")}
               </Button>
             </div>
             {dnsStatus === "invalid" && dnsExpected && (
-              <div className={fr.cx("fr-hint-text", "fr-mt-1v")}>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p>{t.rich("dnsInvalidHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
-                <p className={fr.cx("fr-mt-1v")}>
+                <p>
                   <code>
                     {savedCustomDomain} CNAME {dnsExpected}
                   </code>
@@ -534,14 +537,14 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
               </div>
             )}
             {dnsStatus === "error" && dnsExpected && (
-              <div className={fr.cx("fr-hint-text", "fr-mt-1v")}>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p>{t.rich("dnsErrorHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
-                <p className={fr.cx("fr-mt-1v")}>
+                <p>
                   <code>
                     {savedCustomDomain} CNAME {dnsExpected}
                   </code>
                 </p>
-                <p className={fr.cx("fr-mt-1v")}>
+                <p>
                   {t.rich("dnsErrorAlternative", {
                     expected: dnsExpected ?? "",
                     strong: chunks => <strong>{chunks}</strong>,
@@ -551,7 +554,7 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
               </div>
             )}
             {dnsStatus === "valid" && (
-              <p className={fr.cx("fr-hint-text", "fr-mt-1v")}>
+              <p className="text-sm text-muted-foreground">
                 {t.rich("dnsValidHint", {
                   domain: savedCustomDomain,
                   expected: dnsExpected ?? "",
@@ -563,9 +566,16 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
         )}
 
         <ClientAnimate>
-          {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>{tc("error")}</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           {domainSuccess && (
-            <Alert closable className={fr.cx("fr-mb-2w")} severity="success" title={t("domainsUpdated")} />
+            <Alert className="mb-4">
+              <AlertTitle>{t("domainsUpdated")}</AlertTitle>
+            </Alert>
           )}
         </ClientAnimate>
 
@@ -611,14 +621,20 @@ const DangerZone = () => {
   };
 
   return (
-    <section id="danger" className={fr.cx("fr-mt-6w")}>
-      <h3 className={fr.cx("fr-h3")}>{t("dangerZone")}</h3>
-      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
-      <div className={cx("flex gap-4")}>
-        <Button priority="tertiary" disabled={purging || deleting} onClick={() => void handlePurge()}>
+    <section id="danger" className="mt-12">
+      <Separator className="mb-8" />
+      <h3 className="text-xl font-bold mb-4">{t("dangerZone")}</h3>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <div className="flex gap-4">
+        <Button variant="outline" disabled={purging || deleting} onClick={() => void handlePurge()}>
           {purging ? t("purging") : t("purgeData")}
         </Button>
-        <Button priority="tertiary" disabled={purging || deleting} onClick={() => void handleDelete()}>
+        <Button variant="outline" disabled={purging || deleting} onClick={() => void handleDelete()}>
           {deleting ? t("deleting") : t("deleteTenant")}
         </Button>
       </div>

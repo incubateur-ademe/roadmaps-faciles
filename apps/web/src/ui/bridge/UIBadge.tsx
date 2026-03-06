@@ -1,23 +1,13 @@
 "use client";
 
-import DsfrBadge from "@codegouvfr/react-dsfr/Badge";
 import { Badge as ShadcnBadge } from "@kokatsuna/ui";
-import { type ComponentProps } from "react";
+import { type ComponentProps, lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
 
-type ShadcnBadgeProps = ComponentProps<typeof ShadcnBadge>;
+const UIBadgeDsfr = lazy(() => import("./UIBadgeDsfr").then(m => ({ default: m.UIBadgeDsfr })));
 
-const VARIANT_TO_SEVERITY = {
-  default: "info",
-  secondary: "info",
-  destructive: "error",
-  outline: "info",
-  success: "success",
-  warning: "warning",
-  ghost: "info",
-  link: "info",
-} as const;
+type ShadcnBadgeProps = ComponentProps<typeof ShadcnBadge>;
 
 export type UIBadgeProps = {
   children: React.ReactNode;
@@ -30,9 +20,11 @@ export const UIBadge = ({ variant = "default", children, className }: UIBadgePro
 
   if (theme === "Dsfr") {
     return (
-      <DsfrBadge severity={VARIANT_TO_SEVERITY[variant ?? "default"]} className={className}>
-        {children as NonNullable<React.ReactNode>}
-      </DsfrBadge>
+      <Suspense>
+        <UIBadgeDsfr variant={variant} className={className}>
+          {children}
+        </UIBadgeDsfr>
+      </Suspense>
     );
   }
 

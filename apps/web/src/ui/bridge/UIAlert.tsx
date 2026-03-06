@@ -1,13 +1,19 @@
 "use client";
 
-import DsfrAlert from "@codegouvfr/react-dsfr/Alert";
 import { Alert as ShadcnAlert, AlertDescription, AlertTitle } from "@kokatsuna/ui";
+import { Button } from "@kokatsuna/ui/components/button";
+import { X } from "lucide-react";
+import { lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
 
+const UIAlertDsfr = lazy(() => import("./UIAlertDsfr").then(m => ({ default: m.UIAlertDsfr })));
+
 export type UIAlertProps = {
   className?: string;
+  closable?: boolean;
   description?: React.ReactNode;
+  onClose?: () => void;
   severity: "error" | "info" | "success" | "warning";
   title?: React.ReactNode;
 };
@@ -19,34 +25,37 @@ const SEVERITY_TO_VARIANT = {
   error: "destructive",
 } as const;
 
-export const UIAlert = ({ severity, title, description, className }: UIAlertProps) => {
+export const UIAlert = ({ severity, title, description, className, closable, onClose }: UIAlertProps) => {
   const theme = useUI();
 
   if (theme === "Dsfr") {
-    if (title) {
-      return (
-        <DsfrAlert
+    return (
+      <Suspense>
+        <UIAlertDsfr
           severity={severity}
           title={title}
-          description={description as NonNullable<React.ReactNode>}
+          description={description}
           className={className}
+          closable={closable}
+          onClose={onClose}
         />
-      );
-    }
-    return (
-      <DsfrAlert
-        severity={severity}
-        small
-        description={(description ?? "") as NonNullable<React.ReactNode>}
-        className={className}
-      />
+      </Suspense>
     );
   }
 
   return (
     <ShadcnAlert variant={SEVERITY_TO_VARIANT[severity]} className={className}>
-      {title && <AlertTitle>{title}</AlertTitle>}
-      {description && <AlertDescription>{description}</AlertDescription>}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          {title && <AlertTitle>{title}</AlertTitle>}
+          {description && <AlertDescription>{description}</AlertDescription>}
+        </div>
+        {closable && onClose && (
+          <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={onClose}>
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
     </ShadcnAlert>
   );
 };

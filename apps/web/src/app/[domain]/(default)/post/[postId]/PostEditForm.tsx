@@ -1,9 +1,5 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
@@ -11,6 +7,7 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
+import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 
 import { uploadImage } from "../../upload-image";
 import { updatePost } from "./actions";
@@ -72,7 +69,7 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
 
   return (
     <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
-      <Input
+      <UIInput
         label={t("editTitle")}
         nativeInputProps={register("title")}
         state={errors.title ? "error" : "default"}
@@ -84,14 +81,14 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
         onChangeAction={handleDescriptionChangeAction}
         uploadImageAction={uploadImage}
       />
-      {error && <Alert className={fr.cx("fr-mb-2w")} severity="error" title={tc("error")} description={error} />}
-      <span className="flex gap-[1rem]">
-        <Button type="submit" disabled={pending || !isDirty}>
+      {error && <UIAlert className="mb-4" severity="error" title={tc("error")} description={error} />}
+      <span className="flex gap-4">
+        <UIButton type="submit" disabled={pending || !isDirty}>
           {t("savePost")}
-        </Button>
-        <Button type="button" priority="secondary" onClick={onCancel} disabled={pending}>
+        </UIButton>
+        <UIButton type="button" variant="secondary" onClick={onCancel} disabled={pending}>
           {tc("cancel")}
-        </Button>
+        </UIButton>
       </span>
     </form>
   );

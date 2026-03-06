@@ -1,20 +1,14 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Card from "@codegouvfr/react-dsfr/Card";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 
 import { LikeButton } from "@/components/Board/LikeButton";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
-import { Box, Container } from "@/dsfr";
-import { Heading, Text } from "@/dsfr/base/Typography";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
 import { userOnTenantRepo } from "@/lib/repo";
 import { UserRole } from "@/prisma/enums";
+import { UIAlert, UICard, UITag } from "@/ui/bridge";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
 
@@ -77,52 +71,58 @@ const RoadmapPage = DomainPageHOP()(async props => {
   const [t, tc] = await Promise.all([getTranslations("roadmap"), getTranslations("common")]);
 
   return (
-    <DsfrPage>
-      <Container className="flex-1 flex flex-col overflow-x-hidden" my="2w">
-        <Heading as="h2" className={fr.cx("fr-mb-2w")}>
-          {t("title")}
-        </Heading>
-        {showAdminHint && (
-          <Alert
-            severity="warning"
-            small
-            description={
-              <>
-                {t("adminNoStatusHint", { count: posts.length })}{" "}
-                <a href={dirtyDomainFixer("/admin/statuses")}>{t("adminNoStatusLink")}</a>
-              </>
-            }
-            className={fr.cx("fr-mb-2w")}
-          />
-        )}
-        <Box className={cx("flex flex-1 min-h-0 gap-2 w-full overflow-x-auto scrollbar-thin snap-x")}>
-          {postStatuses.map(statusColumn => {
-            const postsInColumn = posts.filter(post => post.postStatusId === statusColumn.id);
-            return (
-              <div
-                key={statusColumn.id}
-                className={cx("flex grow-0 shrink-0 flex-col overflow-hidden snap-start scroll-ml-2", {
-                  "w-[24%]": postStatuses.length >= 4,
-                  "w-[32%]": postStatuses.length <= 3,
-                })}
-              >
-                <Text
-                  variant="bold"
-                  inline
-                  className={cx(`fr-roadmap-column--color-${statusColumn.color}`, fr.cx("fr-p-1w"))}
-                >
-                  {statusColumn.name}
+    <div className="flex-1 flex flex-col overflow-x-hidden mx-auto w-full max-w-7xl px-4 py-4">
+      <h2 className="text-2xl font-bold mb-4">{t("title")}</h2>
+      {showAdminHint && (
+        <UIAlert
+          severity="warning"
+          className="mb-4"
+          description={
+            <>
+              {t("adminNoStatusHint", { count: posts.length })}{" "}
+              <a href={dirtyDomainFixer("/admin/statuses")}>{t("adminNoStatusLink")}</a>
+            </>
+          }
+        />
+      )}
+      <div className="flex flex-1 min-h-0 gap-2 w-full overflow-x-auto scrollbar-thin snap-x">
+        {postStatuses.map(statusColumn => {
+          const postsInColumn = posts.filter(post => post.postStatusId === statusColumn.id);
+          return (
+            <div
+              key={statusColumn.id}
+              className={cn("flex grow-0 shrink-0 flex-col overflow-hidden snap-start scroll-ml-2", {
+                "w-[24%]": postStatuses.length >= 4,
+                "w-[32%]": postStatuses.length <= 3,
+              })}
+            >
+              <span className={cn(`fr-roadmap-column--color-${statusColumn.color}`, "font-bold p-2 inline-block")}>
+                {statusColumn.name}
+                <span className="ml-2 text-muted-foreground font-normal text-sm">
+                  {tc("item", { count: postsInColumn.length })}
+                </span>
+              </span>
 
-                  <span className={fr.cx("fr-hint-text")}>{tc("item", { count: postsInColumn.length })}</span>
-                </Text>
-
-                <ClientAnimate className="flex-1 overflow-y-auto snap-y scrollbar-thin">
-                  {postsInColumn.length === 0 && <Text className={fr.cx("fr-p-2w")}>{t("emptyColumn")}</Text>}
-                  {postsInColumn.map(post => (
-                    <Card
-                      key={post.id}
+              <ClientAnimate className="flex-1 overflow-y-auto snap-y scrollbar-thin">
+                {postsInColumn.length === 0 && <p className="p-4 text-muted-foreground">{t("emptyColumn")}</p>}
+                {postsInColumn.map(post => (
+                  <div key={post.id} className="flex items-start gap-2 my-2 mx-1 snap-start scroll-mt-2">
+                    {showVotes && (
+                      <LikeButton
+                        postId={post.id}
+                        tenantId={tenant.id}
+                        size="sm"
+                        userId={userId}
+                        alreadyLiked={post.likes.some(
+                          like => userId === like.userId || like.anonymousId === anonymousId,
+                        )}
+                      >
+                        {post._count.likes}
+                      </LikeButton>
+                    )}
+                    <UICard
                       title={post.title}
-                      className={cx(fr.cx("fr-my-1w", "fr-mx-0-5v"), "snap-start scroll-mt-2")}
+                      className="flex-1"
                       shadow
                       titleAs="h4"
                       linkProps={{
@@ -130,35 +130,20 @@ const RoadmapPage = DomainPageHOP()(async props => {
                       }}
                       size="small"
                       horizontal
-                      start={
-                        showVotes ? (
-                          <LikeButton
-                            postId={post.id}
-                            tenantId={tenant.id}
-                            size="sm"
-                            userId={userId}
-                            alreadyLiked={post.likes.some(
-                              like => userId === like.userId || like.anonymousId === anonymousId,
-                            )}
-                          >
-                            {post._count.likes}
-                          </LikeButton>
-                        ) : undefined
-                      }
                       endDetail={
-                        <Tag as="span" small>
+                        <UITag as="span" small>
                           {post.board.name}
-                        </Tag>
+                        </UITag>
                       }
                     />
-                  ))}
-                </ClientAnimate>
-              </div>
-            );
-          })}
-        </Box>
-      </Container>
-    </DsfrPage>
+                  </div>
+                ))}
+              </ClientAnimate>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 });
 export default RoadmapPage;

@@ -1,14 +1,9 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Card from "@codegouvfr/react-dsfr/Card";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
 import Avatar from "@mui/material/Avatar";
 import * as Sentry from "@sentry/nextjs";
+import { Pencil, Reply as ReplyIcon, Send, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import {
@@ -26,9 +21,9 @@ import { MarkdownHooks } from "react-markdown";
 import { getMaterialAvatarProps } from "@/components/img/InitialsAvatar";
 import { Loader } from "@/components/utils/Loader";
 import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
-import { Text } from "@/dsfr/base/Typography";
 import { type Comment, type User } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
+import { UIAlert, UIBadge, UIButton, UICard, UITag } from "@/ui/bridge";
 import { formatDateHour } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 
@@ -50,6 +45,12 @@ const ROLE_LABEL_KEYS: Partial<Record<UserRole, string>> = {
   [UserRole.ADMIN]: "roleAdmin",
   [UserRole.MODERATOR]: "roleModerator",
 };
+
+const SEVERITY_TO_VARIANT = {
+  info: "default",
+  new: "secondary",
+  warning: "warning",
+} as const;
 
 const AuthorBadges = ({
   authorUserId,
@@ -75,12 +76,10 @@ const AuthorBadges = ({
   return (
     <span className="flex items-center gap-1 flex-wrap">
       {severity && labelKey && (
-        <Badge as="span" small noIcon severity={severity}>
-          {t(labelKey as Parameters<typeof t>[0])}
-        </Badge>
+        <UIBadge variant={SEVERITY_TO_VARIANT[severity]}>{t(labelKey as Parameters<typeof t>[0])}</UIBadge>
       )}
-      {isPostAuthor && <Tag small>{t("tagAuthor")}</Tag>}
-      {isMe && <Tag small>{t("tagYou")}</Tag>}
+      {isPostAuthor && <UITag small>{t("tagAuthor")}</UITag>}
+      {isMe && <UITag small>{t("tagYou")}</UITag>}
     </span>
   );
 };
@@ -273,53 +272,49 @@ export const CommentContent = ({
 
   return (
     <>
-      <Card
+      <UICard
         shadow
-        data-comment-id={activity.comment.id}
+        className="[&]:p-0"
         size="medium"
         horizontal
         title={
-          <div className="flex justify-between items-center gap-[1rem]">
+          <div className="flex justify-between items-center gap-4" data-comment-id={activity.comment.id}>
             <div className="flex items-center gap-2">
               <Avatar
                 {...getMaterialAvatarProps(activity.comment.user.name ?? t("anonymous"))}
                 alt={`Avatar ${activity.comment.user.name ?? t("anonymous")}`}
                 src={activity.comment.user.image ?? undefined}
               />
-              <Text inline variant={["sm", "bold"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-                {activity.comment.user.name}
-              </Text>
+              <span className="text-sm font-bold text-nowrap">{activity.comment.user.name}</span>
               <AuthorBadges authorUserId={activity.comment.userId} {...badgeProps} />
-              {wasEdited && (
-                <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
-                  {t("edited")}
-                </Text>
-              )}
+              {wasEdited && <span className="text-xs font-light">{t("edited")}</span>}
             </div>
             {(canEditComment || canDeleteComment) && !isEditing && (
               <span className="flex gap-1">
                 {canEditComment && (
-                  <Button
+                  <UIButton
                     type="button"
-                    size="small"
-                    priority="tertiary no outline"
-                    iconId="fr-icon-edit-line"
+                    size="icon"
+                    variant="ghost"
                     title={t("editComment")}
                     onClick={() => {
                       editBodyRef.current = commentBody ?? "";
                       setIsEditing(true);
                     }}
-                  />
+                  >
+                    <Pencil className="size-4" />
+                  </UIButton>
                 )}
                 {canDeleteComment && (
-                  <Button
+                  <UIButton
                     type="button"
-                    size="small"
-                    priority="tertiary no outline"
-                    iconId="fr-icon-delete-line"
+                    size="icon"
+                    variant="ghost"
                     title={t("deleteComment")}
                     onClick={() => void handleDelete()}
-                  />
+                  >
+                    <Trash2 className="size-4" />
+                  </UIButton>
                 )}
               </span>
             )}
@@ -335,20 +330,20 @@ export const CommentContent = ({
                 uploadImageAction={uploadImage}
                 disabled={editPending}
               />
-              {editError && <Alert small severity="error" description={editError} className={fr.cx("fr-mt-1w")} />}
-              <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end gap-2")}>
-                <Button
+              {editError && <UIAlert severity="error" description={editError} className="mt-2" />}
+              <div className="mt-2 flex justify-end gap-2">
+                <UIButton
                   type="button"
-                  size="small"
-                  priority="secondary"
+                  size="sm"
+                  variant="secondary"
                   disabled={editPending}
                   onClick={() => setIsEditing(false)}
                 >
                   {t("cancelEdit")}
-                </Button>
-                <Button type="button" size="small" disabled={editPending} onClick={() => void handleEditSave()}>
+                </UIButton>
+                <UIButton type="button" size="sm" disabled={editPending} onClick={() => void handleEditSave()}>
                   {t("saveComment")}
-                </Button>
+                </UIButton>
               </div>
             </>
           ) : (
@@ -356,50 +351,44 @@ export const CommentContent = ({
           )
         }
         endDetail={
-          <span className="flex justify-between items-center gap-[1rem] w-full">
+          <span className="flex justify-between items-center gap-4 w-full">
             <span className="flex items-center gap-2">
-              <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
-                {formatDateHour(activity.comment.createdAt, locale)}
-              </Text>
+              <span className="text-xs font-light">{formatDateHour(activity.comment.createdAt, locale)}</span>
               {activity.comment._count.replies > 0 && (
-                <Text inline variant={["xs"]} className={fr.cx("fr-mb-0")}>
-                  {`${activity.comment._count.replies} réponse(s)`}
-                </Text>
+                <span className="text-xs">{`${activity.comment._count.replies} réponse(s)`}</span>
               )}
             </span>
-            <Button
+            <UIButton
               type="button"
-              size="small"
-              priority="tertiary no outline"
-              iconId="ri-reply-fill"
+              size="sm"
+              variant="ghost"
               onClick={() => setShowInput(!showInput)}
-              className={cx({
-                invisible: showInput,
-              })}
+              className={cn(showInput && "invisible")}
             >
+              <ReplyIcon className="mr-1 size-4" />
               {t("reply")}
-            </Button>
+            </UIButton>
           </span>
         }
       />
 
       {(displayReplies.length > 0 || showInput) && (
-        <div className={cx(fr.cx("fr-mb-2w"), style.thread)}>
+        <div className={cn("mb-4", style.thread)}>
           {displayReplies.length > 0 &&
             (firstOpen ? (
               <ThreadEntity>
                 {hasMoreReplies && (
                   <Loader
-                    className={fr.cx("fr-mb-2w")}
+                    className="mb-4"
                     loading={loading}
                     text={
-                      <Button size="small" priority="tertiary no outline" type="button" onClick={handleFirstOpen}>
+                      <UIButton size="sm" variant="ghost" type="button" onClick={handleFirstOpen}>
                         {t("viewPreviousReplies")}
-                      </Button>
+                      </UIButton>
                     }
                   ></Loader>
                 )}
-                <Reply
+                <ReplyCard
                   reply={firstReply}
                   isAdmin={isAdmin}
                   onEditAction={handleReplyEdit}
@@ -411,7 +400,7 @@ export const CommentContent = ({
               <>
                 {displayReplies.map(reply => (
                   <ThreadEntity key={reply.id}>
-                    <Reply
+                    <ReplyCard
                       reply={reply}
                       isAdmin={isAdmin}
                       onEditAction={handleReplyEdit}
@@ -422,9 +411,9 @@ export const CommentContent = ({
                 ))}
                 <ThreadEntity actions>
                   <div className="flex items-center justify-between">
-                    <Button
-                      size="small"
-                      priority="tertiary no outline"
+                    <UIButton
+                      size="sm"
+                      variant="ghost"
                       type="button"
                       onClick={() => {
                         setShowReplies(false);
@@ -434,38 +423,33 @@ export const CommentContent = ({
                       }}
                     >
                       {t("collapseReplies")}
-                    </Button>
-                    <Button
+                    </UIButton>
+                    <UIButton
                       type="button"
-                      size="small"
-                      priority="tertiary no outline"
-                      iconId="ri-reply-fill"
+                      size="sm"
+                      variant="ghost"
                       onClick={() => setShowInput(!showInput)}
-                      className={cx({
-                        invisible: showInput,
-                      })}
+                      className={cn(showInput && "invisible")}
                     >
+                      <ReplyIcon className="mr-1 size-4" />
                       {t("reply")}
-                    </Button>
+                    </UIButton>
                   </div>
                 </ThreadEntity>
               </>
             ) : (
               <ThreadEntity actions>
-                <Button size="small" priority="tertiary no outline" type="button" onClick={() => setShowReplies(true)}>
+                <UIButton size="sm" variant="ghost" type="button" onClick={() => setShowReplies(true)}>
                   {t("viewReplies", { count: displayReplies.length })}
-                </Button>
+                </UIButton>
               </ThreadEntity>
             ))}
           {showInput && (
             <ThreadEntity>
               <div ref={replyInputRef}>
                 {!userId ? (
-                  <Alert
-                    small
-                    closable
-                    className={fr.cx("fr-pb-2v")}
-                    onClose={() => setShowInput(false)}
+                  <UIAlert
+                    className="pb-2"
                     severity="info"
                     description={
                       <>
@@ -484,28 +468,21 @@ export const CommentContent = ({
                       uploadImageAction={uploadImage}
                       disabled={isPending}
                     />
-                    {replyError && (
-                      <Alert small severity="error" description={replyError} className={fr.cx("fr-mt-1w")} />
-                    )}
-                    <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end gap-2")}>
-                      <Button
+                    {replyError && <UIAlert severity="error" description={replyError} className="mt-2" />}
+                    <div className="mt-2 flex justify-end gap-2">
+                      <UIButton
                         type="button"
-                        size="small"
-                        priority="secondary"
+                        size="sm"
+                        variant="secondary"
                         disabled={isPending}
                         onClick={() => setShowInput(false)}
                       >
                         {t("cancelReply")}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="small"
-                        iconId="fr-icon-send-plane-fill"
-                        disabled={isPending}
-                        onClick={handleReplySubmit}
-                      >
+                      </UIButton>
+                      <UIButton type="button" size="sm" disabled={isPending} onClick={handleReplySubmit}>
+                        <Send className="mr-1 size-4" />
                         {t("submitReply")}
-                      </Button>
+                      </UIButton>
                     </div>
                   </>
                 )}
@@ -524,13 +501,13 @@ export const ThreadEntity = ({
   row,
   actions,
 }: PropsWithChildren<{ actions?: boolean; id?: string; row?: boolean }>) => (
-  <div className={cx(style["thread-entity"])} id={id}>
+  <div className={style["thread-entity"]} id={id}>
     <div className={style["threadline"]}>
       <div aria-hidden className={style["threadline-line"]}></div>
       <div aria-hidden className={style["threadline-end"]}></div>
     </div>
     <div
-      className={cx(
+      className={cn(
         actions ? style["thread-entity-actions"] : style["thread-entity-content"],
         row && style["thread-entity--row"],
       )}
@@ -551,7 +528,7 @@ interface ReplyProps {
   t: ReturnType<typeof useTranslations<"post">>;
 }
 
-export const Reply = ({
+const ReplyCard = ({
   reply,
   roleMap,
   currentUserId,
@@ -601,13 +578,10 @@ export const Reply = ({
   };
 
   return (
-    <Card
+    <UICard
       shadow
       size="small"
       horizontal
-      classes={{
-        end: "hidden",
-      }}
       title={
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
@@ -616,9 +590,7 @@ export const Reply = ({
               alt={`Avatar ${reply.user.name ?? t("anonymous")}`}
               src={reply.user.image ?? undefined}
             />
-            <Text inline variant={["sm", "bold"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-              {reply.user.name}
-            </Text>
+            <span className="text-sm font-bold text-nowrap">{reply.user.name}</span>
             <AuthorBadges
               authorUserId={reply.userId}
               currentUserId={currentUserId}
@@ -626,39 +598,35 @@ export const Reply = ({
               roleMap={roleMap}
               t={t}
             />
-            {wasEdited && (
-              <Text inline variant={["xs", "light"]} className={fr.cx("fr-mb-0")}>
-                {t("edited")}
-              </Text>
-            )}
-            <Text inline variant={["xs", "light"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-              {formatDateHour(reply.createdAt, locale)}
-            </Text>
+            {wasEdited && <span className="text-xs font-light">{t("edited")}</span>}
+            <span className="text-xs font-light text-nowrap">{formatDateHour(reply.createdAt, locale)}</span>
           </div>
           {(canEdit || canDelete) && !isEditing && (
             <span className="flex gap-1">
               {canEdit && (
-                <Button
+                <UIButton
                   type="button"
-                  size="small"
-                  priority="tertiary no outline"
-                  iconId="fr-icon-edit-line"
+                  size="icon"
+                  variant="ghost"
                   title={t("editComment")}
                   onClick={() => {
                     editBodyRef.current = reply.body ?? "";
                     setIsEditing(true);
                   }}
-                />
+                >
+                  <Pencil className="size-4" />
+                </UIButton>
               )}
               {canDelete && (
-                <Button
+                <UIButton
                   type="button"
-                  size="small"
-                  priority="tertiary no outline"
-                  iconId="fr-icon-delete-line"
+                  size="icon"
+                  variant="ghost"
                   title={t("deleteComment")}
                   onClick={() => void handleDelete()}
-                />
+                >
+                  <Trash2 className="size-4" />
+                </UIButton>
               )}
             </span>
           )}
@@ -674,20 +642,20 @@ export const Reply = ({
               uploadImageAction={uploadImage}
               disabled={editPending}
             />
-            {editError && <Alert small severity="error" description={editError} className={fr.cx("fr-mt-1w")} />}
-            <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end gap-2")}>
-              <Button
+            {editError && <UIAlert severity="error" description={editError} className="mt-2" />}
+            <div className="mt-2 flex justify-end gap-2">
+              <UIButton
                 type="button"
-                size="small"
-                priority="secondary"
+                size="sm"
+                variant="secondary"
                 disabled={editPending}
                 onClick={() => setIsEditing(false)}
               >
                 {t("cancelEdit")}
-              </Button>
-              <Button type="button" size="small" disabled={editPending} onClick={() => void handleEditSave()}>
+              </UIButton>
+              <UIButton type="button" size="sm" disabled={editPending} onClick={() => void handleEditSave()}>
                 {t("saveComment")}
-              </Button>
+              </UIButton>
             </div>
           </>
         ) : (
@@ -697,3 +665,6 @@ export const Reply = ({
     />
   );
 };
+
+// Keep the old name as alias for backward compatibility in tests/imports
+export { ReplyCard as Reply };

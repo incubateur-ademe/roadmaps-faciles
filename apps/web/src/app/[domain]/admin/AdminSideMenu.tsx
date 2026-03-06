@@ -14,6 +14,7 @@ import {
   Webhook,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -124,6 +125,7 @@ export const AdminSideMenu = ({ pendingModerationCount }: AdminSideMenuProps) =>
     <AdminSidebar
       title={t("title")}
       subtitle="Administration"
+      icon={<Image src="/img/roadmaps-faciles.png" alt="" width={20} height={20} className="size-5" />}
       groups={groups}
       activeSection={currentPage === "general" ? activeSection : null}
       extraItems={[
@@ -134,6 +136,7 @@ export const AdminSideMenu = ({ pendingModerationCount }: AdminSideMenuProps) =>
           ...(pendingModerationCount ? { badge: pendingModerationCount } : {}),
         },
       ]}
+      footer={{ status: t("systemOperational"), version: "v1.0.0" }}
     />
   );
 };

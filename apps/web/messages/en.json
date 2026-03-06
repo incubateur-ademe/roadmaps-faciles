@@ -328,7 +328,8 @@
       "invitations": "Invitations",
       "api": "API",
       "auditLog": "Audit log",
-      "embedding": "Embedding"
+      "embedding": "Embedding",
+      "systemOperational": "System Operational"
     },
     "general": {
       "title": "General",
@@ -884,6 +885,7 @@
   },
   "rootAdmin": {
     "sideMenu": "Administration",
+    "systemOperational": "System Operational",
     "groups": {
       "management": "Management",
       "security": "Security",

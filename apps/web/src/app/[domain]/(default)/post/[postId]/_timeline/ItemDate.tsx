@@ -1,20 +1,19 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
-import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
-import { getLocale } from "next-intl/server";
+"use client";
 
-import { Text } from "@/dsfr/base/Typography";
+import { useLocale } from "next-intl";
+
 import { type Activity } from "@/prisma/client";
+import { UITooltip } from "@/ui/bridge";
 import { formatDateHour, formatRelativeDate } from "@/utils/date";
 
-export const ItemDate = async ({ activity }: { activity: Activity }) => {
-  const locale = await getLocale();
+export const ItemDate = ({ activity }: { activity: Pick<Activity, "startTime"> }) => {
+  const locale = useLocale();
 
   return (
-    <Text inline variant={["xs", "light"]} className={cx("text-nowrap", fr.cx("fr-mb-0"))}>
-      <Tooltip title={formatDateHour(activity.startTime, locale)}>
+    <span className="text-xs font-light text-nowrap">
+      <UITooltip title={formatDateHour(activity.startTime, locale)}>
         {formatRelativeDate(activity.startTime, locale)}
-      </Tooltip>
-    </Text>
+      </UITooltip>
+    </span>
   );
 };

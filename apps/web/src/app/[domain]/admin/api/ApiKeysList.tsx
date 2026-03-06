@@ -1,12 +1,11 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui/components/table";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
-import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type ApiKey } from "@/prisma/client";
 
 import { createApiKey, deleteApiKey } from "./actions";
@@ -42,46 +41,44 @@ export const ApiKeysList = ({ apiKeys: initialApiKeys }: ApiKeysListProps) => {
   return (
     <div>
       {newToken && (
-        <Alert
-          className={fr.cx("fr-mb-3w")}
-          severity="info"
-          title={t("newKeyCreated")}
-          description={t("newKeyMessage", { token: newToken })}
-          closable
-          onClose={() => setNewToken(null)}
-        />
+        <Alert className="mb-6">
+          <AlertTitle>{t("newKeyCreated")}</AlertTitle>
+          <AlertDescription>{t("newKeyMessage", { token: newToken })}</AlertDescription>
+        </Alert>
       )}
 
       {apiKeys.length > 0 ? (
-        <TableCustom
-          className={fr.cx("fr-mb-3w")}
-          header={[{ children: t("prefix") }, { children: t("createdAt") }, { children: tc("actions") }]}
-          body={apiKeys.map(apiKey => [
-            {
-              children: (
-                <code className={fr.cx("fr-text--sm")}>
-                  {apiKey.commonTokenPrefix}…{apiKey.randomTokenPrefix}
-                </code>
-              ),
-            },
-            { children: dateFormatter.format(new Date(apiKey.createdAt)) },
-            {
-              children: (
-                <Button size="small" priority="secondary" onClick={() => void handleDelete(apiKey.id)}>
-                  {tc("revoke")}
-                </Button>
-              ),
-            },
-          ])}
-        />
+        <Table className="mb-6">
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("prefix")}</TableHead>
+              <TableHead>{t("createdAt")}</TableHead>
+              <TableHead>{tc("actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {apiKeys.map(apiKey => (
+              <TableRow key={apiKey.id}>
+                <TableCell>
+                  <code className="text-sm">
+                    {apiKey.commonTokenPrefix}…{apiKey.randomTokenPrefix}
+                  </code>
+                </TableCell>
+                <TableCell>{dateFormatter.format(new Date(apiKey.createdAt))}</TableCell>
+                <TableCell>
+                  <Button variant="secondary" size="sm" onClick={() => void handleDelete(apiKey.id)}>
+                    {tc("revoke")}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <Alert
-          className={fr.cx("fr-mb-3w")}
-          severity="info"
-          title={t("noKeys")}
-          description={t("noKeysDescription")}
-          small
-        />
+        <Alert className="mb-6">
+          <AlertTitle>{t("noKeys")}</AlertTitle>
+          <AlertDescription>{t("noKeysDescription")}</AlertDescription>
+        </Alert>
       )}
 
       <Button onClick={() => void handleCreate()}>{t("createKey")}</Button>

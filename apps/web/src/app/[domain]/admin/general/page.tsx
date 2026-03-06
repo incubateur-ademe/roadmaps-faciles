@@ -1,4 +1,3 @@
-import { Container } from "@/dsfr";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { auth } from "@/lib/next-auth/auth";
 import { boardRepo, postStatusRepo, userOnTenantRepo } from "@/lib/repo";
@@ -24,11 +23,7 @@ const AdminGeneralPage = DomainPageHOP()(async props => {
   const statuses = await postStatusRepo.findAllForTenant(tenant.id);
   const hasData = boards.length > 0 || statuses.length > 0;
 
-  return (
-    <Container fluid className="!overflow-visible">
-      <GeneralForm tenantSettings={settings} isOwner={isOwner} hasData={hasData} />
-    </Container>
-  );
+  return <GeneralForm tenantSettings={settings} isOwner={isOwner} hasData={hasData} />;
 });
 
 export default AdminGeneralPage;

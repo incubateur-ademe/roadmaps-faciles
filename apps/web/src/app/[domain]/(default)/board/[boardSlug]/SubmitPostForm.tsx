@@ -1,16 +1,14 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { cn } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { useCallback, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
+import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 
 import { uploadImage } from "../../upload-image";
 import { submitPost } from "./actions";
@@ -83,13 +81,9 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
   };
 
   return (
-    <form
-      noValidate
-      className={`flex flex-col gap-[1rem] ${fr.cx("fr-py-2w")}`}
-      onSubmit={e => void handleSubmit(onSubmit)(e)}
-    >
-      <h3 className={fr.cx("fr-text--lg", "fr-mb-0")}>{t("submitSuggestion")}</h3>
-      <Input
+    <form noValidate className={cn("flex flex-col gap-4 py-4")} onSubmit={e => void handleSubmit(onSubmit)(e)}>
+      <h3 className="text-lg font-semibold m-0">{t("submitSuggestion")}</h3>
+      <UIInput
         label={t("title")}
         nativeInputProps={{ ...register("title") }}
         state={errors.title ? "error" : "default"}
@@ -101,11 +95,11 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
         onChangeAction={handleDescriptionChangeAction}
         uploadImageAction={uploadImage}
       />
-      {error && <Alert severity="error" title={te("technicalError")} description={error} small />}
-      {success && <Alert severity="success" title={success} small closable description="" />}
-      <Button className="place-self-end" type="submit" disabled={isPending}>
+      {error && <UIAlert severity="error" title={te("technicalError")} description={error} />}
+      {success && <UIAlert severity="success" title={success} />}
+      <UIButton className="place-self-end" type="submit" disabled={isPending}>
         {isPending ? tc("loading") : tc("validate")}
-      </Button>
+      </UIButton>
     </form>
   );
 };

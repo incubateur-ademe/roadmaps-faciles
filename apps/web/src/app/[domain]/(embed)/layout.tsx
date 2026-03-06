@@ -12,6 +12,8 @@ import { config } from "@/config";
 import { DsfrProvider } from "@/dsfr-bootstrap";
 import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
+import { UIProvider } from "@/ui";
+import { getTheme } from "@/ui/server";
 import { getTenantFromDomain } from "@/utils/tenant";
 
 import { EmbedThemeForcer } from "./EmbedThemeForcer";
@@ -30,6 +32,7 @@ const EmbedLayoutInner = async ({ children, params }: EmbedLayoutProps) => {
   });
 
   const t = await getTranslations("embed");
+  const theme = await getTheme(tenantSettings);
 
   if (!tenantSettings?.allowEmbedding) {
     return (
@@ -45,23 +48,25 @@ const EmbedLayoutInner = async ({ children, params }: EmbedLayoutProps) => {
 
   return (
     <DsfrProvider lang={lang}>
-      <AppRouterCacheProvider>
-        <MuiDsfrThemeProvider>
-          <DsfrPage>
-            <EmbedThemeForcer />
-            <main className={fr.cx("fr-pb-2w")}>{children}</main>
-            <footer className={cx(fr.cx("fr-py-1w", "fr-px-2w"), "text-center")}>
-              <span className={fr.cx("fr-text--xs")}>
-                {t("poweredBy", { name: config.brand.name })}
-                {" · "}
-                <Link href={`${config.host}`} target="_blank" className={fr.cx("fr-link", "fr-text--xs")}>
-                  {config.host}
-                </Link>
-              </span>
-            </footer>
-          </DsfrPage>
-        </MuiDsfrThemeProvider>
-      </AppRouterCacheProvider>
+      <UIProvider value={theme}>
+        <AppRouterCacheProvider>
+          <MuiDsfrThemeProvider>
+            <DsfrPage>
+              <EmbedThemeForcer />
+              <main className={fr.cx("fr-pb-2w")}>{children}</main>
+              <footer className={cx(fr.cx("fr-py-1w", "fr-px-2w"), "text-center")}>
+                <span className={fr.cx("fr-text--xs")}>
+                  {t("poweredBy", { name: config.brand.name })}
+                  {" · "}
+                  <Link href={`${config.host}`} target="_blank" className={fr.cx("fr-link", "fr-text--xs")}>
+                    {config.host}
+                  </Link>
+                </span>
+              </footer>
+            </DsfrPage>
+          </MuiDsfrThemeProvider>
+        </AppRouterCacheProvider>
+      </UIProvider>
     </DsfrProvider>
   );
 };

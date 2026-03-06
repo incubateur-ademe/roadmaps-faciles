@@ -1,15 +1,14 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Input from "@codegouvfr/react-dsfr/Input";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Input } from "@kokatsuna/ui/components/input";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui/components/table";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
-import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type Webhook } from "@/prisma/client";
 
 import { createWebhook, deleteWebhook } from "./actions";
@@ -56,64 +55,73 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
   return (
     <div>
       {webhooks.length > 0 ? (
-        <TableCustom
-          className={fr.cx("fr-mb-3w")}
-          header={[
-            { children: t("url") },
-            { children: t("event") },
-            { children: t("createdAt") },
-            { children: tc("actions") },
-          ]}
-          body={webhooks.map(webhook => [
-            {
-              children: <code className={fr.cx("fr-text--sm")}>{webhook.url}</code>,
-            },
-            {
-              children: (
-                <Badge as="span" small noIcon>
-                  {webhook.event}
-                </Badge>
-              ),
-            },
-            { children: dateFormatter.format(new Date(webhook.createdAt)) },
-            {
-              children: (
-                <Button size="small" priority="secondary" onClick={() => void handleDelete(webhook.id)}>
-                  {tc("delete")}
-                </Button>
-              ),
-            },
-          ])}
-        />
+        <Table className="mb-6">
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("url")}</TableHead>
+              <TableHead>{t("event")}</TableHead>
+              <TableHead>{t("createdAt")}</TableHead>
+              <TableHead>{tc("actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {webhooks.map(webhook => (
+              <TableRow key={webhook.id}>
+                <TableCell>
+                  <code className="text-sm">{webhook.url}</code>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{webhook.event}</Badge>
+                </TableCell>
+                <TableCell>{dateFormatter.format(new Date(webhook.createdAt))}</TableCell>
+                <TableCell>
+                  <Button variant="secondary" size="sm" onClick={() => void handleDelete(webhook.id)}>
+                    {tc("delete")}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <Alert
-          className={fr.cx("fr-mb-3w")}
-          severity="info"
-          title={t("noWebhooks")}
-          description={t("noWebhooksDescription")}
-          small
-        />
+        <Alert className="mb-6">
+          <AlertTitle>{t("noWebhooks")}</AlertTitle>
+          <AlertDescription>{t("noWebhooksDescription")}</AlertDescription>
+        </Alert>
       )}
 
-      <h2>{t("addWebhook")}</h2>
-      <Input
-        label={t("url")}
-        nativeInputProps={{
-          type: "url",
-          value: newUrl,
-          onChange: e => setNewUrl(e.target.value),
-          autoComplete: "off",
-          name: "url",
-        }}
-      />
-      <Select
-        label={t("event")}
-        nativeSelectProps={{ value: newEvent, onChange: e => setNewEvent(e.target.value) }}
-        options={events}
-      />
-      <Button onClick={() => void handleCreate()} disabled={!newUrl}>
-        {tc("create")}
-      </Button>
+      <h2 className="text-lg font-semibold mb-4">{t("addWebhook")}</h2>
+      <div className="flex flex-col gap-4 max-w-md">
+        <div className="space-y-2">
+          <Label htmlFor="webhook-url">{t("url")}</Label>
+          <Input
+            id="webhook-url"
+            type="url"
+            value={newUrl}
+            onChange={e => setNewUrl(e.target.value)}
+            autoComplete="off"
+            name="url"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="webhook-event">{t("event")}</Label>
+          <select
+            id="webhook-event"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={newEvent}
+            onChange={e => setNewEvent(e.target.value)}
+          >
+            {events.map(event => (
+              <option key={event.value} value={event.value}>
+                {event.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <Button onClick={() => void handleCreate()} disabled={!newUrl} className="w-fit">
+          {tc("create")}
+        </Button>
+      </div>
     </div>
   );
 };

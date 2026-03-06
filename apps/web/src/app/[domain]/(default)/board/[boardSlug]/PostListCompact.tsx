@@ -1,10 +1,7 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
+import { MessageSquare } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,7 +9,7 @@ import { useState, useTransition } from "react";
 
 import { LikeButton } from "@/components/Board/LikeButton";
 import { Loader } from "@/components/utils/Loader";
-import { Icon } from "@/dsfr";
+import { UIBadge, UIButton, UISeparator, UITag } from "@/ui/bridge";
 import { formatRelativeDate } from "@/utils/date";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
@@ -102,30 +99,21 @@ export const PostListCompact = ({
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-[.5rem] flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {post.postStatus ? (
-                      <Badge as="span" small className={`fr-badge--color-${post.postStatus.color}`}>
-                        {post.postStatus.name}
-                      </Badge>
+                      <UIBadge className={`fr-badge--color-${post.postStatus.color}`}>{post.postStatus.name}</UIBadge>
                     ) : (
-                      <Badge as="span" small className="fr-badge--color-grey">
-                        {t("post.unclassified")}
-                      </Badge>
+                      <UIBadge className="fr-badge--color-grey">{t("post.unclassified")}</UIBadge>
                     )}
                     <Link
                       href={dirtyDomainFixer(`/post/${post.id}`)}
-                      className={cx(fr.cx("fr-link"), "truncate")}
+                      className="truncate text-primary underline-offset-4 hover:underline"
                       {...(linkTarget && { target: linkTarget })}
                     >
                       {highlightTitle(post.title)}
                     </Link>
                   </div>
-                  <div
-                    className={cx(
-                      fr.cx("fr-text--xs", "fr-mt-1v"),
-                      "flex items-center gap-[.5rem] flex-wrap text-[var(--text-mention-grey)]",
-                    )}
-                  >
+                  <div className={cn("mt-1 text-xs flex items-center gap-2 flex-wrap text-muted-foreground")}>
                     <span>{post.user?.name ?? post.sourceLabel ?? t("board.anonymous")}</span>
                     <span>·</span>
                     <span>{formatRelativeDate(new Date(post.createdAt), locale)}</span>
@@ -139,18 +127,18 @@ export const PostListCompact = ({
                       <>
                         <span>·</span>
                         {post.tags.map(tag => (
-                          <Tag as="span" key={tag} small iconId="fr-icon-bookmark-line">
+                          <UITag as="span" key={tag} small>
                             {tag}
-                          </Tag>
+                          </UITag>
                         ))}
                       </>
                     )}
                   </div>
                 </div>
-                <div className="shrink-0 flex items-center gap-[.75rem] text-[var(--text-mention-grey)]">
+                <div className="shrink-0 flex items-center gap-3 text-muted-foreground">
                   {post._count.comments > 0 && (
-                    <span className={cx(fr.cx("fr-text--sm"), "flex items-center gap-[.25rem]")}>
-                      <Icon icon="fr-icon-discuss-line" size="sm" />
+                    <span className="text-sm flex items-center gap-1">
+                      <MessageSquare className="size-4" />
                       {post._count.comments}
                     </span>
                   )}
@@ -160,19 +148,16 @@ export const PostListCompact = ({
           );
         })}
       </ul>
-      <div className={fr.cx("fr-hr-or")}>
+      <div className="flex items-center gap-4 py-4">
+        <UISeparator className="flex-1" />
         {isPending ? (
           <Loader loading />
         ) : (
-          <Button
-            priority="tertiary no outline"
-            type="button"
-            onClick={handleLoadMore}
-            disabled={totalCount === posts.length}
-          >
+          <UIButton variant="ghost" type="button" onClick={handleLoadMore} disabled={totalCount === posts.length}>
             {t("common.more")}
-          </Button>
+          </UIButton>
         )}
+        <UISeparator className="flex-1" />
       </div>
     </>
   );

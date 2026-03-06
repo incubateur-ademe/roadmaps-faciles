@@ -1,10 +1,11 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { Label as ShadcnLabel } from "@kokatsuna/ui";
+import { lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
+
+const UILabelDsfr = lazy(() => import("./UILabelDsfr").then(m => ({ default: m.UILabelDsfr })));
 
 export type UILabelProps = {
   children: React.ReactNode;
@@ -17,9 +18,11 @@ export const UILabel = ({ children, htmlFor, className }: UILabelProps) => {
 
   if (theme === "Dsfr") {
     return (
-      <label htmlFor={htmlFor} className={cx(fr.cx("fr-label"), className)}>
-        {children}
-      </label>
+      <Suspense>
+        <UILabelDsfr htmlFor={htmlFor} className={className}>
+          {children}
+        </UILabelDsfr>
+      </Suspense>
     );
   }
 

@@ -1,6 +1,5 @@
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
-import { Container, Grid, GridCol } from "@/dsfr";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
+import { UIProvider } from "@/ui";
 import { assertTenantModerator } from "@/utils/auth";
 
 import { ModerationSideMenu } from "./ModerationSideMenu";
@@ -9,18 +8,18 @@ const ModerationLayout = async ({ children, params }: LayoutProps<"/[domain]/mod
   await assertTenantModerator((await params).domain);
 
   return (
-    <DsfrPage>
-      <Container m="4w" fluid className="!overflow-visible">
-        <Grid align="center" haveGutters>
-          <GridCol md={2}>
+    <UIProvider value="Default">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <div className="flex gap-8">
+          <aside className="w-48 shrink-0">
             <ModerationSideMenu />
-          </GridCol>
-          <GridCol md={10}>
+          </aside>
+          <main className="min-w-0 flex-1">
             <ClientAnimate>{children}</ClientAnimate>
-          </GridCol>
-        </Grid>
-      </Container>
-    </DsfrPage>
+          </main>
+        </div>
+      </div>
+    </UIProvider>
   );
 };
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { Separator as ShadcnSeparator } from "@kokatsuna/ui";
+import { lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
+
+const UISeparatorDsfr = lazy(() => import("./UISeparatorDsfr").then(m => ({ default: m.UISeparatorDsfr })));
 
 export type UISeparatorProps = {
   className?: string;
@@ -15,7 +16,11 @@ export const UISeparator = ({ className, orientation = "horizontal" }: UISeparat
   const theme = useUI();
 
   if (theme === "Dsfr") {
-    return <hr className={cx(fr.cx("fr-hr"), className)} />;
+    return (
+      <Suspense>
+        <UISeparatorDsfr className={className} />
+      </Suspense>
+    );
   }
 
   return <ShadcnSeparator orientation={orientation} className={className} />;

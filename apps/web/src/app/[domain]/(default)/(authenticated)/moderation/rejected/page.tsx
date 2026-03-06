@@ -1,4 +1,3 @@
-import { fr } from "@codegouvfr/react-dsfr";
 import { getTranslations } from "next-intl/server";
 
 import { prisma } from "@/lib/db/prisma";
@@ -26,7 +25,7 @@ const RejectedPostsPage = DomainPageHOP()(async ({ _data }) => {
 
   return (
     <>
-      <h1 className={fr.cx("fr-h3")}>{t("rejectedTitle")}</h1>
+      <h1 className="text-xl font-bold">{t("rejectedTitle")}</h1>
       <ModerationPostList posts={posts} emptyMessage={t("noRejectedPosts")} variant="rejected" />
     </>
   );

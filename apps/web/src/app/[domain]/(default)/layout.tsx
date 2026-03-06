@@ -19,6 +19,7 @@ import { Footer as ShadcnFooter } from "@/ui/Footer";
 import { Header as ShadcnHeader } from "@/ui/Header";
 import { getTheme } from "@/ui/server";
 import { ThemeInjector } from "@/ui/ThemeInjector";
+import { UIThemeDevToggle } from "@/ui/UIThemeDevToggle";
 import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 import { getTenantFromDomain } from "@/utils/tenant";
@@ -66,7 +67,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     prisma.post.count({ where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING } }),
   ]);
 
-  const theme = getTheme(tenantSettings);
+  const theme = await getTheme(tenantSettings);
   const homeHref = dirtyDomainFixer("/");
 
   const mainContent = (
@@ -100,6 +101,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
                 homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
                 serviceTitle={tenantSettings.name}
                 quickAccessItems={[
+                  <UIThemeDevToggle key="hqai-theme-dev" />,
                   <LanguageSelectClient key="hqai-lang" />,
                   <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
                 ]}
@@ -109,7 +111,12 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
                 homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
                 serviceName={tenantSettings.name}
                 navigation={<ShadcnDomainNavigation boards={boards} tenantSettings={tenantSettings} />}
-                quickAccessItems={<UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />}
+                quickAccessItems={
+                  <>
+                    <UIThemeDevToggle />
+                    <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />
+                  </>
+                }
               />
             )}
 

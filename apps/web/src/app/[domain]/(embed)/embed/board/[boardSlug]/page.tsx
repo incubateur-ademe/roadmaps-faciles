@@ -1,6 +1,4 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -9,11 +7,11 @@ import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
-import { Container } from "@/dsfr";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { TrackPageView } from "@/lib/tracking-provider";
 import { embedViewed } from "@/lib/tracking-provider/trackingPlan";
+import { UIAlert } from "@/ui/bridge";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { getTenantFromDomain } from "@/utils/tenant";
 
@@ -63,17 +61,17 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
       : `${config.host.replace("://", `://${tenantSettings.subdomain}.`)}`;
 
     return (
-      <Container className={fr.cx("fr-py-4w")}>
-        <Alert
+      <div className="py-8 px-4">
+        <UIAlert
           severity="warning"
           title={t("privateTenant")}
           description={
-            <Link href={`${tenantUrl}/login`} target="_blank" className={fr.cx("fr-link")}>
+            <Link href={`${tenantUrl}/login`} target="_blank" className="text-primary underline">
               {t("privateTenantLogin")}
             </Link>
           }
         />
-      </Container>
+      </div>
     );
   }
 
@@ -97,9 +95,9 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
 
   if (!board) {
     return (
-      <Container className={fr.cx("fr-py-4w")}>
+      <div className="py-8 px-4">
         <p>{tb("boardNotFound")}</p>
-      </Container>
+      </div>
     );
   }
 
@@ -109,11 +107,11 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
   const allowAnonymousVoting = hideVotes ? false : tenantSettings.allowAnonymousVoting;
 
   return (
-    <Container my="2w">
+    <div className="mx-auto max-w-7xl px-4 py-4">
       <TrackPageView event={embedViewed({ boardId: String(board.id), tenantId: String(tenant.id) })} />
-      <h2 className={fr.cx("fr-h4", "fr-mb-1w")}>{board.name}</h2>
-      <p className={cx(fr.cx("fr-hint-text", "fr-mb-2w"))}>{tc("result", { count: filteredCount })}</p>
-      <ClientAnimate className={cx("flex flex-col gap-[1rem]")}>
+      <h2 className="text-lg font-bold mb-2">{board.name}</h2>
+      <p className={cn("text-sm text-muted-foreground mb-4")}>{tc("result", { count: filteredCount })}</p>
+      <ClientAnimate className="flex flex-col gap-4">
         {view === "list" ? (
           <PostListCompact
             key={`embed_compact_${board.id}_${order}_${search ?? ""}`}
@@ -145,7 +143,7 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
           />
         )}
       </ClientAnimate>
-    </Container>
+    </div>
   );
 };
 

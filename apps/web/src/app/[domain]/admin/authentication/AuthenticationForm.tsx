@@ -1,11 +1,11 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
-import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
-import Input from "@codegouvfr/react-dsfr/Input";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Checkbox } from "@kokatsuna/ui/components/checkbox";
+import { Input } from "@kokatsuna/ui/components/input";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Separator } from "@kokatsuna/ui/components/separator";
+import { Switch } from "@kokatsuna/ui/components/switch";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -79,86 +79,108 @@ export const AuthenticationForm = ({
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* Email Registration Policy */}
-      <Select
-        label={t("registrationPolicy")}
-        nativeSelectProps={{ value: policy, onChange: e => setPolicy(e.target.value as typeof policy) }}
-        options={policies}
-      />
-
-      {policy === "DOMAINS" && (
-        <>
-          <h3>{t("allowedDomains")}</h3>
-          <ul>
-            {domains.map(domain => (
-              <li key={domain} className={fr.cx("fr-mb-1w")}>
-                {domain}
-                <Button
-                  size="small"
-                  priority="secondary"
-                  title={t("removeDomain")}
-                  onClick={() => removeDomain(domain)}
-                >
-                  ×
-                </Button>
-              </li>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="registration-policy">{t("registrationPolicy")}</Label>
+          <select
+            id="registration-policy"
+            className="flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={policy}
+            onChange={e => setPolicy(e.target.value as typeof policy)}
+          >
+            {policies.map(p => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
             ))}
-          </ul>
-          <Input
-            label={t("addDomain")}
-            nativeInputProps={{
-              value: newDomain,
-              onChange: e => setNewDomain(e.target.value),
-              autoComplete: "off",
-              name: "new-domain",
-            }}
-          />
-          <Button onClick={addDomain}>{tc("add")}</Button>
-        </>
-      )}
+          </select>
+        </div>
 
-      <Button onClick={() => void handleSave()}>{tc("save")}</Button>
+        {policy === "DOMAINS" && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">{t("allowedDomains")}</h3>
+            <ul className="space-y-1">
+              {domains.map(domain => (
+                <li key={domain} className="flex items-center gap-2">
+                  <span className="text-sm">{domain}</span>
+                  <Button variant="ghost" size="sm" title={t("removeDomain")} onClick={() => removeDomain(domain)}>
+                    ×
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-end gap-2 max-w-sm">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="new-domain">{t("addDomain")}</Label>
+                <Input
+                  id="new-domain"
+                  value={newDomain}
+                  onChange={e => setNewDomain(e.target.value)}
+                  autoComplete="off"
+                  name="new-domain"
+                />
+              </div>
+              <Button onClick={addDomain}>{tc("add")}</Button>
+            </div>
+          </div>
+        )}
+
+        <Button onClick={() => void handleSave()}>{tc("save")}</Button>
+      </div>
 
       {/* Force 2FA */}
-      <hr className="fr-mt-4w fr-pb-2w" />
-      <h2>{t("force2FATitle")}</h2>
-      <ToggleSwitch label={t("force2FAToggle")} checked={force2FA} onChange={setForce2FA} />
+      <Separator />
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">{t("force2FATitle")}</h2>
+        <div className="flex items-center gap-3">
+          <Switch id="force-2fa" checked={force2FA} onCheckedChange={setForce2FA} />
+          <Label htmlFor="force-2fa">{t("force2FAToggle")}</Label>
+        </div>
 
-      {force2FA && (
-        <Select
-          label={t("gracePeriod")}
-          nativeSelectProps={{
-            value: String(graceDays),
-            onChange: e => setGraceDays(Number(e.target.value)),
-          }}
-          options={graceOptions}
-        />
-      )}
+        {force2FA && (
+          <div className="space-y-2 max-w-xs">
+            <Label htmlFor="grace-period">{t("gracePeriod")}</Label>
+            <select
+              id="grace-period"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={String(graceDays)}
+              onChange={e => setGraceDays(Number(e.target.value))}
+            >
+              {graceOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-      <Button onClick={() => void handleSaveForce2FA()} className="fr-mt-2w">
-        {tc("save")}
-      </Button>
+        <Button onClick={() => void handleSaveForce2FA()}>{tc("save")}</Button>
+      </div>
 
       {/* OAuth Providers */}
       {availableProviders.length > 0 && (
         <>
-          <hr className="fr-mt-4w fr-pb-2w" />
-          <h2>{t("oauthTitle")}</h2>
-          <p className="fr-text--sm">{t("oauthDescription")}</p>
-          <Checkbox
-            options={OAUTH_PROVIDERS.filter(p => availableProviders.includes(p)).map(provider => ({
-              label: t(`provider.${provider}`),
-              nativeInputProps: {
-                checked: enabledProviders.includes(provider),
-                onChange: () => toggleProvider(provider),
-                name: `oauth-${provider}`,
-              },
-            }))}
-          />
-          <Button onClick={() => void handleSaveOAuth()} className="fr-mt-2w">
-            {tc("save")}
-          </Button>
+          <Separator />
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">{t("oauthTitle")}</h2>
+            <p className="text-sm text-muted-foreground">{t("oauthDescription")}</p>
+            <div className="space-y-3">
+              {OAUTH_PROVIDERS.filter(p => availableProviders.includes(p)).map(provider => (
+                <div key={provider} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`oauth-${provider}`}
+                    checked={enabledProviders.includes(provider)}
+                    onCheckedChange={() => toggleProvider(provider)}
+                  />
+                  <Label htmlFor={`oauth-${provider}`}>{t(`provider.${provider}`)}</Label>
+                </div>
+              ))}
+            </div>
+            <Button onClick={() => void handleSaveOAuth()}>{tc("save")}</Button>
+          </div>
         </>
       )}
     </div>

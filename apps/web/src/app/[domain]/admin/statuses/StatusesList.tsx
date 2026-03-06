@@ -1,12 +1,12 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Input from "@codegouvfr/react-dsfr/Input";
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Input } from "@kokatsuna/ui/components/input";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Switch } from "@kokatsuna/ui/components/switch";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -83,110 +83,93 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
   return (
     <div>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={tc("error")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <div className={fr.cx("fr-mb-4w")}>
+      <div className="mb-8 space-y-3">
         {statuses.map((status, index) => (
-          <div
-            key={status.id}
-            className={fr.cx("fr-p-3w", "fr-mb-2w")}
-            style={{ border: "1px solid var(--border-default-grey)", borderRadius: "0.25rem" }}
-          >
+          <div key={status.id} className="rounded-md border border-border p-4">
             {editingId === status.id ? (
-              <div>
-                <Input
-                  label={t("name")}
-                  nativeInputProps={{
-                    value: editName,
-                    onChange: e => setEditName(e.target.value),
-                    autoComplete: "off",
-                    name: "name",
-                  }}
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`edit-name-${status.id}`}>{t("name")}</Label>
+                  <Input
+                    id={`edit-name-${status.id}`}
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    autoComplete="off"
+                    name="name"
+                  />
+                </div>
                 <ColorSelect label={t("color")} value={editColor} onChange={setEditColor} />
-                <ToggleSwitch label={t("showInRoadmap")} checked={editShowInRoadmap} onChange={setEditShowInRoadmap} />
-                <ButtonsGroup
-                  className={fr.cx("fr-mt-2w")}
-                  inlineLayoutWhen="always"
-                  buttons={[
-                    {
-                      children: tc("save"),
-                      onClick: () => void handleUpdate(status.id),
-                    },
-                    {
-                      children: tc("cancel"),
-                      priority: "secondary",
-                      onClick: () => setEditingId(null),
-                    },
-                  ]}
-                />
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id={`edit-roadmap-${status.id}`}
+                    checked={editShowInRoadmap}
+                    onCheckedChange={setEditShowInRoadmap}
+                  />
+                  <Label htmlFor={`edit-roadmap-${status.id}`}>{t("showInRoadmap")}</Label>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => void handleUpdate(status.id)}>{tc("save")}</Button>
+                  <Button variant="secondary" onClick={() => setEditingId(null)}>
+                    {tc("cancel")}
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                <div className={fr.cx("fr-col")}>
-                  <div className={fr.cx("fr-mb-1w")}>
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div>
                     <span className={`fr-badge fr-badge--lg fr-badge--${POST_STATUS_COLOR_MAP[status.color]}`}>
                       {status.name}
                     </span>
                   </div>
                   <div>
                     {status.showInRoadmap ? (
-                      <Badge as="span" small noIcon severity="success">
-                        {t("shownInRoadmap")}
-                      </Badge>
+                      <Badge variant="default">{t("shownInRoadmap")}</Badge>
                     ) : (
-                      <Badge as="span" small noIcon severity="info">
-                        {t("notShownInRoadmap")}
-                      </Badge>
+                      <Badge variant="secondary">{t("notShownInRoadmap")}</Badge>
                     )}
                   </div>
                 </div>
-                <div className="fr-col-auto">
-                  <ButtonsGroup
-                    inlineLayoutWhen="always"
-                    buttons={[
-                      {
-                        children: "↑",
-                        title: t("moveUp"),
-                        size: "small",
-                        onClick: () => void handleMoveUp(index),
-                        disabled: index === 0,
-                        priority: "tertiary no outline",
-                      },
-                      {
-                        children: "↓",
-                        title: t("moveDown"),
-                        size: "small",
-                        onClick: () => void handleMoveDown(index),
-                        disabled: index === statuses.length - 1,
-                        priority: "tertiary no outline",
-                      },
-                      {
-                        children: t("modify"),
-                        size: "small",
-                        onClick: () => {
-                          setEditingId(status.id);
-                          setEditName(status.name);
-                          setEditColor(status.color);
-                          setEditShowInRoadmap(status.showInRoadmap);
-                        },
-                      },
-                      {
-                        children: tc("delete"),
-                        size: "small",
-                        priority: "secondary",
-                        onClick: () => void handleDelete(status.id),
-                      },
-                    ]}
-                  />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("moveUp")}
+                    onClick={() => void handleMoveUp(index)}
+                    disabled={index === 0}
+                  >
+                    <ArrowUp className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("moveDown")}
+                    onClick={() => void handleMoveDown(index)}
+                    disabled={index === statuses.length - 1}
+                  >
+                    <ArrowDown className="size-4" />
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(status.id);
+                      setEditName(status.name);
+                      setEditColor(status.color);
+                      setEditShowInRoadmap(status.showInRoadmap);
+                    }}
+                  >
+                    {t("modify")}
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => void handleDelete(status.id)}>
+                    {tc("delete")}
+                  </Button>
                 </div>
               </div>
             )}
@@ -194,21 +177,27 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
         ))}
       </div>
 
-      <h2>{t("addStatus")}</h2>
-      <Input
-        label={t("name")}
-        nativeInputProps={{
-          value: newName,
-          onChange: e => setNewName(e.target.value),
-          autoComplete: "off",
-          name: "new-name",
-        }}
-      />
-      <ColorSelect label={t("color")} value={newColor} onChange={setNewColor} />
-      <ToggleSwitch label={t("showInRoadmap")} checked={newShowInRoadmap} onChange={setNewShowInRoadmap} />
-      <Button onClick={() => void handleCreate()} disabled={!newName}>
-        {tc("create")}
-      </Button>
+      <h2 className="text-lg font-semibold mb-4">{t("addStatus")}</h2>
+      <div className="space-y-4 max-w-md">
+        <div className="space-y-2">
+          <Label htmlFor="new-status-name">{t("name")}</Label>
+          <Input
+            id="new-status-name"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            autoComplete="off"
+            name="new-name"
+          />
+        </div>
+        <ColorSelect label={t("color")} value={newColor} onChange={setNewColor} />
+        <div className="flex items-center gap-3">
+          <Switch id="new-roadmap" checked={newShowInRoadmap} onCheckedChange={setNewShowInRoadmap} />
+          <Label htmlFor="new-roadmap">{t("showInRoadmap")}</Label>
+        </div>
+        <Button onClick={() => void handleCreate()} disabled={!newName}>
+          {tc("create")}
+        </Button>
+      </div>
     </div>
   );
 };

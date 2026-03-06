@@ -1,19 +1,15 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge, { type BadgeProps } from "@codegouvfr/react-dsfr/Badge";
-import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import Pagination from "@codegouvfr/react-dsfr/Pagination";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui/components/table";
+import { ArrowDown, ArrowUp, Check, ClipboardCopy } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Icon } from "@/dsfr/base/Icon";
-import { TableCustom, type TableCustomHeadColProps } from "@/dsfr/base/TableCustom";
-import tableStyle from "@/dsfr/base/TableCustom.module.css";
 import { type UserOnTenantWithUser } from "@/lib/repo/IUserOnTenantRepo";
 import { UserRole, UserStatus } from "@/prisma/enums";
 import { type ServerActionResponse } from "@/utils/next";
@@ -33,10 +29,10 @@ export interface MembersListProps extends MembersListActions {
   superAdminIds?: string[];
 }
 
-const STATUS_BADGE_SEVERITY: Record<UserStatus, BadgeProps["severity"]> = {
-  ACTIVE: "success",
-  BLOCKED: "warning",
-  DELETED: "error",
+const STATUS_BADGE_VARIANT: Record<UserStatus, "default" | "destructive" | "outline" | "secondary"> = {
+  ACTIVE: "default",
+  BLOCKED: "secondary",
+  DELETED: "destructive",
 };
 
 const ROLE_WEIGHT: Record<UserRole, number> = {
@@ -61,7 +57,7 @@ const FILTERABLE_ROLES = [UserRole.OWNER, UserRole.ADMIN, UserRole.MODERATOR, Us
 const getEffectiveRole = (member: UserOnTenantWithUser): UserRole =>
   member.role === UserRole.INHERITED ? member.user.role : member.role;
 
-type SortDirection = string & TableCustomHeadColProps["orderDirection"];
+type SortDirection = "asc" | "desc";
 type SortKey = "email" | "joinedAt" | "name" | "role" | "status";
 
 export const MembersList = ({
@@ -212,193 +208,268 @@ export const MembersList = ({
 
   const isSelf = (member: UserOnTenantWithUser) => member.userId === currentUserId;
 
-  const sortHeader = (label: string, key: SortKey): TableCustomHeadColProps => ({
-    children: label,
-    onClick: () => toggleSort(key),
-    orderDirection: sortKey === key && sortDir,
-  });
+  const sortIndicator = (key: SortKey) =>
+    sortKey === key ? sortDir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : null;
 
   return (
     <>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={tc("error")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <div className={cx(fr.cx("fr-mb-2w"), "flex items-end justify-between flex-wrap gap-4")}>
-        <p className={fr.cx("fr-mb-1v")}>
+      <div className="flex items-end justify-between flex-wrap gap-4 mb-4">
+        <p className="text-sm text-muted-foreground">
           {t("memberCount", {
             filtered: filteredMembers.length === members.length ? "same" : String(filteredMembers.length),
             total: members.length,
           })}
         </p>
-        <div className="flex items-end flex-wrap gap-4 [&_.fr-select-group]:!mb-0">
-          <Select
-            label={t("role")}
-            options={[
-              { value: "all", label: tc("all") },
-              ...FILTERABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] })),
-            ]}
-            nativeSelectProps={{
-              value: filterRole ?? "all",
-              onChange: e => {
+        <div className="flex items-end flex-wrap gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="filter-role" className="text-xs">
+              {t("role")}
+            </Label>
+            <select
+              id="filter-role"
+              className="flex h-8 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={filterRole ?? "all"}
+              onChange={e => {
                 setFilterRole(e.target.value === "all" ? null : (e.target.value as UserRole));
                 setCurrentPage(1);
-              },
-            }}
-          />
-          <Select
-            label={t("status")}
-            options={[
-              { value: "all", label: tc("all") },
-              ...Object.values(UserStatus).map(status => ({ value: status, label: STATUS_LABELS[status] })),
-            ]}
-            nativeSelectProps={{
-              value: filterStatus ?? "all",
-              onChange: e => {
+              }}
+            >
+              <option value="all">{tc("all")}</option>
+              {FILTERABLE_ROLES.map(role => (
+                <option key={role} value={role}>
+                  {ROLE_LABELS[role]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="filter-status" className="text-xs">
+              {t("status")}
+            </Label>
+            <select
+              id="filter-status"
+              className="flex h-8 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={filterStatus ?? "all"}
+              onChange={e => {
                 setFilterStatus(e.target.value === "all" ? null : (e.target.value as UserStatus));
                 setCurrentPage(1);
-              },
-            }}
-          />
-          <Select
-            className="ml-auto"
-            label={tc("perPage")}
-            options={[
-              ...PAGE_SIZE_OPTIONS.map(size => ({ value: String(size), label: String(size) })),
-              { value: "all", label: tc("all") },
-            ]}
-            nativeSelectProps={{
-              value: pageSize ? String(pageSize) : "all",
-              onChange: e => {
+              }}
+            >
+              <option value="all">{tc("all")}</option>
+              {Object.values(UserStatus).map(status => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1 ml-auto">
+            <Label htmlFor="page-size" className="text-xs">
+              {tc("perPage")}
+            </Label>
+            <select
+              id="page-size"
+              className="flex h-8 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={pageSize ? String(pageSize) : "all"}
+              onChange={e => {
                 const val = e.target.value;
                 setPageSize(val === "all" ? null : Number(val));
                 setCurrentPage(1);
-              },
-            }}
-          />
+              }}
+            >
+              {PAGE_SIZE_OPTIONS.map(size => (
+                <option key={size} value={String(size)}>
+                  {size}
+                </option>
+              ))}
+              <option value="all">{tc("all")}</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {members.length > 0 ? (
         <>
-          <TableCustom
-            classes={{
-              "col-0": tableStyle.colShrink,
-              "col-3": tableStyle.colShrink,
-              "col-6": tableStyle.colShrink,
-            }}
-            header={[
-              { children: t("id") },
-              sortHeader(t("name"), "name"),
-              sortHeader(t("email"), "email"),
-              sortHeader(t("role"), "role"),
-              sortHeader(t("status"), "status"),
-              sortHeader(t("joinedAt"), "joinedAt"),
-              { children: tc("actions") },
-            ]}
-            body={paginatedMembers.map(member => [
-              {
-                children: (
-                  <Icon
-                    icon={copiedId === member.userId ? "fr-icon-check-line" : "fr-icon-file-text-line"}
-                    onClick={() => handleCopyId(member.userId)}
-                    size="sm"
-                    title={member.userId}
-                  />
-                ),
-              },
-              {
-                children: (
-                  <span className="flex items-center gap-2">
-                    {member.user.name ?? "—"}
-                    {isSelf(member) && <Tag small>{t("you")}</Tag>}
-                    {superAdminIds.includes(member.userId) && <Tag small>{t("superAdmin")}</Tag>}
-                  </span>
-                ),
-              },
-              { children: member.user.email },
-              {
-                children:
-                  isLastOwner(member) || isSelf(member) || member.role === UserRole.INHERITED ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">{t("id")}</TableHead>
+                <TableHead>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 hover:text-foreground"
+                    onClick={() => toggleSort("name")}
+                  >
+                    {t("name")} {sortIndicator("name")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 hover:text-foreground"
+                    onClick={() => toggleSort("email")}
+                  >
+                    {t("email")} {sortIndicator("email")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 hover:text-foreground"
+                    onClick={() => toggleSort("role")}
+                  >
+                    {t("role")} {sortIndicator("role")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 hover:text-foreground"
+                    onClick={() => toggleSort("status")}
+                  >
+                    {t("status")} {sortIndicator("status")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 hover:text-foreground"
+                    onClick={() => toggleSort("joinedAt")}
+                  >
+                    {t("joinedAt")} {sortIndicator("joinedAt")}
+                  </button>
+                </TableHead>
+                <TableHead>{tc("actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedMembers.map(member => (
+                <TableRow key={member.userId}>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title={member.userId}
+                      onClick={() => handleCopyId(member.userId)}
+                    >
+                      {copiedId === member.userId ? <Check className="size-4" /> : <ClipboardCopy className="size-4" />}
+                    </Button>
+                  </TableCell>
+                  <TableCell>
                     <span className="flex items-center gap-2">
-                      <Badge as="span" small noIcon severity="info">
-                        {ROLE_LABELS[getEffectiveRole(member)]}
-                      </Badge>
-                      {member.role === UserRole.INHERITED && (
-                        <Badge as="span" small noIcon severity="new">
-                          {t("inherited")}
+                      {member.user.name ?? "—"}
+                      {isSelf(member) && (
+                        <Badge variant="outline" className="text-xs">
+                          {t("you")}
+                        </Badge>
+                      )}
+                      {superAdminIds.includes(member.userId) && (
+                        <Badge variant="outline" className="text-xs">
+                          {t("superAdmin")}
                         </Badge>
                       )}
                     </span>
-                  ) : (
-                    <Select
-                      className="min-w-48"
-                      label={<span className="sr-only">{t("role")}</span>}
-                      options={ASSIGNABLE_ROLES.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
-                      nativeSelectProps={{
-                        value: member.role,
-                        onChange: e => void handleRoleChange(member.userId, e.target.value as UserRole),
-                      }}
-                      disabled={loadingId === member.userId}
-                    />
-                  ),
-              },
-              {
-                children: (
-                  <Badge as="span" small noIcon severity={STATUS_BADGE_SEVERITY[member.status]}>
-                    {STATUS_LABELS[member.status]}
-                  </Badge>
-                ),
-              },
-              { children: dateFormatter.format(new Date(member.joinedAt)) },
-              {
-                children:
-                  isLastOwner(member) || isSelf(member) ? null : (
-                    <ButtonsGroup
-                      inlineLayoutWhen="always"
-                      buttonsSize="small"
-                      className="min-w-64"
-                      buttons={[
-                        {
-                          children: t("remove"),
-                          priority: "secondary",
-                          disabled: loadingId === member.userId,
-                          onClick: () => void handleRemove(member.userId),
-                        },
-                        {
-                          children: member.status === UserStatus.BLOCKED ? t("unblock") : t("block"),
-                          priority: "tertiary",
-                          disabled: loadingId === member.userId,
-                          onClick: () => void handleToggleStatus(member.userId, member.status),
-                        },
-                      ]}
-                    />
-                  ),
-              },
-            ])}
-          />
-          <Pagination
-            className={fr.cx("fr-mt-2w")}
-            count={totalPages}
-            defaultPage={currentPage}
-            getPageLinkProps={page => ({
-              href: "#",
-              onClick: (e: React.MouseEvent) => {
-                e.preventDefault();
-                setCurrentPage(page);
-              },
-            })}
-          />
+                  </TableCell>
+                  <TableCell>{member.user.email}</TableCell>
+                  <TableCell>
+                    {isLastOwner(member) || isSelf(member) || member.role === UserRole.INHERITED ? (
+                      <span className="flex items-center gap-2">
+                        <Badge variant="secondary">{ROLE_LABELS[getEffectiveRole(member)]}</Badge>
+                        {member.role === UserRole.INHERITED && <Badge variant="outline">{t("inherited")}</Badge>}
+                      </span>
+                    ) : (
+                      <select
+                        className={cn(
+                          "flex h-8 min-w-36 rounded-md border border-input bg-transparent px-2 py-1 text-sm shadow-xs",
+                          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                        )}
+                        value={member.role}
+                        onChange={e => void handleRoleChange(member.userId, e.target.value as UserRole)}
+                        disabled={loadingId === member.userId}
+                      >
+                        {ASSIGNABLE_ROLES.map(role => (
+                          <option key={role} value={role}>
+                            {ROLE_LABELS[role]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={STATUS_BADGE_VARIANT[member.status]}>{STATUS_LABELS[member.status]}</Badge>
+                  </TableCell>
+                  <TableCell>{dateFormatter.format(new Date(member.joinedAt))}</TableCell>
+                  <TableCell>
+                    {!isLastOwner(member) && !isSelf(member) && (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={loadingId === member.userId}
+                          onClick={() => void handleRemove(member.userId)}
+                        >
+                          {t("remove")}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={loadingId === member.userId}
+                          onClick={() => void handleToggleStatus(member.userId, member.status)}
+                        >
+                          {member.status === UserStatus.BLOCKED ? t("unblock") : t("block")}
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                &laquo;
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+              >
+                &raquo;
+              </Button>
+            </div>
+          )}
         </>
       ) : (
-        <Alert severity="info" title={t("noMembers")} description={t("noMembersDescription")} small />
+        <Alert>
+          <AlertTitle>{t("noMembers")}</AlertTitle>
+          <AlertDescription>{t("noMembersDescription")}</AlertDescription>
+        </Alert>
       )}
     </>
   );

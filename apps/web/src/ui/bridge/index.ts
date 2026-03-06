@@ -1,6 +1,13 @@
 export { UIAlert, type UIAlertProps } from "./UIAlert";
 export { UIBadge, type UIBadgeProps } from "./UIBadge";
 export { UIButton, type UIButtonProps } from "./UIButton";
+export { UIButtonsGroup, type UIButtonsGroupProps } from "./UIButtonsGroup";
+export { UICard, type UICardProps } from "./UICard";
+export { UIInput, type UIInputProps } from "./UIInput";
 export { UILabel, type UILabelProps } from "./UILabel";
+export { UIModal, type UIModalProps } from "./UIModal";
 export { UISeparator, type UISeparatorProps } from "./UISeparator";
 export { UISkeleton, type UISkeletonProps } from "./UISkeleton";
+export { UITable, type UITableHeader, type UITableProps, type UITableRow } from "./UITable";
+export { UITag, type UITagProps } from "./UITag";
+export { UITooltip, type UITooltipProps } from "./UITooltip";

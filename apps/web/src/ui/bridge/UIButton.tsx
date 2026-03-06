@@ -1,44 +1,59 @@
 "use client";
 
-import DsfrButton from "@codegouvfr/react-dsfr/Button";
 import { Button as ShadcnButton } from "@kokatsuna/ui";
-import { type ComponentProps } from "react";
+import Link from "next/link";
+import { type ComponentProps, lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
 
-const VARIANT_TO_PRIORITY = {
-  default: "primary",
-  secondary: "secondary",
-  destructive: "primary",
-  outline: "tertiary",
-  ghost: "tertiary no outline",
-  link: "tertiary no outline",
-} as const;
+const UIButtonDsfr = lazy(() => import("./UIButtonDsfr").then(m => ({ default: m.UIButtonDsfr })));
 
 type ShadcnButtonProps = ComponentProps<typeof ShadcnButton>;
 
 export type UIButtonProps = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  linkProps?: { href: string; target?: string };
   onClick?: () => void;
+  size?: ShadcnButtonProps["size"];
+  title?: string;
   type?: "button" | "reset" | "submit";
   variant?: ShadcnButtonProps["variant"];
 };
 
-export const UIButton = ({ variant = "default", children, className, ...props }: UIButtonProps) => {
+export const UIButton = ({
+  variant = "default",
+  size = "default",
+  children,
+  className,
+  linkProps,
+  ...props
+}: UIButtonProps) => {
   const theme = useUI();
 
   if (theme === "Dsfr") {
     return (
-      <DsfrButton priority={VARIANT_TO_PRIORITY[variant ?? "default"]} className={className} {...props}>
-        {children}
-      </DsfrButton>
+      <Suspense>
+        <UIButtonDsfr variant={variant} size={size} className={className} linkProps={linkProps} {...props}>
+          {children}
+        </UIButtonDsfr>
+      </Suspense>
+    );
+  }
+
+  if (linkProps) {
+    return (
+      <ShadcnButton variant={variant} size={size} className={className} asChild>
+        <Link href={linkProps.href} target={linkProps.target}>
+          {children}
+        </Link>
+      </ShadcnButton>
     );
   }
 
   return (
-    <ShadcnButton variant={variant} className={className} {...props}>
+    <ShadcnButton variant={variant} size={size} className={className} {...props}>
       {children}
     </ShadcnButton>
   );

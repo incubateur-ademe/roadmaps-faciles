@@ -1,9 +1,11 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
+import { Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type PropsWithChildren, useState, useTransition } from "react";
+
+import { UIButton } from "@/ui/bridge";
 
 import { deletePost } from "./actions";
 import { PostEditForm } from "./PostEditForm";
@@ -70,20 +72,16 @@ export const PostEditToggle = ({
       {children}
       <span className="flex gap-2">
         {canEdit && (
-          <Button priority="tertiary" iconId="fr-icon-edit-line" size="small" onClick={() => setEditing(true)}>
+          <UIButton variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <Pencil className="mr-1 size-4" />
             {tc("edit")}
-          </Button>
+          </UIButton>
         )}
         {canDelete && (
-          <Button
-            priority="tertiary"
-            iconId="fr-icon-delete-line"
-            size="small"
-            disabled={deleting}
-            onClick={handleDelete}
-          >
+          <UIButton variant="outline" size="sm" disabled={deleting} onClick={handleDelete}>
+            <Trash2 className="mr-1 size-4" />
             {t("deletePost")}
-          </Button>
+          </UIButton>
         )}
       </span>
     </>

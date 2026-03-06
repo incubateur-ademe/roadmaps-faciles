@@ -61,6 +61,14 @@
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
   - react-dsfr `ButtonsGroup`: `buttons` prop is typed as `[ButtonProps, ...ButtonProps[]]` tuple — conditional spreads break TypeScript; use separate renders for different button sets
   - react-dsfr `createModal`: use `createModal({ id, isOpenedByDefault: false })` at module level for DSFR-compliant modals; call `.open()` imperatively, render `<modal.Component>`
+- UI Bridge components (`src/ui/bridge/`): dual-theme abstraction layer — each bridge renders shadcn (Default) or DSFR (Dsfr) based on `useUI()` context
+  - Pattern: `UIFoo.tsx` (public API, `React.lazy()` for DSFR branch) + `UIFooDsfr.tsx` (DSFR-specific, static DSFR import)
+  - DSFR variants are lazy-loaded via `React.lazy()` + `<Suspense>` to prevent DSFR CSS from leaking into Default theme pages
+  - Bridges: `UIAlert`, `UIBadge`, `UIButton`, `UIButtonsGroup`, `UICard`, `UIInput`, `UILabel`, `UIModal`, `UISeparator`, `UISkeleton`, `UITable`, `UITag`, `UITooltip`
+  - `UIModal` wraps `createModal()` in a declarative API (`open`/`onClose` props) — DSFR variant syncs via `useEffect` + `dsfr.conceal` event
+  - `UITable` and `UISkeleton` are Default-only (no DSFR variant)
+  - Theme context: `UIProvider` / `useUI()` from `@/ui` — `UiTheme = "Default" | "Dsfr"`, resolved server-side by `getTheme()` from `@/ui/server` (reads `ui-theme-dev` cookie)
+  - Showcase: `/showcase` page renders all bridges with theme toggle + dark mode toggle — use for visual regression testing
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
   - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
 - Styling preference: Tailwind for simple, SCSS modules for complex — never inline styles (`style={{...}}`)
@@ -290,6 +298,7 @@
 - Multi-tenant Route Handlers: never use `request.url` as base for root URLs — use `config.host` directly (request may reflect tenant domain)
 - `DomainPageHOP` generic param is for route Params only, not page props — access `searchParams` via cast: `(props as unknown as { searchParams: Promise<...> }).searchParams`
 - Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)
+- Turbopack CSS isolation: `next/dynamic` in a server component eagerly bundles CSS (leaks). `React.lazy()` in a `"use client"` component defers CSS injection until the component actually renders. Always use `React.lazy()` + `<Suspense>` in client components to conditionally load CSS-heavy modules (DSFR, etc.)
 - `pino` and `pino-pretty` must be in `serverExternalPackages` in `next.config.ts` — Turbopack cannot bundle them
 - `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
 - Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there

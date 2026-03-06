@@ -1,15 +1,14 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
+import { Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState, useTransition } from "react";
 
 import { MarkdownEditor, type MarkdownEditorProps } from "@/dsfr/base/client/MarkdownEditor";
+import { UIAlert, UIButton } from "@/ui/bridge";
 
 import { sendComment } from "./_timeline/actions";
 
@@ -51,9 +50,8 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
 
   if (!userId) {
     return (
-      <div className={fr.cx("fr-mt-2w")}>
-        <Alert
-          small
+      <div className="mt-4">
+        <UIAlert
           severity="info"
           description={
             <>
@@ -68,7 +66,7 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
   }
 
   return (
-    <div className={fr.cx("fr-mt-2w")}>
+    <div className="mt-4">
       <MarkdownEditor
         key={editorKey}
         label={t("addComment")}
@@ -76,11 +74,12 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
         uploadImageAction={uploadImageAction}
         disabled={isPending}
       />
-      {error && <Alert small severity="error" description={error} className={fr.cx("fr-mt-1w")} />}
-      <div className={cx(fr.cx("fr-mt-1w"), "flex justify-end")}>
-        <Button type="button" size="small" iconId="fr-icon-send-plane-fill" disabled={isPending} onClick={handleSubmit}>
+      {error && <UIAlert severity="error" description={error} className="mt-2" />}
+      <div className={cn("mt-2 flex justify-end")}>
+        <UIButton type="button" size="sm" disabled={isPending} onClick={handleSubmit}>
+          <Send className="mr-1 size-4" />
           {t("submitComment")}
-        </Button>
+        </UIButton>
       </div>
     </div>
   );

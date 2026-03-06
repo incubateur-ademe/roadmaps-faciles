@@ -20,7 +20,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@kokatsuna/ui";
-import { type LucideIcon, MapIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -45,12 +45,11 @@ export interface NavGroup {
 }
 
 interface ExtraItem extends NavItem {
-  /** Variant for the badge (default: destructive) */
   badgeVariant?: "default" | "destructive" | "outline" | "secondary";
 }
 
 interface AdminSidebarProps {
-  /** Active section ID for IntersectionObserver-based sub-item highlighting (e.g. general page) */
+  /** Active section ID for IntersectionObserver-based sub-item highlighting */
   activeSection?: null | string;
   /** Extra items shown after a separator below the main nav groups */
   extraItems?: ExtraItem[];
@@ -60,17 +59,27 @@ interface AdminSidebarProps {
     version: string;
   };
   groups: NavGroup[];
+  /** Header icon — ReactNode for full control (e.g. Image, SVG, or Lucide icon) */
+  icon: React.ReactNode;
   subtitle?: string;
   title: string;
 }
 
 /**
- * Shared admin sidebar component — used by both root and tenant admin layouts.
+ * Shared admin sidebar — root and tenant admin layouts.
  *
- * Uses `@kokatsuna/ui` Sidebar compound component.
- * Nav is flat by default, sub-items only appear for pages that need them (e.g. general settings).
+ * Matches Stitch wireframe: icon + app name header, labeled groups,
+ * separated extra items (moderation), status footer.
  */
-export const AdminSidebar = ({ title, subtitle, groups, activeSection, extraItems, footer }: AdminSidebarProps) => {
+export const AdminSidebar = ({
+  title,
+  subtitle,
+  icon,
+  groups,
+  activeSection,
+  extraItems,
+  footer,
+}: AdminSidebarProps) => {
   const pathname = usePathname();
 
   const isItemActive = (item: NavItem) => {
@@ -86,12 +95,50 @@ export const AdminSidebar = ({ title, subtitle, groups, activeSection, extraItem
     return pathname === subItem.href;
   };
 
+  const renderItem = (item: NavItem, badgeVariant?: "default" | "destructive" | "outline" | "secondary") => {
+    const active = isItemActive(item);
+    const Icon = item.icon;
+
+    return (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
+          <Link href={item.href}>
+            <Icon className="size-5" />
+            <span>{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+        {item.badge != null && (
+          <SidebarMenuBadge>
+            <Badge
+              variant={badgeVariant ?? "destructive"}
+              className="size-5 justify-center rounded-full p-0 text-[10px]"
+            >
+              {item.badge}
+            </Badge>
+          </SidebarMenuBadge>
+        )}
+        {item.subItems && active && (
+          <SidebarMenuSub>
+            {item.subItems.map(sub => (
+              <SidebarMenuSubItem key={sub.href}>
+                <SidebarMenuSubButton asChild isActive={isSubItemActive(sub, item)}>
+                  <Link href={sub.href}>{sub.label}</Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        )}
+      </SidebarMenuItem>
+    );
+  };
+
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="px-4 py-3">
+      {/* Header: app icon + name + subtitle */}
+      <SidebarHeader className="px-4 py-4">
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-            <MapIcon className="size-5" />
+            {icon}
           </div>
           <div className="flex flex-col overflow-hidden">
             <span className="truncate text-sm font-bold leading-tight">{title}</span>
@@ -102,94 +149,37 @@ export const AdminSidebar = ({ title, subtitle, groups, activeSection, extraItem
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      {/* Nav groups */}
+      <SidebarContent className="px-2 pt-2">
         {groups.map((group, gi) => (
-          <SidebarGroup key={gi}>
+          <SidebarGroup key={gi} className={cn(gi > 0 && "pt-4")}>
             {group.label && (
-              <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
+              <SidebarGroupLabel className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
                 {group.label}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map(item => {
-                  const active = isItemActive(item);
-                  const Icon = item.icon;
-
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
-                        <Link href={item.href}>
-                          <Icon className={cn("size-5", active && "text-sidebar-primary")} />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                      {item.badge != null && (
-                        <SidebarMenuBadge>
-                          <Badge variant="destructive" className="size-5 justify-center rounded-full p-0 text-[10px]">
-                            {item.badge}
-                          </Badge>
-                        </SidebarMenuBadge>
-                      )}
-                      {item.subItems && active && (
-                        <SidebarMenuSub>
-                          {item.subItems.map(sub => (
-                            <SidebarMenuSubItem key={sub.href}>
-                              <SidebarMenuSubButton asChild isActive={isSubItemActive(sub, item)}>
-                                <Link href={sub.href}>{sub.label}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      )}
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
+              <SidebarMenu>{group.items.map(item => renderItem(item))}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
 
+        {/* Extra items (e.g. Moderation) separated by a divider */}
         {extraItems && extraItems.length > 0 && (
           <>
-            <SidebarSeparator className="mx-4" />
+            <SidebarSeparator className="mx-4 my-2" />
             <SidebarGroup>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {extraItems.map(item => {
-                    const active = isItemActive(item);
-                    const Icon = item.icon;
-
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
-                          <Link href={item.href}>
-                            <Icon className={cn("size-5", active && "text-sidebar-primary")} />
-                            <span>{item.label}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                        {item.badge != null && (
-                          <SidebarMenuBadge>
-                            <Badge
-                              variant={item.badgeVariant ?? "destructive"}
-                              className="size-5 justify-center rounded-full p-0 text-[10px]"
-                            >
-                              {item.badge}
-                            </Badge>
-                          </SidebarMenuBadge>
-                        )}
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
+                <SidebarMenu>{extraItems.map(item => renderItem(item, item.badgeVariant))}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </>
         )}
       </SidebarContent>
 
+      {/* Footer: system status */}
       {footer && (
-        <SidebarFooter className="px-4 pb-4">
+        <SidebarFooter className="mt-auto px-4 pb-4">
           <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/50 p-3">
             <div className="mb-1 flex items-center gap-2">
               <div className="size-2 animate-pulse rounded-full bg-green-500" />

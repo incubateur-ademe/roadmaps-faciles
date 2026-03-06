@@ -1,10 +1,12 @@
 "use client";
 
-import { type ReactNode, useCallback } from "react";
+import { type ReactNode, useCallback, lazy } from "react";
 
-import { useConsent } from "@/consentManagement";
+// TODO: restore useConsent from @/consentManagement once DSFR CSS isolation is done.
+// import { useConsent } from "@/consentManagement";
+const useConsent = () => ({ finalityConsent: undefined as Record<string, boolean> | undefined });
 
-import { MatomoClient } from "./matomo/MatomoClient";
+const MatomoClient = lazy(() => import("./matomo/MatomoClient").then(m => ({ default: m.MatomoClient })));
 import { PostHogReactProvider } from "./posthog/PostHogReactProvider";
 import { TrackingContextProvider } from "./TrackingContext";
 import { type TrackingProviderType } from "./types";

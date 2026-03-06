@@ -3,6 +3,9 @@
 @import "@kokatsuna/ui/tokens/theme.css";
 @import "@kokatsuna/ui/tokens/tailwind-theme.css";
 
+/* Scan packages/ui source for Tailwind class detection (external package) */
+@source "../../../../packages/ui/src";
+
 @layer base {
   *,
   ::after,
@@ -11,6 +14,26 @@
   ::file-selector-button {
     border-color: var(--border);
   }
+}
+
+/* ==============================
+   DSFR → shadcn CSS variable aliases
+   Maps DSFR token names to shadcn equivalents so existing .module.scss
+   files (Board.module.scss, CommentContent.module.scss) work in Default theme.
+   ============================== */
+[data-ui-theme="Default"] {
+    --background-lifted-grey: var(--card);
+    --border-default-grey: var(--border);
+    --background-alt-grey: var(--muted);
+    --text-mention-grey: var(--muted-foreground);
+    --shadow-color: var(--border);
+    --background-contrast-grey: var(--accent);
+    --text-default-grey: var(--foreground);
+    --text-label-grey: var(--muted-foreground);
+    --background-default-grey: var(--background);
+    --text-action-high-blue-france: var(--primary);
+    --background-action-high-blue-france: var(--primary);
+    --text-inverted-blue-france: var(--primary-foreground);
 }
 
 /* ==============================

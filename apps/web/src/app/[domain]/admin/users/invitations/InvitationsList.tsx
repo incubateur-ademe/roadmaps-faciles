@@ -1,21 +1,20 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
+import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Input } from "@kokatsuna/ui/components/input";
+import { Label } from "@kokatsuna/ui/components/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui/components/table";
+import { X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
-import { Grid, GridCol } from "@/dsfr";
-import { EmailAutocomplete } from "@/dsfr/base/EmailAutocomplete";
-import { TableCustom } from "@/dsfr/base/TableCustom";
 import { type Invitation } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
 import { type InvitationRole } from "@/useCases/invitations/SendInvitation";
 
-import { revokeInvitation, searchUsersForInvitation, sendInvitation } from "./actions";
+import { revokeInvitation, sendInvitation } from "./actions";
 
 interface InvitationsListProps {
   invitations: Invitation[];
@@ -76,93 +75,93 @@ export const InvitationsList = ({ invitations: initialInvitations, isOwner }: In
   return (
     <div>
       {error && (
-        <Alert
-          className={fr.cx("fr-mb-2w")}
-          severity="error"
-          title={tc("error")}
-          description={error}
-          closable
-          onClose={() => setError(null)}
-        />
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>{tc("error")}</AlertTitle>
+          <AlertDescription className="flex items-start justify-between">
+            {error}
+            <Button variant="ghost" size="sm" onClick={() => setError(null)}>
+              <X className="size-4" />
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {invitations.length > 0 ? (
-        <TableCustom
-          className={fr.cx("fr-mb-3w")}
-          header={[
-            { children: t("email") },
-            { children: t("role") },
-            { children: t("status") },
-            { children: t("createdAt") },
-            { children: tc("actions") },
-          ]}
-          body={invitations.map(invitation => [
-            { children: invitation.email },
-            {
-              children: (
-                <Badge as="span" small noIcon severity="info">
-                  {ROLE_LABELS[invitation.role]}
-                </Badge>
-              ),
-            },
-            {
-              children: invitation.acceptedAt ? (
-                <Badge as="span" noIcon severity="success">
-                  {t("accepted")}
-                </Badge>
-              ) : (
-                <Badge as="span" noIcon severity="info">
-                  {t("pending")}
-                </Badge>
-              ),
-            },
-            { children: dateFormatter.format(new Date(invitation.createdAt)) },
-            {
-              children: !invitation.acceptedAt ? (
-                <Button size="small" priority="secondary" onClick={() => void handleRevoke(invitation.id)}>
-                  {tc("revoke")}
-                </Button>
-              ) : null,
-            },
-          ])}
-        />
+        <Table className="mb-6">
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("email")}</TableHead>
+              <TableHead>{t("role")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
+              <TableHead>{t("createdAt")}</TableHead>
+              <TableHead>{tc("actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {invitations.map(invitation => (
+              <TableRow key={invitation.id}>
+                <TableCell>{invitation.email}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{ROLE_LABELS[invitation.role]}</Badge>
+                </TableCell>
+                <TableCell>
+                  {invitation.acceptedAt ? (
+                    <Badge variant="default">{t("accepted")}</Badge>
+                  ) : (
+                    <Badge variant="secondary">{t("pending")}</Badge>
+                  )}
+                </TableCell>
+                <TableCell>{dateFormatter.format(new Date(invitation.createdAt))}</TableCell>
+                <TableCell>
+                  {!invitation.acceptedAt && (
+                    <Button variant="secondary" size="sm" onClick={() => void handleRevoke(invitation.id)}>
+                      {tc("revoke")}
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <Alert
-          className={fr.cx("fr-mb-3w")}
-          severity="info"
-          title={t("noInvitations")}
-          description={t("noInvitationsDescription")}
-          small
-        />
+        <Alert className="mb-6">
+          <AlertTitle>{t("noInvitations")}</AlertTitle>
+          <AlertDescription>{t("noInvitationsDescription")}</AlertDescription>
+        </Alert>
       )}
 
-      <h2>{t("sendInvitation")}</h2>
-      <Grid haveGutters valign="bottom" className="[&_.fr-select-group]:!mb-0">
-        <GridCol md={6}>
-          <EmailAutocomplete
-            clearOnSelect={false}
-            label={t("email")}
-            searchAction={searchUsersForInvitation}
+      <h2 className="text-lg font-semibold mb-4">{t("sendInvitation")}</h2>
+      <div className="flex items-end gap-4 flex-wrap">
+        <div className="flex-1 min-w-48 space-y-2">
+          <Label htmlFor="invite-email">{t("email")}</Label>
+          <Input
+            id="invite-email"
+            type="email"
             value={newEmail}
-            onSelectAction={setNewEmail}
+            onChange={e => setNewEmail(e.target.value)}
+            autoComplete="off"
+            name="invite-email"
           />
-        </GridCol>
-        <GridCol md={3}>
-          <Select
-            label={t("role")}
-            options={availableRoles.map(role => ({ value: role, label: ROLE_LABELS[role] }))}
-            nativeSelectProps={{
-              value: newRole,
-              onChange: e => setNewRole(e.target.value),
-            }}
-          />
-        </GridCol>
-        <GridCol md={3}>
-          <Button className={fr.cx("fr-mb-3w")} onClick={() => void handleSend()} disabled={!newEmail || sending}>
-            {sending ? t("sending") : t("send")}
-          </Button>
-        </GridCol>
-      </Grid>
+        </div>
+        <div className="w-48 space-y-2">
+          <Label htmlFor="invite-role">{t("role")}</Label>
+          <select
+            id="invite-role"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={newRole}
+            onChange={e => setNewRole(e.target.value as InvitationRole)}
+          >
+            {availableRoles.map(role => (
+              <option key={role} value={role}>
+                {ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <Button onClick={() => void handleSend()} disabled={!newEmail || sending}>
+          {sending ? t("sending") : t("send")}
+        </Button>
+      </div>
     </div>
   );
 };

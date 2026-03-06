@@ -1,7 +1,7 @@
 "use client";
 
-import Button from "@codegouvfr/react-dsfr/Button";
-import { Select } from "@codegouvfr/react-dsfr/SelectNext";
+import { Button } from "@kokatsuna/ui/components/button";
+import { Label } from "@kokatsuna/ui/components/label";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -23,18 +23,24 @@ export const RoadmapForm = ({ boards, currentRootBoardId }: RoadmapFormProps) =>
     await saveRoadmapSettings({ rootBoardId });
   };
 
-  const options = [{ label: t("none"), value: "" }, ...boards.map(b => ({ label: b.name, value: String(b.id) }))];
-
   return (
-    <div>
-      <Select
-        label={t("rootBoard")}
-        nativeSelectProps={{
-          value: rootBoardId ? String(rootBoardId) : "",
-          onChange: e => setRootBoardId(e.target.value ? Number(e.target.value) : null),
-        }}
-        options={options}
-      />
+    <div className="space-y-4 max-w-sm">
+      <div className="space-y-2">
+        <Label htmlFor="root-board">{t("rootBoard")}</Label>
+        <select
+          id="root-board"
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          value={rootBoardId ? String(rootBoardId) : ""}
+          onChange={e => setRootBoardId(e.target.value ? Number(e.target.value) : null)}
+        >
+          <option value="">{t("none")}</option>
+          {boards.map(b => (
+            <option key={b.id} value={String(b.id)}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <Button onClick={() => void handleSave()}>{tc("save")}</Button>
     </div>
   );

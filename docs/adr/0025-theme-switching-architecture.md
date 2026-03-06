@@ -19,13 +19,20 @@ UIProvider (context: "Dsfr" | "Default")
 ├── getTheme(settings) — helper serveur
 ├── cn() — classe Tailwind merge (shadcn convention)
 │
-├── Bridge components (runtime switch)
-│   ├── UIButton → DSFR Button | shadcn Button
-│   ├── UIBadge → DSFR Badge | shadcn Badge
+├── Bridge components (runtime switch, DSFR lazy-loaded)
 │   ├── UIAlert → DSFR Alert | shadcn Alert
+│   ├── UIBadge → DSFR Badge | shadcn Badge
+│   ├── UIButton → DSFR Button | shadcn Button
+│   ├── UIButtonsGroup → DSFR ButtonsGroup | Tailwind flex
+│   ├── UICard → DSFR Card | shadcn Card
+│   ├── UIInput → DSFR Input | shadcn Input + Label
 │   ├── UILabel → DSFR label | shadcn Label
+│   ├── UIModal → DSFR createModal() | shadcn Dialog
 │   ├── UISeparator → <hr> | shadcn Separator
-│   └── UISkeleton → fr-skeleton | shadcn Skeleton
+│   ├── UISkeleton → CSS var | shadcn Skeleton
+│   ├── UITable → shadcn Table (Default only)
+│   ├── UITag → DSFR Tag | shadcn Badge outline
+│   └── UITooltip → DSFR Tooltip | shadcn Tooltip
 │
 ├── Layout components (conditional render)
 │   ├── Header → DSFR Header | ShadcnHeader
@@ -59,7 +66,7 @@ Le sélecteur de thème dans l'admin tenant est derrière le feature flag `theme
 ## Conséquences
 
 - **Maintenabilité** : chaque nouveau composant UI doit potentiellement avoir un bridge. En pratique, seuls les composants "atomiques" (Button, Badge, Alert) sont bridgés — les composants composites (Header, Footer) ont des implémentations séparées.
-- **Performance** : zéro overhead runtime — le thème est résolu une seule fois au mount, les bridges sont des imports conditionnels statiques (pas de dynamic import).
+- **Performance** : overhead minimal — le thème est résolu une seule fois au mount. Les variants DSFR sont lazy-loadées via `React.lazy()` + `<Suspense>` pour garantir que le CSS DSFR ne soit jamais injecté quand le thème Default est actif (isolation CSS Turbopack).
 - **Testabilité** : les tests E2E doivent spécifier `uiTheme` dans le seed pour garantir le bon design system en test.
 - **Extensibilité** : ajouter un troisième thème = ajouter une valeur à l'enum + un cas dans chaque bridge. Le pattern est linéaire, pas exponentiel.
 - **Suppression future** : si DSFR est abandonné, supprimer les bridges et les composants DSFR = suppression de fichiers, pas de refactoring.

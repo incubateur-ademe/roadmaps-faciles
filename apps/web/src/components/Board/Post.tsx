@@ -1,14 +1,11 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Card from "@codegouvfr/react-dsfr/Card";
-import Tag from "@codegouvfr/react-dsfr/Tag";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
-import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
+import { cn } from "@kokatsuna/ui";
 import { MarkdownHooks } from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGfm from "remark-gfm";
 
 import { type EnrichedPost } from "@/app/[domain]/(default)/board/[boardSlug]/actions";
+import { UIBadge, UICard, UITag } from "@/ui/bridge";
 
 import { LikeButton } from "./LikeButton";
 
@@ -34,11 +31,9 @@ export const BoardPost = ({
   dirtyDomainFixer,
   linkTarget,
 }: BoardPostProps) => {
-  const { isDark } = useIsDark();
   return (
-    <Card
-      key={`post_${post.id}`}
-      className={cx(!first && "snap-start scroll-mt-38")}
+    <UICard
+      className={cn(!first && "snap-start scroll-mt-38")}
       title={post.title}
       linkProps={{
         href: dirtyDomainFixer(`/post/${post.id}`),
@@ -49,50 +44,43 @@ export const BoardPost = ({
         <span className="flex justify-between items-center w-full">
           <span>
             {post.user?.name ?? post.sourceLabel ?? "Anonyme"}
-            {post.editedAt && <span className="fr-text--xs fr-text--light ml-1">(modifié)</span>}
+            {post.editedAt && <span className="text-xs font-light ml-1">(modifié)</span>}
           </span>
           {post._count.comments > 0 && (
-            <Tag
+            <UITag
               className="cursor-pointer"
               as="span"
-              iconId="fr-icon-discuss-line"
               small
-              nativeSpanProps={{
-                onClick: () => {
-                  const url = dirtyDomainFixer(`/post/${post.id}`);
-                  if (linkTarget) {
-                    window.open(url, linkTarget, "noopener,noreferrer");
-                  } else {
-                    location.href = url;
-                  }
-                },
+              onClick={() => {
+                const url = dirtyDomainFixer(`/post/${post.id}`);
+                if (linkTarget) {
+                  window.open(url, linkTarget, "noopener,noreferrer");
+                } else {
+                  location.href = url;
+                }
               }}
             >
               <b>{post._count.comments}</b>&nbsp;commentaire{post._count.comments > 1 ? "s" : ""}
-            </Tag>
+            </UITag>
           )}
         </span>
       }
       detail={
-        <span className="flex gap-[.5rem] items-center">
+        <span className="flex gap-2 items-center">
           {post.postStatus ? (
-            <Badge as="span" className={`fr-badge--color-${post.postStatus.color}`}>
-              {post.postStatus.name}
-            </Badge>
+            <UIBadge className={`fr-badge--color-${post.postStatus.color}`}>{post.postStatus.name}</UIBadge>
           ) : (
-            <Badge as="span" className={"fr-badge--color-grey"}>
-              Non classé
-            </Badge>
+            <UIBadge className="fr-badge--color-grey">Non classé</UIBadge>
           )}
           {post.tags?.map(tag => (
-            <Tag as="span" key={tag} small iconId="fr-icon-bookmark-line">
+            <UITag as="span" key={tag} small>
               {tag}
-            </Tag>
+            </UITag>
           ))}
         </span>
       }
       desc={
-        <span className="flex gap-[.5rem] items-center">
+        <span className="flex gap-2 items-center">
           {allowVoting && (allowAnonymousVoting || userId) && (
             <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={userId}>
               {post._count.likes}
@@ -119,7 +107,6 @@ export const BoardPost = ({
       }
       horizontal
       size="small"
-      shadow={isDark}
     />
   );
 };

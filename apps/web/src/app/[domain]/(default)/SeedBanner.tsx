@@ -1,11 +1,9 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { useTranslations } from "next-intl";
 import { useCallback, useSyncExternalStore } from "react";
 
+import { UIAlert, UIButton } from "@/ui/bridge";
 import { WELCOME_DATA_PREVIEW } from "@/workflows/welcomeDataPreview";
 
 const STORAGE_KEY_PREFIX = "seed-banner-dismissed-";
@@ -42,24 +40,24 @@ export const SeedBanner = ({ tenantId }: SeedBannerProps) => {
   };
 
   return (
-    <Alert
-      className={fr.cx("fr-mb-4w")}
+    <UIAlert
+      className="mb-8"
       severity="info"
       closable
       onClose={handleClose}
       title={t("seedBannerTitle")}
       description={
         <>
-          <p className={fr.cx("fr-mb-1w")}>
+          <p className="mb-2">
             {t("seedBannerDescription", {
               boards: WELCOME_DATA_PREVIEW.boards.length,
               statuses: WELCOME_DATA_PREVIEW.statuses.length,
               extras: WELCOME_DATA_PREVIEW.extras,
             })}
           </p>
-          <Button priority="secondary" size="small" linkProps={{ href: "/admin/general#seed" }}>
+          <UIButton variant="secondary" size="sm" linkProps={{ href: "/admin/general#seed" }}>
             {t("seedBannerCta")}
-          </Button>
+          </UIButton>
         </>
       }
     />

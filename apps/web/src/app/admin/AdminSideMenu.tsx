@@ -2,6 +2,7 @@
 
 import { Database, LayoutDashboard, ScrollText, Shield, ToggleLeft, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 import { AdminSidebar, type NavGroup } from "@/ui/AdminSidebar";
 
@@ -32,5 +33,13 @@ export const AdminSideMenu = () => {
     },
   ];
 
-  return <AdminSidebar title={t("sideMenu")} subtitle="Administration" groups={groups} />;
+  return (
+    <AdminSidebar
+      title="Roadmaps Faciles"
+      subtitle="Administration"
+      icon={<Image src="/img/roadmaps-faciles.png" alt="" width={20} height={20} className="size-5" />}
+      groups={groups}
+      footer={{ status: t("systemOperational"), version: "v1.0.0" }}
+    />
+  );
 };

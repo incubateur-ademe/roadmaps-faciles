@@ -1,6 +1,8 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
+import { cn } from "@kokatsuna/ui";
+import { Badge } from "@kokatsuna/ui/components/badge";
+import { Label } from "@kokatsuna/ui/components/label";
 import { useRef, useState } from "react";
 
 import { POST_STATUS_COLOR, POST_STATUS_COLOR_MAP, type PostStatusColor } from "@/lib/model/PostStatus";
@@ -24,86 +26,35 @@ export const ColorSelect = ({ label, value, onChange, disabled }: ColorSelectPro
   };
 
   return (
-    <div className={fr.cx("fr-select-group")} ref={containerRef}>
-      <label className={fr.cx("fr-label")}>{label}</label>
-      <div style={{ position: "relative" }}>
+    <div className="space-y-2" ref={containerRef}>
+      <Label>{label}</Label>
+      <div className="relative">
         <button
           type="button"
-          className={fr.cx("fr-select")}
+          className={cn(
+            "flex h-9 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs text-left",
+            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+          )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          style={{
-            width: "100%",
-            textAlign: "left",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            cursor: disabled ? "not-allowed" : "pointer",
-          }}
         >
-          <span className={`${fr.cx("fr-badge", "fr-badge--sm")} fr-badge--${POST_STATUS_COLOR_MAP[value]}`}>
-            {value}
-          </span>
+          <span className={`fr-badge fr-badge--sm fr-badge--${POST_STATUS_COLOR_MAP[value]}`}>{value}</span>
         </button>
         {isOpen && (
           <>
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 1,
-              }}
-              onClick={() => setIsOpen(false)}
-            />
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                right: 0,
-                marginTop: "0.25rem",
-                backgroundColor: "var(--background-default-grey)",
-                border: "1px solid var(--border-default-grey)",
-                borderRadius: "0.25rem",
-                maxHeight: "300px",
-                overflowY: "auto",
-                zIndex: 2,
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-              }}
-            >
+            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md max-h-[300px] overflow-y-auto z-20 shadow-md">
               {colors.map(color => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => handleSelect(color)}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem",
-                    border: "none",
-                    backgroundColor: value === color ? "var(--background-action-low-blue-france)" : "transparent",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={e => {
-                    if (value !== color) {
-                      e.currentTarget.style.backgroundColor = "var(--background-default-grey-hover)";
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (value !== color) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
+                  className={cn(
+                    "flex w-full items-center gap-2 px-3 py-2 text-left text-sm",
+                    value === color ? "bg-accent" : "hover:bg-accent/50",
+                  )}
                 >
-                  <span className={`${fr.cx("fr-badge", "fr-badge--sm")} fr-badge--${POST_STATUS_COLOR_MAP[color]}`}>
-                    {color}
-                  </span>
+                  <Badge variant="outline">{color}</Badge>
                 </button>
               ))}
             </div>

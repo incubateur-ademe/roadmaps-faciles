@@ -1,13 +1,12 @@
 "use client";
 
-import { fr } from "@codegouvfr/react-dsfr";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { BoardPost } from "@/components/Board/Post";
 import { Loader } from "@/components/utils/Loader";
+import { UIButton, UISeparator } from "@/ui/bridge";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 
 import { type EnrichedPost, fetchPostsForBoard } from "./actions";
@@ -96,19 +95,16 @@ export const PostList = ({
           />
         );
       })}
-      <div className={fr.cx("fr-hr-or")}>
+      <div className="flex items-center gap-4 py-4">
+        <UISeparator className="flex-1" />
         {isPending ? (
           <Loader loading />
         ) : (
-          <Button
-            priority="tertiary no outline"
-            type="button"
-            onClick={handleLoadMore}
-            disabled={totalCount === posts.length}
-          >
+          <UIButton variant="ghost" type="button" onClick={handleLoadMore} disabled={totalCount === posts.length}>
             {t("more")}
-          </Button>
+          </UIButton>
         )}
+        <UISeparator className="flex-1" />
       </div>
     </>
   );
