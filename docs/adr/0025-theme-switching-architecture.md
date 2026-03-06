@@ -19,20 +19,13 @@ UIProvider (context: "Dsfr" | "Default")
 ├── getTheme(settings) — helper serveur
 ├── cn() — classe Tailwind merge (shadcn convention)
 │
-├── Bridge components (runtime switch, DSFR lazy-loaded)
-│   ├── UIAlert → DSFR Alert | shadcn Alert
-│   ├── UIBadge → DSFR Badge | shadcn Badge
+├── Bridge components (runtime switch)
 │   ├── UIButton → DSFR Button | shadcn Button
-│   ├── UIButtonsGroup → DSFR ButtonsGroup | Tailwind flex
-│   ├── UICard → DSFR Card | shadcn Card
-│   ├── UIInput → DSFR Input | shadcn Input + Label
+│   ├── UIBadge → DSFR Badge | shadcn Badge
+│   ├── UIAlert → DSFR Alert | shadcn Alert
 │   ├── UILabel → DSFR label | shadcn Label
-│   ├── UIModal → DSFR createModal() | shadcn Dialog
 │   ├── UISeparator → <hr> | shadcn Separator
-│   ├── UISkeleton → CSS var | shadcn Skeleton
-│   ├── UITable → shadcn Table (Default only)
-│   ├── UITag → DSFR Tag | shadcn Badge outline
-│   └── UITooltip → DSFR Tooltip | shadcn Tooltip
+│   └── UISkeleton → fr-skeleton | shadcn Skeleton
 │
 ├── Layout components (conditional render)
 │   ├── Header → DSFR Header | ShadcnHeader
@@ -66,7 +59,7 @@ Le sélecteur de thème dans l'admin tenant est derrière le feature flag `theme
 ## Conséquences
 
 - **Maintenabilité** : chaque nouveau composant UI doit potentiellement avoir un bridge. En pratique, seuls les composants "atomiques" (Button, Badge, Alert) sont bridgés — les composants composites (Header, Footer) ont des implémentations séparées.
-- **Performance** : overhead minimal — le thème est résolu une seule fois au mount. Les variants DSFR sont lazy-loadées via `React.lazy()` + `<Suspense>` pour garantir que le CSS DSFR ne soit jamais injecté quand le thème Default est actif (isolation CSS Turbopack).
+- **Performance** : zéro overhead runtime — le thème est résolu une seule fois au mount, les bridges sont des imports conditionnels statiques (pas de dynamic import).
 - **Testabilité** : les tests E2E doivent spécifier `uiTheme` dans le seed pour garantir le bon design system en test.
 - **Extensibilité** : ajouter un troisième thème = ajouter une valeur à l'enum + un cas dans chaque bridge. Le pattern est linéaire, pas exponentiel.
 - **Suppression future** : si DSFR est abandonné, supprimer les bridges et les composants DSFR = suppression de fichiers, pas de refactoring.
@@ -80,3 +73,7 @@ Le sélecteur de thème dans l'admin tenant est derrière le feature flag `theme
 - `src/ui/` — barrel, UIProvider, bridge components
 - `src/ui/shadcn/` — composants shadcn/ui
 - `src/app/globals.scss` — tokens CSS scopés par `data-ui-theme`
+
+## Annexes
+
+- [ADR 0025-1 — Lazy loading bridges + CSS isolation](./0025-1-lazy-loading-css-isolation.md)

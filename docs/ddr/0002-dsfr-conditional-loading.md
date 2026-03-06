@@ -91,38 +91,6 @@ Les resets DSFR (link underline, heading sizes) sont aussi scopés sous `[data-u
 }
 ```
 
-### Bridge CSS isolation (lazy loading)
-
-Les bridge components (`src/ui/bridge/`) utilisent `React.lazy()` + `<Suspense>` pour charger les variants DSFR à la demande. Cela exploite le comportement de Turbopack :
-
-- `next/dynamic` en **server component** → CSS eagerly bundled (leak impossible à éviter)
-- `React.lazy()` en **`"use client"` component** → JS preloaded mais CSS non injecté tant que le composant n'est pas rendu
-
-Chaque bridge suit le pattern :
-
-```tsx
-// UIFoo.tsx ("use client")
-const UIFooDsfr = lazy(() => import("./UIFooDsfr").then(m => ({ default: m.UIFooDsfr })));
-
-if (theme === "Dsfr") return <Suspense><UIFooDsfr {...props} /></Suspense>;
-return <ShadcnFoo {...props} />;
-```
-
-Le fichier `UIFooDsfr.tsx` importe statiquement les composants `@codegouvfr/react-dsfr` — ces imports ne sont résolus que quand le lazy module est chargé (= quand le thème est Dsfr).
-
-### DsfrShell (showcase / pages standalone)
-
-Pour les pages hors du tenant layout (ex: `/showcase`), le CSS DSFR est injecté via `DsfrShell` :
-
-```tsx
-// DsfrShell.tsx ("use client") — chargé via dynamic({ ssr: false })
-import "@codegouvfr/react-dsfr/assets/dsfr_plus_icons.css";
-<DsfrProvider lang={lang}>
-  <StartDsfrOnHydration />
-  {children}
-</DsfrProvider>
-```
-
 ## Conséquences
 
 - **Légal** : conformité assurée — pas de charte État sur les pages non-autorisées.
@@ -137,3 +105,7 @@ import "@codegouvfr/react-dsfr/assets/dsfr_plus_icons.css";
 - `src/app/layout.tsx` — root layout DSFR-free
 - `src/app/[domain]/(domain)/layout.tsx` — tenant layout conditionnel
 - `src/app/globals.scss` lignes 176-205 — DSFR resets
+
+## Annexes
+
+- [DDR 0002-1 — Bridge CSS isolation via lazy loading](./0002-1-bridge-css-isolation.md)

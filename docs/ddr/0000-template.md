@@ -20,3 +20,12 @@
 
 ## Liens
   - Issues, PRs, Stitch/Figma refs, screenshots.
+
+---
+
+## Règle d'immutabilité
+
+Un DDR accepté **ne doit jamais être modifié**. Même règle que les ADR :
+- Annexe : `XXXX-N-<titre>.md` (ex: `0002-1-lazy-loading.md`)
+- Référencer dans `## Annexes` du DDR parent
+- Template : `docs/ddr/0000-0-template-annexe.md`

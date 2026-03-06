@@ -281,6 +281,11 @@
 - Tenant-level roles come from tenant membership, NOT from the global user role — always check the correct scope
 - Server-derived data (e.g., `creatorId`) must NOT appear in public Zod schemas — use a separate interface/type that extends the Zod inferred type
 
+## ADR / DDR
+- **Immutabilité** : un ADR/DDR accepté ne doit JAMAIS être modifié (sauf changement de statut vers `Superseded`)
+- **Annexes** : pour compléter un ADR/DDR existant, créer une annexe `XXXX-N-<titre>.md` (ex: `0025-1-css-isolation.md`) et la référencer dans `## Annexes` du document parent
+- Templates : `docs/adr/0000-template.md`, `docs/adr/0000-0-template-annexe.md`, `docs/ddr/0000-template.md`, `docs/ddr/0000-0-template-annexe.md`
+
 ## Gotchas
 - React 19 / Next.js 16: ne JAMAIS exporter `Context.Provider` directement (`export const Provider = MyContext.Provider`) — ça crash en RSC ("Received a promise that resolves to: Context"). Toujours wrapper dans un vrai composant client (`export const Provider = ({ children, value }) => <MyContext value={value}>{children}</MyContext>`)
 - **NEVER use `prisma db push`** — it applies schema changes directly without creating a migration, causing drift between the migration history and the actual database. Always use `prisma migrate dev --name <name>` to create migrations. If you need to add enum values, create the migration SQL manually (`ALTER TYPE ... ADD VALUE`) and use `prisma migrate dev` to apply it. The only exception is `scripts/worktree-new.sh --db` which uses `db push` for ephemeral worktree DBs.
