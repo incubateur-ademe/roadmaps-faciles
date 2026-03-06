@@ -101,9 +101,9 @@ export const PostListCompact = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     {post.postStatus ? (
-                      <UIBadge className={`fr-badge--color-${post.postStatus.color}`}>{post.postStatus.name}</UIBadge>
+                      <UIBadge statusColor={post.postStatus.color}>{post.postStatus.name}</UIBadge>
                     ) : (
-                      <UIBadge className="fr-badge--color-grey">{t("post.unclassified")}</UIBadge>
+                      <UIBadge statusColor="grey">{t("post.unclassified")}</UIBadge>
                     )}
                     <Link
                       href={dirtyDomainFixer(`/post/${post.id}`)}

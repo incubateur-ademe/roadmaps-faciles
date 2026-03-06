@@ -118,6 +118,15 @@ const ShowcasePage = () => {
           <UIBadge variant="destructive">Destructive</UIBadge>
           <UIBadge variant="outline">Outline</UIBadge>
         </div>
+        <h3 className="text-sm font-medium mt-2">Status Colors</h3>
+        <div className="flex flex-wrap gap-2">
+          <UIBadge statusColor="blueFrance">Blue France</UIBadge>
+          <UIBadge statusColor="greenEmeraude">Green Emeraude</UIBadge>
+          <UIBadge statusColor="redMarianne">Red Marianne</UIBadge>
+          <UIBadge statusColor="yellowTournesol">Yellow Tournesol</UIBadge>
+          <UIBadge statusColor="purpleGlycine">Purple Glycine</UIBadge>
+          <UIBadge statusColor="grey">Grey</UIBadge>
+        </div>
       </Section>
 
       <Separator />
