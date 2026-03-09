@@ -9,7 +9,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { type ReactNode, useCallback, useId, useRef } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 
 import { InitialsAvatar } from "@/components/img/InitialsAvatar";
@@ -181,44 +181,69 @@ export function UserMenuHeaderItem({
   const id = useId();
   const t = useTranslations("auth");
   const label = buttonLabel ?? t("mySpace");
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const menuId = `user-menu-${id}`;
-  const collapseId = `user-menu-collapse-${id}`;
-  const btnId = `user-menu-btn-${id}`;
   const componentClass = "fr-user-menu";
 
-  // Close menu by programmatically clicking the DSFR button (DSFR JS toggles aria-expanded)
-  const closeMenu = useCallback(() => {
-    const btn = btnRef.current ?? document.getElementById(btnId);
-    if (btn?.getAttribute("aria-expanded") === "true") {
-      btn.click();
-    }
-  }, [btnId]);
+  const toggleMenu = () => setOpen(v => !v);
+  const closeMenu = () => setOpen(false);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
 
   return (
-    <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)} id={menuId}>
+    <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)} id={menuId} ref={menuRef}>
       <div className={fr.cx("fr-nav__item")}>
         <Button
           className={`${componentClass}__btn`}
           nativeButtonProps={{
-            id: btnId,
-            ref: btnRef as React.Ref<HTMLButtonElement>,
-            "aria-controls": collapseId,
+            "aria-expanded": open ? "true" : "false",
             type: "button",
             title: label,
           }}
           priority={withOutline ? "tertiary" : "tertiary no outline"}
           size="small"
           iconId="fr-icon-account-fill"
+          onClick={toggleMenu}
         >
-          <span className={`${componentClass}__btn-label`}>
-            {label}
-            {notification}
-          </span>
+          <Icon
+            className={`${componentClass}__btn-label`}
+            icon="fr-icon-arrow-down-s-line"
+            text={
+              <>
+                {label}
+                {notification}
+              </>
+            }
+            iconPosition="right"
+          />
         </Button>
 
-        <div className={cx(fr.cx("fr-collapse", "fr-menu"), `${componentClass}__menu`)} id={collapseId}>
+        <div
+          className={cx(fr.cx("fr-menu"), `${componentClass}__menu`)}
+          style={{ display: open ? "block" : "none" }}
+        >
           <ul className={fr.cx("fr-menu__list")} role="menu">
             {showUserInfo && (
               <li className={`${componentClass}__header`}>
