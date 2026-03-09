@@ -18,9 +18,9 @@ const getAuditStats = async () => {
   const [totalCount, todayCount, uniqueUsers, errorCount] = await Promise.all([
     prisma.auditLog.count(),
     prisma.auditLog.count({ where: { createdAt: { gte: today } } }),
-    prisma.auditLog
-      .findMany({ where: { userId: { not: null } }, select: { userId: true }, distinct: ["userId"] })
-      .then(r => r.length),
+    prisma.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(DISTINCT "userId") as count FROM "AuditLog" WHERE "userId" IS NOT NULL`.then(
+      r => Number(r[0].count),
+    ),
     prisma.auditLog.count({ where: { success: false } }),
   ]);
 

@@ -10,6 +10,11 @@ const DSFR_MARKER = "dsfr";
  *
  * On mount: sets data-ui-theme="Default" and disables DSFR stylesheets.
  * On unmount: restores previous theme and re-enables DSFR stylesheets.
+ *
+ * Limitation: only captures DSFR stylesheets present at mount time.
+ * Sheets injected after mount (e.g. from lazy-loaded DSFR bridges still
+ * resolving during navigation) are not captured. This is acceptable because
+ * admin/moderation sections are Default-only and don't render DSFR bridges.
  */
 export const DefaultThemeForcer = () => {
   useEffect(() => {
@@ -41,8 +46,11 @@ export const DefaultThemeForcer = () => {
     }
 
     return () => {
+      // Restore previous theme (or remove attribute if it wasn't set)
       if (prevTheme) {
         html.dataset.uiTheme = prevTheme;
+      } else {
+        delete html.dataset.uiTheme;
       }
       disabled.forEach(el => {
         el.disabled = false;
