@@ -1,3 +1,4 @@
+@use "sass:list";
 @use "tailwindcss";
 
 @import "@kokatsuna/ui/tokens/theme.css";
@@ -251,9 +252,9 @@ $postStatusColor: (
 );
 
 @each $name, $tuple in $postStatusColor {
-    $dsfrColor: nth($tuple, 1);
-    $fallbackText: nth($tuple, 2);
-    $fallbackBg: nth($tuple, 3);
+    $dsfrColor: list.nth($tuple, 1);
+    $fallbackText: list.nth($tuple, 2);
+    $fallbackBg: list.nth($tuple, 3);
 
     .fr-badge.fr-badge--color-#{""+$name},
     .fr-roadmap-column--color-#{""+$name} {
