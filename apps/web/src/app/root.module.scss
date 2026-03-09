@@ -4,14 +4,14 @@
     flex-direction: column;
 }
 
-/* Default/shadcn theme — use shadcn tokens */
-:global([data-ui-theme="Default"]) .app {
+/* Default/shadcn theme — use shadcn tokens (applied on <html>) */
+:global([data-ui-theme="Default"]).app {
     background-color: var(--background);
     color: var(--foreground);
 }
 
-/* DSFR theme — use DSFR tokens */
-:global([data-ui-theme="Dsfr"]) .app {
+/* DSFR theme — use DSFR tokens (applied on <html>) */
+:global([data-ui-theme="Dsfr"]).app {
     background-color: var(--background-default-grey);
     --idle: transparent;
     --hover: var(--background-default-grey-hover);
