@@ -3,10 +3,10 @@
     align-items: center;
 }
 
-/* reset dsfr default icon */
+/* reset dsfr default icon — !important needed because DSFR CSS may load after this module */
 .fr-icon::before,
 .fr-icon::after {
-    content: unset;
+    content: unset !important;
     color: var(--icon-color);
 }
 
@@ -41,7 +41,7 @@ $align: center, left, right, space-around, space-between, space-evenly;
 
 .fr-icon--left {
     &::before {
-        content: "";
+        content: "" !important;
         --icon-size: 1rem;
         margin-left: -.125rem;
         margin-right: .5rem;
@@ -53,7 +53,7 @@ $align: center, left, right, space-around, space-between, space-evenly;
     }
 
     &::after {
-        content: unset;
+        content: unset !important;
     }
 
     &.fr-icon--xs::before {
@@ -71,7 +71,7 @@ $align: center, left, right, space-around, space-between, space-evenly;
 
 .fr-icon--right {
     &::before {
-        content: unset;
+        content: unset !important;
     }
 
     &.fr-icon--solo::after {
@@ -80,7 +80,7 @@ $align: center, left, right, space-around, space-between, space-evenly;
     }
 
     &::after {
-        content: "";
+        content: "" !important;
         --icon-size: 1rem;
         margin-right: -.125rem;
         margin-left: .5rem;
