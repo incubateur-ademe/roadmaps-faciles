@@ -9,7 +9,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { type ReactNode, useId, useState } from "react";
+import { type ReactNode, useCallback, useId, useRef } from "react";
 import Skeleton from "react-loading-skeleton";
 
 import { InitialsAvatar } from "@/components/img/InitialsAvatar";
@@ -179,16 +179,22 @@ export function UserMenuHeaderItem({
   logoutHref = "/logout",
 }: UserMenuHeaderItemProps) {
   const id = useId();
-  const [_open, setOpen] = useState(false);
   const t = useTranslations("auth");
   const label = buttonLabel ?? t("mySpace");
-
-  const toggleMenu = () => setOpen(v => !v);
-  const closeMenu = () => setOpen(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const menuId = `user-menu-${id}`;
   const collapseId = `user-menu-collapse-${id}`;
+  const btnId = `user-menu-btn-${id}`;
   const componentClass = "fr-user-menu";
+
+  // Close menu by programmatically clicking the DSFR button (DSFR JS toggles aria-expanded)
+  const closeMenu = useCallback(() => {
+    const btn = btnRef.current ?? document.getElementById(btnId);
+    if (btn?.getAttribute("aria-expanded") === "true") {
+      btn.click();
+    }
+  }, [btnId]);
 
   return (
     <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)} id={menuId}>
@@ -196,28 +202,20 @@ export function UserMenuHeaderItem({
         <Button
           className={`${componentClass}__btn`}
           nativeButtonProps={{
-            id: `user-menu-btn-${id}`,
+            id: btnId,
+            ref: btnRef as React.Ref<HTMLButtonElement>,
             "aria-controls": collapseId,
-            "aria-expanded": "false",
             type: "button",
             title: label,
           }}
           priority={withOutline ? "tertiary" : "tertiary no outline"}
           size="small"
           iconId="fr-icon-account-fill"
-          onClick={toggleMenu}
         >
-          <Icon
-            className={`${componentClass}__btn-label`}
-            icon="fr-icon-arrow-down-s-line"
-            text={
-              <>
-                {label}
-                {notification}
-              </>
-            }
-            iconPosition="right"
-          />
+          <span className={`${componentClass}__btn-label`}>
+            {label}
+            {notification}
+          </span>
         </Button>
 
         <div className={cx(fr.cx("fr-collapse", "fr-menu"), `${componentClass}__menu`)} id={collapseId}>

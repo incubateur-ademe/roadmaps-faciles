@@ -67,9 +67,9 @@ export const BoardPost = ({
       subtitle={
         <span className="flex gap-2 items-center">
           {post.postStatus ? (
-            <UIBadge statusColor={post.postStatus.color}>{post.postStatus.name}</UIBadge>
+            <UIBadge size='sm' statusColor={post.postStatus.color}>{post.postStatus.name}</UIBadge>
           ) : (
-            <UIBadge statusColor="grey">Non classé</UIBadge>
+            <UIBadge size='sm' statusColor="grey">Non classé</UIBadge>
           )}
           {post.tags?.map(tag => (
             <UITag as="span" key={tag} size="sm">
