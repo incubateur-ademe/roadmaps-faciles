@@ -7,6 +7,7 @@ import { Badge } from "@kokatsuna/ui/components/badge";
 import { Button } from "@kokatsuna/ui/components/button";
 import { Input } from "@kokatsuna/ui/components/input";
 import { Label } from "@kokatsuna/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kokatsuna/ui/components/select";
 import { Separator } from "@kokatsuna/ui/components/separator";
 import { Switch } from "@kokatsuna/ui/components/switch";
 import { RefreshCw } from "lucide-react";
@@ -247,17 +248,20 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
                 <p className="text-sm text-muted-foreground mb-4">{t("uiTheme.description")}</p>
                 <div className="space-y-2 max-w-xs">
                   <Label htmlFor="ui-theme-select">{t("uiTheme.label")}</Label>
-                  <select
-                    id="ui-theme-select"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  <Select
                     value={watchedValues.uiTheme ?? "Default"}
-                    onChange={e => setValue("uiTheme", e.target.value as "Default" | "Dsfr", { shouldDirty: true })}
+                    onValueChange={v => setValue("uiTheme", v as "Default" | "Dsfr", { shouldDirty: true })}
                   >
-                    <option value="Default">{t("uiTheme.options.Default")}</option>
-                    <option value="Dsfr" disabled={!hasGouvDomain}>
-                      {t("uiTheme.options.Dsfr")}
-                    </option>
-                  </select>
+                    <SelectTrigger id="ui-theme-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Default">{t("uiTheme.options.Default")}</SelectItem>
+                      <SelectItem value="Dsfr" disabled={!hasGouvDomain}>
+                        {t("uiTheme.options.Dsfr")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   {!hasGouvDomain && <p className="text-sm text-muted-foreground mt-1">{t("uiTheme.gouvRequired")}</p>}
                 </div>
               </section>

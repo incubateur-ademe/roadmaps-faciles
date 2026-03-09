@@ -1,11 +1,24 @@
 "use client";
 
-import { Button } from "@kokatsuna/ui/components/button";
-import { Checkbox } from "@kokatsuna/ui/components/checkbox";
-import { Input } from "@kokatsuna/ui/components/input";
-import { Label } from "@kokatsuna/ui/components/label";
-import { Separator } from "@kokatsuna/ui/components/separator";
-import { Switch } from "@kokatsuna/ui/components/switch";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
+  Switch,
+} from "@kokatsuna/ui";
+import { Github, Globe, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +28,12 @@ import { type TenantSettings } from "@/prisma/client";
 import { saveAuthenticationSettings, saveForce2FASettings, saveOAuthProviders } from "./actions";
 
 const OAUTH_PROVIDERS = ["github", "google", "proconnect"] as const;
+
+const PROVIDER_ICONS: Record<string, typeof Github> = {
+  github: Github,
+  google: Globe,
+  proconnect: Shield,
+};
 
 interface AuthenticationFormProps {
   availableProviders: string[];
@@ -82,20 +101,20 @@ export const AuthenticationForm = ({
     <div className="space-y-8">
       {/* Email Registration Policy */}
       <div className="space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-2 max-w-xs">
           <Label htmlFor="registration-policy">{t("registrationPolicy")}</Label>
-          <select
-            id="registration-policy"
-            className="flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            value={policy}
-            onChange={e => setPolicy(e.target.value as typeof policy)}
-          >
-            {policies.map(p => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+          <Select value={policy} onValueChange={v => setPolicy(v as typeof policy)}>
+            <SelectTrigger id="registration-policy">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {policies.map(p => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {policy === "DOMAINS" && (
@@ -104,7 +123,7 @@ export const AuthenticationForm = ({
             <ul className="space-y-1">
               {domains.map(domain => (
                 <li key={domain} className="flex items-center gap-2">
-                  <span className="text-sm">{domain}</span>
+                  <Badge variant="secondary">{domain}</Badge>
                   <Button variant="ghost" size="sm" title={t("removeDomain")} onClick={() => removeDomain(domain)}>
                     ×
                   </Button>
@@ -142,18 +161,18 @@ export const AuthenticationForm = ({
         {force2FA && (
           <div className="space-y-2 max-w-xs">
             <Label htmlFor="grace-period">{t("gracePeriod")}</Label>
-            <select
-              id="grace-period"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              value={String(graceDays)}
-              onChange={e => setGraceDays(Number(e.target.value))}
-            >
-              {graceOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <Select value={String(graceDays)} onValueChange={v => setGraceDays(Number(v))}>
+              <SelectTrigger id="grace-period">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {graceOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
@@ -167,17 +186,35 @@ export const AuthenticationForm = ({
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{t("oauthTitle")}</h2>
             <p className="text-sm text-muted-foreground">{t("oauthDescription")}</p>
-            <div className="space-y-3">
-              {OAUTH_PROVIDERS.filter(p => availableProviders.includes(p)).map(provider => (
-                <div key={provider} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`oauth-${provider}`}
-                    checked={enabledProviders.includes(provider)}
-                    onCheckedChange={() => toggleProvider(provider)}
-                  />
-                  <Label htmlFor={`oauth-${provider}`}>{t(`provider.${provider}`)}</Label>
-                </div>
-              ))}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {OAUTH_PROVIDERS.filter(p => availableProviders.includes(p)).map(provider => {
+                const Icon = PROVIDER_ICONS[provider] ?? Globe;
+                const enabled = enabledProviders.includes(provider);
+                return (
+                  <Card key={provider}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Icon className="size-5" />
+                        <CardTitle className="text-base">{t(`provider.${provider}`)}</CardTitle>
+                      </div>
+                      <Badge variant={enabled ? "default" : "secondary"}>{enabled ? t("enabled") : t("disabled")}</Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="mb-3">{t(`providerDescription.${provider}`)}</CardDescription>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id={`oauth-${provider}`}
+                          checked={enabled}
+                          onCheckedChange={() => toggleProvider(provider)}
+                        />
+                        <Label htmlFor={`oauth-${provider}`} className="text-sm">
+                          {enabled ? t("active") : t("inactive")}
+                        </Label>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
             <Button onClick={() => void handleSaveOAuth()}>{tc("save")}</Button>
           </div>

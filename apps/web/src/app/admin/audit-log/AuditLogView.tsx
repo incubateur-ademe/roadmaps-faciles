@@ -3,6 +3,10 @@
 import {
   Badge,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Input,
   Label,
   Pagination,
@@ -28,7 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@kokatsuna/ui";
-import { Download, Info } from "lucide-react";
+import { Activity, AlertTriangle, Download, Info, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -45,6 +49,12 @@ interface AuditLogViewProps {
   locale: string;
   page: number;
   pageSize: number;
+  stats: {
+    errorRate: number;
+    todayCount: number;
+    totalCount: number;
+    uniqueUsers: number;
+  };
   total: number;
 }
 
@@ -73,7 +83,7 @@ const getPageNumbers = (currentPage: number, totalPages: number): Array<"ellipsi
   return pages;
 };
 
-export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: AuditLogViewProps) => {
+export const AuditLogView = ({ actions, items, locale, page, pageSize, stats, total }: AuditLogViewProps) => {
   const t = useTranslations("rootAdmin.auditLog");
   const router = useRouter();
   const pathname = usePathname();
@@ -132,6 +142,47 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
   return (
     <TooltipProvider>
       <div>
+        {/* Dashboard cards */}
+        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t("statTotal")}</CardTitle>
+              <Activity className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalCount.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t("statToday")}</CardTitle>
+              <Activity className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.todayCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t("statUniqueUsers")}</CardTitle>
+              <Users className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.uniqueUsers}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t("statErrorRate")}</CardTitle>
+              <AlertTriangle className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.errorRate.toFixed(1)}%</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
         <div className="mb-4 grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
           <div className="space-y-1">
             <Label htmlFor="filter-action" className="text-xs">

@@ -2,6 +2,7 @@
 
 import { Button } from "@kokatsuna/ui/components/button";
 import { Label } from "@kokatsuna/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kokatsuna/ui/components/select";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -27,19 +28,19 @@ export const RoadmapForm = ({ boards, currentRootBoardId }: RoadmapFormProps) =>
     <div className="space-y-4 max-w-sm">
       <div className="space-y-2">
         <Label htmlFor="root-board">{t("rootBoard")}</Label>
-        <select
-          id="root-board"
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          value={rootBoardId ? String(rootBoardId) : ""}
-          onChange={e => setRootBoardId(e.target.value ? Number(e.target.value) : null)}
-        >
-          <option value="">{t("none")}</option>
-          {boards.map(b => (
-            <option key={b.id} value={String(b.id)}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+        <Select value={rootBoardId ? String(rootBoardId) : "_none"} onValueChange={v => setRootBoardId(v === "_none" ? null : Number(v))}>
+          <SelectTrigger id="root-board">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_none">{t("none")}</SelectItem>
+            {boards.map(b => (
+              <SelectItem key={b.id} value={String(b.id)}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <Button onClick={() => void handleSave()}>{tc("save")}</Button>
     </div>

@@ -456,6 +456,15 @@
         "google": "Google",
         "proconnect": "ProConnect"
       },
+      "providerDescription": {
+        "github": "Connexion via compte GitHub",
+        "google": "Connexion via compte Google",
+        "proconnect": "Connexion via ProConnect (agents publics)"
+      },
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "active": "Actif",
+      "inactive": "Inactif",
       "description": "Gérez les fournisseurs d'authentification et les options de connexion."
     },
     "api": {
@@ -922,7 +931,11 @@
       "resetFilters": "Réinitialiser",
       "export": "Exporter",
       "exporting": "Export…",
-      "results": "résultat(s)"
+      "results": "résultat(s)",
+      "statTotal": "Total événements",
+      "statToday": "Aujourd'hui",
+      "statUniqueUsers": "Utilisateurs uniques",
+      "statErrorRate": "Taux d'erreur"
     },
     "tenantAdmin": "Admin du tenant",
     "back": "Retour",

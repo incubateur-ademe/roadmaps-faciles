@@ -456,6 +456,15 @@
         "google": "Google",
         "proconnect": "ProConnect"
       },
+      "providerDescription": {
+        "github": "Sign in with GitHub account",
+        "google": "Sign in with Google account",
+        "proconnect": "Sign in with ProConnect (public agents)"
+      },
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "active": "Active",
+      "inactive": "Inactive",
       "description": "Manage authentication providers and login options."
     },
     "api": {
@@ -922,7 +931,11 @@
       "resetFilters": "Reset",
       "export": "Export",
       "exporting": "Exporting…",
-      "results": "result(s)"
+      "results": "result(s)",
+      "statTotal": "Total events",
+      "statToday": "Today",
+      "statUniqueUsers": "Unique users",
+      "statErrorRate": "Error rate"
     },
     "tenantAdmin": "Tenant admin",
     "back": "Back",

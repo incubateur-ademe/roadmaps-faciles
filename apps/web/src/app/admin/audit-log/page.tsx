@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { prisma } from "@/lib/db/prisma";
 import { auditLogRepo } from "@/lib/repo";
 import { type AuditAction } from "@/prisma/enums";
 import { assertAdmin } from "@/utils/auth";
@@ -9,6 +10,27 @@ import { assertAdmin } from "@/utils/auth";
 import { AuditLogView } from "./AuditLogView";
 
 const PAGE_SIZE = 25;
+
+const getAuditStats = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [totalCount, todayCount, uniqueUsers, errorCount] = await Promise.all([
+    prisma.auditLog.count(),
+    prisma.auditLog.count({ where: { createdAt: { gte: today } } }),
+    prisma.auditLog
+      .findMany({ where: { userId: { not: null } }, select: { userId: true }, distinct: ["userId"] })
+      .then(r => r.length),
+    prisma.auditLog.count({ where: { success: false } }),
+  ]);
+
+  return {
+    totalCount,
+    todayCount,
+    uniqueUsers,
+    errorRate: totalCount > 0 ? (errorCount / totalCount) * 100 : 0,
+  };
+};
 
 const RootAuditLogPage = async (props: { searchParams: Promise<Record<string, string | undefined>> }) => {
   await connection();
@@ -22,9 +44,10 @@ const RootAuditLogPage = async (props: { searchParams: Promise<Record<string, st
   const dateFrom = searchParams.dateFrom ? new Date(searchParams.dateFrom) : undefined;
   const dateTo = searchParams.dateTo ? new Date(`${searchParams.dateTo}T23:59:59`) : undefined;
 
-  const [result, actions] = await Promise.all([
+  const [result, actions, stats] = await Promise.all([
     auditLogRepo.findPaginated({ action, dateFrom, dateTo }, page, PAGE_SIZE),
     auditLogRepo.getDistinctActions(),
+    getAuditStats(),
   ]);
 
   return (
@@ -37,6 +60,7 @@ const RootAuditLogPage = async (props: { searchParams: Promise<Record<string, st
         pageSize={PAGE_SIZE}
         actions={actions}
         locale={locale}
+        stats={stats}
       />
     </>
   );
