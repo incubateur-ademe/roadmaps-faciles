@@ -32,7 +32,7 @@ export const IntegrationsList = ({ integrations }: IntegrationsListProps) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {integrations.map(integration => (
             <Link key={integration.id} href={`/admin/integrations/${integration.id}`} className="block">
               <Card className="transition-colors hover:bg-accent">

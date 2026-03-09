@@ -3,8 +3,10 @@
 import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
 import { Badge } from "@kokatsuna/ui/components/badge";
 import { Button } from "@kokatsuna/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@kokatsuna/ui/components/card";
 import { Input } from "@kokatsuna/ui/components/input";
 import { Label } from "@kokatsuna/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kokatsuna/ui/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui/components/table";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
@@ -53,75 +55,81 @@ export const WebhooksList = ({ webhooks: initialWebhooks }: WebhooksListProps) =
   };
 
   return (
-    <div>
-      {webhooks.length > 0 ? (
-        <Table className="mb-6">
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("url")}</TableHead>
-              <TableHead>{t("event")}</TableHead>
-              <TableHead>{t("createdAt")}</TableHead>
-              <TableHead>{tc("actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {webhooks.map(webhook => (
-              <TableRow key={webhook.id}>
-                <TableCell>
-                  <code className="text-sm">{webhook.url}</code>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{webhook.event}</Badge>
-                </TableCell>
-                <TableCell>{dateFormatter.format(new Date(webhook.createdAt))}</TableCell>
-                <TableCell>
-                  <Button variant="secondary" size="sm" onClick={() => void handleDelete(webhook.id)}>
-                    {tc("delete")}
-                  </Button>
-                </TableCell>
+    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div>
+        {webhooks.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("url")}</TableHead>
+                <TableHead>{t("event")}</TableHead>
+                <TableHead>{t("createdAt")}</TableHead>
+                <TableHead>{tc("actions")}</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <Alert className="mb-6">
-          <AlertTitle>{t("noWebhooks")}</AlertTitle>
-          <AlertDescription>{t("noWebhooksDescription")}</AlertDescription>
-        </Alert>
-      )}
-
-      <h2 className="text-lg font-semibold mb-4">{t("addWebhook")}</h2>
-      <div className="flex flex-col gap-4 max-w-md">
-        <div className="space-y-2">
-          <Label htmlFor="webhook-url">{t("url")}</Label>
-          <Input
-            id="webhook-url"
-            type="url"
-            value={newUrl}
-            onChange={e => setNewUrl(e.target.value)}
-            autoComplete="off"
-            name="url"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="webhook-event">{t("event")}</Label>
-          <select
-            id="webhook-event"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            value={newEvent}
-            onChange={e => setNewEvent(e.target.value)}
-          >
-            {events.map(event => (
-              <option key={event.value} value={event.value}>
-                {event.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <Button onClick={() => void handleCreate()} disabled={!newUrl} className="w-fit">
-          {tc("create")}
-        </Button>
+            </TableHeader>
+            <TableBody>
+              {webhooks.map(webhook => (
+                <TableRow key={webhook.id}>
+                  <TableCell>
+                    <code className="text-sm">{webhook.url}</code>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{webhook.event}</Badge>
+                  </TableCell>
+                  <TableCell>{dateFormatter.format(new Date(webhook.createdAt))}</TableCell>
+                  <TableCell>
+                    <Button variant="secondary" size="sm" onClick={() => void handleDelete(webhook.id)}>
+                      {tc("delete")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <Alert>
+            <AlertTitle>{t("noWebhooks")}</AlertTitle>
+            <AlertDescription>{t("noWebhooksDescription")}</AlertDescription>
+          </Alert>
+        )}
       </div>
+
+      <Card className="sticky top-8 h-fit">
+        <CardHeader>
+          <CardTitle>{t("addWebhook")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="webhook-url">{t("url")}</Label>
+            <Input
+              id="webhook-url"
+              type="url"
+              value={newUrl}
+              onChange={e => setNewUrl(e.target.value)}
+              autoComplete="off"
+              name="url"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="webhook-event">{t("event")}</Label>
+            <Select value={newEvent} onValueChange={setNewEvent}>
+              <SelectTrigger id="webhook-event">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {events.map(event => (
+                  <SelectItem key={event.value} value={event.value}>
+                    {event.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={() => void handleCreate()} disabled={!newUrl} className="w-full">
+            {tc("create")}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
