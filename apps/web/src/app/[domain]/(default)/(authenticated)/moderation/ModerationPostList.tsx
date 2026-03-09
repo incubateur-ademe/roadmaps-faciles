@@ -75,7 +75,7 @@ export const ModerationPostList = ({ posts, emptyMessage, variant }: ModerationP
                   <Link
                     className={cn(
                       "line-clamp-2 text-sm text-primary rounded outline-offset-8",
-                      "outline-(--border-action-high-blue-france) hover:outline-1",
+                      "outline-primary hover:outline-1",
                     )}
                     onClick={e => {
                       e.preventDefault();

@@ -1,7 +1,5 @@
-import { fr } from "@codegouvfr/react-dsfr";
-import Alert from "@codegouvfr/react-dsfr/Alert";
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
-import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -10,10 +8,12 @@ import { type PropsWithChildren, Suspense } from "react";
 
 import { config } from "@/config";
 import { DsfrProvider } from "@/dsfr-bootstrap";
-import { DsfrPage } from "@/dsfr/layout/DsfrPage";
 import { prisma } from "@/lib/db/prisma";
 import { UIProvider } from "@/ui";
+import { UIAlert } from "@/ui/bridge";
+import { DsfrCssLoaderClient } from "@/ui/DsfrCssLoaderClient";
 import { getTheme } from "@/ui/server";
+import { ThemeInjector } from "@/ui/ThemeInjector";
 import { getTenantFromDomain } from "@/utils/tenant";
 
 import { EmbedThemeForcer } from "./EmbedThemeForcer";
@@ -37,11 +37,13 @@ const EmbedLayoutInner = async ({ children, params }: EmbedLayoutProps) => {
   if (!tenantSettings?.allowEmbedding) {
     return (
       <DsfrProvider lang={lang}>
-        <DsfrPage>
-          <main className={cx(fr.cx("fr-p-3w"), "flex items-center justify-center min-h-[200px]")}>
-            <Alert severity="error" small description={t("embeddingDisabled")} />
+        <UIProvider value={theme}>
+          <ThemeInjector theme={theme} />
+          {theme === "Dsfr" && <DsfrCssLoaderClient />}
+          <main className="flex items-center justify-center min-h-[200px] p-6">
+            <UIAlert variant="destructive" description={t("embeddingDisabled")} />
           </main>
-        </DsfrPage>
+        </UIProvider>
       </DsfrProvider>
     );
   }
@@ -49,21 +51,21 @@ const EmbedLayoutInner = async ({ children, params }: EmbedLayoutProps) => {
   return (
     <DsfrProvider lang={lang}>
       <UIProvider value={theme}>
+        <ThemeInjector theme={theme} />
+        {theme === "Dsfr" && <DsfrCssLoaderClient />}
         <AppRouterCacheProvider>
           <MuiDsfrThemeProvider>
-            <DsfrPage>
-              <EmbedThemeForcer />
-              <main className={fr.cx("fr-pb-2w")}>{children}</main>
-              <footer className={cx(fr.cx("fr-py-1w", "fr-px-2w"), "text-center")}>
-                <span className={fr.cx("fr-text--xs")}>
-                  {t("poweredBy", { name: config.brand.name })}
-                  {" · "}
-                  <Link href={`${config.host}`} target="_blank" className={fr.cx("fr-link", "fr-text--xs")}>
-                    {config.host}
-                  </Link>
-                </span>
-              </footer>
-            </DsfrPage>
+            <EmbedThemeForcer />
+            <main className="pb-4">{children}</main>
+            <footer className={cn("py-2 px-4 text-center")}>
+              <span className="text-xs text-muted-foreground">
+                {t("poweredBy", { name: config.brand.name })}
+                {" · "}
+                <Link href={`${config.host}`} target="_blank" className="text-xs text-primary underline">
+                  {config.host}
+                </Link>
+              </span>
+            </footer>
           </MuiDsfrThemeProvider>
         </AppRouterCacheProvider>
       </UIProvider>

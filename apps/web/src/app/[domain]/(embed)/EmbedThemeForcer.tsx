@@ -4,18 +4,31 @@ import { useIsDark } from "@codegouvfr/react-dsfr/useIsDark";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
+import { useUI } from "@/ui";
+
 export const EmbedThemeForcer = () => {
   const searchParams = useSearchParams();
-  const theme = searchParams.get("theme");
+  const themeParam = searchParams.get("theme");
+  const uiTheme = useUI();
+
+  // DSFR dark mode
   const { setIsDark } = useIsDark();
 
   useEffect(() => {
-    if (theme === "dark") {
+    if (themeParam === "dark") {
+      // DSFR
       setIsDark(true);
-    } else if (theme === "light") {
+      // Default (shadcn) — add .dark class on <html>
+      if (uiTheme === "Default") {
+        document.documentElement.classList.add("dark");
+      }
+    } else if (themeParam === "light") {
       setIsDark(false);
+      if (uiTheme === "Default") {
+        document.documentElement.classList.remove("dark");
+      }
     }
-  }, [theme, setIsDark]);
+  }, [themeParam, setIsDark, uiTheme]);
 
   return null;
 };
