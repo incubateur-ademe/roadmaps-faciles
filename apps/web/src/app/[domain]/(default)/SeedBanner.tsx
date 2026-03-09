@@ -42,7 +42,7 @@ export const SeedBanner = ({ tenantId }: SeedBannerProps) => {
   return (
     <UIAlert
       className="mb-8"
-      severity="info"
+      variant="default"
       closable
       onClose={handleClose}
       title={t("seedBannerTitle")}

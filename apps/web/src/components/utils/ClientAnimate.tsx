@@ -1,15 +1,30 @@
 "use client";
 
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { cn } from "@kokatsuna/ui";
+import { forwardRef, type PropsWithChildren } from "react";
 
-import { type BoxProps, BoxRef } from "@/dsfr";
+type PolymorphicTag = "article" | "aside" | "div" | "footer" | "header" | "main" | "p" | "section" | "span";
 
-export interface ClientAnimateProps extends BoxProps {
+type ClientAnimateBaseProps = PropsWithChildren<
+  {
+    as?: PolymorphicTag;
+    className?: string;
+  } & React.HTMLAttributes<HTMLElement>
+>;
+
+export interface ClientAnimateProps extends ClientAnimateBaseProps {
   animateOptions?: Parameters<typeof useAutoAnimate>[0];
 }
 
-export const ClientAnimate = ({ animateOptions, ...props }: ClientAnimateProps) => {
-  const [animationParent] = useAutoAnimate<HTMLDivElement>(animateOptions);
+const PolyRef = forwardRef<HTMLElement, ClientAnimateBaseProps>(({ as: Tag = "div", className, ...rest }, ref) => (
+  <Tag ref={ref as React.Ref<never>} className={cn(className)} {...rest} />
+));
 
-  return <BoxRef {...props} ref={animationParent} />;
+PolyRef.displayName = "PolyRef";
+
+export const ClientAnimate = ({ animateOptions, ...props }: ClientAnimateProps) => {
+  const [animationParent] = useAutoAnimate<HTMLElement>(animateOptions);
+
+  return <PolyRef {...props} ref={animationParent} />;
 };

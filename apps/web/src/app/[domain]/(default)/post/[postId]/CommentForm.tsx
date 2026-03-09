@@ -52,7 +52,7 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
     return (
       <div className="mt-4">
         <UIAlert
-          severity="info"
+          variant="default"
           description={
             <>
               {t.rich("loginToComment", {
@@ -74,7 +74,7 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
         uploadImageAction={uploadImageAction}
         disabled={isPending}
       />
-      {error && <UIAlert severity="error" description={error} className="mt-2" />}
+      {error && <UIAlert variant="destructive" description={error} className="mt-2" />}
       <div className={cn("mt-2 flex justify-end")}>
         <UIButton type="button" size="sm" disabled={isPending} onClick={handleSubmit}>
           <Send className="mr-1 size-4" />

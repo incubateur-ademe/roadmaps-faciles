@@ -1,16 +1,20 @@
 "use client";
 
-import { Button } from "@kokatsuna/ui";
+import { Button as ShadcnButton } from "@kokatsuna/ui";
 import * as Sentry from "@sentry/nextjs";
 import { ThumbsUp } from "lucide-react";
-import { type PropsWithChildren, startTransition, useState } from "react";
+import { lazy, type PropsWithChildren, startTransition, Suspense, useState } from "react";
+
+import { useUI } from "@/ui";
 
 import { likePost } from "./actions";
+
+const LikeButtonDsfr = lazy(() => import("./LikeButtonDsfr").then(m => ({ default: m.LikeButtonDsfr })));
 
 interface LikeButtonProps {
   alreadyLiked: boolean;
   postId: number;
-  size?: "default" | "icon" | "lg" | "sm";
+  size?: "default" | "sm";
   tenantId: number;
   userId?: string;
 }
@@ -24,6 +28,7 @@ export const LikeButton = ({
   size = "default",
 }: PropsWithChildren<LikeButtonProps>) => {
   const [liked, setLiked] = useState(alreadyLiked);
+  const theme = useUI();
 
   const handleLikeToggle = () => {
     startTransition(() => {
@@ -52,16 +57,20 @@ export const LikeButton = ({
       });
   };
 
+  if (theme === "Dsfr") {
+    return (
+      <Suspense>
+        <LikeButtonDsfr liked={liked} size={size} onClickAction={handleLikeToggle}>
+          {children}
+        </LikeButtonDsfr>
+      </Suspense>
+    );
+  }
+
   return (
-    <Button
-      data-testid="like-button"
-      title="Vote"
-      variant={liked ? "secondary" : "ghost"}
-      size={size}
-      onClick={handleLikeToggle}
-    >
+    <ShadcnButton title="Vote" variant={liked ? "secondary" : "ghost"} size={size} onClick={handleLikeToggle}>
       <ThumbsUp className={liked ? "size-4 fill-current" : "size-4"} />
       {children}
-    </Button>
+    </ShadcnButton>
   );
 };

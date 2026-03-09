@@ -15,6 +15,7 @@ import { type DomainParams, type DomainProps } from "@/lib/DomainPage";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { type Board, type TenantSettings } from "@/prisma/client";
 import { UIProvider } from "@/ui";
+import { DsfrCssLoaderClient } from "@/ui/DsfrCssLoaderClient";
 import { Footer as ShadcnFooter } from "@/ui/Footer";
 import { Header as ShadcnHeader } from "@/ui/Header";
 import { getTheme } from "@/ui/server";
@@ -91,6 +92,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
     <UIProvider value={theme}>
       <ThemeInjector theme={theme} />
       <DsfrProvider lang={lang}>
+        {theme === "Dsfr" && <DsfrCssLoaderClient />}
         {theme === "Dsfr" && <ConsentBannerAndConsentManagement />}
         <AppRouterCacheProvider>
           <MuiDsfrThemeProvider>

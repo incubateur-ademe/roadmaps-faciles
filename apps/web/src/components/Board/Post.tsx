@@ -35,12 +35,10 @@ export const BoardPost = ({
     <UICard
       className={cn(!first && "snap-start scroll-mt-38")}
       title={post.title}
-      linkProps={{
-        href: dirtyDomainFixer(`/post/${post.id}`),
-        ...(linkTarget && { target: linkTarget }),
-      }}
+      href={dirtyDomainFixer(`/post/${post.id}`)}
+      linkTarget={linkTarget}
       titleAs="h3"
-      endDetail={
+      footer={
         <span className="flex justify-between items-center w-full">
           <span>
             {post.user?.name ?? post.sourceLabel ?? "Anonyme"}
@@ -49,8 +47,9 @@ export const BoardPost = ({
           {post._count.comments > 0 && (
             <UITag
               className="cursor-pointer"
+              iconId="fr-icon-discuss-line"
               as="span"
-              small
+              size="sm"
               onClick={() => {
                 const url = dirtyDomainFixer(`/post/${post.id}`);
                 if (linkTarget) {
@@ -65,7 +64,7 @@ export const BoardPost = ({
           )}
         </span>
       }
-      detail={
+      subtitle={
         <span className="flex gap-2 items-center">
           {post.postStatus ? (
             <UIBadge statusColor={post.postStatus.color}>{post.postStatus.name}</UIBadge>
@@ -73,13 +72,13 @@ export const BoardPost = ({
             <UIBadge statusColor="grey">Non classé</UIBadge>
           )}
           {post.tags?.map(tag => (
-            <UITag as="span" key={tag} small>
+            <UITag as="span" key={tag} size="sm">
               {tag}
             </UITag>
           ))}
         </span>
       }
-      desc={
+      description={
         <span className="flex gap-2 items-center">
           {allowVoting && (allowAnonymousVoting || userId) && (
             <LikeButton alreadyLiked={alreadyLiked} postId={post.id} tenantId={post.tenantId} userId={userId}>
@@ -106,7 +105,8 @@ export const BoardPost = ({
         </span>
       }
       horizontal
-      size="small"
+      size="sm"
+      shadow="dark"
     />
   );
 };

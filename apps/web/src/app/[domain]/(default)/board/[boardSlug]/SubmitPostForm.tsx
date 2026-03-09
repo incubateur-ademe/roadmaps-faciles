@@ -1,13 +1,13 @@
 "use client";
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { cn } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { useCallback, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
+import { useUI } from "@/ui";
 import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 
 import { uploadImage } from "../../upload-image";
@@ -29,7 +29,7 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
   const t = useTranslations("board");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
-
+  const isDsfr = useUI() === "Dsfr";
   const formSchema = createFormSchema(t);
 
   const [isPending, startTransition] = useTransition();
@@ -81,8 +81,8 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
   };
 
   return (
-    <form noValidate className={cn("flex flex-col gap-4 py-4")} onSubmit={e => void handleSubmit(onSubmit)(e)}>
-      <h3 className="text-lg font-semibold m-0">{t("submitSuggestion")}</h3>
+    <form noValidate className="flex flex-col gap-4 py-4" onSubmit={e => void handleSubmit(onSubmit)(e)}>
+      <h3 className={isDsfr ? "m-0 fr-text--lg" : "m-0 text-lg font-semibold"}>{t("submitSuggestion")}</h3>
       <UIInput
         label={t("title")}
         nativeInputProps={{ ...register("title") }}
@@ -95,8 +95,8 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
         onChangeAction={handleDescriptionChangeAction}
         uploadImageAction={uploadImage}
       />
-      {error && <UIAlert severity="error" title={te("technicalError")} description={error} />}
-      {success && <UIAlert severity="success" title={success} />}
+      {error && <UIAlert variant="destructive" title={te("technicalError")} description={error} />}
+      {success && <UIAlert variant="success" title={success} />}
       <UIButton className="place-self-end" type="submit" disabled={isPending}>
         {isPending ? tc("loading") : tc("validate")}
       </UIButton>

@@ -14,25 +14,19 @@ export type UIAlertProps = {
   closable?: boolean;
   description?: React.ReactNode;
   onClose?: () => void;
-  severity: "error" | "info" | "success" | "warning";
   title?: React.ReactNode;
+  /** Alert style variant — maps to DSFR `severity` internally */
+  variant: "default" | "destructive" | "success" | "warning";
 };
 
-const SEVERITY_TO_VARIANT = {
-  info: "default",
-  success: "success",
-  warning: "warning",
-  error: "destructive",
-} as const;
-
-export const UIAlert = ({ severity, title, description, className, closable, onClose }: UIAlertProps) => {
+export const UIAlert = ({ variant, title, description, className, closable, onClose }: UIAlertProps) => {
   const theme = useUI();
 
   if (theme === "Dsfr") {
     return (
       <Suspense>
         <UIAlertDsfr
-          severity={severity}
+          variant={variant}
           title={title}
           description={description}
           className={className}
@@ -44,7 +38,7 @@ export const UIAlert = ({ severity, title, description, className, closable, onC
   }
 
   return (
-    <ShadcnAlert variant={SEVERITY_TO_VARIANT[severity]} className={className}>
+    <ShadcnAlert variant={variant} className={className}>
       <div className="flex items-start justify-between gap-2">
         <div>
           {title && <AlertTitle>{title}</AlertTitle>}

@@ -3,7 +3,7 @@
 import { Badge as ShadcnBadge, cn } from "@kokatsuna/ui";
 import { type ComponentProps, lazy, Suspense } from "react";
 
-import { type PostStatusColor } from "@/lib/model/PostStatus";
+import { POST_STATUS_COLOR_MAP, type PostStatusColor } from "@/lib/model/PostStatus";
 import { useUI } from "@/ui";
 
 const UIBadgeDsfr = lazy(() => import("./UIBadgeDsfr").then(m => ({ default: m.UIBadgeDsfr })));
@@ -13,6 +13,8 @@ type ShadcnBadgeProps = ComponentProps<typeof ShadcnBadge>;
 export type UIBadgeProps = {
   children: React.ReactNode;
   className?: string;
+  /** Size — "sm" maps to DSFR `small` prop */
+  size?: "default" | "sm";
   /** Post status color — applies DSFR color class or Default inline style */
   statusColor?: PostStatusColor;
   variant?: ShadcnBadgeProps["variant"];
@@ -50,13 +52,17 @@ const STATUS_COLOR_STYLES: Record<string, { bg: string; text: string }> = {
   error: { text: "oklch(0.40 0.15 25)", bg: "oklch(0.92 0.04 25)" },
 };
 
-export const UIBadge = ({ variant = "default", children, className, statusColor }: UIBadgeProps) => {
+export const UIBadge = ({ variant = "default", children, className, size, statusColor }: UIBadgeProps) => {
   const theme = useUI();
 
   if (theme === "Dsfr") {
     return (
       <Suspense>
-        <UIBadgeDsfr variant={variant} className={cn(statusColor && `fr-badge--color-${statusColor}`, className)}>
+        <UIBadgeDsfr
+          variant={variant}
+          size={size}
+          className={cn(statusColor && `fr-badge--color-${POST_STATUS_COLOR_MAP[statusColor]}`, className)}
+        >
           {children}
         </UIBadgeDsfr>
       </Suspense>
@@ -68,7 +74,7 @@ export const UIBadge = ({ variant = "default", children, className, statusColor 
   return (
     <ShadcnBadge
       variant={statusColor ? "outline" : variant}
-      className={className}
+      className={cn(size === "sm" && "text-[0.625rem] px-1.5 py-0", className)}
       style={
         colorStyle ? { color: colorStyle.text, backgroundColor: colorStyle.bg, borderColor: "transparent" } : undefined
       }

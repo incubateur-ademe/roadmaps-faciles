@@ -78,8 +78,8 @@ const AuthorBadges = ({
       {severity && labelKey && (
         <UIBadge variant={SEVERITY_TO_VARIANT[severity]}>{t(labelKey as Parameters<typeof t>[0])}</UIBadge>
       )}
-      {isPostAuthor && <UITag small>{t("tagAuthor")}</UITag>}
-      {isMe && <UITag small>{t("tagYou")}</UITag>}
+      {isPostAuthor && <UITag size="sm">{t("tagAuthor")}</UITag>}
+      {isMe && <UITag size="sm">{t("tagYou")}</UITag>}
     </span>
   );
 };
@@ -275,7 +275,7 @@ export const CommentContent = ({
       <UICard
         shadow
         className="[&]:p-0"
-        size="medium"
+        size="default"
         horizontal
         title={
           <div className="flex justify-between items-center gap-4" data-comment-id={activity.comment.id}>
@@ -320,7 +320,7 @@ export const CommentContent = ({
             )}
           </div>
         }
-        desc={
+        description={
           isEditing ? (
             <>
               <MarkdownEditor
@@ -330,7 +330,7 @@ export const CommentContent = ({
                 uploadImageAction={uploadImage}
                 disabled={editPending}
               />
-              {editError && <UIAlert severity="error" description={editError} className="mt-2" />}
+              {editError && <UIAlert variant="destructive" description={editError} className="mt-2" />}
               <div className="mt-2 flex justify-end gap-2">
                 <UIButton
                   type="button"
@@ -350,7 +350,7 @@ export const CommentContent = ({
             <MarkdownHooks {...reactMarkdownConfig}>{commentBody}</MarkdownHooks>
           )
         }
-        endDetail={
+        footer={
           <span className="flex justify-between items-center gap-4 w-full">
             <span className="flex items-center gap-2">
               <span className="text-xs font-light">{formatDateHour(activity.comment.createdAt, locale)}</span>
@@ -450,7 +450,7 @@ export const CommentContent = ({
                 {!userId ? (
                   <UIAlert
                     className="pb-2"
-                    severity="info"
+                    variant="default"
                     description={
                       <>
                         {t.rich("loginToComment", {
@@ -468,7 +468,7 @@ export const CommentContent = ({
                       uploadImageAction={uploadImage}
                       disabled={isPending}
                     />
-                    {replyError && <UIAlert severity="error" description={replyError} className="mt-2" />}
+                    {replyError && <UIAlert variant="destructive" description={replyError} className="mt-2" />}
                     <div className="mt-2 flex justify-end gap-2">
                       <UIButton
                         type="button"
@@ -580,7 +580,7 @@ const ReplyCard = ({
   return (
     <UICard
       shadow
-      size="small"
+      size="sm"
       horizontal
       title={
         <div className="flex justify-between">
@@ -632,7 +632,7 @@ const ReplyCard = ({
           )}
         </div>
       }
-      desc={
+      description={
         isEditing ? (
           <>
             <MarkdownEditor
@@ -642,7 +642,7 @@ const ReplyCard = ({
               uploadImageAction={uploadImage}
               disabled={editPending}
             />
-            {editError && <UIAlert severity="error" description={editError} className="mt-2" />}
+            {editError && <UIAlert variant="destructive" description={editError} className="mt-2" />}
             <div className="mt-2 flex justify-end gap-2">
               <UIButton
                 type="button"

@@ -1,26 +1,25 @@
 "use client";
 
-import type DsfrCard from "@codegouvfr/react-dsfr/Card";
-
 import { Card as ShadcnCard, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, cn } from "@kokatsuna/ui";
 import Link from "next/link";
-import { type ComponentProps, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 
 import { useUI } from "@/ui";
 
 const UICardDsfr = lazy(() => import("./UICardDsfr").then(m => ({ default: m.UICardDsfr })));
 
-type DsfrCardProps = ComponentProps<typeof DsfrCard>;
-
 export type UICardProps = {
   className?: string;
-  desc?: React.ReactNode;
-  detail?: React.ReactNode;
-  endDetail?: React.ReactNode;
+  description?: React.ReactNode;
+  footer?: React.ReactNode;
   horizontal?: boolean;
-  linkProps?: DsfrCardProps["linkProps"];
-  shadow?: boolean;
-  size?: "large" | "medium" | "small";
+  href?: string;
+  linkTarget?: string;
+  /** Shadow mode — true=always, "light"=light only, "dark"=dark only, omit=never */
+  shadow?: "dark" | "light" | true;
+  /** Size — "sm" maps to DSFR `size="small"`, "lg" maps to `size="large"` */
+  size?: "default" | "lg" | "sm";
+  subtitle?: React.ReactNode;
   title: React.ReactNode;
   titleAs?: "h2" | "h3" | "h4" | "h5" | "h6";
 };
@@ -28,10 +27,11 @@ export type UICardProps = {
 export const UICard = ({
   title,
   titleAs: TitleTag = "h3",
-  desc,
-  detail,
-  endDetail,
-  linkProps,
+  description,
+  subtitle,
+  footer,
+  href,
+  linkTarget,
   horizontal,
   size,
   shadow,
@@ -45,10 +45,11 @@ export const UICard = ({
         <UICardDsfr
           title={title}
           titleAs={TitleTag}
-          desc={desc}
-          detail={detail}
-          endDetail={endDetail}
-          linkProps={linkProps}
+          description={description}
+          subtitle={subtitle}
+          footer={footer}
+          href={href}
+          linkTarget={linkTarget}
           horizontal={horizontal}
           size={size}
           shadow={shadow}
@@ -58,30 +59,32 @@ export const UICard = ({
     );
   }
 
+  const isSmall = size === "sm";
+  const shadowClass =
+    shadow === true
+      ? "shadow-md"
+      : shadow === "dark"
+        ? "dark:shadow-md"
+        : shadow === "light"
+          ? "shadow-md dark:shadow-none"
+          : undefined;
+
   const cardContent = (
-    <ShadcnCard
-      className={cn(
-        horizontal && "flex flex-row items-start",
-        shadow && "shadow-md",
-        size === "small" && "p-3",
-        className,
-      )}
-    >
-      <CardHeader className={cn(horizontal && "flex-1", size === "small" && "p-0 pb-1")}>
-        {detail && <CardDescription>{detail}</CardDescription>}
-        <CardTitle className={cn(size === "small" && "text-sm font-medium")}>
+    <ShadcnCard className={cn(shadowClass, isSmall && "p-3", className)}>
+      <CardHeader className={cn(isSmall && "p-0 pb-1")}>
+        {subtitle && <CardDescription>{subtitle}</CardDescription>}
+        <CardTitle className={cn(isSmall && "text-sm font-medium")}>
           <TitleTag className="m-0">{title}</TitleTag>
         </CardTitle>
       </CardHeader>
-      {(desc || endDetail) && <CardContent className={cn(size === "small" && "p-0 pt-1")}>{desc}</CardContent>}
-      {endDetail && <CardFooter className={cn(size === "small" && "p-0 pt-1")}>{endDetail}</CardFooter>}
+      {(description || footer) && <CardContent className={cn(isSmall && "p-0 pt-1")}>{description}</CardContent>}
+      {footer && <CardFooter className={cn(isSmall && "p-0 pt-1")}>{footer}</CardFooter>}
     </ShadcnCard>
   );
 
-  if (linkProps) {
-    const { href, ...rest } = linkProps;
+  if (href) {
     return (
-      <Link href={href} className="no-underline" {...rest}>
+      <Link href={href} className="no-underline" {...(linkTarget && { target: linkTarget })}>
         {cardContent}
       </Link>
     );

@@ -62,7 +62,7 @@ const EmbedRoadmapPageInner = async ({ params, searchParams }: EmbedRoadmapPageP
     return (
       <div className="py-8 px-4">
         <UIAlert
-          severity="warning"
+          variant="warning"
           title={t("privateTenant")}
           description={
             <Link href={`${tenantUrl}/login`} target="_blank" className="text-primary underline">
@@ -156,14 +156,12 @@ const EmbedRoadmapPageInner = async ({ params, searchParams }: EmbedRoadmapPageP
                       className="flex-1"
                       shadow
                       titleAs="h4"
-                      linkProps={{
-                        href: dirtyDomainFixer(`/post/${post.id}`),
-                        target: "_blank",
-                      }}
-                      size="small"
+                      href={dirtyDomainFixer(`/post/${post.id}`)}
+                      linkTarget="_blank"
+                      size="sm"
                       horizontal
-                      endDetail={
-                        <UITag as="span" small>
+                      footer={
+                        <UITag as="span" size="sm">
                           {post.board.name}
                         </UITag>
                       }

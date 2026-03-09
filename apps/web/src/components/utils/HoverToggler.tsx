@@ -1,11 +1,11 @@
 "use client";
 
-import { cx, type CxArg } from "@codegouvfr/react-dsfr/tools/cx";
+import { cn } from "@kokatsuna/ui";
 import { type ReactNode, useState } from "react";
 
 export interface HoverTogglerProps {
   as?: "div" | "span";
-  className?: CxArg;
+  className?: string;
   hover: ReactNode;
   normal: ReactNode;
 }
@@ -14,7 +14,7 @@ export const HoverToggler = ({ normal, hover, as: Component = "div", className }
   const [isHover, setIsHover] = useState(false);
 
   return (
-    <Component onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)} className={cx(className)}>
+    <Component onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)} className={cn(className)}>
       {isHover ? hover : normal}
     </Component>
   );

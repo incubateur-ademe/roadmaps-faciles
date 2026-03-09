@@ -2,7 +2,6 @@
 
 import { Separator } from "@kokatsuna/ui";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 import { useUI } from "@/ui";
@@ -35,10 +34,11 @@ const Section = ({ title, children }: { children: ReactNode; title: string }) =>
 
 const ShowcasePage = () => {
   const theme = useUI();
-  const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
+    // Read DOM class after mount to avoid hydration mismatch (server=false, client reads actual state)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync from DOM on mount, not cascading
     setDarkMode(document.documentElement.classList.contains("dark"));
   }, []);
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,12 +46,8 @@ const ShowcasePage = () => {
   const toggleUiTheme = useCallback(() => {
     const next = theme === "Default" ? "Dsfr" : "Default";
     document.cookie = `ui-theme-dev=${next};path=/;max-age=86400`;
-    if (next === "Default") {
-      location.reload();
-    } else {
-      router.refresh();
-    }
-  }, [theme, router]);
+    location.reload();
+  }, [theme]);
 
   const toggleDarkMode = useCallback(() => {
     const next = !darkMode;
@@ -127,6 +123,16 @@ const ShowcasePage = () => {
           <UIBadge statusColor="purpleGlycine">Purple Glycine</UIBadge>
           <UIBadge statusColor="grey">Grey</UIBadge>
         </div>
+        <h3 className="text-sm font-medium mt-2">Small</h3>
+        <div className="flex flex-wrap gap-2">
+          <UIBadge size="sm">Default SM</UIBadge>
+          <UIBadge size="sm" variant="success">
+            Success SM
+          </UIBadge>
+          <UIBadge size="sm" statusColor="blueFrance">
+            Blue France SM
+          </UIBadge>
+        </div>
       </Section>
 
       <Separator />
@@ -134,11 +140,11 @@ const ShowcasePage = () => {
       {/* UIAlert */}
       <Section title="UIAlert">
         <div className="space-y-3">
-          <UIAlert severity="info" title="Info" description="This is an informational alert." />
-          <UIAlert severity="success" title="Success" description="Operation completed successfully." />
-          <UIAlert severity="warning" title="Warning" description="Please be careful." />
-          <UIAlert severity="error" title="Error" description="Something went wrong." />
-          <UIAlert severity="info" description="Small alert without title." />
+          <UIAlert variant="default" title="Info" description="This is an informational alert." />
+          <UIAlert variant="success" title="Success" description="Operation completed successfully." />
+          <UIAlert variant="warning" title="Warning" description="Please be careful." />
+          <UIAlert variant="destructive" title="Error" description="Something went wrong." />
+          <UIAlert variant="default" description="Small alert without title." />
         </div>
       </Section>
 
@@ -169,10 +175,10 @@ const ShowcasePage = () => {
       {/* UICard */}
       <Section title="UICard">
         <div className="grid gap-4 sm:grid-cols-2">
-          <UICard title="Simple card" desc="Card description" detail="Detail text" />
-          <UICard title="With shadow" desc="Card with shadow" shadow />
-          <UICard title="Small card" desc="Compact" size="small" />
-          <UICard title="With link" desc="Clickable card" linkProps={{ href: "#" }} />
+          <UICard title="Simple card" description="Card description" subtitle="Detail text" />
+          <UICard title="With shadow" description="Card with shadow" shadow />
+          <UICard title="Small card" description="Compact" size="sm" />
+          <UICard title="With link" description="Clickable card" href="#" />
         </div>
       </Section>
 
@@ -182,7 +188,7 @@ const ShowcasePage = () => {
       <Section title="UITag">
         <div className="flex flex-wrap gap-2">
           <UITag>Default</UITag>
-          <UITag small>Small</UITag>
+          <UITag size="sm">Small</UITag>
           <UITag onClick={() => alert("clicked")}>Clickable</UITag>
           <UITag as="span">As span</UITag>
         </div>

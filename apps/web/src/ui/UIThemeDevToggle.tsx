@@ -2,7 +2,6 @@
 
 import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@kokatsuna/ui";
 import { Palette } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 import { type UiTheme } from "./types";
@@ -24,13 +23,12 @@ export const UIThemeDevToggle = () => {
 
 const UIThemeDevToggleInner = () => {
   const theme = useUI();
-  const router = useRouter();
 
   const handleClick = useCallback(() => {
     const next = toggle(theme);
     document.cookie = `${COOKIE_NAME}=${next};path=/;max-age=86400`;
-    router.refresh();
-  }, [theme, router]);
+    location.reload();
+  }, [theme]);
 
   return (
     <TooltipProvider>

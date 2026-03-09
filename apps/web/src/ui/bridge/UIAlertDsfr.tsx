@@ -4,7 +4,16 @@ import DsfrAlert from "@codegouvfr/react-dsfr/Alert";
 
 import { type UIAlertProps } from "./UIAlert";
 
-export const UIAlertDsfr = ({ severity, title, description, className, closable, onClose }: UIAlertProps) => {
+const VARIANT_TO_SEVERITY = {
+  default: "info",
+  destructive: "error",
+  success: "success",
+  warning: "warning",
+} as const;
+
+export const UIAlertDsfr = ({ variant, title, description, className, closable, onClose }: UIAlertProps) => {
+  const severity = VARIANT_TO_SEVERITY[variant];
+
   if (title) {
     return (
       <DsfrAlert

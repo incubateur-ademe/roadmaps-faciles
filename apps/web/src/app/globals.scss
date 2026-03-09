@@ -6,6 +6,13 @@
 /* Scan packages/ui source for Tailwind class detection (external package) */
 @source "../../../../packages/ui/src";
 
+/* Anti-FOUC: hide body until DSFR CSS is loaded.
+   ThemeInjector adds `dsfr-pending` before first paint;
+   DsfrCssLoader removes it once DSFR CSS is ready. */
+html.dsfr-pending body {
+    visibility: hidden;
+}
+
 @layer base {
   *,
   ::after,
@@ -34,6 +41,8 @@
     --text-action-high-blue-france: var(--primary);
     --background-action-high-blue-france: var(--primary);
     --text-inverted-blue-france: var(--primary-foreground);
+    /* Sticky offset — DSFR header sets this via JS, Default header is fixed 4rem */
+    --sticky-offset: 4rem;
 }
 
 /* ==============================

@@ -81,7 +81,7 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
         onChangeAction={handleDescriptionChangeAction}
         uploadImageAction={uploadImage}
       />
-      {error && <UIAlert className="mb-4" severity="error" title={tc("error")} description={error} />}
+      {error && <UIAlert className="mb-4" variant="destructive" title={tc("error")} description={error} />}
       <span className="flex gap-4">
         <UIButton type="submit" disabled={pending || !isDirty}>
           {t("savePost")}

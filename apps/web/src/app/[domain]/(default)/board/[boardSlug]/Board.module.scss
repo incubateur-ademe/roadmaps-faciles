@@ -1,11 +1,9 @@
-.board {}
+// ── DSFR-only styles ──
+// These classes are applied only when isDsfr=true.
+// Default theme uses Tailwind classes directly in JSX.
 
 .sidebar {
     top: var(--sticky-offset, 0px);
-}
-
-.postList {
-    // flex-grow: 1;
 }
 
 .suggestionForm {
@@ -35,9 +33,13 @@
     z-index: -1;
 }
 
+// ── Shared styles (both themes) ──
+
 .boardSubTiltle {
     font-weight: unset;
 }
+
+// ── DSFR-only compact list (PostListCompact) ──
 
 .compactList {
     list-style: none;

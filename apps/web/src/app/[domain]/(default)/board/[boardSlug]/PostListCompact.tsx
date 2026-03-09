@@ -9,6 +9,7 @@ import { useState, useTransition } from "react";
 
 import { LikeButton } from "@/components/Board/LikeButton";
 import { Loader } from "@/components/utils/Loader";
+import { useUI } from "@/ui";
 import { UIBadge, UIButton, UISeparator, UITag } from "@/ui/bridge";
 import { formatRelativeDate } from "@/utils/date";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
@@ -51,6 +52,7 @@ export const PostListCompact = ({
   const dirtyDomainFixer = dirtySafePathname(pathname);
   const t = useTranslations();
   const locale = useLocale();
+  const isDsfr = useUI() === "Dsfr";
 
   const handleLoadMore = () => {
     startTransition(async () => {
@@ -78,13 +80,20 @@ export const PostListCompact = ({
 
   return (
     <>
-      <ul className={style.compactList}>
+      <ul className={isDsfr ? style.compactList : "list-none p-0 m-0 border border-border rounded-md overflow-hidden"}>
         {posts.map(post => {
           const alreadyLiked = post.likes.some(like => userId === like.userId || like.anonymousId === anonymousId);
 
           return (
-            <li key={`post_compact_${post.id}`} className={style.compactItem}>
-              <div className="flex items-center gap-[.75rem] min-w-0">
+            <li
+              key={`post_compact_${post.id}`}
+              className={
+                isDsfr
+                  ? style.compactItem
+                  : "px-4 py-3 border-b border-border last:border-b-0 transition-colors hover:bg-muted/50"
+              }
+            >
+              <div className="flex items-center gap-3 min-w-0">
                 {allowVoting && (allowAnonymousVoting || userId) && (
                   <div className="shrink-0">
                     <LikeButton
@@ -101,9 +110,13 @@ export const PostListCompact = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     {post.postStatus ? (
-                      <UIBadge statusColor={post.postStatus.color}>{post.postStatus.name}</UIBadge>
+                      <UIBadge size="sm" statusColor={post.postStatus.color}>
+                        {post.postStatus.name}
+                      </UIBadge>
                     ) : (
-                      <UIBadge statusColor="grey">{t("post.unclassified")}</UIBadge>
+                      <UIBadge size="sm" statusColor="grey">
+                        {t("post.unclassified")}
+                      </UIBadge>
                     )}
                     <Link
                       href={dirtyDomainFixer(`/post/${post.id}`)}
@@ -127,7 +140,7 @@ export const PostListCompact = ({
                       <>
                         <span>·</span>
                         {post.tags.map(tag => (
-                          <UITag as="span" key={tag} small>
+                          <UITag as="span" key={tag} size="sm">
                             {tag}
                           </UITag>
                         ))}

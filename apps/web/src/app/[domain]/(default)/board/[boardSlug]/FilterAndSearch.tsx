@@ -4,9 +4,13 @@ import { Button, Input, SegmentedControl, SegmentedControlItem } from "@kokatsun
 import { Columns3, Filter, LayoutGrid, List, Rows3, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+
+import { useUI } from "@/ui";
 
 import { defaultOrder, defaultView, type Order, ORDER_OPTIONS, type View } from "./types";
+
+const FilterAndSearchDsfr = lazy(() => import("./FilterAndSearchDsfr").then(m => ({ default: m.FilterAndSearchDsfr })));
 
 export interface FilterAndSearchProps {
   order: Order;
@@ -15,6 +19,20 @@ export interface FilterAndSearchProps {
 }
 
 export const FilterAndSearch = ({ order, search, view }: FilterAndSearchProps) => {
+  const theme = useUI();
+
+  if (theme === "Dsfr") {
+    return (
+      <Suspense>
+        <FilterAndSearchDsfr order={order} search={search} view={view} />
+      </Suspense>
+    );
+  }
+
+  return <FilterAndSearchDefault order={order} search={search} view={view} />;
+};
+
+const FilterAndSearchDefault = ({ order, search, view }: FilterAndSearchProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();

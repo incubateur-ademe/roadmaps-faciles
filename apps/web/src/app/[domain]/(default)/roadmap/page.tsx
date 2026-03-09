@@ -75,7 +75,7 @@ const RoadmapPage = DomainPageHOP()(async props => {
       <h2 className="text-2xl font-bold mb-4">{t("title")}</h2>
       {showAdminHint && (
         <UIAlert
-          severity="warning"
+          variant="warning"
           className="mb-4"
           description={
             <>
@@ -125,13 +125,11 @@ const RoadmapPage = DomainPageHOP()(async props => {
                       className="flex-1"
                       shadow
                       titleAs="h4"
-                      linkProps={{
-                        href: dirtyDomainFixer(`/post/${post.id}`),
-                      }}
-                      size="small"
+                      href={dirtyDomainFixer(`/post/${post.id}`)}
+                      size="sm"
                       horizontal
-                      endDetail={
-                        <UITag as="span" small>
+                      footer={
+                        <UITag as="span" size="sm">
                           {post.board.name}
                         </UITag>
                       }

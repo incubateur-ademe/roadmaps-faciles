@@ -17,16 +17,17 @@ export type UITagProps = {
   className?: string;
   iconId?: DsfrTagProps["iconId"];
   onClick?: () => void;
-  small?: boolean;
+  /** Size — "sm" maps to DSFR `small` prop */
+  size?: "default" | "sm";
 };
 
-export const UITag = ({ children, className, small, iconId, onClick, as }: UITagProps) => {
+export const UITag = ({ children, className, size, iconId, onClick, as }: UITagProps) => {
   const theme = useUI();
 
   if (theme === "Dsfr") {
     return (
       <Suspense>
-        <UITagDsfr className={className} small={small} iconId={iconId} onClick={onClick} as={as}>
+        <UITagDsfr className={className} size={size} iconId={iconId} onClick={onClick} as={as}>
           {children}
         </UITagDsfr>
       </Suspense>
@@ -38,7 +39,7 @@ export const UITag = ({ children, className, small, iconId, onClick, as }: UITag
   return (
     <ShadcnBadge
       variant="outline"
-      className={cn(small && "text-xs py-0", onClick && "cursor-pointer", className)}
+      className={cn(size === "sm" && "text-xs py-0", onClick && "cursor-pointer", className)}
       onClick={onClick}
       asChild
     >

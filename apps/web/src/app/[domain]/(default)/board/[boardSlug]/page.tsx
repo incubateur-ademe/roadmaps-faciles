@@ -1,3 +1,4 @@
+import { cn } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import z from "zod";
@@ -7,12 +8,15 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/next-auth/auth";
 import { TrackPageView } from "@/lib/tracking-provider";
 import { boardPublicViewed, boardViewed } from "@/lib/tracking-provider/trackingPlan";
+import { UIContainer, UIGrid, UIGridCol } from "@/ui/bridge";
+import { getTheme } from "@/ui/server";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
 import { withValidation } from "@/utils/next";
 
 import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
 import { type EnrichedPost, fetchPostsForBoard } from "./actions";
+import style from "./Board.module.scss";
 import { FilterAndSearch } from "./FilterAndSearch";
 import { PostKanban } from "./PostKanban";
 import { PostKanbanAccordion } from "./PostKanbanAccordion";
@@ -86,6 +90,8 @@ const BoardPage = withValidation({
     ? boardViewed({ boardId: String(board.id), tenantId: String(_data.tenant.id) })
     : boardPublicViewed({ boardId: String(board.id), tenantId: String(_data.tenant.id) });
 
+  const isDsfr = (await getTheme(_data.settings)) === "Dsfr";
+
   const sharedPostProps = {
     allowAnonymousVoting: _data.settings.allowAnonymousVoting,
     allowVoting: _data.settings.allowVoting,
@@ -101,35 +107,40 @@ const BoardPage = withValidation({
   return (
     <>
       <TrackPageView event={boardTrackEvent} />
-      <div className="mx-auto my-4 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-6">
+      <UIContainer className="my-4">
+        <UIGrid gap>
           {showSuggestionForm && (
-            <aside className="sticky top-20 hidden w-72 shrink-0 self-start lg:block">
-              <SubmitPostForm boardId={board.id} />
-            </aside>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="sticky top-16 z-10 bg-background pb-3">
-              <div className="flex items-start gap-4">
-                <div className="flex-1">
-                  <h1 className="mb-1 text-xl font-bold">{board.name}</h1>
-                  {board.description && (
-                    <div className="prose prose-sm max-w-none text-muted-foreground">
-                      <MDXRemote source={board.description} />
-                    </div>
-                  )}
-                </div>
-                <div className="w-80 shrink-0">
-                  <FilterAndSearch order={validatedOrder} search={search} view={validatedView} />
-                </div>
+            <UIGridCol span={3} className={cn("sticky self-start top-0", isDsfr ? style.sidebar : "top-16")}>
+              <div className={isDsfr ? style.suggestionForm : "px-4 rounded-lg border bg-card shadow-sm"}>
+                <SubmitPostForm boardId={board.id} />
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
+            </UIGridCol>
+          )}
+          <UIGridCol span={showSuggestionForm ? 9 : 12}>
+            <UIGrid
+              className={cn(
+                "sticky self-start top-0 z-501",
+                isDsfr ? style.header : "bg-background border-b shadow-sm top-16",
+              )}
+            >
+              <UIGridCol span={8} className="pr-2">
+                <h1 className={isDsfr ? "fr-mb-1w fr-h3" : "mb-1 text-xl font-bold"}>{board.name}</h1>
+                {board.description && (
+                  <h2 className={cn(isDsfr ? "fr-text--md" : "max-w-none prose prose-sm", style.boardSubTiltle)}>
+                    <MDXRemote source={board.description} />
+                  </h2>
+                )}
+              </UIGridCol>
+              <UIGridCol span={4}>
+                <FilterAndSearch order={validatedOrder} search={search} view={validatedView} />
+              </UIGridCol>
+              <UIGridCol span={12} className={isDsfr ? "fr-hint-text" : "mt-2 text-sm text-muted-foreground"}>
                 {t("common.result", { count: filteredCount })}
                 {filteredCount !== board._count.posts
                   ? ` ${t("common.filteredOf", { count: filteredCount, total: board._count.posts })}`
                   : ""}
-              </p>
-            </div>
+              </UIGridCol>
+            </UIGrid>
             <ClientAnimate className="flex flex-col gap-4">
               {validatedView === "list" ? (
                 <PostListCompact key={`compact_${board.id}_${validatedOrder}_${search ?? ""}`} {...sharedPostProps} />
@@ -153,9 +164,9 @@ const BoardPage = withValidation({
                 />
               )}
             </ClientAnimate>
-          </div>
-        </div>
-      </div>
+          </UIGridCol>
+        </UIGrid>
+      </UIContainer>
     </>
   );
 });

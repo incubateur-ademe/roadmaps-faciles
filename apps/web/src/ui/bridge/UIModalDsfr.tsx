@@ -3,13 +3,13 @@
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useEffect, useRef, useState } from "react";
 
-import type { UIModalProps } from "./UIModal";
+import { type UIModalProps } from "./UIModal";
 
 let counter = 0;
 
 export const UIModalDsfr = ({ open, onClose, title, children, footer }: UIModalProps) => {
   const [id] = useState(() => `ui-modal-bridge-${++counter}`);
-  const modalRef = useRef<ReturnType<typeof createModal> | null>(null);
+  const modalRef = useRef<null | ReturnType<typeof createModal>>(null);
 
   if (!modalRef.current) {
     modalRef.current = createModal({ id, isOpenedByDefault: false });

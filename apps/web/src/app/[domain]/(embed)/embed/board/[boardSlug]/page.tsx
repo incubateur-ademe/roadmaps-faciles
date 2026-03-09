@@ -63,7 +63,7 @@ const EmbedBoardPageInner = async ({ params, searchParams }: EmbedBoardPageProps
     return (
       <div className="py-8 px-4">
         <UIAlert
-          severity="warning"
+          variant="warning"
           title={t("privateTenant")}
           description={
             <Link href={`${tenantUrl}/login`} target="_blank" className="text-primary underline">
