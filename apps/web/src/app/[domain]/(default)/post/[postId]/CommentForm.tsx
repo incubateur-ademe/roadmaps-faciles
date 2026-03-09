@@ -7,15 +7,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState, useTransition } from "react";
 
-import { MarkdownEditor, type MarkdownEditorProps } from "@/dsfr/base/client/MarkdownEditor";
-import { UIAlert, UIButton } from "@/ui/bridge";
+import { UIAlert, UIButton, UIMarkdownEditor, type UIMarkdownEditorProps } from "@/ui/bridge";
 
 import { sendComment } from "./_timeline/actions";
 
 interface CommentFormProps {
   postId: number;
   tenantId: number;
-  uploadImageAction: MarkdownEditorProps["uploadImageAction"];
+  uploadImageAction: UIMarkdownEditorProps["uploadImageAction"];
   userId?: string;
 }
 
@@ -67,7 +66,7 @@ export const CommentForm = ({ postId, tenantId, userId, uploadImageAction }: Com
 
   return (
     <div className="mt-4">
-      <MarkdownEditor
+      <UIMarkdownEditor
         key={editorKey}
         label={t("addComment")}
         onChangeAction={handleChange}

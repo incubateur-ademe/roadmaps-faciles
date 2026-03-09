@@ -1,10 +1,10 @@
 "use client";
 
-import { Alert, AlertDescription, Button, Input, Label } from "@kokatsuna/ui";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 import { type ServerActionResponse } from "@/utils/next";
 
 interface DeleteAccountSectionProps {
@@ -37,42 +37,40 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
   if (!showConfirm) {
     return (
       <div>
-        <Alert className="mb-4">
-          <AlertDescription>{t("deleteWarning")}</AlertDescription>
-        </Alert>
-        <Button variant="ghost" size="sm" onClick={() => setShowConfirm(true)}>
+        <UIAlert variant="warning" description={t("deleteWarning")} className="mb-4" />
+        <UIButton variant="ghost" size="sm" onClick={() => setShowConfirm(true)}>
           {t("deleteAccount")}
-        </Button>
+        </UIButton>
       </div>
     );
   }
 
   return (
     <div>
-      <Alert variant="destructive" className="mb-4">
-        <AlertDescription>{t("deleteConfirmPrompt", { text: confirmationWord })}</AlertDescription>
-      </Alert>
-      <div className="mb-4 space-y-2">
-        <Label htmlFor="confirm-delete">{t("confirmation")}</Label>
-        <Input
-          id="confirm-delete"
-          value={confirmInput}
-          onChange={e => setConfirmInput(e.target.value)}
-          placeholder={confirmationWord}
-          autoComplete="off"
-          disabled={pending}
+      <UIAlert
+        variant="destructive"
+        description={t("deleteConfirmPrompt", { text: confirmationWord })}
+        className="mb-4"
+      />
+      <div className="mb-4">
+        <UIInput
+          label={t("confirmation")}
+          nativeInputProps={{
+            id: "confirm-delete",
+            value: confirmInput,
+            onChange: e => setConfirmInput(e.target.value),
+            placeholder: confirmationWord,
+            autoComplete: "off",
+            disabled: pending,
+          }}
         />
       </div>
-      {errorMessage && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
+      {errorMessage && <UIAlert variant="destructive" description={errorMessage} className="mb-4" />}
       <div className="flex gap-4">
-        <Button size="sm" disabled={pending || confirmInput !== confirmationWord} onClick={() => void handleDelete()}>
+        <UIButton size="sm" disabled={pending || confirmInput !== confirmationWord} onClick={() => void handleDelete()}>
           {t("confirmDelete")}
-        </Button>
-        <Button
+        </UIButton>
+        <UIButton
           variant="ghost"
           size="sm"
           disabled={pending}
@@ -83,7 +81,7 @@ export const DeleteAccountSection = ({ deleteAccount }: DeleteAccountSectionProp
           }}
         >
           {tc("cancel")}
-        </Button>
+        </UIButton>
       </div>
     </div>
   );

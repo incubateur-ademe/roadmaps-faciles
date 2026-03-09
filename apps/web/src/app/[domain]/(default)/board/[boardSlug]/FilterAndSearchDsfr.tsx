@@ -27,8 +27,9 @@ const ORDER_ICONS: Record<Order, FrIconClassName> = {
 const VIEW_BUTTONS: Array<{ iconId: FrIconClassName | RiIconClassName; key: View; titleKey: string }> = [
   { key: "cards", iconId: "ri-layout-grid-line", titleKey: "viewCards" },
   { key: "list", iconId: "ri-list-unordered", titleKey: "viewList" },
-  { key: "kanban", iconId: "ri-layout-column-line", titleKey: "viewKanban" },
-  { key: "kanban-accordion", iconId: "ri-layout-row-line", titleKey: "viewKanbanAccordion" },
+  // TODO: réactiver kanban et kanban-accordion quand les wireframes seront implémentés
+  // { key: "kanban", iconId: "ri-layout-column-line", titleKey: "viewKanban" },
+  // { key: "kanban-accordion", iconId: "ri-layout-row-line", titleKey: "viewKanbanAccordion" },
 ];
 
 export const FilterAndSearchDsfr = ({ order, search, view }: FilterAndSearchDsfrProps) => {

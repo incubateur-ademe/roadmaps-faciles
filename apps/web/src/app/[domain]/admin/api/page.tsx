@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { apiKeyRepo } from "@/lib/repo";
 import { ListApiKeysForTenant } from "@/useCases/api_keys/ListApiKeysForTenant";
@@ -15,10 +16,10 @@ const ApiAdminPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <ApiKeysList apiKeys={apiKeys} />
-    </div>
+    </>
   );
 });
 

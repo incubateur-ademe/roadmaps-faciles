@@ -1,11 +1,12 @@
 "use client";
 
 import { cn } from "@kokatsuna/ui";
-import { Badge } from "@kokatsuna/ui/components/badge";
 import { Label } from "@kokatsuna/ui/components/label";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
-import { POST_STATUS_COLOR, POST_STATUS_COLOR_MAP, type PostStatusColor } from "@/lib/model/PostStatus";
+import { POST_STATUS_COLOR, type PostStatusColor } from "@/lib/model/PostStatus";
+
+import { StatusBadge } from "./StatusBadge";
 
 interface ColorSelectProps {
   disabled?: boolean;
@@ -18,15 +19,13 @@ const colors = Object.keys(POST_STATUS_COLOR) as Array<keyof typeof POST_STATUS_
 
 export const ColorSelect = ({ label, value, onChange, disabled }: ColorSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const handleSelect = (color: PostStatusColor) => {
     onChange(color);
     setIsOpen(false);
   };
 
   return (
-    <div className="space-y-2" ref={containerRef}>
+    <div className="space-y-2">
       <Label>{label}</Label>
       <div className="relative">
         <button
@@ -38,7 +37,7 @@ export const ColorSelect = ({ label, value, onChange, disabled }: ColorSelectPro
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
         >
-          <span className={`fr-badge fr-badge--sm fr-badge--${POST_STATUS_COLOR_MAP[value]}`}>{value}</span>
+          <StatusBadge color={value}>{value}</StatusBadge>
         </button>
         {isOpen && (
           <>
@@ -54,7 +53,7 @@ export const ColorSelect = ({ label, value, onChange, disabled }: ColorSelectPro
                     value === color ? "bg-accent" : "hover:bg-accent/50",
                   )}
                 >
-                  <Badge variant="outline">{color}</Badge>
+                  <StatusBadge color={color}>{color}</StatusBadge>
                 </button>
               ))}
             </div>

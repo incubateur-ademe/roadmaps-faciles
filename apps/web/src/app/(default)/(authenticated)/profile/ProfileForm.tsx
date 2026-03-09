@@ -1,13 +1,13 @@
 "use client";
 
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { Alert, AlertDescription, AlertTitle, Button, Input, Label, Switch } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
+import { UIAlert, UIButton, UIInput, UISeparator, UISwitch } from "@/ui/bridge";
 
 import { deleteAccount, switchToEmEmail, updateProfile } from "./actions";
 import { DeleteAccountSection } from "./DeleteAccountSection";
@@ -118,59 +118,73 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
         </legend>
 
         {variant === "tenant" && (
-          <div className="space-y-2">
-            <Label htmlFor="name">{t("fullName")}</Label>
-            <Input id="name" aria-invalid={!!errors.name} {...register("name")} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-          </div>
+          <UIInput
+            label={t("fullName")}
+            nativeInputProps={{
+              id: "name",
+              "aria-invalid": !!errors.name,
+              ...register("name"),
+            }}
+            state={errors.name ? "error" : "default"}
+            stateRelatedMessage={errors.name?.message}
+          />
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">{t("emailAddress")}</Label>
-          {variant === "tenant" ? (
-            <>
-              <Input id="email" type="email" aria-invalid={!!errors.email} {...register("email")} />
-              {getEmailHintText() && <p className="text-sm text-muted-foreground">{getEmailHintText()}</p>}
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-              {showEmEmailHint && !emailsAreSame && (
-                <p className="text-xs text-muted-foreground">
-                  {t("emEmailPrefix")} <strong>{user.emEmail}</strong>{" "}
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0"
-                    disabled={switchPending}
-                    onClick={() => void handleSwitchToEmEmail()}
-                  >
-                    {t("useThisEmail")}
-                  </Button>
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <Input id="email" type="email" disabled value={user.email} />
-              <p className="text-sm text-muted-foreground">{t("managedByEm")}</p>
-            </>
-          )}
-        </div>
+        {variant === "tenant" ? (
+          <div className="space-y-2">
+            <UIInput
+              label={t("emailAddress")}
+              nativeInputProps={{
+                id: "email",
+                type: "email",
+                "aria-invalid": !!errors.email,
+                ...register("email"),
+              }}
+              state={errors.email ? "error" : "default"}
+              stateRelatedMessage={errors.email?.message}
+            />
+            {getEmailHintText() && <p className="text-sm text-muted-foreground">{getEmailHintText()}</p>}
+            {showEmEmailHint && !emailsAreSame && (
+              <p className="text-xs text-muted-foreground">
+                {t("emEmailPrefix")} <strong>{user.emEmail}</strong>{" "}
+                <UIButton
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0"
+                  disabled={switchPending}
+                  onClick={() => void handleSwitchToEmEmail()}
+                >
+                  {t("useThisEmail")}
+                </UIButton>
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <UIInput
+              label={t("emailAddress")}
+              nativeInputProps={{
+                id: "email",
+                type: "email",
+                disabled: true,
+                value: user.email,
+              }}
+            />
+            <p className="text-sm text-muted-foreground">{t("managedByEm")}</p>
+          </div>
+        )}
       </fieldset>
 
       <fieldset className="mb-8 space-y-4 border-0 p-0">
         <legend className="mb-4">
           <h3 className="text-lg font-semibold">{t("notifications")}</h3>
         </legend>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium">{t("emailNotifications")}</p>
-            <p className="text-sm text-muted-foreground">{t("emailNotificationsHelper")}</p>
-          </div>
-          <Switch
-            checked={notificationsEnabled}
-            onCheckedChange={checked => setValue("notificationsEnabled", checked, { shouldDirty: true })}
-          />
-        </div>
+        <UISwitch
+          label={t("emailNotifications")}
+          checked={notificationsEnabled}
+          onCheckedChangeAction={checked => setValue("notificationsEnabled", checked, { shouldDirty: true })}
+        />
       </fieldset>
 
       {variant === "tenant" && (
@@ -184,23 +198,16 @@ export const ProfileForm = ({ user, variant }: ProfileFormProps) => {
 
       <ClientAnimate>
         {saveError && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTitle>{te("saveError")}</AlertTitle>
-            <AlertDescription>{saveError}</AlertDescription>
-          </Alert>
+          <UIAlert variant="destructive" title={te("saveError")} description={saveError} className="mb-4" />
         )}
-        {success && (
-          <Alert className="mb-4">
-            <AlertTitle>{tc("success")}</AlertTitle>
-          </Alert>
-        )}
+        {success && <UIAlert variant="success" title={tc("success")} className="mb-4" />}
       </ClientAnimate>
 
-      <Button type="submit" disabled={pending || !isDirty}>
+      <UIButton type="submit" disabled={pending || !isDirty}>
         {t("saveChanges")}
-      </Button>
+      </UIButton>
 
-      <hr className="my-8" />
+      <UISeparator className="my-8" />
 
       <fieldset className="space-y-4 border-0 p-0">
         <legend className="mb-4">

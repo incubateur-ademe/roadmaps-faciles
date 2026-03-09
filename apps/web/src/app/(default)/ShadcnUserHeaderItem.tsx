@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Badge,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -9,26 +10,27 @@ import {
   DropdownMenuTrigger,
   Skeleton,
 } from "@kokatsuna/ui";
-import { ArrowRight, LogOut, Settings, User } from "lucide-react";
+import { ArrowRight, LogOut, Settings, Shield, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-import { USER_ROLE } from "@/lib/model/User";
+import { isSessionAdmin, isSessionModerator } from "@/utils/sessionRoles";
 
-export const ShadcnUserHeaderItem = () => {
+export interface ShadcnUserHeaderItemProps {
+  pendingModerationCount?: number;
+  variant?: "root" | "tenant";
+}
+
+export const ShadcnUserHeaderItem = ({ variant = "root", pendingModerationCount = 0 }: ShadcnUserHeaderItemProps) => {
   const session = useSession();
   const t = useTranslations("auth");
 
   switch (session.status) {
     case "authenticated": {
       const { user } = session.data;
-      const isAdmin =
-        user.role === USER_ROLE.ADMIN ||
-        user.role === USER_ROLE.OWNER ||
-        user.isSuperAdmin ||
-        user.currentTenantRole === USER_ROLE.ADMIN ||
-        user.currentTenantRole === USER_ROLE.OWNER;
+      const isAdmin = isSessionAdmin(user);
+      const isModerator = isSessionModerator(user);
 
       return (
         <DropdownMenu>
@@ -36,6 +38,11 @@ export const ShadcnUserHeaderItem = () => {
             <Button variant="ghost" size="sm" className="gap-2">
               <User className="size-4" />
               <span className="hidden sm:inline">{user.name || user.email}</span>
+              {pendingModerationCount > 0 && (
+                <Badge variant="destructive" className="ml-1 px-1.5 py-0.5 text-xs">
+                  {pendingModerationCount}
+                </Badge>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -49,7 +56,20 @@ export const ShadcnUserHeaderItem = () => {
               <DropdownMenuItem asChild>
                 <Link href="/admin">
                   <Settings className="mr-2 size-4" />
-                  {t("administration")}
+                  {variant === "root" ? t("administration") : t("tenantAdmin")}
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {isModerator && variant === "tenant" && (
+              <DropdownMenuItem asChild>
+                <Link href="/moderation" className="flex items-center">
+                  <Shield className="mr-2 size-4" />
+                  {t("moderation")}
+                  {pendingModerationCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-xs">
+                      {t("moderationNewCount", { count: pendingModerationCount })}
+                    </Badge>
+                  )}
                 </Link>
               </DropdownMenuItem>
             )}

@@ -18,22 +18,26 @@ export default function Error({ error: _error, reset }: { error: Error; reset: (
   const t = useTranslations("errors");
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16">
-      <div className="flex max-w-lg flex-col items-center text-center">
-        <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-muted">
-          <AlertTriangle className="size-10 text-muted-foreground" />
+    <div className="mx-auto max-w-4xl px-4">
+      <div className="my-16 flex flex-col items-center gap-8 md:my-24 md:flex-row md:gap-12">
+        <div className="flex-1 space-y-4">
+          <h1 className="text-3xl font-bold tracking-tight">{t("technicalError")}</h1>
+          <p className="text-lg text-muted-foreground">{error.name}</p>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <div className="flex gap-3 pt-4">
+            <Button variant="outline" onClick={() => reset()}>
+              {t("retry")}
+            </Button>
+            <Button asChild>
+              <Link href="/">{t("homepage")}</Link>
+            </Button>
+          </div>
         </div>
-        <h1 className="mb-2 text-3xl font-bold">{t("technicalError")}</h1>
-        <p className="mb-4 text-lg text-muted-foreground">{error.name}</p>
-        <div className="mb-6 text-sm text-muted-foreground">
-          <p>{error.message}</p>
-          <Button variant="ghost" className="mt-2" onClick={() => reset()}>
-            {t("retry")}
-          </Button>
+        <div className="flex shrink-0 items-center justify-center">
+          <div className="flex size-32 items-center justify-center rounded-full bg-red-100 md:size-40 dark:bg-red-950">
+            <AlertTriangle className="size-16 text-red-600 md:size-20 dark:text-red-400" strokeWidth={1.5} />
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/">{t("homepage")}</Link>
-        </Button>
       </div>
     </div>
   );

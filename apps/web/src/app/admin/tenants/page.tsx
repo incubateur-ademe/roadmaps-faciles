@@ -3,6 +3,7 @@ import { ExternalLink, Pin, PinOff, Plus, Users } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { CopyButton } from "@/components/CopyButton";
 import { config } from "@/config";
 import { Link } from "@/i18n/navigation";
@@ -26,18 +27,18 @@ const TenantsPage = async () => {
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{t("title")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("tenantCount", { count: tenants.length })}</p>
-        </div>
-        <Button asChild>
-          <Link href="/admin/tenants/new">
-            <Plus className="size-4" />
-            {t("create")}
-          </Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title={t("title")}
+        description={t("tenantCount", { count: tenants.length })}
+        actions={
+          <Button asChild>
+            <Link href="/admin/tenants/new">
+              <Plus className="size-4" />
+              {t("create")}
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {tenants.map(tenant => {

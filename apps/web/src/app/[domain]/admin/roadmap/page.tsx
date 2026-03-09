@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { boardRepo } from "@/lib/repo";
 import { ListBoardsForTenant } from "@/useCases/boards/ListBoardsForTenant";
@@ -16,10 +17,10 @@ const RoadmapAdminPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <RoadmapForm boards={boards} currentRootBoardId={settings.rootBoardId} />
-    </div>
+    </>
   );
 });
 

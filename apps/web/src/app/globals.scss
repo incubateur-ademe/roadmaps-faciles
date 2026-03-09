@@ -41,6 +41,13 @@ html.dsfr-pending body {
     --text-action-high-blue-france: var(--primary);
     --background-action-high-blue-france: var(--primary);
     --text-inverted-blue-france: var(--primary-foreground);
+    /* MarkdownEditor.module.scss aliases */
+    --text-action-high-grey: var(--foreground);
+    --background-default-grey-hover: var(--accent);
+    --background-default-grey-active: var(--accent);
+    --border-active-blue-france: var(--ring);
+    --background-alt-blue-france: oklch(0.95 0.03 265);
+    --text-default-error: var(--destructive);
     /* Sticky offset — DSFR header sets this via JS, Default header is fixed 4rem */
     --sticky-offset: 4rem;
 }
@@ -134,6 +141,20 @@ html.dsfr-pending body {
 
 /* === based on dsfr === */
 
+
+/* Fix: DSFR toggle label ::before margins lost in Turbopack CSS cascade.
+   Turbopack chunks DSFR CSS into multiple @layer blocks, causing cascade conflicts
+   with Tailwind Preflight. The margin on ::before (toggle track spacing) gets
+   overridden. !important is required because the cascade layer ordering in dev
+   doesn't match production (where DSFR CSS loads as a single unlayered block). */
+.fr-toggle label::before {
+    margin-right: 2rem !important;
+}
+
+.fr-toggle--label-left .fr-toggle__label::before {
+    margin-left: 1rem !important;
+    margin-right: 0 !important;
+}
 
 /* Fix: DSFR collapse initial state with React.
  * DSFR JS (window.dsfr.start()) may not have initialized yet when React renders

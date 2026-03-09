@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Input, SegmentedControl, SegmentedControlItem } from "@kokatsuna/ui";
-import { Columns3, Filter, LayoutGrid, List, Rows3, Search } from "lucide-react";
+import { Filter, LayoutGrid, List, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { lazy, Suspense, useState } from "react";
@@ -122,24 +122,7 @@ const FilterAndSearchDefault = ({ order, search, view }: FilterAndSearchProps) =
           >
             <List className="size-4" />
           </Button>
-          <Button
-            title={t("viewKanban")}
-            variant={view === "kanban" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => updateParam("view", "kanban", defaultView)}
-            aria-pressed={view === "kanban"}
-          >
-            <Columns3 className="size-4" />
-          </Button>
-          <Button
-            title={t("viewKanbanAccordion")}
-            variant={view === "kanban-accordion" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => updateParam("view", "kanban-accordion", defaultView)}
-            aria-pressed={view === "kanban-accordion"}
-          >
-            <Rows3 className="size-4" />
-          </Button>
+          {/* TODO: réactiver kanban et kanban-accordion quand les wireframes seront implémentés */}
         </div>
       </div>
     </div>

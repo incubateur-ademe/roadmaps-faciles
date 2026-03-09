@@ -1,10 +1,11 @@
 "use client";
 
-import { Alert, AlertDescription, Badge, Button, Input, Label, Switch } from "@kokatsuna/ui";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { UIAlert, UIBadge, UIButton, UIInput, UISeparator, UISwitch } from "@/ui/bridge";
 
 import { removeOtp, removePasskey, toggleEmailTwoFactor } from "./actions";
 
@@ -126,31 +127,29 @@ export const TwoFactorSettings = ({ emailEnabled, otpConfigured, passkeys }: Two
 
   return (
     <div>
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      {error && <UIAlert variant="destructive" description={error} className="mb-4" />}
 
       {/* Email 2FA */}
       <h3 className="mb-1 text-lg font-semibold">{t("emailTitle")}</h3>
       <p className="mb-3 text-sm text-muted-foreground">{t("emailDescription")}</p>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">{t("emailToggle")}</p>
-        <Switch checked={emailEnabled} onCheckedChange={() => void handleToggleEmail()} disabled={loading} />
-      </div>
+      <UISwitch
+        label={t("emailToggle")}
+        checked={emailEnabled}
+        onCheckedChangeAction={() => void handleToggleEmail()}
+        disabled={loading}
+      />
 
-      <hr className="my-6" />
+      <UISeparator className="my-6" />
 
       {/* OTP (TOTP) */}
       <h3 className="mb-1 text-lg font-semibold">{t("otpTitle")}</h3>
       <p className="mb-3 text-sm text-muted-foreground">{t("otpDescription")}</p>
       {otpConfigured && !otpSetup ? (
         <div className="flex items-center gap-2">
-          <Badge variant="default">{t("active")}</Badge>
-          <Button variant="ghost" size="sm" onClick={() => void handleRemoveOtp()} disabled={loading}>
+          <UIBadge>{t("active")}</UIBadge>
+          <UIButton variant="ghost" size="sm" onClick={() => void handleRemoveOtp()} disabled={loading}>
             {t("remove")}
-          </Button>
+          </UIButton>
         </div>
       ) : otpSetup ? (
         <div className="space-y-4">
@@ -160,34 +159,34 @@ export const TwoFactorSettings = ({ emailEnabled, otpConfigured, passkeys }: Two
           <p className="text-xs text-muted-foreground">
             {t("otpManualKey")}: <code>{otpSetup.secret}</code>
           </p>
-          <div className="space-y-2">
-            <Label htmlFor="otp-setup-code">{t("otpVerifyLabel")}</Label>
-            <Input
-              id="otp-setup-code"
-              value={otpCode}
-              onChange={e => setOtpCode(e.target.value)}
-              maxLength={6}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              name="otp-setup-code"
-            />
-          </div>
+          <UIInput
+            label={t("otpVerifyLabel")}
+            nativeInputProps={{
+              id: "otp-setup-code",
+              value: otpCode,
+              onChange: e => setOtpCode(e.target.value),
+              maxLength: 6,
+              inputMode: "numeric",
+              autoComplete: "one-time-code",
+              name: "otp-setup-code",
+            }}
+          />
           <div className="flex gap-2">
-            <Button onClick={() => void handleVerifyOtpSetup()} disabled={loading || otpCode.length !== 6}>
+            <UIButton onClick={() => void handleVerifyOtpSetup()} disabled={loading || otpCode.length !== 6}>
               {t("verify")}
-            </Button>
-            <Button variant="ghost" onClick={() => setOtpSetup(null)}>
+            </UIButton>
+            <UIButton variant="ghost" onClick={() => setOtpSetup(null)}>
               {t("cancel")}
-            </Button>
+            </UIButton>
           </div>
         </div>
       ) : (
-        <Button variant="outline" onClick={() => void handleSetupOtp()} disabled={loading}>
+        <UIButton variant="outline" onClick={() => void handleSetupOtp()} disabled={loading}>
           {t("otpSetup")}
-        </Button>
+        </UIButton>
       )}
 
-      <hr className="my-6" />
+      <UISeparator className="my-6" />
 
       {/* Passkeys */}
       <h3 className="mb-1 text-lg font-semibold">{t("passkeyTitle")}</h3>
@@ -196,23 +195,25 @@ export const TwoFactorSettings = ({ emailEnabled, otpConfigured, passkeys }: Two
         <ul className="mb-4 space-y-2">
           {passkeys.map(pk => (
             <li key={pk.credentialID} className="flex items-center gap-2">
-              <Badge variant="secondary">{pk.credentialDeviceType === "multiDevice" ? t("synced") : t("device")}</Badge>
+              <UIBadge variant="secondary">
+                {pk.credentialDeviceType === "multiDevice" ? t("synced") : t("device")}
+              </UIBadge>
               <code className="text-xs">{pk.credentialID.slice(0, 16)}...</code>
-              <Button
+              <UIButton
                 variant="ghost"
                 size="sm"
                 onClick={() => void handleRemovePasskey(pk.credentialID)}
                 disabled={loading}
               >
                 {t("remove")}
-              </Button>
+              </UIButton>
             </li>
           ))}
         </ul>
       )}
-      <Button variant="outline" onClick={() => void handleAddPasskey()} disabled={loading}>
+      <UIButton variant="outline" onClick={() => void handleAddPasskey()} disabled={loading}>
         {t("passkeyAdd")}
-      </Button>
+      </UIButton>
     </div>
   );
 };

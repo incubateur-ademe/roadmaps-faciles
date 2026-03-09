@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { getFeatureFlags } from "@/lib/feature-flags";
 
 import { FeatureFlagsForm } from "./FeatureFlagsForm";
@@ -10,11 +11,10 @@ const AdminFeatureFlagsPage = async () => {
   const [flags, t] = await Promise.all([getFeatureFlags(), getTranslations("rootAdmin.featureFlags")]);
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
-      <p>{t("description")}</p>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <FeatureFlagsForm flags={flags} />
-    </div>
+    </>
   );
 };
 

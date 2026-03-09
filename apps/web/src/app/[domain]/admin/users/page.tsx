@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { config } from "@/config";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { auth } from "@/lib/next-auth/auth";
@@ -20,10 +21,10 @@ const MembersAdminPage = DomainPageHOP()(async props => {
     .map(m => m.userId);
 
   return (
-    <div>
-      <h1>{t("members")}</h1>
+    <>
+      <AdminPageHeader title={t("members")} description={t("description")} />
       <MembersList members={members} currentUserId={session?.user.uuid ?? ""} superAdminIds={superAdminIds} />
-    </div>
+    </>
   );
 });
 

@@ -1,7 +1,8 @@
 "use client";
 
 import { Card as DsfrCard, type CardProps as DsfrCardProps } from "@codegouvfr/react-dsfr/Card";
-import { useSyncExternalStore } from "react";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { type ReactNode, useSyncExternalStore } from "react";
 
 import { type UICardProps } from "./UICard";
 
@@ -50,8 +51,40 @@ export const UICardDsfr = ({
 }: UICardProps) => {
   const resolvedShadow = useShadow(shadow);
 
+  // DSFR Card renders `desc` in a <p> — block-level children (div, form, h2, hr) cause
+  // invalid HTML nesting. When description is complex (not a string), render the card
+  // structure manually using DSFR CSS classes with a <div> instead of <p> for the desc.
+  const hasComplexDescription = description != null && typeof description !== "string";
+
+  if (hasComplexDescription) {
+    const shadowClass = resolvedShadow ? "fr-card--shadow" : "fr-card--no-shadow";
+    const sizeClass = size ? `fr-card--${SIZE_MAP[size]}` : undefined;
+    const horizontalClass = horizontal ? "fr-card--horizontal" : undefined;
+
+    return (
+      <div className={cx("fr-card", shadowClass, sizeClass, horizontalClass, className)}>
+        <div className="fr-card__body">
+          <div className="fr-card__content">
+            {href ? (
+              <TitleTag className="fr-card__title">
+                <a href={href} {...(linkTarget && { target: linkTarget })}>
+                  {title}
+                </a>
+              </TitleTag>
+            ) : (
+              <TitleTag className="fr-card__title">{title}</TitleTag>
+            )}
+            <div className="fr-card__desc">{description}</div>
+            {subtitle && <p className="fr-card__detail">{subtitle}</p>}
+          </div>
+          {footer && <div className="fr-card__end">{footer}</div>}
+        </div>
+      </div>
+    );
+  }
+
   const commonProps: DsfrCardProps = {
-    title: title as NonNullable<React.ReactNode>,
+    title: title as NonNullable<ReactNode>,
     titleAs: TitleTag,
     desc: description,
     detail: subtitle,

@@ -1,10 +1,8 @@
-import Header from "@codegouvfr/react-dsfr/Header";
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { Brand } from "@/components/Brand";
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { ClientBodyPortal } from "@/components/utils/ClientBodyPortal";
 import { ClientOnly } from "@/components/utils/ClientOnly";
@@ -13,7 +11,6 @@ import { DsfrProvider } from "@/dsfr-bootstrap";
 import { prisma } from "@/lib/db/prisma";
 import { type DomainParams, type DomainProps } from "@/lib/DomainPage";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
-import { type Board, type TenantSettings } from "@/prisma/client";
 import { UIProvider } from "@/ui";
 import { DsfrCssLoaderClient } from "@/ui/DsfrCssLoaderClient";
 import { Footer as ShadcnFooter } from "@/ui/Footer";
@@ -25,10 +22,9 @@ import { getDirtyDomain } from "@/utils/dirtyDomain/getDirtyDomain";
 import { dirtySafePathname } from "@/utils/dirtyDomain/pathnameDirtyCheck";
 import { getTenantFromDomain } from "@/utils/tenant";
 
-import { UserHeaderItem } from "../../AuthHeaderItems";
-import { LanguageSelectClient } from "../../LanguageSelectClient";
+import { ShadcnUserHeaderItem } from "../../(default)/ShadcnUserHeaderItem";
 import styles from "../../root.module.scss";
-import { DomainNavigation } from "./DomainNavigation";
+import { DsfrHeader } from "./DsfrHeader";
 import { PublicFooter } from "./PublicFooter";
 import { ShadcnDomainNavigation } from "./ShadcnDomainNavigation";
 
@@ -39,10 +35,6 @@ const getBoards = (tenantId: number) =>
     where: { tenantId },
     orderBy: { order: "asc" },
   });
-
-const DsfrNavigation = ({ boards, tenantSettings }: { boards: Board[]; tenantSettings: TenantSettings }) => (
-  <DomainNavigation boards={boards} tenantSettings={tenantSettings} />
-);
 
 const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domain]">) => {
   const [dirtyDomain, tenant, lang] = await Promise.all([
@@ -97,16 +89,11 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
         <AppRouterCacheProvider>
           <MuiDsfrThemeProvider>
             {theme === "Dsfr" ? (
-              <Header
-                navigation={<DsfrNavigation boards={boards} tenantSettings={tenantSettings} />}
-                brandTop={<Brand />}
-                homeLinkProps={{ href: homeHref, title: tenantSettings.name }}
-                serviceTitle={tenantSettings.name}
-                quickAccessItems={[
-                  <UIThemeDevToggle key="hqai-theme-dev" />,
-                  <LanguageSelectClient key="hqai-lang" />,
-                  <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />,
-                ]}
+              <DsfrHeader
+                boards={boards}
+                homeHref={homeHref}
+                pendingModerationCount={pendingModerationCount}
+                tenantSettings={tenantSettings}
               />
             ) : (
               <ShadcnHeader
@@ -116,7 +103,7 @@ const DashboardLayout = async ({ children, modal, params }: LayoutProps<"/[domai
                 quickAccessItems={
                   <>
                     <UIThemeDevToggle />
-                    <UserHeaderItem key="hqai-user" pendingModerationCount={pendingModerationCount} />
+                    <ShadcnUserHeaderItem variant="tenant" pendingModerationCount={pendingModerationCount} />
                   </>
                 }
               />

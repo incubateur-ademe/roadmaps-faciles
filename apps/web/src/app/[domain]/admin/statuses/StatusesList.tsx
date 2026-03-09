@@ -10,11 +10,12 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { POST_STATUS_COLOR_MAP, type POST_STATUS_COLOR } from "@/lib/model/PostStatus";
+import { type POST_STATUS_COLOR } from "@/lib/model/PostStatus";
 import { type PostStatus } from "@/prisma/client";
 
 import { createPostStatus, deletePostStatus, reorderPostStatuses, updatePostStatus } from "./actions";
 import { ColorSelect } from "./ColorSelect";
+import { StatusBadge } from "./StatusBadge";
 
 interface StatusesListProps {
   statuses: PostStatus[];
@@ -124,9 +125,9 @@ export const StatusesList = ({ statuses: initialStatuses }: StatusesListProps) =
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div>
-                    <span className={`fr-badge fr-badge--lg fr-badge--${POST_STATUS_COLOR_MAP[status.color]}`}>
+                    <StatusBadge color={status.color} size="lg">
                       {status.name}
-                    </span>
+                    </StatusBadge>
                   </div>
                   <div>
                     {status.showInRoadmap ? (

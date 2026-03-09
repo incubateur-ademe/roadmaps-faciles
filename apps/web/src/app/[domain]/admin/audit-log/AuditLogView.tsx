@@ -142,8 +142,6 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, stats, to
   return (
     <TooltipProvider>
       <div>
-        <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
-
         {/* Dashboard cards */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card>

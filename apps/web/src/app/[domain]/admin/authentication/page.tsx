@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { config } from "@/config";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { tenantDefaultOAuthRepo } from "@/lib/repo";
@@ -19,14 +20,14 @@ const AuthenticationAdminPage = DomainPageHOP()(async props => {
   if (config.oauth.proconnect.clientId) availableProviders.push("proconnect");
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <AuthenticationForm
         tenantSettings={settings}
         enabledProviders={enabledProviders.map(p => p.provider)}
         availableProviders={availableProviders}
       />
-    </div>
+    </>
   );
 });
 

@@ -1,6 +1,7 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { connection } from "next/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { auditLogRepo } from "@/lib/repo";
 import { type AuditAction } from "@/prisma/enums";
 import { assertAdmin } from "@/utils/auth";
@@ -14,7 +15,7 @@ const RootAuditLogPage = async (props: { searchParams: Promise<Record<string, st
   await assertAdmin();
 
   const searchParams = await props.searchParams;
-  const locale = await getLocale();
+  const [locale, t] = await Promise.all([getLocale(), getTranslations("rootAdmin")]);
 
   const page = Math.max(1, Number(searchParams.page) || 1);
   const action = searchParams.action as AuditAction | undefined;
@@ -27,14 +28,17 @@ const RootAuditLogPage = async (props: { searchParams: Promise<Record<string, st
   ]);
 
   return (
-    <AuditLogView
-      items={result.items}
-      total={result.total}
-      page={page}
-      pageSize={PAGE_SIZE}
-      actions={actions}
-      locale={locale}
-    />
+    <>
+      <AdminPageHeader title={t("auditLog.title")} />
+      <AuditLogView
+        items={result.items}
+        total={result.total}
+        page={page}
+        pageSize={PAGE_SIZE}
+        actions={actions}
+        locale={locale}
+      />
+    </>
   );
 };
 

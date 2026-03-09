@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { config } from "@/config";
 import { auth } from "@/lib/next-auth/auth";
 import { tenantRepo, userOnTenantRepo } from "@/lib/repo";
@@ -43,25 +44,27 @@ const TenantDetailPage = async ({ params }: NextServerPageProps<{ tenantId: stri
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{tenant.settings.name ?? `Tenant #${tenant.id}`}</h1>
-          <Link href={tenantUrl} target="_blank" className="text-lg text-primary hover:underline">
+      <AdminPageHeader
+        title={tenant.settings.name ?? `Tenant #${tenant.id}`}
+        description={
+          <Link href={tenantUrl} target="_blank" className="text-primary hover:underline">
             {tenantUrl}
           </Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`${tenantUrl}/admin`} target="_blank">
-              <ExternalLink className="mr-2 size-4" />
-              {t("tenantAdmin")}
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/tenants">{t("back")}</Link>
-          </Button>
-        </div>
-      </div>
+        }
+        actions={
+          <>
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`${tenantUrl}/admin`} target="_blank">
+                <ExternalLink className="mr-2 size-4" />
+                {t("tenantAdmin")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/tenants">{t("back")}</Link>
+            </Button>
+          </>
+        }
+      />
 
       <div className="mb-8">
         <h2 className="mb-4 text-xl font-semibold">{t("information")}</h2>

@@ -64,11 +64,13 @@
 - UI Bridge components (`src/ui/bridge/`): dual-theme abstraction layer — each bridge renders shadcn (Default) or DSFR (Dsfr) based on `useUI()` context
   - Pattern: `UIFoo.tsx` (public API, `React.lazy()` for DSFR branch) + `UIFooDsfr.tsx` (DSFR-specific, static DSFR import)
   - DSFR variants are lazy-loaded via `React.lazy()` + `<Suspense>` to prevent DSFR CSS from leaking into Default theme pages
-  - Bridges: `UIAlert`, `UIBadge`, `UIButton`, `UIButtonsGroup`, `UICard`, `UIInput`, `UILabel`, `UIModal`, `UISeparator`, `UISkeleton`, `UITable`, `UITag`, `UITooltip`
+  - Bridges: `UIAlert`, `UIBadge`, `UIButton`, `UIButtonsGroup`, `UICard`, `UIInput`, `UILabel`, `UIMarkdownEditor`, `UIModal`, `UISeparator`, `UISkeleton`, `UISwitch`, `UITable`, `UITag`, `UITooltip`
   - `UIModal` wraps `createModal()` in a declarative API (`open`/`onClose` props) — DSFR variant syncs via `useEffect` + `dsfr.conceal` event
   - `UITable` and `UISkeleton` are Default-only (no DSFR variant)
   - Theme context: `UIProvider` / `useUI()` from `@/ui` — `UiTheme = "Default" | "Dsfr"`, resolved server-side by `getTheme()` from `@/ui/server` (reads `ui-theme-dev` cookie)
   - Showcase: `/showcase` page renders all bridges with theme toggle + dark mode toggle — use for visual regression testing
+- Dual-component pattern (non-bridge): when DSFR and Default designs diverge too much for a shared bridge API, use two separate components (`FooDsfr.tsx` / `FooDefault.tsx`) switched by theme in the parent — used for tenant login (`TenantLoginDefault`/`TenantLoginDsfr`) and tenant header (`DsfrHeader`/`ShadcnHeader`)
+- Admin page wrapper: `AdminPageHeader` component (`src/ui/AdminPageHeader.tsx`) — title + description + actions slot, reused on all admin pages
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
   - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
 - Styling preference: Tailwind for simple, SCSS modules for complex — never inline styles (`style={{...}}`)
@@ -87,12 +89,13 @@
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
   - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
   - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
-  - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
-  - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
+  - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(default)/layout.tsx`
+  - `DomainPageHOP` in `src/app/[domain]/(default)/DomainPage.tsx` wraps pages with tenant/settings
   - `EmptyObject` type: import from `@/utils/types` (not `react-hook-form`)
   - Auth: `assertTenantAdmin(domain)` takes domain explicitly — type `TenantAccessCheck = { domain: string } & AccessCheck` in `src/lib/utils/auth.ts`
   - Auth: `assertTenantModerator(domain)` — same pattern, min role MODERATOR. Used by `/moderation` section (separate from `/admin`)
   - Auth: `checkTenantUser()` has defense-in-depth super admin bypass — `isSuperAdmin` users skip tenant membership check (primary bypass is in `assertSession()`)
+  - Session role helpers: `isSessionAdmin()`/`isSessionModerator()` in `src/lib/utils/sessionRoles.ts` — shared between `ShadcnUserHeaderItem` and `AuthHeaderItems` (DSFR), avoids drift
   - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
@@ -332,3 +335,5 @@
 - `tw-animate-css` is incompatible with Sass — Sass cannot parse Tailwind 4 `@utility`/`@property` directives. Import via a separate `.css` file (processed by PostCSS directly), not inside `.scss` files
 - ESLint 10: NOT yet compatible with `eslint-plugin-import`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` — stay on ESLint 9 until ecosystem catches up
 - Vitest 4 browser provider: API changed from `provider: "playwright"` (string) to `provider: playwright()` (function import from `@vitest/browser-playwright`)
+- DSFR Card `desc` renders inside `<p>` — block-level children (`<div>`, `<form>`, `<h2>`) cause hydration errors. `UICardDsfr` has `hasComplexDescription` fallback rendering manual DSFR card HTML with `<div>` instead of `<p>` for desc
+- Root error pages (`error.tsx`, `not-found.tsx`) are Default-only — root layout doesn't load DsfrShell/DSFR CSS, so these pages must use shadcn/Tailwind + UIButton bridges only

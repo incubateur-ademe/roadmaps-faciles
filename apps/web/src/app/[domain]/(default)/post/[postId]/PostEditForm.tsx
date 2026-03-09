@@ -6,8 +6,7 @@ import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
-import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
-import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
+import { UIAlert, UIButton, UIInput, UIMarkdownEditor } from "@/ui/bridge";
 
 import { uploadImage } from "../../upload-image";
 import { updatePost } from "./actions";
@@ -75,7 +74,7 @@ export const PostEditForm = ({ postId, title, description, onCancel, onSuccess }
         state={errors.title ? "error" : "default"}
         stateRelatedMessage={errors.title?.message}
       />
-      <MarkdownEditor
+      <UIMarkdownEditor
         label={t("editDescription")}
         defaultValue={description ?? ""}
         onChangeAction={handleDescriptionChangeAction}

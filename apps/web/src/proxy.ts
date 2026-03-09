@@ -42,7 +42,8 @@ export function proxy(req: NextRequest) {
   }
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
-  let hostname = req.headers.get("host")!.replace(".localhost:3000", `.${appConfig.rootDomain}`);
+  // Normalize localhost subdomains to rootDomain (supports any port, not just :3000)
+  let hostname = req.headers.get("host")!.replace(/\.localhost:\d+$/, `.${appConfig.rootDomain}`);
 
   // Canonical redirect: platform default domain → configured site URL
   // When PLATFORM_DOMAIN is set (e.g. "scalingo.io"), requests on that domain are redirected.

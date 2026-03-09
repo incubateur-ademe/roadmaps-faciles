@@ -1,10 +1,10 @@
 "use client";
 
-import { Alert, AlertDescription, Button, Input, Label } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ClientAnimate } from "@/components/utils/ClientAnimate";
+import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 
 import { requestEmLink, unlinkEspaceMembre } from "./actions";
 
@@ -55,46 +55,36 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
   if (isBetaGouvMember && username) {
     return (
       <div>
-        <Alert className="mb-4">
-          <AlertDescription>{t("emLinked", { username })}</AlertDescription>
-        </Alert>
+        <UIAlert variant="default" description={t("emLinked", { username })} className="mb-4" />
         <ClientAnimate>
-          {successMessage && (
-            <Alert className="mb-4">
-              <AlertDescription>{successMessage}</AlertDescription>
-            </Alert>
-          )}
-          {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
+          {successMessage && <UIAlert variant="success" description={successMessage} className="mb-4" />}
+          {errorMessage && <UIAlert variant="destructive" description={errorMessage} className="mb-4" />}
         </ClientAnimate>
-        <Button variant="ghost" size="sm" disabled={pending} onClick={() => void handleUnlink()}>
+        <UIButton variant="ghost" size="sm" disabled={pending} onClick={() => void handleUnlink()}>
           {t("emUnlink")}
-        </Button>
+        </UIButton>
       </div>
     );
   }
 
   return (
     <div>
-      <Alert className="mb-4">
-        <AlertDescription>{t("emLinkDescription")}</AlertDescription>
-      </Alert>
+      <UIAlert variant="default" description={t("emLinkDescription")} className="mb-4" />
       <div className="flex items-end gap-4">
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="em-login">{t("emLoginLabel")}</Label>
-          <Input
-            id="em-login"
-            value={emLogin}
-            onChange={e => setEmLogin(e.target.value)}
-            placeholder="prenom.nom"
-            disabled={pending}
+        <div className="flex-1">
+          <UIInput
+            label={t("emLoginLabel")}
+            hintText={t("emLoginHint")}
+            nativeInputProps={{
+              id: "em-login",
+              value: emLogin,
+              onChange: e => setEmLogin(e.target.value),
+              placeholder: "prenom.nom",
+              disabled: pending,
+            }}
           />
-          <p className="text-sm text-muted-foreground">{t("emLoginHint")}</p>
         </div>
-        <Button
+        <UIButton
           variant="outline"
           size="sm"
           className="mb-[1.75rem]"
@@ -102,19 +92,11 @@ export const EspaceMembreSection = ({ isBetaGouvMember, username }: EspaceMembre
           onClick={() => void handleRequestLink()}
         >
           {t("emLink")}
-        </Button>
+        </UIButton>
       </div>
       <ClientAnimate>
-        {successMessage && (
-          <Alert className="mt-4">
-            <AlertDescription>{successMessage}</AlertDescription>
-          </Alert>
-        )}
-        {errorMessage && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {successMessage && <UIAlert variant="success" description={successMessage} className="mt-4" />}
+        {errorMessage && <UIAlert variant="destructive" description={errorMessage} className="mt-4" />}
       </ClientAnimate>
     </div>
   );

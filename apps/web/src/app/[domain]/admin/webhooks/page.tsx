@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { webhookRepo } from "@/lib/repo";
 import { ListWebhooksForTenant } from "@/useCases/webhooks/ListWebhooksForTenant";
@@ -15,10 +16,10 @@ const WebhooksAdminPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <WebhooksList webhooks={webhooks} />
-    </div>
+    </>
   );
 });
 

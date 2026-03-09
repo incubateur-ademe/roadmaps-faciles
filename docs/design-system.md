@@ -551,7 +551,7 @@ Le root layout met `data-ui-theme="Default"` en statique. Le `ThemeInjector` ove
 | `apps/web/src/ui/UIContext.tsx` | `UIProvider` + `useUI()` |
 | `apps/web/src/ui/server.ts` | `getTheme(settings)` |
 | `apps/web/src/ui/ThemeInjector.tsx` | Client-side `data-ui-theme` injection |
-| `apps/web/src/ui/bridge/` | 13 bridge components (UIAlert, UIBadge, UIButton, etc.) — dual-theme via `React.lazy()` |
+| `apps/web/src/ui/bridge/` | 15 bridge components (UIAlert, UIBadge, UIButton, UIMarkdownEditor, UISwitch, etc.) — dual-theme via `React.lazy()` |
 | `apps/web/src/app/showcase/` | Showcase page — tous les bridges, toggle theme + dark mode |
 | `packages/ui/src/lib/cn.ts` | `cn()` — wrapper `clsx` + `tailwind-merge` |
 | `packages/ui/src/components/button.tsx` | Button (cva, 6 variants, 8 sizes) |

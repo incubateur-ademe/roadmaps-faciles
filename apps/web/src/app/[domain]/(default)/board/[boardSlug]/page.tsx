@@ -18,8 +18,9 @@ import { type DomainPageCombinedProps, DomainPageHOP } from "../../DomainPage";
 import { type EnrichedPost, fetchPostsForBoard } from "./actions";
 import style from "./Board.module.scss";
 import { FilterAndSearch } from "./FilterAndSearch";
-import { PostKanban } from "./PostKanban";
-import { PostKanbanAccordion } from "./PostKanbanAccordion";
+// TODO: réactiver quand les wireframes kanban seront implémentés
+// import { PostKanban } from "./PostKanban";
+// import { PostKanbanAccordion } from "./PostKanbanAccordion";
 import { PostList } from "./PostList";
 import { PostListCompact } from "./PostListCompact";
 import { SubmitPostForm } from "./SubmitPostForm";
@@ -74,15 +75,6 @@ const BoardPage = withValidation({
   }
 
   const { posts, filteredCount } = await fetchPostsForBoard(1, validatedOrder, board.id, search);
-
-  // Fetch statuses for kanban views
-  const statuses =
-    validatedView === "kanban" || validatedView === "kanban-accordion"
-      ? await prisma.postStatus.findMany({
-          where: { tenantId: _data.tenant.id },
-          orderBy: { order: "asc" },
-        })
-      : [];
 
   const showSuggestionForm = _data.settings.allowAnonymousFeedback || !!session;
 
@@ -142,20 +134,9 @@ const BoardPage = withValidation({
               </UIGridCol>
             </UIGrid>
             <ClientAnimate className="flex flex-col gap-4">
+              {/* TODO: réactiver kanban et kanban-accordion quand les wireframes seront implémentés */}
               {validatedView === "list" ? (
                 <PostListCompact key={`compact_${board.id}_${validatedOrder}_${search ?? ""}`} {...sharedPostProps} />
-              ) : validatedView === "kanban" ? (
-                <PostKanban
-                  key={`kanban_${board.id}_${validatedOrder}_${search ?? ""}`}
-                  {...sharedPostProps}
-                  statuses={statuses}
-                />
-              ) : validatedView === "kanban-accordion" ? (
-                <PostKanbanAccordion
-                  key={`accordion_${board.id}_${validatedOrder}_${search ?? ""}`}
-                  {...sharedPostProps}
-                  statuses={statuses}
-                />
               ) : (
                 <PostList
                   key={`cards_${board.id}_${validatedOrder}_${search ?? ""}`}

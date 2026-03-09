@@ -94,6 +94,7 @@
     "bridgePrompt": "Vous avez un compte sur {brand} ?",
     "bridgeLink": "Se connecter via {brand}",
     "bridgeLoggingIn": "Connexion en cours...",
+    "bridgeLoggingInTitle": "Connexion",
     "oauthPrompt": "Ou connectez-vous avec un fournisseur externe :",
     "provider": {
       "github": "Se connecter avec GitHub",
@@ -401,12 +402,13 @@
       "embeddingTitle": "Intégration",
       "allowEmbedding": "Autoriser l'intégration iframe",
       "allowEmbeddingHelper": "Permet d'embarquer les boards et la roadmap dans un site externe via iframe.",
-      "allowEmbeddingPrivateWarning": "L'intégration iframe ne fonctionnera pas si le site est privé : les visiteurs ne seront pas authentifiés dans l'iframe."
+      "allowEmbeddingPrivateWarning": "L'intégration iframe ne fonctionnera pas si le site est privé : les visiteurs ne seront pas authentifiés dans l'iframe.",
+      "description": "Configurez les paramètres généraux de votre espace."
     },
     "boards": {
       "title": "Gestion des boards",
       "name": "Nom",
-      "description": "Description",
+      "description": "Gérez et organisez les espaces de discussion de votre application.",
       "descriptionMarkdown": "Description (Markdown)",
       "noDescription": "Aucune description",
       "addBoard": "Ajouter un board",
@@ -424,12 +426,14 @@
       "addStatus": "Ajouter un statut",
       "moveUp": "Déplacer vers le haut",
       "moveDown": "Déplacer vers le bas",
-      "modify": "Modifier"
+      "modify": "Modifier",
+      "description": "Définissez les statuts disponibles pour vos posts."
     },
     "roadmap": {
       "title": "Page principale (Roadmap)",
       "rootBoard": "Board de la page principale",
-      "none": "Aucun"
+      "none": "Aucun",
+      "description": "Choisissez le board principal affiché sur la page roadmap."
     },
     "authentication": {
       "title": "Paramètres d'authentification",
@@ -451,7 +455,8 @@
         "github": "GitHub",
         "google": "Google",
         "proconnect": "ProConnect"
-      }
+      },
+      "description": "Gérez les fournisseurs d'authentification et les options de connexion."
     },
     "api": {
       "title": "Clés API",
@@ -461,7 +466,8 @@
       "createdAt": "Date de création",
       "noKeys": "Aucune clé API",
       "noKeysDescription": "Aucune clé API n'a été créée pour ce tenant.",
-      "createKey": "Créer une clé API"
+      "createKey": "Créer une clé API",
+      "description": "Gérez les clés API pour accéder à votre espace par programmation."
     },
     "webhooks": {
       "title": "Webhooks",
@@ -475,7 +481,8 @@
       "eventPostStatusChanged": "Statut du post changé",
       "eventCommentCreated": "Commentaire créé",
       "eventLikeAdded": "Like ajouté",
-      "eventInvitationAccepted": "Invitation acceptée"
+      "eventInvitationAccepted": "Invitation acceptée",
+      "description": "Configurez des notifications automatiques vers vos services externes."
     },
     "integrations": {
       "title": "Connecteurs",
@@ -618,7 +625,8 @@
       "block": "Bloquer",
       "unblock": "Débloquer",
       "noMembers": "Aucun membre",
-      "noMembersDescription": "Aucun membre dans ce tenant."
+      "noMembersDescription": "Aucun membre dans ce tenant.",
+      "description": "Gérez les membres et les rôles de votre espace."
     },
     "auditLog": {
       "title": "Journal d'audit",
@@ -643,7 +651,8 @@
       "statTotal": "Total événements",
       "statToday": "Aujourd'hui",
       "statUniqueUsers": "Utilisateurs uniques",
-      "statErrorRate": "Taux d'erreur"
+      "statErrorRate": "Taux d'erreur",
+      "description": "Consultez l'historique des actions effectuées sur votre espace."
     },
     "invitations": {
       "title": "Invitations",
@@ -657,7 +666,8 @@
       "noInvitationsDescription": "Aucune invitation n'a été envoyée pour ce tenant.",
       "sendInvitation": "Envoyer une invitation",
       "sending": "Envoi…",
-      "send": "Envoyer"
+      "send": "Envoyer",
+      "description": "Gérez les invitations envoyées aux nouveaux membres."
     }
   },
   "board": {
@@ -720,8 +730,7 @@
     "deleteComment": "Supprimer",
     "deleteCommentConfirm": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
     "saveComment": "Enregistrer",
-    "cancelEdit": "Annuler",
-    "edited": "(modifié)"
+    "cancelEdit": "Annuler"
   },
   "roadmap": {
     "title": "Feuille de route",
@@ -894,7 +903,27 @@
     "tenants": "Tenants",
     "users": "Utilisateurs",
     "prismaStudio": "Prisma Studio",
-    "auditLog": "Journal d'audit",
+    "auditLog": {
+      "title": "Journal d'audit",
+      "date": "Date",
+      "action": "Action",
+      "user": "Utilisateur",
+      "target": "Cible",
+      "details": "Détails",
+      "status": "Statut",
+      "ip": "IP",
+      "tenant": "Tenant",
+      "successLabel": "Succès",
+      "errorLabel": "Erreur",
+      "filterAction": "Filtrer par action",
+      "allActions": "Toutes les actions",
+      "filterDateFrom": "Date début",
+      "filterDateTo": "Date fin",
+      "resetFilters": "Réinitialiser",
+      "export": "Exporter",
+      "exporting": "Export…",
+      "results": "résultat(s)"
+    },
     "tenantAdmin": "Admin du tenant",
     "back": "Retour",
     "information": "Informations",

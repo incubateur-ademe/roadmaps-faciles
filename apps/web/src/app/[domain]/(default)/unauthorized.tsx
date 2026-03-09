@@ -1,5 +1,15 @@
-import { SystemMessageDisplay } from "../../SystemMessageDisplay";
+import { RootSystemMessageDisplay } from "../../(default)/RootSystemMessageDisplay";
+import { DsfrSystemMessageDisplay } from "../../DsfrSystemMessageDisplay";
+import { getTenantTheme } from "./getTenantTheme";
 
-const Unauthorized = () => <SystemMessageDisplay code="unauthorized" />;
+const TenantUnauthorized = async () => {
+  const theme = await getTenantTheme();
 
-export default Unauthorized;
+  if (theme === "Dsfr") {
+    return <DsfrSystemMessageDisplay code="unauthorized" />;
+  }
+
+  return <RootSystemMessageDisplay code="unauthorized" />;
+};
+
+export default TenantUnauthorized;

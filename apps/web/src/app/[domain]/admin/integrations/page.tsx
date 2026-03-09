@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { assertFeature } from "@/lib/feature-flags";
 import { auth } from "@/lib/next-auth/auth";
@@ -19,11 +20,10 @@ const IntegrationsAdminPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
-      <p className="mb-6 text-lg text-muted-foreground">{t("description")}</p>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <IntegrationsList integrations={integrations} />
-    </div>
+    </>
   );
 });
 

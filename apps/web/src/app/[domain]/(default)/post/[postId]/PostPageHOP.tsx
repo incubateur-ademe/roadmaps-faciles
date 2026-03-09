@@ -1,4 +1,3 @@
-import { Badge as ShadcnBadge, Separator } from "@kokatsuna/ui";
 import { Bookmark, ExternalLink, MessageCircle } from "lucide-react";
 import { type User } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -14,6 +13,7 @@ import { auth } from "@/lib/next-auth/auth";
 import { integrationMappingRepo } from "@/lib/repo";
 import { type Activity, type Board } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
+import { UIBadge, UISeparator } from "@/ui/bridge";
 import { getAnonymousId } from "@/utils/anonymousId/getAnonymousId";
 import { assertPublicAccess } from "@/utils/auth";
 import { formatDate } from "@/utils/date";
@@ -199,23 +199,23 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
     <>
       <div className="flex flex-wrap items-center gap-2">
         {post.postStatus ? (
-          <ShadcnBadge variant="outline">{post.postStatus.name}</ShadcnBadge>
+          <UIBadge variant="outline">{post.postStatus.name}</UIBadge>
         ) : (
-          <ShadcnBadge variant="secondary">{t("unclassified")}</ShadcnBadge>
+          <UIBadge variant="secondary">{t("unclassified")}</UIBadge>
         )}
-        <ShadcnBadge>{post.board.name}</ShadcnBadge>
+        <UIBadge>{post.board.name}</UIBadge>
         {post.tags?.map(tag => (
-          <ShadcnBadge key={tag} variant="outline" className="gap-1">
+          <UIBadge key={tag} variant="outline" className="gap-1">
             <Bookmark className="size-3" />
             {tag}
-          </ShadcnBadge>
+          </UIBadge>
         ))}
         {notionUrl && (
           <a href={notionUrl} target="_blank" rel="noopener noreferrer">
-            <ShadcnBadge variant="secondary" className="gap-1">
+            <UIBadge variant="secondary" className="gap-1">
               <ExternalLink className="size-3" />
               {t("viewOnNotion")}
-            </ShadcnBadge>
+            </UIBadge>
           </a>
         )}
       </div>
@@ -253,16 +253,16 @@ export const PostPageComponent = async (props: PostPageComponentProps) => {
       {isModal ? (
         <>
           {post._count.comments > 0 && (
-            <ShadcnBadge variant="secondary" className="gap-1">
+            <UIBadge variant="secondary" className="gap-1">
               <MessageCircle className="size-3" />
               {t.rich("comment", { count: post._count.comments, b: chunks => <b>{chunks}</b> })}
-            </ShadcnBadge>
+            </UIBadge>
           )}
         </>
       ) : (
         <>
           <div className="relative my-6">
-            <Separator />
+            <UISeparator />
             <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap bg-background px-3 text-sm text-muted-foreground">
               {t("activityFeed")}
             </span>

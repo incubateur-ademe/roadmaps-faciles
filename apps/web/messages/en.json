@@ -94,6 +94,7 @@
     "bridgePrompt": "Have an account on {brand}?",
     "bridgeLink": "Sign in via {brand}",
     "bridgeLoggingIn": "Signing in...",
+    "bridgeLoggingInTitle": "Sign in",
     "oauthPrompt": "Or sign in with an external provider:",
     "provider": {
       "github": "Sign in with GitHub",
@@ -401,12 +402,13 @@
       "embeddingTitle": "Embedding",
       "allowEmbedding": "Allow iframe embedding",
       "allowEmbeddingHelper": "Allows embedding boards and roadmap on external sites via iframe.",
-      "allowEmbeddingPrivateWarning": "Iframe embedding will not work if the site is private: visitors will not be authenticated in the iframe."
+      "allowEmbeddingPrivateWarning": "Iframe embedding will not work if the site is private: visitors will not be authenticated in the iframe.",
+      "description": "Configure the general settings of your workspace."
     },
     "boards": {
       "title": "Board management",
       "name": "Name",
-      "description": "Description",
+      "description": "Manage and organize the discussion boards of your application.",
       "descriptionMarkdown": "Description (Markdown)",
       "noDescription": "No description",
       "addBoard": "Add a board",
@@ -424,12 +426,14 @@
       "addStatus": "Add a status",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "modify": "Edit"
+      "modify": "Edit",
+      "description": "Define the available statuses for your posts."
     },
     "roadmap": {
       "title": "Main page (Roadmap)",
       "rootBoard": "Main page board",
-      "none": "None"
+      "none": "None",
+      "description": "Choose the main board displayed on the roadmap page."
     },
     "authentication": {
       "title": "Authentication settings",
@@ -451,7 +455,8 @@
         "github": "GitHub",
         "google": "Google",
         "proconnect": "ProConnect"
-      }
+      },
+      "description": "Manage authentication providers and login options."
     },
     "api": {
       "title": "API Keys",
@@ -461,7 +466,8 @@
       "createdAt": "Created on",
       "noKeys": "No API keys",
       "noKeysDescription": "No API key has been created for this tenant.",
-      "createKey": "Create an API key"
+      "createKey": "Create an API key",
+      "description": "Manage API keys to access your workspace programmatically."
     },
     "webhooks": {
       "title": "Webhooks",
@@ -475,7 +481,8 @@
       "eventPostStatusChanged": "Post status changed",
       "eventCommentCreated": "Comment created",
       "eventLikeAdded": "Like added",
-      "eventInvitationAccepted": "Invitation accepted"
+      "eventInvitationAccepted": "Invitation accepted",
+      "description": "Configure automatic notifications to your external services."
     },
     "integrations": {
       "title": "Connectors",
@@ -618,7 +625,8 @@
       "block": "Block",
       "unblock": "Unblock",
       "noMembers": "No members",
-      "noMembersDescription": "No members in this tenant."
+      "noMembersDescription": "No members in this tenant.",
+      "description": "Manage the members and roles of your workspace."
     },
     "auditLog": {
       "title": "Audit log",
@@ -643,7 +651,8 @@
       "statTotal": "Total events",
       "statToday": "Today",
       "statUniqueUsers": "Unique users",
-      "statErrorRate": "Error rate"
+      "statErrorRate": "Error rate",
+      "description": "View the history of actions performed on your workspace."
     },
     "invitations": {
       "title": "Invitations",
@@ -657,7 +666,8 @@
       "noInvitationsDescription": "No invitation has been sent for this tenant.",
       "sendInvitation": "Send an invitation",
       "sending": "Sending…",
-      "send": "Send"
+      "send": "Send",
+      "description": "Manage invitations sent to new members."
     }
   },
   "board": {
@@ -720,8 +730,7 @@
     "deleteComment": "Delete",
     "deleteCommentConfirm": "Are you sure you want to delete this comment?",
     "saveComment": "Save",
-    "cancelEdit": "Cancel",
-    "edited": "(edited)"
+    "cancelEdit": "Cancel"
   },
   "roadmap": {
     "title": "Roadmap",
@@ -894,7 +903,27 @@
     "tenants": "Tenants",
     "users": "Users",
     "prismaStudio": "Prisma Studio",
-    "auditLog": "Audit log",
+    "auditLog": {
+      "title": "Audit log",
+      "date": "Date",
+      "action": "Action",
+      "user": "User",
+      "target": "Target",
+      "details": "Details",
+      "status": "Status",
+      "ip": "IP",
+      "tenant": "Tenant",
+      "successLabel": "Success",
+      "errorLabel": "Error",
+      "filterAction": "Filter by action",
+      "allActions": "All actions",
+      "filterDateFrom": "Date from",
+      "filterDateTo": "Date to",
+      "resetFilters": "Reset",
+      "export": "Export",
+      "exporting": "Exporting…",
+      "results": "result(s)"
+    },
     "tenantAdmin": "Tenant admin",
     "back": "Back",
     "information": "Information",

@@ -1,5 +1,5 @@
-import { RootSystemMessage } from "./RootSystemMessage";
+import { RootSystemMessageDisplay } from "./RootSystemMessageDisplay";
 
-const Forbidden = () => <RootSystemMessage code="forbidden" />;
+const Forbidden = () => <RootSystemMessageDisplay code="forbidden" />;
 
 export default Forbidden;

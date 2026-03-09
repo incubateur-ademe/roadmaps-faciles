@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { auth } from "@/lib/next-auth/auth";
 import { invitationRepo, userOnTenantRepo } from "@/lib/repo";
@@ -28,10 +29,10 @@ const InvitationsAdminPage = DomainPageHOP()(async props => {
   }
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <InvitationsList invitations={invitations} isOwner={isOwner} />
-    </div>
+    </>
   );
 });
 

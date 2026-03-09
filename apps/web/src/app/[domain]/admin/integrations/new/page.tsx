@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { assertFeature } from "@/lib/feature-flags";
 import { auth } from "@/lib/next-auth/auth";
@@ -17,10 +18,10 @@ const NewIntegrationPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1>{t("newTitle")}</h1>
+    <>
+      <AdminPageHeader title={t("newTitle")} />
       <NotionWizard boards={boards} statuses={statuses} />
-    </div>
+    </>
   );
 });
 

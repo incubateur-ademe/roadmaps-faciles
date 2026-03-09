@@ -28,7 +28,7 @@ export const AdminSideMenu = () => {
       label: t("groups.developers"),
       items: [
         { label: t("prismaStudio"), href: "/admin/prisma", icon: Database },
-        { label: t("auditLog"), href: "/admin/audit-log", icon: ScrollText },
+        { label: t("auditLog.title"), href: "/admin/audit-log", icon: ScrollText },
       ],
     },
   ];

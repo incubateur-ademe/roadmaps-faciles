@@ -1,8 +1,9 @@
 "use client";
 
-import { Alert, AlertDescription, Button, Input, Label } from "@kokatsuna/ui";
 import { useTranslations } from "next-intl";
 import { type FormEvent, useState, useTransition } from "react";
+
+import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
 
 import { loginAction } from "./actions";
 
@@ -85,32 +86,29 @@ export const LoginFormClient = ({ loginWithEmail, defaultEmail }: LoginFormClien
       <form onSubmit={handleOtpSubmit} className="space-y-4">
         <h2 className="text-lg font-semibold">{t("preLoginOtp.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("preLoginOtp.description")}</p>
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <div className="space-y-2">
-          <Label htmlFor="otp">{t("twoFactor.otpLabel")}</Label>
-          <Input
-            id="otp"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]{6}"
-            maxLength={6}
-            autoComplete="one-time-code"
-            required
-            value={otpCode}
-            onChange={e => setOtpCode(e.target.value)}
-            autoFocus
-            aria-invalid={!!error}
-          />
-        </div>
+        {error && <UIAlert variant="destructive" description={error} />}
+        <UIInput
+          label={t("twoFactor.otpLabel")}
+          nativeInputProps={{
+            id: "otp",
+            type: "text",
+            inputMode: "numeric",
+            pattern: "[0-9]{6}",
+            maxLength: 6,
+            autoComplete: "one-time-code",
+            required: true,
+            value: otpCode,
+            onChange: e => setOtpCode(e.target.value),
+            autoFocus: true,
+            "aria-invalid": !!error,
+          }}
+          state={error ? "error" : "default"}
+        />
         <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
+          <UIButton type="submit" disabled={isPending}>
             {t("twoFactor.verify")}
-          </Button>
-          <Button
+          </UIButton>
+          <UIButton
             type="button"
             variant="secondary"
             disabled={isPending}
@@ -121,7 +119,7 @@ export const LoginFormClient = ({ loginWithEmail, defaultEmail }: LoginFormClien
             }}
           >
             {t("twoFactor.back")}
-          </Button>
+          </UIButton>
         </div>
       </form>
     );
@@ -130,43 +128,39 @@ export const LoginFormClient = ({ loginWithEmail, defaultEmail }: LoginFormClien
   return (
     <form onSubmit={handleIdentifierSubmit} className="space-y-4">
       <h2 className="text-lg font-semibold">{loginWithEmail ? t("loginWithEmail") : t("loginWithUsername")}</h2>
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {error && <UIAlert variant="destructive" description={error} />}
+      {loginWithEmail ? (
+        <UIInput
+          label={t("emailLabel")}
+          nativeInputProps={{
+            id: "email",
+            type: "email",
+            required: true,
+            value: identifier,
+            onChange: e => setIdentifier(e.target.value),
+            "aria-invalid": !!error,
+          }}
+          state={error ? "error" : "default"}
+        />
+      ) : (
+        <UIInput
+          label={t("usernameLabel")}
+          nativeInputProps={{
+            id: "username",
+            type: "text",
+            required: true,
+            pattern: "^[A-Za-z.]+$",
+            title: t("usernameValidation"),
+            value: identifier,
+            onChange: e => setIdentifier(e.target.value),
+            "aria-invalid": !!error,
+          }}
+          state={error ? "error" : "default"}
+        />
       )}
-      <div className="space-y-2">
-        {loginWithEmail ? (
-          <>
-            <Label htmlFor="email">{t("emailLabel")}</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={identifier}
-              onChange={e => setIdentifier(e.target.value)}
-              aria-invalid={!!error}
-            />
-          </>
-        ) : (
-          <>
-            <Label htmlFor="username">{t("usernameLabel")}</Label>
-            <Input
-              id="username"
-              type="text"
-              required
-              pattern="^[A-Za-z.]+$"
-              title={t("usernameValidation")}
-              value={identifier}
-              onChange={e => setIdentifier(e.target.value)}
-              aria-invalid={!!error}
-            />
-          </>
-        )}
-      </div>
-      <Button type="submit" disabled={isPending}>
+      <UIButton type="submit" disabled={isPending}>
         {t("login")}
-      </Button>
+      </UIButton>
     </form>
   );
 };

@@ -1,6 +1,7 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { prisma } from "@/lib/db/prisma";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { auditLogRepo } from "@/lib/repo";
@@ -35,7 +36,7 @@ const AuditLogPage = DomainPageHOP()(async props => {
   const { tenant } = props._data;
   const searchParams = await (props as unknown as { searchParams: Promise<Record<string, string | undefined>> })
     .searchParams;
-  const locale = await getLocale();
+  const [locale, t] = await Promise.all([getLocale(), getTranslations("domainAdmin.auditLog")]);
 
   const page = Math.max(1, Number(searchParams.page) || 1);
   const action = searchParams.action as AuditAction | undefined;
@@ -49,17 +50,20 @@ const AuditLogPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <Suspense>
-      <AuditLogView
-        items={result.items}
-        total={result.total}
-        page={page}
-        pageSize={PAGE_SIZE}
-        actions={actions}
-        locale={locale}
-        stats={stats}
-      />
-    </Suspense>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
+      <Suspense>
+        <AuditLogView
+          items={result.items}
+          total={result.total}
+          page={page}
+          pageSize={PAGE_SIZE}
+          actions={actions}
+          locale={locale}
+          stats={stats}
+        />
+      </Suspense>
+    </>
   );
 });
 

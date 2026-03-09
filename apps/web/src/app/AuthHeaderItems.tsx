@@ -16,7 +16,7 @@ import { InitialsAvatar } from "@/components/img/InitialsAvatar";
 import { config } from "@/config";
 import { Icon } from "@/dsfr";
 import { Link } from "@/i18n/navigation";
-import { USER_ROLE } from "@/lib/model/User";
+import { isSessionAdmin, isSessionModerator } from "@/utils/sessionRoles";
 
 export const UserHeaderItem = ({
   variant = "tenant",
@@ -42,12 +42,7 @@ export const UserHeaderItem = ({
         },
       ];
 
-      const isAdmin =
-        user.role === USER_ROLE.ADMIN ||
-        user.role === USER_ROLE.OWNER ||
-        user.isSuperAdmin ||
-        user.currentTenantRole === USER_ROLE.ADMIN ||
-        user.currentTenantRole === USER_ROLE.OWNER;
+      const isAdmin = isSessionAdmin(user);
       if (isAdmin) {
         items.push({
           label: variant === "root" ? t("administration") : t("tenantAdmin"),
@@ -57,7 +52,7 @@ export const UserHeaderItem = ({
         });
       }
 
-      const isModerator = isAdmin || user.currentTenantRole === USER_ROLE.MODERATOR;
+      const isModerator = isSessionModerator(user);
 
       if (isModerator && variant === "tenant") {
         items.push({

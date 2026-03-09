@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { assertFeature } from "@/lib/feature-flags";
 import { auth } from "@/lib/next-auth/auth";
@@ -29,10 +30,10 @@ const IntegrationDetailPage = DomainPageHOP<{ integrationId: string }>()(async p
   ]);
 
   return (
-    <div>
-      <h1>{integration.name}</h1>
+    <>
+      <AdminPageHeader title={integration.name} />
       <IntegrationDetail integration={integration} mappings={mappings} syncRuns={syncRuns} />
-    </div>
+    </>
   );
 });
 

@@ -25,8 +25,8 @@ export const artworkMap = {
   calendar: normalizeArtwork(artworkCalendarSvgUrl),
   inProgress: normalizeArtwork(artworkInProgressSvgUrl),
   padlock: normalizeArtwork(artworkPadlockSvgUrl),
-  technicalError: normalizeArtwork(artworkTechnicalErrorSvgUrl),
   search: normalizeArtwork(artworkSearchSvgUrl),
+  technicalError: normalizeArtwork(artworkTechnicalErrorSvgUrl),
 };
 
 const SYSTEM_CODE_PICTOGRAMS: Record<string, SimpleSrcImage> = {
@@ -46,16 +46,17 @@ const SYSTEM_CODE_ALIASES: Record<string, string> = {
   "login-AccessDenied": "401",
 };
 
-export type SystemCode = keyof typeof SYSTEM_CODE_ALIASES;
+export type DsfrSystemCode = keyof typeof SYSTEM_CODE_ALIASES;
 
-export const VALID_SYSTEM_CODES = new Set([
+export const VALID_DSFR_SYSTEM_CODES = new Set([
   ...Object.keys(SYSTEM_CODE_PICTOGRAMS),
   ...Object.keys(SYSTEM_CODE_ALIASES),
 ]);
 
-export type SystemMessageDisplayProps = SystemMessageDisplayProps.WithCode & SystemMessageDisplayProps.WithRedirect;
+export type DsfrSystemMessageDisplayProps = DsfrSystemMessageDisplayProps.WithCode &
+  DsfrSystemMessageDisplayProps.WithRedirect;
 
-namespace SystemMessageDisplayProps {
+namespace DsfrSystemMessageDisplayProps {
   export type WithRedirect =
     | {
         noRedirect: true;
@@ -78,14 +79,14 @@ namespace SystemMessageDisplayProps {
       }
     | {
         body?: never;
-        code: SystemCode;
+        code: DsfrSystemCode;
         headline?: never;
         pictogram?: never;
         title?: never;
       };
 }
 
-export const SystemMessageDisplay = async ({
+export const DsfrSystemMessageDisplay = async ({
   code,
   noRedirect,
   body,
@@ -94,7 +95,7 @@ export const SystemMessageDisplay = async ({
   pictogram = artworkMap.technicalError,
   redirectLink = "/",
   redirectText,
-}: SystemMessageDisplayProps) => {
+}: DsfrSystemMessageDisplayProps) => {
   const t = await getTranslations("errors");
 
   if (code !== "custom") {
@@ -150,15 +151,15 @@ export const SystemMessageDisplay = async ({
             height="200"
             viewBox="0 0 160 200"
           >
-            <use className="fr-artwork-motif" href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-motif`}></use>
+            <use className="fr-artwork-motif" href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-motif`} />
             <use
               className="fr-artwork-background"
               href={`${normalizeArtwork(artworkOvoidSvgUrl).src}#artwork-background`}
-            ></use>
+            />
             <g transform="translate(40, 60)">
-              <use className="fr-artwork-decorative" href={`${normalizedPictogram.src}#artwork-decorative`}></use>
-              <use className="fr-artwork-minor" href={`${normalizedPictogram.src}#artwork-minor`}></use>
-              <use className="fr-artwork-major" href={`${normalizedPictogram.src}#artwork-major`}></use>
+              <use className="fr-artwork-decorative" href={`${normalizedPictogram.src}#artwork-decorative`} />
+              <use className="fr-artwork-minor" href={`${normalizedPictogram.src}#artwork-minor`} />
+              <use className="fr-artwork-major" href={`${normalizedPictogram.src}#artwork-major`} />
             </g>
           </svg>
         </GridCol>

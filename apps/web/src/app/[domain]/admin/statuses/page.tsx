@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { postStatusRepo } from "@/lib/repo";
 import { ListPostStatuses } from "@/useCases/post_statuses/ListPostStatuses";
@@ -15,10 +16,10 @@ const StatusesAdminPage = DomainPageHOP()(async props => {
   ]);
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
       <StatusesList statuses={statuses} />
-    </div>
+    </>
   );
 });
 

@@ -28,8 +28,9 @@ export type Order = keyof typeof ORDER_ENUM;
 export const VIEW_ENUM = {
   cards: "cards",
   list: "list",
-  kanban: "kanban",
-  "kanban-accordion": "kanban-accordion",
+  // TODO: réactiver kanban et kanban-accordion quand les wireframes seront implémentés
+  // kanban: "kanban",
+  // "kanban-accordion": "kanban-accordion",
 } as const;
 export type View = keyof typeof VIEW_ENUM;
 export const defaultView: View = "cards";

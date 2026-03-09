@@ -1,3 +1,6 @@
+import { getTranslations } from "next-intl/server";
+
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DomainPageHOP } from "@/lib/DomainPage";
 import { auth } from "@/lib/next-auth/auth";
 import { boardRepo, postStatusRepo, userOnTenantRepo } from "@/lib/repo";
@@ -8,7 +11,7 @@ import { GeneralForm } from "./GeneralForm";
 const AdminGeneralPage = DomainPageHOP()(async props => {
   const { settings, tenant } = props._data;
 
-  const session = await auth();
+  const [session, t] = await Promise.all([auth(), getTranslations("domainAdmin.general")]);
   let isOwner = false;
   if (session?.user) {
     if (session.user.isSuperAdmin) {
@@ -23,7 +26,12 @@ const AdminGeneralPage = DomainPageHOP()(async props => {
   const statuses = await postStatusRepo.findAllForTenant(tenant.id);
   const hasData = boards.length > 0 || statuses.length > 0;
 
-  return <GeneralForm tenantSettings={settings} isOwner={isOwner} hasData={hasData} />;
+  return (
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
+      <GeneralForm tenantSettings={settings} isOwner={isOwner} hasData={hasData} />
+    </>
+  );
 });
 
 export default AdminGeneralPage;

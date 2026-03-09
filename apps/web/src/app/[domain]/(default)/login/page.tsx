@@ -1,17 +1,18 @@
-import { Card, CardContent, CardHeader, CardTitle, Separator } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
-import Link from "next/link";
 import crypto from "node:crypto";
 
 import { LoginForm } from "@/app/(default)/login/LoginForm";
 import { config } from "@/config";
 import { prisma } from "@/lib/db/prisma";
 import { tenantDefaultOAuthRepo } from "@/lib/repo";
+import { UICard } from "@/ui/bridge";
+import { getTheme } from "@/ui/server";
 
 import { DomainPageHOP } from "../DomainPage";
 import { BridgeAutoLogin } from "./BridgeAutoLogin";
-import { OAuthButtons } from "./OAuthButtons";
+import { TenantLoginDefault } from "./TenantLoginDefault";
+import { TenantLoginDsfr } from "./TenantLoginDsfr";
 
 const TenantLoginPage = DomainPageHOP()(async props => {
   const t = await getTranslations("auth");
@@ -31,16 +32,29 @@ const TenantLoginPage = DomainPageHOP()(async props => {
     }
   }
 
+  const theme = await getTheme(props._data.settings);
+
   // Handle bridge token — auto sign-in from root session via client component
   const bridgeToken = searchParams?.bridge_token;
   if (bridgeToken) {
+    const bridgeContent = <BridgeAutoLogin token={bridgeToken} />;
+    if (theme === "Dsfr") {
+      return (
+        <TenantLoginDsfr
+          title={t("bridgeLoggingInTitle")}
+          bridgeUrl=""
+          bridgePrompt=""
+          bridgeLink=""
+          oauthPrompt=""
+          providerNames={[]}
+        >
+          {bridgeContent}
+        </TenantLoginDsfr>
+      );
+    }
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md">
-          <CardContent className="py-8">
-            <BridgeAutoLogin token={bridgeToken} />
-          </CardContent>
-        </Card>
+        <UICard title={t("bridgeLoggingInTitle")} description={bridgeContent} className="w-full max-w-md" />
       </div>
     );
   }
@@ -55,37 +69,21 @@ const TenantLoginPage = DomainPageHOP()(async props => {
   // Fetch enabled OAuth providers for this tenant
   const enabledOAuthProviders = await tenantDefaultOAuthRepo.findByTenantId(props._data.tenant.id);
   const providerNames = enabledOAuthProviders.map(p => p.provider);
+  const loginForm = <LoginForm loginWithEmail defaultEmail={invitationEmail} />;
+  const commonProps = {
+    title: t("tenantLogin", { name: props._data.settings.name }),
+    bridgeUrl,
+    bridgePrompt: t("bridgePrompt", { brand: config.brand.name }),
+    bridgeLink: t("bridgeLink", { brand: config.brand.name }),
+    oauthPrompt: t("oauthPrompt"),
+    providerNames,
+  };
 
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t("tenantLogin", { name: props._data.settings.name })}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <LoginForm loginWithEmail defaultEmail={invitationEmail} />
+  if (theme === "Dsfr") {
+    return <TenantLoginDsfr {...commonProps}>{loginForm}</TenantLoginDsfr>;
+  }
 
-          {providerNames.length > 0 && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">{t("oauthPrompt")}</p>
-                <OAuthButtons providers={providerNames} />
-              </div>
-            </>
-          )}
-
-          <Separator />
-          <p className="text-sm text-muted-foreground">
-            {t("bridgePrompt", { brand: config.brand.name })}{" "}
-            <Link href={bridgeUrl} className="text-primary underline hover:text-primary/80">
-              {t("bridgeLink", { brand: config.brand.name })}
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <TenantLoginDefault {...commonProps}>{loginForm}</TenantLoginDefault>;
 });
 
 export default TenantLoginPage;

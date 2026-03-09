@@ -1,5 +1,5 @@
-import { SystemMessageDisplay } from "./SystemMessageDisplay";
+import { RootSystemMessageDisplay } from "./(default)/RootSystemMessageDisplay";
 
-const NotFound = () => <SystemMessageDisplay code="not-found" />;
+const NotFound = () => <RootSystemMessageDisplay code="not-found" />;
 
 export default NotFound;

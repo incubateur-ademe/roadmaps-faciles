@@ -74,7 +74,7 @@ const getPageNumbers = (currentPage: number, totalPages: number): Array<"ellipsi
 };
 
 export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: AuditLogViewProps) => {
-  const t = useTranslations("domainAdmin.auditLog");
+  const t = useTranslations("rootAdmin.auditLog");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -132,8 +132,6 @@ export const AuditLogView = ({ actions, items, locale, page, pageSize, total }: 
   return (
     <TooltipProvider>
       <div>
-        <h1 className="mb-6 text-3xl font-bold">{t("title")}</h1>
-
         <div className="mb-4 grid grid-cols-1 items-end gap-4 md:grid-cols-[1fr_1fr_1fr_auto]">
           <div className="space-y-1">
             <Label htmlFor="filter-action" className="text-xs">

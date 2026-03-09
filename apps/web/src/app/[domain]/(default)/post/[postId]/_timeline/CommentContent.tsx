@@ -20,10 +20,9 @@ import { MarkdownHooks } from "react-markdown";
 
 import { getMaterialAvatarProps } from "@/components/img/InitialsAvatar";
 import { Loader } from "@/components/utils/Loader";
-import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
 import { type Comment, type User } from "@/prisma/client";
 import { UserRole } from "@/prisma/enums";
-import { UIAlert, UIBadge, UIButton, UICard, UITag } from "@/ui/bridge";
+import { UIAlert, UIBadge, UIButton, UICard, UIMarkdownEditor, UITag } from "@/ui/bridge";
 import { formatDateHour } from "@/utils/date";
 import { reactMarkdownConfig } from "@/utils/react-markdown";
 
@@ -323,7 +322,7 @@ export const CommentContent = ({
         description={
           isEditing ? (
             <>
-              <MarkdownEditor
+              <UIMarkdownEditor
                 key={editKey}
                 defaultValue={commentBody ?? ""}
                 onChangeAction={handleEditChange}
@@ -461,7 +460,7 @@ export const CommentContent = ({
                   />
                 ) : (
                   <>
-                    <MarkdownEditor
+                    <UIMarkdownEditor
                       key={editorKey}
                       label={t("reply")}
                       onChangeAction={handleReplyChange}
@@ -635,7 +634,7 @@ const ReplyCard = ({
       description={
         isEditing ? (
           <>
-            <MarkdownEditor
+            <UIMarkdownEditor
               key={editKey}
               defaultValue={reply.body ?? ""}
               onChangeAction={handleEditChange}

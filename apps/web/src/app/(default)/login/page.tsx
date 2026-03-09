@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
 
 import { config } from "@/config";
+import { UICard } from "@/ui/bridge";
 
 import { LoginForm } from "./LoginForm";
 
@@ -10,14 +10,11 @@ const LoginPage = async (_: PageProps<"/login">) => {
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-16">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">{t("loginTitle", { brandName: config.brand.name })}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LoginForm />
-        </CardContent>
-      </Card>
+      <UICard
+        title={t("loginTitle", { brandName: config.brand.name })}
+        description={<LoginForm />}
+        className="w-full max-w-md"
+      />
     </div>
   );
 };

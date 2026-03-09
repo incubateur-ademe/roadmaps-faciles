@@ -6,9 +6,8 @@ import { useCallback, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
-import { MarkdownEditor } from "@/dsfr/base/client/MarkdownEditor";
 import { useUI } from "@/ui";
-import { UIAlert, UIButton, UIInput } from "@/ui/bridge";
+import { UIAlert, UIButton, UIInput, UIMarkdownEditor } from "@/ui/bridge";
 
 import { uploadImage } from "../../upload-image";
 import { submitPost } from "./actions";
@@ -89,7 +88,7 @@ export const SubmitPostForm = ({ boardId }: SubmitPostFormProps) => {
         state={errors.title ? "error" : "default"}
         stateRelatedMessage={errors.title?.message}
       />
-      <MarkdownEditor
+      <UIMarkdownEditor
         key={editorKey}
         label={t("description")}
         onChangeAction={handleDescriptionChangeAction}

@@ -1,10 +1,9 @@
-import { Button } from "@kokatsuna/ui";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { connection } from "next/server";
 
 import { auth } from "@/lib/next-auth/auth";
 import { userRepo } from "@/lib/repo";
+import { UIButton, UISeparator } from "@/ui/bridge";
 
 import { ProfileForm } from "./ProfileForm";
 
@@ -31,12 +30,12 @@ const ProfilePage = async () => {
           }}
         />
       </div>
-      <hr className="my-8" />
+      <UISeparator className="my-8" />
       <h2 className="mb-2 text-xl font-semibold">{t("securityTitle")}</h2>
       <p className="mb-4 text-muted-foreground">{t("securityDescription")}</p>
-      <Button variant="outline" asChild>
-        <Link href="/profile/security">{t("securityLink")}</Link>
-      </Button>
+      <UIButton variant="outline" linkProps={{ href: "/profile/security" }}>
+        {t("securityLink")}
+      </UIButton>
     </div>
   );
 };
