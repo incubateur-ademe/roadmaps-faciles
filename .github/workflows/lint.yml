@@ -52,5 +52,6 @@ jobs:
           key: turbo-lint-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             turbo-lint-${{ runner.os }}-
+      - run: pnpm --filter @kokatsuna/web exec -- prisma generate
       - name: Lint
         run: pnpm lint

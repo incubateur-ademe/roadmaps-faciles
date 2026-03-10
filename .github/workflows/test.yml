@@ -51,7 +51,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @kokatsuna/web prisma generate
+      - run: pnpm --filter @kokatsuna/web exec -- prisma generate
 
       - name: Cache Turbo
         uses: actions/cache@v4
@@ -117,9 +117,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @kokatsuna/web prisma generate
+      - run: pnpm --filter @kokatsuna/web exec -- prisma generate
 
-      - run: pnpm --filter @kokatsuna/web prisma migrate deploy
+      - run: pnpm --filter @kokatsuna/web exec -- prisma migrate deploy
 
       - run: pnpm --filter @kokatsuna/web test:db
 
@@ -189,7 +189,7 @@ jobs:
 
       - run: pnpm --filter @kokatsuna/web run run-script -- prisma/test-seed.ts
 
-      - run: npx playwright install --with-deps chromium
+      - run: pnpm --filter @kokatsuna/web exec -- playwright install --with-deps chromium
 
       - run: pnpm --filter @kokatsuna/web test:e2e
 
