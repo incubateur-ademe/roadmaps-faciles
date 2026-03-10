@@ -5,6 +5,9 @@
  */
 
 :root {
+  /* Offset fumadocs sticky sidebars below our root header (h-16 = 4rem) */
+  --fd-nav-height: 4rem !important;
+
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
   --color-fd-card: var(--card);
