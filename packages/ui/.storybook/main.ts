@@ -1,17 +1,19 @@
 import { type StorybookConfig } from "@storybook/react-vite";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(ts|tsx)"],
   staticDirs: ["../static"],
   addons: [
-    "@vueless/storybook-dark-mode",
-    "@storybook/addon-docs",
-    "@storybook/addon-a11y",
-    "@storybook/addon-vitest",
+    getAbsolutePath("@vueless/storybook-dark-mode"),
+    getAbsolutePath("@storybook/addon-docs"),
+    getAbsolutePath("@storybook/addon-a11y"),
+    getAbsolutePath("@storybook/addon-vitest"),
     "./addons/branch-switcher",
   ],
   framework: {
-    name: "@storybook/react-vite",
+    name: getAbsolutePath("@storybook/react-vite"),
     options: {},
   },
   core: {
@@ -26,3 +28,7 @@ const config: StorybookConfig = {
 };
 
 export default config;
+
+function getAbsolutePath(value: string): string {
+  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+}

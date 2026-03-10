@@ -1,7 +1,7 @@
-import React, { Fragment } from "react";
-import { addons, types } from "storybook/internal/manager-api";
-import { IconButton, TooltipLinkList, WithTooltip } from "storybook/internal/components";
 import { BranchIcon } from "@storybook/icons";
+import { Fragment } from "react";
+import { IconButton, TooltipLinkList, WithTooltip } from "storybook/internal/components";
+import { addons, types } from "storybook/manager-api";
 
 const ADDON_ID = "branch-switcher";
 
@@ -31,7 +31,7 @@ addons.register(ADDON_ID, () => {
   addons.add(`${ADDON_ID}/tool`, {
     title: "Branch",
     type: types.TOOL,
-    match: ({ viewMode }) => !!(viewMode && /^(story|docs)$/.test(viewMode)),
+    match: ({ viewMode }: { viewMode?: string }) => !!(viewMode && /^(story|docs)$/.test(viewMode)),
     render: () => {
       const current = getCurrentBranch();
       return (
@@ -42,7 +42,7 @@ addons.register(ADDON_ID, () => {
             closeOnOutsideClick
             tooltip={({ onHide }) => (
               <TooltipLinkList
-                links={BRANCHES.map((b) => ({
+                links={BRANCHES.map(b => ({
                   id: b.id,
                   title: b.title,
                   active: b.id === current,

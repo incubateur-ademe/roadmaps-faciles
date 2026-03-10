@@ -68,7 +68,6 @@ export const Default: Story = {
 };
 
 export const Playground: Story = {
-  name: "Playground",
   parameters: {
     docs: {
       description: {
@@ -236,7 +235,6 @@ export const WithVariants: Story = {
 };
 
 export const WithIcons: Story = {
-  name: "With Icons",
   render: () => (
     <Timeline className="max-w-md">
       <TimelineItem>

@@ -28,6 +28,8 @@ import importPlugin from "eslint-plugin-import";
 import perfectionist from "eslint-plugin-perfectionist";
 import prettierPlugin from "eslint-plugin-prettier";
 import reactPlugin from "eslint-plugin-react";
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
 import unusedImportsPlugin from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 
@@ -236,14 +238,15 @@ export default [
       "out/**",
       "coverage/**",
       "**/storybook-static/**",
+      ".agents/**",
     ],
   },
+
   // Enregistrement des plugins import + react — requis ici car `base` ne les inclut pas
   // (conflit "Cannot redefine plugin" avec nextConfig qui bundle ses propres instances).
   // Pour apps/web, c'est nextConfig qui les fournit ; ici on les fournit pour packages/*.
   {
     plugins: {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- eslint-plugin-import n'a pas de types flat config propres
       import: importPlugin,
       react: reactPlugin,
     },
@@ -253,7 +256,9 @@ export default [
       },
     },
   },
+
   ...base,
+
   // TypeScript parser avec project:true — auto-découverte du tsconfig le plus proche.
   // Pour packages/ui/src/Button.tsx → trouve packages/ui/tsconfig.json.
   // tsconfigRootDir = monorepo root = limite haute de la recherche.
@@ -266,6 +271,18 @@ export default [
       },
     },
   },
+
+  // eslint.config.ts lui-même : pas de tsconfig qui l'inclut → désactiver toutes les rules type-checked
+  // + autoriser le default export (obligatoire pour une config ESLint)
+  {
+    files: ["eslint.config.ts"],
+    ...tseslint.configs.disableTypeChecked,
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      "import/no-default-export": "off",
+    },
+  },
+
   // Stories, tests et configs : autorise le default export + relax des règles type-checked
   {
     files: [
@@ -273,8 +290,8 @@ export default [
       "**/*.stories.tsx",
       "**/*.test.ts",
       "**/*.test.tsx",
-      "**/.storybook/*.ts",
-      "**/.storybook/*.tsx",
+      "**/.storybook/**/*.ts",
+      "**/.storybook/**/*.tsx",
       "**/vitest.config.ts",
       "**/vitest.config.*.ts",
       "**/vitest.setup.ts",
@@ -286,4 +303,6 @@ export default [
       "@typescript-eslint/no-unsafe-member-access": "off",
     },
   },
+
+  ...storybook.configs["flat/recommended"],
 ];

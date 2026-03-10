@@ -1,4 +1,4 @@
-import { type Meta, type StoryObj } from "@storybook/react";
+import { type Meta, type StoryObj } from "@storybook/react-vite";
 
 /**
  * Wireframes Stitch — Maquettes HTML statiques de référence pour l'implémentation.
@@ -155,12 +155,10 @@ export const Kanban: Story = {
 };
 
 export const LandingDark: Story = {
-  name: "Landing Dark",
   render: () => <WireframeIframe file="landing-dark" />,
 };
 
 export const LandingLight: Story = {
-  name: "Landing Light",
   render: () => <WireframeIframe file="landing-light" />,
 };
 
