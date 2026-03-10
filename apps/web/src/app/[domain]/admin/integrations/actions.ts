@@ -127,17 +127,17 @@ export const createIntegration = async (data: {
     }
 
     // Auto-create PostStatus for unmapped Notion status options
+    // Uses a Map to collect new mappings, then spreads via Object.fromEntries
+    // to avoid direct user-controlled property assignment (CodeQL remote-property-injection).
     if (data.unmappedStatusOptions?.length) {
       const existingStatuses = await postStatusRepo.findAllForTenant(tenant.id);
       const createStatusUC = new CreatePostStatus(postStatusRepo);
+      const newMappings = new Map<string, { localId: number; notionName: string }>();
       for (const opt of data.unmappedStatusOptions) {
-        // Sanitize user-provided key to prevent prototype pollution
-        const safeKey = String(opt.id);
-        if (safeKey === "__proto__" || safeKey === "constructor" || safeKey === "prototype") continue;
-
+        const key = String(opt.id);
         const existing = existingStatuses.find(s => s.name === opt.name);
         if (existing) {
-          config.statusMapping[safeKey] = { localId: existing.id, notionName: opt.name };
+          newMappings.set(key, { localId: existing.id, notionName: opt.name });
         } else {
           const status = await createStatusUC.execute({
             tenantId: tenant.id,
@@ -145,10 +145,11 @@ export const createIntegration = async (data: {
             color: "grey",
             showInRoadmap: true,
           });
-          config.statusMapping[safeKey] = { localId: status.id, notionName: opt.name };
+          newMappings.set(key, { localId: status.id, notionName: opt.name });
           existingStatuses.push(status); // Avoid duplicate creation within the same batch
         }
       }
+      Object.assign(config.statusMapping, Object.fromEntries(newMappings));
     }
 
     const useCase = new CreateIntegration(integrationRepo);
