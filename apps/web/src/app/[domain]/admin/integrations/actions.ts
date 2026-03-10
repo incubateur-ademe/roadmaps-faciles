@@ -131,9 +131,13 @@ export const createIntegration = async (data: {
       const existingStatuses = await postStatusRepo.findAllForTenant(tenant.id);
       const createStatusUC = new CreatePostStatus(postStatusRepo);
       for (const opt of data.unmappedStatusOptions) {
+        // Sanitize user-provided key to prevent prototype pollution
+        const safeKey = String(opt.id);
+        if (safeKey === "__proto__" || safeKey === "constructor" || safeKey === "prototype") continue;
+
         const existing = existingStatuses.find(s => s.name === opt.name);
         if (existing) {
-          config.statusMapping[opt.id] = { localId: existing.id, notionName: opt.name };
+          config.statusMapping[safeKey] = { localId: existing.id, notionName: opt.name };
         } else {
           const status = await createStatusUC.execute({
             tenantId: tenant.id,
@@ -141,7 +145,7 @@ export const createIntegration = async (data: {
             color: "grey",
             showInRoadmap: true,
           });
-          config.statusMapping[opt.id] = { localId: status.id, notionName: opt.name };
+          config.statusMapping[safeKey] = { localId: status.id, notionName: opt.name };
           existingStatuses.push(status); // Avoid duplicate creation within the same batch
         }
       }
