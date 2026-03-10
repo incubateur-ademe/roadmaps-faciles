@@ -13,36 +13,24 @@ test.describe("Post Lifecycle", () => {
     await expect(page.getByRole("alert")).toBeVisible();
   });
 
-  test("displays post detail page from board click", async ({ page }) => {
+  test("displays post detail from board click", async ({ page }) => {
     await page.goto("/board/test-board");
     await page.waitForLoadState("networkidle");
 
-    // Click the post link to navigate to its detail page
+    // Click opens intercepted modal — URL updates without full navigation
     await page.getByRole("link", { name: "Test Post" }).first().click();
-    await page.waitForURL(/\/post\/\d+/);
+    await expect(page).toHaveURL(/\/post\/\d+/);
 
-    // Post title is h2 in modal (SimpleModal uses h2 for semantic correctness)
     await expect(page.getByRole("heading", { level: 2 })).toContainText("Test Post");
     await expect(page.getByText("A test post for E2E tests").first()).toBeVisible();
-  });
-
-  test("opens post in intercepted modal from board", async ({ page }) => {
-    await page.goto("/board/test-board");
-    await page.waitForLoadState("networkidle");
-
-    await page.getByRole("link", { name: "Test Post" }).first().click();
-
-    await expect(page.getByText("A test post for E2E tests").first()).toBeVisible();
-    await expect(page).toHaveURL(/\/post\/\d+/);
   });
 
   test("votes on a post with like button", async ({ page }) => {
     await page.goto("/board/test-board");
     await page.waitForLoadState("networkidle");
 
-    // Navigate to post detail
     await page.getByRole("link", { name: "Test Post" }).first().click();
-    await page.waitForURL(/\/post\/\d+/);
+    await expect(page).toHaveURL(/\/post\/\d+/);
 
     // Multiple vote buttons may exist (board background + modal), use first
     const voteButton = page.getByTitle("Vote").first();
@@ -58,9 +46,8 @@ test.describe("Post Lifecycle", () => {
     await page.goto("/board/test-board");
     await page.waitForLoadState("networkidle");
 
-    // Navigate to post detail
     await page.getByRole("link", { name: "Test Post" }).first().click();
-    await page.waitForURL(/\/post\/\d+/);
+    await expect(page).toHaveURL(/\/post\/\d+/);
 
     const commentInput = page.getByLabel(/ajouter un commentaire|comment/i);
     await expect(commentInput).toBeVisible();
@@ -70,9 +57,8 @@ test.describe("Post Lifecycle", () => {
     await page.goto("/board/test-board");
     await page.waitForLoadState("networkidle");
 
-    // Navigate to anonymous post detail
     await page.getByRole("link", { name: "Anonymous Post" }).first().click();
-    await page.waitForURL(/\/post\/\d+/);
+    await expect(page).toHaveURL(/\/post\/\d+/);
 
     await expect(page.getByRole("heading", { level: 2 })).toContainText("Anonymous Post");
   });
