@@ -8,11 +8,11 @@ interface AdminPageHeaderProps {
 }
 
 export const AdminPageHeader = ({ title, description, actions, children }: AdminPageHeaderProps) => (
-  <div className="mb-8 space-y-1">
+  <div className="mb-6">
     <div className="flex items-center justify-between gap-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {description && <p className="text-muted-foreground">{description}</p>}
+        {description && <p className="mt-1 text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>

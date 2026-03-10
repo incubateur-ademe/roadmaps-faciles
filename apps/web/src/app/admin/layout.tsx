@@ -3,9 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
-import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { auth } from "@/lib/next-auth/auth";
-import { AdminHeader } from "@/ui/AdminHeader";
 import { UIProvider } from "@/ui/UIContext";
 import { assertAdmin } from "@/utils/auth";
 
@@ -31,11 +29,8 @@ const AdminLayout = async ({ children }: LayoutProps<"/admin">) => {
     <UIProvider value="Default">
       <SidebarProvider>
         <AdminSideMenu />
-        <SidebarInset id="content" className="overflow-auto">
-          <AdminHeader />
-          <div className="mx-auto w-full max-w-7xl px-4 py-8">
-            <ClientAnimate>{children}</ClientAnimate>
-          </div>
+        <SidebarInset id="content" className="max-h-svh overflow-x-hidden overflow-y-auto">
+          <div className="px-6 py-8 lg:px-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </UIProvider>

@@ -4,6 +4,7 @@ import { Database, LayoutDashboard, ScrollText, Shield, ToggleLeft, Users } from
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
+import { config } from "@/config";
 import { AdminSidebar, type NavGroup } from "@/ui/AdminSidebar";
 
 export const AdminSideMenu = () => {
@@ -38,8 +39,11 @@ export const AdminSideMenu = () => {
       title="Roadmaps Faciles"
       subtitle="Administration"
       icon={<Image src="/img/roadmaps-faciles.png" alt="" width={20} height={20} className="size-5" />}
+      iconBg={false}
       groups={groups}
-      footer={{ status: t("systemOperational"), version: "v1.0.0" }}
+      backHref="/"
+      backLabel={t("backToSite")}
+      footer={{ status: t("systemOperational"), version: `v${config.appVersion}` }}
     />
   );
 };

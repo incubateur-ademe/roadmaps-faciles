@@ -5,18 +5,28 @@ import { cn } from "@kokatsuna/ui";
 import { Alert, AlertDescription, AlertTitle } from "@kokatsuna/ui/components/alert";
 import { Badge } from "@kokatsuna/ui/components/badge";
 import { Button } from "@kokatsuna/ui/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@kokatsuna/ui/components/card";
 import { Input } from "@kokatsuna/ui/components/input";
 import { Label } from "@kokatsuna/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@kokatsuna/ui/components/select";
-import { Separator } from "@kokatsuna/ui/components/separator";
 import { Switch } from "@kokatsuna/ui/components/switch";
-import { RefreshCw } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Globe,
+  Lock,
+  MessageSquare,
+  Palette,
+  RefreshCw,
+  Settings,
+  Shield,
+  Trash2,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import z from "zod";
 
-import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { config } from "@/config";
 import { type DNSStatus } from "@/lib/domain-provider/dns";
 import { useFeatureFlag } from "@/lib/feature-flags/client";
@@ -60,6 +70,8 @@ interface SectionToggle {
 }
 
 interface Section {
+  description?: string;
+  icon: React.ReactNode;
   id: string;
   title: string;
   toggles: SectionToggle[];
@@ -69,6 +81,8 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
   {
     id: "privacy",
     title: t("privacy"),
+    description: t("privacyDescription"),
+    icon: <Lock className="size-4" />,
     toggles: [
       { name: "isPrivate", label: t("isPrivate"), helperText: t("isPrivateHelper") },
       {
@@ -81,6 +95,8 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
   {
     id: "moderation",
     title: t("moderationTitle"),
+    description: t("moderationDescription"),
+    icon: <Shield className="size-4" />,
     toggles: [
       {
         name: "allowPostEdits",
@@ -102,6 +118,8 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
   {
     id: "header",
     title: t("headerTitle"),
+    description: t("headerDescription"),
+    icon: <Settings className="size-4" />,
     toggles: [
       {
         name: "showRoadmapInHeader",
@@ -113,6 +131,8 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
   {
     id: "visibility",
     title: t("visibilityTitle"),
+    description: t("visibilityDescription"),
+    icon: <MessageSquare className="size-4" />,
     toggles: [
       { name: "allowVoting", label: t("allowVoting"), helperText: t("allowVotingHelper") },
       {
@@ -130,6 +150,8 @@ const getSections = (t: ReturnType<typeof useTranslations<"domainAdmin.general">
   {
     id: "embedding",
     title: t("embeddingTitle"),
+    description: t("embeddingDescription"),
+    icon: <Globe className="size-4" />,
     toggles: [
       {
         name: "allowEmbedding",
@@ -146,6 +168,9 @@ type DomainFormType = {
   subdomain: string;
 };
 
+/** Quick nav section IDs — must match section `id` fields + extra sections */
+const ALL_SECTION_IDS = ["privacy", "moderation", "header", "visibility", "embedding", "ui-theme", "domain", "danger"];
+
 interface GeneralFormProps {
   hasData: boolean;
   isOwner: boolean;
@@ -154,22 +179,43 @@ interface GeneralFormProps {
 
 export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormProps) => {
   const t = useTranslations("domainAdmin.general");
-  const tc = useTranslations("common");
   const te = useTranslations("errors");
   const themeSwitchingEnabled = useFeatureFlag("themeSwitching");
   const SECTIONS = getSections(t);
 
   const [saveError, setSaveError] = useState<null | string>(null);
-  const [pending, setPending] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedField, setSavedField] = useState<null | string>(null);
+  const [activeSection, setActiveSection] = useState<null | string>(null);
+  const visibleSections = useRef(new Set<string>());
 
-  const {
-    control,
-    setValue,
-    handleSubmit,
-    reset,
-    formState: { isDirty },
-  } = useForm<FormType>({
+  // IntersectionObserver for quick nav highlighting
+  useEffect(() => {
+    const elements = ALL_SECTION_IDS.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (elements.length === 0) return;
+
+    visibleSections.current.clear();
+
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visibleSections.current.add(entry.target.id);
+          } else {
+            visibleSections.current.delete(entry.target.id);
+          }
+        }
+        const topmost = ALL_SECTION_IDS.find(id => visibleSections.current.has(id));
+        setActiveSection(topmost ?? null);
+      },
+      { rootMargin: "-10% 0px -60% 0px" },
+    );
+
+    for (const el of elements) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const { control, setValue, getValues, reset } = useForm<FormType>({
     mode: "onChange",
     resolver: standardSchemaResolver(formSchema),
     defaultValues: {
@@ -190,110 +236,203 @@ export const GeneralForm = ({ tenantSettings, isOwner, hasData }: GeneralFormPro
 
   const watchedValues = useWatch({ control });
 
-  async function onSubmit(data: FormType) {
-    setSaveError(null);
-    setPending(true);
-    const response = await saveTenantSettings(data);
-    if (!response.ok) {
-      setSaveError(response.error);
-    } else {
-      reset(data);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 5000);
-    }
-    setPending(false);
-  }
+  // Quick-save: called immediately when a field changes
+  const quickSave = useCallback(
+    (fieldName: string) => {
+      void (async () => {
+        setSaveError(null);
+        setSaving(true);
+        setSavedField(null);
+        try {
+          const data = getValues();
+          const response = await saveTenantSettings(data);
+          if (!response.ok) {
+            setSaveError(response.error);
+          } else {
+            reset(data);
+            setSavedField(fieldName);
+            setTimeout(() => setSavedField(null), 1500);
+          }
+        } catch (err) {
+          setSaveError(err instanceof Error ? err.message : String(err));
+        } finally {
+          setSaving(false);
+        }
+      })();
+    },
+    [getValues, reset],
+  );
+
+  /** Quick nav labels — matches ALL_SECTION_IDS */
+  const quickNavItems = [
+    ...SECTIONS.map(s => ({ id: s.id, label: s.title })),
+    ...(themeSwitchingEnabled ? [{ id: "ui-theme", label: t("uiTheme.label") }] : []),
+    ...(isOwner
+      ? [
+          { id: "domain", label: t("domains") },
+          { id: "danger", label: t("dangerZone") },
+        ]
+      : []),
+  ];
 
   return (
     <>
       <SeedSection hasData={hasData} />
-      <form noValidate onSubmit={e => void handleSubmit(onSubmit)(e)}>
-        {SECTIONS.map(section => (
-          <section id={section.id} key={section.id} className="mb-8">
-            <h3 className="text-xl font-bold mb-4">{section.title}</h3>
-            <div className="space-y-4">
-              {section.toggles.map(toggle => (
-                <div key={toggle.name} className="flex items-start gap-3">
-                  <Switch
-                    id={toggle.name}
-                    checked={!!watchedValues[toggle.name as keyof typeof watchedValues]}
-                    disabled={toggle.disabled ?? false}
-                    onCheckedChange={(checked: boolean) => setValue(toggle.name, checked, { shouldDirty: true })}
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <Label htmlFor={toggle.name} className="cursor-pointer">
-                      {toggle.label}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">{toggle.helperText}</p>
+      <div className="grid gap-8 lg:grid-cols-[1fr_220px]">
+        {/* Main content */}
+        <div className="min-w-0 space-y-6">
+          <div className="space-y-6">
+            {SECTIONS.map(section => (
+              <Card id={section.id} key={section.id}>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{section.icon}</span>
+                    <CardTitle className="text-lg">{section.title}</CardTitle>
                   </div>
-                </div>
+                  {section.description && <CardDescription>{section.description}</CardDescription>}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {section.toggles.map(toggle => (
+                    <div key={toggle.name} className="flex items-start gap-3">
+                      <Switch
+                        id={toggle.name}
+                        checked={!!watchedValues[toggle.name as keyof typeof watchedValues]}
+                        disabled={toggle.disabled ?? saving}
+                        onCheckedChange={(checked: boolean) => {
+                          setValue(toggle.name, checked, { shouldDirty: true });
+                          void quickSave(toggle.name);
+                        }}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={toggle.name} className="cursor-pointer">
+                            {toggle.label}
+                          </Label>
+                          {savedField === toggle.name && <Check className="size-3.5 text-green-500" />}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{toggle.helperText}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+
+            {watchedValues.allowEmbedding && watchedValues.isPrivate && (
+              <Alert className="mb-4">
+                <AlertDescription>{t("allowEmbeddingPrivateWarning")}</AlertDescription>
+              </Alert>
+            )}
+
+            {themeSwitchingEnabled && (
+              <ThemeSection
+                tenantSettings={tenantSettings}
+                watchedValues={watchedValues}
+                setValue={setValue}
+                saving={saving}
+                savedField={savedField}
+                onChangeAction={quickSave}
+              />
+            )}
+
+            {saveError && (
+              <Alert variant="destructive">
+                <AlertTitle>{te("saveError")}</AlertTitle>
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {isOwner && (
+            <>
+              <DomainSection tenantSettings={tenantSettings} />
+              <DangerZone />
+            </>
+          )}
+        </div>
+
+        {/* Quick Navigation */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-8">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("quickNav")}</p>
+            <nav className="space-y-1">
+              {quickNavItems.map(item => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className={cn(
+                    "block rounded-md px-3 py-1.5 text-sm transition-colors",
+                    activeSection === item.id
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    item.id === "danger" && "text-destructive hover:text-destructive",
+                  )}
+                >
+                  {item.label}
+                </a>
               ))}
-            </div>
-          </section>
-        ))}
-
-        {watchedValues.allowEmbedding && watchedValues.isPrivate && (
-          <Alert className="mb-4">
-            <AlertDescription>{t("allowEmbeddingPrivateWarning")}</AlertDescription>
-          </Alert>
-        )}
-
-        {themeSwitchingEnabled &&
-          (() => {
-            const hasGouvDomain = !!tenantSettings.customDomain?.endsWith(".gouv.fr");
-            return (
-              <section id="ui-theme" className="mb-8">
-                <h3 className="text-xl font-bold mb-4">{t("uiTheme.label")}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{t("uiTheme.description")}</p>
-                <div className="space-y-2 max-w-xs">
-                  <Label htmlFor="ui-theme-select">{t("uiTheme.label")}</Label>
-                  <Select
-                    value={watchedValues.uiTheme ?? "Default"}
-                    onValueChange={v => setValue("uiTheme", v as "Default" | "Dsfr", { shouldDirty: true })}
-                  >
-                    <SelectTrigger id="ui-theme-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Default">{t("uiTheme.options.Default")}</SelectItem>
-                      <SelectItem value="Dsfr" disabled={!hasGouvDomain}>
-                        {t("uiTheme.options.Dsfr")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {!hasGouvDomain && <p className="text-sm text-muted-foreground mt-1">{t("uiTheme.gouvRequired")}</p>}
-                </div>
-              </section>
-            );
-          })()}
-
-        <ClientAnimate>
-          {saveError && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTitle>{te("saveError")}</AlertTitle>
-              <AlertDescription>{saveError}</AlertDescription>
-            </Alert>
-          )}
-          {success && (
-            <Alert className="mb-4">
-              <AlertTitle>{t("saveSuccess")}</AlertTitle>
-            </Alert>
-          )}
-        </ClientAnimate>
-
-        <Button type="submit" disabled={pending || !isDirty}>
-          {tc("save")}
-        </Button>
-      </form>
-
-      {isOwner && (
-        <>
-          <DomainSection tenantSettings={tenantSettings} />
-          <DangerZone />
-        </>
-      )}
+            </nav>
+          </div>
+        </aside>
+      </div>
     </>
+  );
+};
+
+const ThemeSection = ({
+  tenantSettings,
+  watchedValues,
+  setValue,
+  saving,
+  savedField,
+  onChangeAction,
+}: {
+  onChangeAction: (fieldName: string) => void;
+  savedField: null | string;
+  saving: boolean;
+  setValue: (name: "uiTheme", value: "Default" | "Dsfr", options?: { shouldDirty: boolean }) => void;
+  tenantSettings: TenantSettings;
+  watchedValues: Partial<FormType>;
+}) => {
+  const t = useTranslations("domainAdmin.general");
+  const hasGouvDomain = !!tenantSettings.customDomain?.endsWith(".gouv.fr");
+
+  return (
+    <Card id="ui-theme">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Palette className="size-4 text-muted-foreground" />
+          <CardTitle className="text-lg">{t("uiTheme.label")}</CardTitle>
+          {savedField === "uiTheme" && <Check className="size-3.5 text-green-500" />}
+        </div>
+        <CardDescription>{t("uiTheme.description")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2 max-w-xs">
+          <Label htmlFor="ui-theme-select">{t("uiTheme.label")}</Label>
+          <Select
+            value={watchedValues.uiTheme ?? "Default"}
+            disabled={saving}
+            onValueChange={v => {
+              setValue("uiTheme", v as "Default" | "Dsfr", { shouldDirty: true });
+              onChangeAction("uiTheme");
+            }}
+          >
+            <SelectTrigger id="ui-theme-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Default">{t("uiTheme.options.Default")}</SelectItem>
+              <SelectItem value="Dsfr" disabled={!hasGouvDomain}>
+                {t("uiTheme.options.Dsfr")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          {!hasGouvDomain && <p className="text-sm text-muted-foreground mt-1">{t("uiTheme.gouvRequired")}</p>}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -322,51 +461,53 @@ const SeedSection = ({ hasData }: { hasData: boolean }) => {
   }
 
   return (
-    <section id="seed" className="mb-12">
-      <h3 className="text-xl font-bold mb-4">{t("seedTitle")}</h3>
-      {seedSuccess ? (
-        <Alert className="mb-4">
-          <AlertTitle>{t("seedSuccess")}</AlertTitle>
-        </Alert>
-      ) : (
-        <>
-          <p className="mb-4">{t("seedEmpty")}</p>
-          <div className="mb-4">
-            <p className="font-bold mb-2">{t("seedPreview")}</p>
-            <ul className="mb-2 list-disc pl-5">
-              {WELCOME_DATA_PREVIEW.boards.map(board => (
-                <li key={board.name}>
-                  {t.rich("seedBoard", {
-                    name: board.name,
-                    description: board.description,
-                    strong: chunks => <strong>{chunks}</strong>,
-                  })}
-                </li>
-              ))}
-            </ul>
-            <ul className="mb-2 list-disc pl-5">
-              {WELCOME_DATA_PREVIEW.statuses.map(status => (
-                <li key={status.name}>
-                  {t.rich("seedStatus", { name: status.name, strong: chunks => <strong>{chunks}</strong> })}
-                </li>
-              ))}
-            </ul>
-            <p className="text-sm text-muted-foreground">{WELCOME_DATA_PREVIEW.extras}</p>
-          </div>
-          <ClientAnimate>
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>{t("seedTitle")}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {seedSuccess ? (
+          <Alert>
+            <AlertTitle>{t("seedSuccess")}</AlertTitle>
+          </Alert>
+        ) : (
+          <>
+            <p className="mb-4">{t("seedEmpty")}</p>
+            <div className="mb-4">
+              <p className="font-bold mb-2">{t("seedPreview")}</p>
+              <ul className="mb-2 list-disc pl-5">
+                {WELCOME_DATA_PREVIEW.boards.map(board => (
+                  <li key={board.name}>
+                    {t.rich("seedBoard", {
+                      name: board.name,
+                      description: board.description,
+                      strong: chunks => <strong>{chunks}</strong>,
+                    })}
+                  </li>
+                ))}
+              </ul>
+              <ul className="mb-2 list-disc pl-5">
+                {WELCOME_DATA_PREVIEW.statuses.map(status => (
+                  <li key={status.name}>
+                    {t.rich("seedStatus", { name: status.name, strong: chunks => <strong>{chunks}</strong> })}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm text-muted-foreground">{WELCOME_DATA_PREVIEW.extras}</p>
+            </div>
             {seedError && (
               <Alert variant="destructive" className="mb-4">
                 <AlertTitle>{tc("error")}</AlertTitle>
                 <AlertDescription>{seedError}</AlertDescription>
               </Alert>
             )}
-          </ClientAnimate>
-          <Button disabled={seeding} onClick={() => void handleSeed()}>
-            {seeding ? t("seeding") : t("seedButton")}
-          </Button>
-        </>
-      )}
-    </section>
+            <Button disabled={seeding} onClick={() => void handleSeed()}>
+              {seeding ? t("seeding") : t("seedButton")}
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -444,7 +585,6 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
     setDnsChecking(false);
   }, [savedCustomDomain]);
 
-  // Check initial + polling auto tant que le DNS n'est pas "valid"
   useEffect(() => {
     if (!savedCustomDomain) return;
 
@@ -464,10 +604,8 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
       setDnsChecking(false);
     };
 
-    // Check immédiat
     const initialTimeout = setTimeout(() => void doCheck(), 0);
 
-    // Polling — s'arrête quand le DNS est valid
     const interval = setInterval(() => {
       if (dnsStatusRef.current === "valid") return;
       void doCheck();
@@ -499,95 +637,110 @@ const DomainSection = ({ tenantSettings }: { tenantSettings: TenantSettings }) =
   const showDnsStatus = savedCustomDomain && !isDomainDirty && dnsStatus;
 
   return (
-    <section id="domain" className="mt-12">
-      <Separator className="mb-8" />
-      <h3 className="text-xl font-bold mb-4">{t("domains")}</h3>
-      <form noValidate onSubmit={e => void handleSubmit(onDomainSubmit)(e)} className="space-y-4 max-w-lg">
-        <div className="space-y-2">
-          <Label htmlFor="subdomain">{t("subdomainLabel")}</Label>
-          <Input id="subdomain" {...register("subdomain")} />
-          {subdomain && (
-            <p className="text-sm text-muted-foreground">
-              URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
-            </p>
-          )}
-          {domainErrors.subdomain && <p className="text-sm text-destructive">{domainErrors.subdomain.message}</p>}
+    <Card id="domain">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Globe className="size-4 text-muted-foreground" />
+          <CardTitle className="text-lg">{t("domains")}</CardTitle>
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="custom-domain">{t("customDomain")}</Label>
-          <Input id="custom-domain" {...register("customDomain")} placeholder="feedback.example.com" />
-          <p className="text-sm text-muted-foreground">{t("customDomainHint")}</p>
-          {domainErrors.customDomain && <p className="text-sm text-destructive">{domainErrors.customDomain.message}</p>}
-        </div>
-
-        {showDnsStatus && (
+        <CardDescription>{t("domainsDescription")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form noValidate onSubmit={e => void handleSubmit(onDomainSubmit)(e)} className="space-y-4 max-w-lg">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant={DNS_STATUS_VARIANT[dnsStatus]}>{t(DNS_STATUS_KEY[dnsStatus])}</Badge>
-              <Button type="button" variant="ghost" size="sm" disabled={dnsChecking} onClick={() => void runDNSCheck()}>
-                <RefreshCw className={cn("mr-1 size-4", dnsChecking && "animate-spin")} />
-                {dnsChecking ? t("dnsChecking") : t("checkDns")}
-              </Button>
-            </div>
-            {dnsStatus === "invalid" && dnsExpected && (
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>{t.rich("dnsInvalidHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
-                <p>
-                  <code>
-                    {savedCustomDomain} CNAME {dnsExpected}
-                  </code>
-                </p>
-              </div>
+            <Label htmlFor="subdomain">{t("subdomainLabel")}</Label>
+            <Input id="subdomain" {...register("subdomain")} />
+            {subdomain && (
+              <p className="text-sm text-muted-foreground">
+                URL : <strong>{`${subdomain}.${config.rootDomain}`}</strong>
+              </p>
             )}
-            {dnsStatus === "error" && dnsExpected && (
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>{t.rich("dnsErrorHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
-                <p>
-                  <code>
-                    {savedCustomDomain} CNAME {dnsExpected}
-                  </code>
-                </p>
-                <p>
-                  {t.rich("dnsErrorAlternative", {
+            {domainErrors.subdomain && <p className="text-sm text-destructive">{domainErrors.subdomain.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="custom-domain">{t("customDomain")}</Label>
+            <Input id="custom-domain" {...register("customDomain")} placeholder="feedback.example.com" />
+            <p className="text-sm text-muted-foreground">{t("customDomainHint")}</p>
+            {domainErrors.customDomain && (
+              <p className="text-sm text-destructive">{domainErrors.customDomain.message}</p>
+            )}
+          </div>
+
+          {showDnsStatus && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant={DNS_STATUS_VARIANT[dnsStatus]}>{t(DNS_STATUS_KEY[dnsStatus])}</Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={dnsChecking}
+                  onClick={() => void runDNSCheck()}
+                >
+                  <RefreshCw className={cn("mr-1 size-4", dnsChecking && "animate-spin")} />
+                  {dnsChecking ? t("dnsChecking") : t("checkDns")}
+                </Button>
+              </div>
+              {dnsStatus === "invalid" && dnsExpected && (
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>
+                    {t.rich("dnsInvalidHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}
+                  </p>
+                  <p>
+                    <code>
+                      {savedCustomDomain} CNAME {dnsExpected}
+                    </code>
+                  </p>
+                </div>
+              )}
+              {dnsStatus === "error" && dnsExpected && (
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>{t.rich("dnsErrorHint", { domain: savedCustomDomain, code: chunks => <code>{chunks}</code> })}</p>
+                  <p>
+                    <code>
+                      {savedCustomDomain} CNAME {dnsExpected}
+                    </code>
+                  </p>
+                  <p>
+                    {t.rich("dnsErrorAlternative", {
+                      expected: dnsExpected ?? "",
+                      strong: chunks => <strong>{chunks}</strong>,
+                      code: chunks => <code>{chunks}</code>,
+                    })}
+                  </p>
+                </div>
+              )}
+              {dnsStatus === "valid" && (
+                <p className="text-sm text-muted-foreground">
+                  {t.rich("dnsValidHint", {
+                    domain: savedCustomDomain,
                     expected: dnsExpected ?? "",
-                    strong: chunks => <strong>{chunks}</strong>,
                     code: chunks => <code>{chunks}</code>,
                   })}
                 </p>
-              </div>
-            )}
-            {dnsStatus === "valid" && (
-              <p className="text-sm text-muted-foreground">
-                {t.rich("dnsValidHint", {
-                  domain: savedCustomDomain,
-                  expected: dnsExpected ?? "",
-                  code: chunks => <code>{chunks}</code>,
-                })}
-              </p>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
 
-        <ClientAnimate>
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive">
               <AlertTitle>{tc("error")}</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           {domainSuccess && (
-            <Alert className="mb-4">
+            <Alert>
               <AlertTitle>{t("domainsUpdated")}</AlertTitle>
             </Alert>
           )}
-        </ClientAnimate>
 
-        <Button type="submit" disabled={domainPending || !isDomainDirty}>
-          {t("updateDomains")}
-        </Button>
-      </form>
-    </section>
+          <Button type="submit" disabled={domainPending || !isDomainDirty}>
+            {t("updateDomains")}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -625,23 +778,32 @@ const DangerZone = () => {
   };
 
   return (
-    <section id="danger" className="mt-12">
-      <Separator className="mb-8" />
-      <h3 className="text-xl font-bold mb-4">{t("dangerZone")}</h3>
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>{tc("error")}</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <div className="flex gap-4">
-        <Button variant="outline" disabled={purging || deleting} onClick={() => void handlePurge()}>
-          {purging ? t("purging") : t("purgeData")}
-        </Button>
-        <Button variant="outline" disabled={purging || deleting} onClick={() => void handleDelete()}>
-          {deleting ? t("deleting") : t("deleteTenant")}
-        </Button>
-      </div>
-    </section>
+    <Card id="danger" className="border-destructive/50 bg-destructive/5">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="size-4 text-destructive" />
+          <CardTitle className="text-lg text-destructive">{t("dangerZone")}</CardTitle>
+        </div>
+        <CardDescription className="text-destructive/80">{t("dangerZoneDescription")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>{tc("error")}</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <div className="flex gap-4">
+          <Button variant="destructive" size="sm" disabled={purging || deleting} onClick={() => void handlePurge()}>
+            <Trash2 className="mr-2 size-4" />
+            {purging ? t("purging") : t("purgeData")}
+          </Button>
+          <Button variant="destructive" size="sm" disabled={purging || deleting} onClick={() => void handleDelete()}>
+            <Trash2 className="mr-2 size-4" />
+            {deleting ? t("deleting") : t("deleteTenant")}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

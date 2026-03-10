@@ -213,7 +213,11 @@ export function UserMenuHeaderItem({
   }, [open]);
 
   return (
-    <nav className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)} id={menuId} ref={menuRef}>
+    <nav
+      className={cx(componentClass, fr.cx("fr-nav", "fr-text--sm"), "self-center", className)}
+      id={menuId}
+      ref={menuRef}
+    >
       <div className={fr.cx("fr-nav__item")}>
         <Button
           className={`${componentClass}__btn`}
@@ -240,10 +244,7 @@ export function UserMenuHeaderItem({
           />
         </Button>
 
-        <div
-          className={cx(fr.cx("fr-menu"), `${componentClass}__menu`)}
-          style={{ display: open ? "block" : "none" }}
-        >
+        <div className={cx(fr.cx("fr-menu"), `${componentClass}__menu`)} style={{ display: open ? "block" : "none" }}>
           <ul className={fr.cx("fr-menu__list")} role="menu">
             {showUserInfo && (
               <li className={`${componentClass}__header`}>

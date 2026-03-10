@@ -197,7 +197,9 @@ export const AuthenticationForm = ({
                         <Icon className="size-5" />
                         <CardTitle className="text-base">{t(`provider.${provider}`)}</CardTitle>
                       </div>
-                      <Badge variant={enabled ? "default" : "secondary"}>{enabled ? t("enabled") : t("disabled")}</Badge>
+                      <Badge variant={enabled ? "default" : "secondary"}>
+                        {enabled ? t("enabled") : t("disabled")}
+                      </Badge>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="mb-3">{t(`providerDescription.${provider}`)}</CardDescription>

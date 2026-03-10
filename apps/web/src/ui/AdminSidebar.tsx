@@ -17,12 +17,17 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail,
   SidebarSeparator,
+  SidebarTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@kokatsuna/ui";
-import { type LucideIcon } from "lucide-react";
+import { ArrowLeft, type LucideIcon, Monitor, Moon, PanelLeftClose, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 interface SubItem {
   href: string;
@@ -51,6 +56,10 @@ interface ExtraItem extends NavItem {
 interface AdminSidebarProps {
   /** Active section ID for IntersectionObserver-based sub-item highlighting */
   activeSection?: null | string;
+  /** Link to go back to the main site */
+  backHref?: string;
+  /** Label for the back link */
+  backLabel?: string;
   /** Extra items shown after a separator below the main nav groups */
   extraItems?: ExtraItem[];
   /** Footer content: system status */
@@ -61,9 +70,97 @@ interface AdminSidebarProps {
   groups: NavGroup[];
   /** Header icon — ReactNode for full control (e.g. Image, SVG, or Lucide icon) */
   icon: React.ReactNode;
+  /** Show background on the icon container (default: true) */
+  iconBg?: boolean;
   subtitle?: string;
   title: string;
 }
+
+// --- Dark mode toggle (inline, no i18n needed — icon-only) ---
+
+type Theme = "dark" | "light" | "system";
+
+const CYCLE: Theme[] = ["light", "dark", "system"];
+const iconMap: Record<Theme, typeof Sun> = { light: Sun, dark: Moon, system: Monitor };
+const labelMap: Record<Theme, string> = { light: "Mode clair", dark: "Mode sombre", system: "Système" };
+
+const getStoredTheme = (): Theme => {
+  const stored = localStorage.getItem("theme");
+  if (stored === "dark" || stored === "light") return stored;
+  return "system";
+};
+
+const applyTheme = (theme: Theme) => {
+  const isDark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme:dark)").matches);
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+};
+
+const subscribeTheme = (cb: () => void) => {
+  const handler = (e: StorageEvent) => {
+    if (e.key === "theme" || e.key === null) cb();
+  };
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
+};
+
+const DarkModeToggle = ({ collapsed }: { collapsed?: boolean }) => {
+  const theme = useSyncExternalStore(subscribeTheme, getStoredTheme, () => "system" as Theme);
+
+  useEffect(() => {
+    applyTheme(theme);
+    if (theme !== "system") return;
+    const mq = matchMedia("(prefers-color-scheme:dark)");
+    const handler = () => applyTheme("system");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [theme]);
+
+  const toggle = useCallback(() => {
+    const nextIndex = (CYCLE.indexOf(theme) + 1) % CYCLE.length;
+    const next = CYCLE[nextIndex];
+    if (next === "system") {
+      localStorage.removeItem("theme");
+    } else {
+      localStorage.setItem("theme", next);
+    }
+    applyTheme(next);
+    window.dispatchEvent(new StorageEvent("storage", { key: "theme" }));
+  }, [theme]);
+
+  const Icon = iconMap[theme];
+  const label = labelMap[theme];
+
+  if (collapsed) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={toggle}
+              className="flex size-8 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            >
+              <Icon className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">{label}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+    >
+      <Icon className="size-4 shrink-0" />
+      <span>{label}</span>
+    </button>
+  );
+};
 
 /**
  * Shared admin sidebar — root and tenant admin layouts.
@@ -75,10 +172,13 @@ export const AdminSidebar = ({
   title,
   subtitle,
   icon,
+  iconBg = true,
   groups,
   activeSection,
   extraItems,
   footer,
+  backHref,
+  backLabel,
 }: AdminSidebarProps) => {
   const pathname = usePathname();
 
@@ -134,25 +234,48 @@ export const AdminSidebar = ({
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      {/* Header: app icon + name + subtitle */}
-      <SidebarHeader className="px-4 py-4">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-            {icon}
+      {/* Header: app icon + name + collapse trigger */}
+      <SidebarHeader className="p-3 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0">
+            <div
+              className={cn(
+                "flex shrink-0 items-center justify-center rounded-lg transition-all",
+                "size-9 group-data-[collapsible=icon]:size-8",
+                iconBg
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                  : "border border-sidebar-border text-sidebar-foreground",
+              )}
+            >
+              {icon}
+            </div>
+            <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+              <span className="truncate text-sm font-bold leading-tight">{title}</span>
+              {subtitle && (
+                <span className="truncate text-[10px] font-medium text-sidebar-foreground/50">{subtitle}</span>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-sm font-bold leading-tight">{title}</span>
-            {subtitle && (
-              <span className="truncate text-[10px] font-medium text-sidebar-foreground/50">{subtitle}</span>
-            )}
-          </div>
+          {/* Collapse trigger — right of title when expanded, below logo when collapsed */}
+          <SidebarTrigger className="size-7 shrink-0 text-sidebar-foreground/40 hover:text-sidebar-foreground">
+            <PanelLeftClose className="size-4 transition-transform group-data-[collapsible=icon]:rotate-180" />
+          </SidebarTrigger>
         </div>
+        {backHref && (
+          <Link
+            href={backHref}
+            className="mt-1 flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mt-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1.5"
+          >
+            <ArrowLeft className="size-3.5 shrink-0" />
+            <span className="truncate group-data-[collapsible=icon]:hidden">{backLabel}</span>
+          </Link>
+        )}
       </SidebarHeader>
 
       {/* Nav groups */}
-      <SidebarContent className="px-2 pt-2">
+      <SidebarContent>
         {groups.map((group, gi) => (
-          <SidebarGroup key={gi} className={cn(gi > 0 && "pt-4")}>
+          <SidebarGroup key={gi} className={cn(gi > 0 && "pt-4", "group-data-[collapsible=icon]:px-1.5")}>
             {group.label && (
               <SidebarGroupLabel className="mb-1 text-[10px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
                 {group.label}
@@ -167,8 +290,8 @@ export const AdminSidebar = ({
         {/* Extra items (e.g. Moderation) separated by a divider */}
         {extraItems && extraItems.length > 0 && (
           <>
-            <SidebarSeparator className="mx-4 my-2" />
-            <SidebarGroup>
+            <SidebarSeparator className="mx-0! my-2" />
+            <SidebarGroup className="group-data-[collapsible=icon]:px-1.5">
               <SidebarGroupContent>
                 <SidebarMenu>{extraItems.map(item => renderItem(item, item.badgeVariant))}</SidebarMenu>
               </SidebarGroupContent>
@@ -177,22 +300,48 @@ export const AdminSidebar = ({
         )}
       </SidebarContent>
 
-      {/* Footer: system status */}
-      {footer && (
-        <SidebarFooter className="mt-auto px-4 pb-4">
-          <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/50 p-3">
-            <div className="mb-1 flex items-center gap-2">
-              <div className="size-2 animate-pulse rounded-full bg-green-500" />
-              <span className="text-[10px] font-bold uppercase tracking-wide text-sidebar-foreground/70">
-                {footer.status}
-              </span>
-            </div>
-            <p className="text-[10px] text-sidebar-foreground/50">{footer.version}</p>
-          </div>
-        </SidebarFooter>
-      )}
+      {/* Footer: dark mode toggle + system status */}
+      <SidebarFooter className="mt-auto gap-1 p-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:p-2">
+        {/* Dark mode toggle */}
+        <div className="group-data-[collapsible=icon]:hidden">
+          <DarkModeToggle />
+        </div>
+        <div className="hidden group-data-[collapsible=icon]:block">
+          <DarkModeToggle collapsed />
+        </div>
 
-      <SidebarRail />
+        {/* System status */}
+        {footer && (
+          <>
+            <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/50 p-2.5 group-data-[collapsible=icon]:hidden">
+              <div className="mb-0.5 flex items-center gap-2">
+                <div className="size-2 animate-pulse rounded-full bg-green-500" />
+                <span className="text-[10px] font-bold uppercase tracking-wide text-sidebar-foreground/70">
+                  {footer.status}
+                </span>
+              </div>
+              <p className="text-[10px] text-sidebar-foreground/50">{footer.version}</p>
+            </div>
+            {/* Collapsed: just the green dot with tooltip */}
+            <div className="hidden group-data-[collapsible=icon]:block">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center py-1">
+                      <div className="size-2 animate-pulse rounded-full bg-green-500" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p className="text-xs">
+                      {footer.status} — {footer.version}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 };

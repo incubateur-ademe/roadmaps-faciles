@@ -102,7 +102,7 @@ const BoardPage = withValidation({
       <UIContainer className="my-4">
         <UIGrid gap>
           {showSuggestionForm && (
-            <UIGridCol span={3} className={cn("sticky self-start top-0", isDsfr ? style.sidebar : "top-16")}>
+            <UIGridCol span={3} className={cn("sticky self-start top-0", isDsfr && style.sidebar)}>
               <div className={isDsfr ? style.suggestionForm : "px-4 rounded-lg border bg-card shadow-sm"}>
                 <SubmitPostForm boardId={board.id} />
               </div>
@@ -112,7 +112,7 @@ const BoardPage = withValidation({
             <UIGrid
               className={cn(
                 "sticky self-start top-0 z-501",
-                isDsfr ? style.header : "bg-background border-b shadow-sm top-16",
+                isDsfr ? style.header : "bg-background border-b shadow-sm",
               )}
             >
               <UIGridCol span={8} className="pr-2">

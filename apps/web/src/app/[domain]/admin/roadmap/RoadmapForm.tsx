@@ -28,7 +28,10 @@ export const RoadmapForm = ({ boards, currentRootBoardId }: RoadmapFormProps) =>
     <div className="space-y-4 max-w-sm">
       <div className="space-y-2">
         <Label htmlFor="root-board">{t("rootBoard")}</Label>
-        <Select value={rootBoardId ? String(rootBoardId) : "_none"} onValueChange={v => setRootBoardId(v === "_none" ? null : Number(v))}>
+        <Select
+          value={rootBoardId ? String(rootBoardId) : "_none"}
+          onValueChange={v => setRootBoardId(v === "_none" ? null : Number(v))}
+        >
           <SelectTrigger id="root-board">
             <SelectValue />
           </SelectTrigger>

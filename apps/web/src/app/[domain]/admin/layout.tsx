@@ -3,11 +3,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
-import { ClientAnimate } from "@/components/utils/ClientAnimate";
 import { prisma } from "@/lib/db/prisma";
 import { POST_APPROVAL_STATUS } from "@/lib/model/Post";
 import { auth } from "@/lib/next-auth/auth";
-import { AdminHeader } from "@/ui/AdminHeader";
 import { DefaultThemeForcer } from "@/ui/DefaultThemeForcer";
 import { UIProvider } from "@/ui/UIContext";
 import { assertTenantAdmin } from "@/utils/auth";
@@ -32,20 +30,23 @@ const TenantAdminLayout = async ({ children, params }: LayoutProps<"/[domain]/ad
   await assertTenantAdmin(domain);
 
   const tenant = await getTenantFromDomain(domain);
-  const pendingModerationCount = await prisma.post.count({
-    where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING },
-  });
+  const [pendingModerationCount, tenantSettings] = await Promise.all([
+    prisma.post.count({
+      where: { tenantId: tenant.id, approvalStatus: POST_APPROVAL_STATUS.PENDING },
+    }),
+    prisma.tenantSettings.findUniqueOrThrow({
+      where: { tenantId: tenant.id },
+      select: { name: true },
+    }),
+  ]);
 
   return (
     <UIProvider value="Default">
       <DefaultThemeForcer />
       <SidebarProvider>
-        <AdminSideMenu pendingModerationCount={pendingModerationCount} />
-        <SidebarInset id="content" className="overflow-auto">
-          <AdminHeader />
-          <div className="mx-auto max-w-7xl px-4 py-8">
-            <ClientAnimate>{children}</ClientAnimate>
-          </div>
+        <AdminSideMenu tenantName={tenantSettings.name} pendingModerationCount={pendingModerationCount} />
+        <SidebarInset id="content" className="max-h-svh overflow-x-hidden overflow-y-auto">
+          <div className="px-6 py-8 lg:px-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </UIProvider>
