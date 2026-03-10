@@ -2,7 +2,7 @@ name: Storybook
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'packages/ui/src/**'
       - 'packages/ui/.storybook/**'
@@ -12,21 +12,16 @@ on:
       - '.github/workflows/storybook.yml'
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Deploy Storybook
+    name: Deploy Storybook (${{ github.ref_name }})
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,15 +34,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @kokatsuna/ui build-storybook
+      - name: Build Storybook
+        run: pnpm --filter @kokatsuna/ui build-storybook
         env:
-          STORYBOOK_BASE: /roadmaps-faciles/
+          STORYBOOK_BASE: /roadmaps-faciles/${{ github.ref_name }}/
 
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: packages/ui/storybook-static
-
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: packages/ui/storybook-static
+          destination_dir: ${{ github.ref_name }}
