@@ -12,11 +12,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <RootProvider
       theme={{
-        attribute: "class",
-        defaultTheme: "light",
-        enableSystem: true,
-        storageKey: "theme",
-        enableColorScheme: false,
+        enabled: false,
       }}
     >
       <DefaultHeader />

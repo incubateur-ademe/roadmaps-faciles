@@ -1,32 +1,10 @@
 /* Fumadocs Theme — French Blue (shadcn tokens)
- * Maps the project's shadcn CSS variables to Fumadocs --color-fd-* properties.
- * Tokens are defined in globals.scss under [data-ui-theme="Default"].
+ * Maps Fumadocs --color-fd-* to our design tokens.
+ * Light/dark switching is handled by ThemeToggle (.dark class on <html>)
+ * and tokens scoped under [data-ui-theme="Default"] in packages/ui.
  */
 
-/* Light mode */
 :root {
-  --color-fd-background: var(--background);
-  --color-fd-foreground: var(--foreground);
-  --color-fd-card: var(--card);
-  --color-fd-card-foreground: var(--card-foreground);
-  --color-fd-popover: var(--popover);
-  --color-fd-popover-foreground: var(--popover-foreground);
-  --color-fd-primary: var(--primary);
-  --color-fd-primary-foreground: var(--primary-foreground);
-  --color-fd-secondary: var(--secondary);
-  --color-fd-secondary-foreground: var(--secondary-foreground);
-  --color-fd-accent: var(--accent);
-  --color-fd-accent-foreground: var(--accent-foreground);
-  --color-fd-muted: var(--muted);
-  --color-fd-muted-foreground: var(--muted-foreground);
-  --color-fd-border: var(--border);
-  --color-fd-ring: var(--ring);
-}
-
-/* Dark mode — .dark class on <html> (standard shadcn/next-themes convention) */
-.dark {
-  color-scheme: dark;
-
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
   --color-fd-card: var(--card);
