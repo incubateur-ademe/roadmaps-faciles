@@ -53,6 +53,9 @@ jobs:
 
       - run: pnpm --filter @kokatsuna/web exec -- prisma generate
 
+      - name: Install Playwright for packages/ui browser tests
+        run: pnpm --filter @kokatsuna/ui exec -- playwright install --with-deps chromium
+
       - name: Cache Turbo
         uses: actions/cache@v4
         with:

@@ -26,5 +26,5 @@
     "vitest.config.storybook.ts",
     "vitest.setup.ts"
   ],
-  "exclude": ["node_modules", "src/**/*.stories.*", "src/**/*.test.*"]
+  "exclude": ["node_modules"]
 }

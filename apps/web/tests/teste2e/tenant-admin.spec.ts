@@ -7,7 +7,7 @@ test.describe("Tenant Admin", () => {
     const nameInput = page.getByLabel(/nom|name/i).first();
     await nameInput.fill("E2E Created Board");
 
-    const createButton = page.getByRole("button", { name: /créer|create/i });
+    const createButton = page.getByRole("button", { name: /ajouter|add/i });
     await createButton.click();
 
     await expect(page.getByText("E2E Created Board").first()).toBeVisible();

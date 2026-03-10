@@ -34,15 +34,15 @@ test.describe("Root Admin", () => {
   });
 
   test.describe("Pin tenant", () => {
-    /** Navigate to admin tenants and return the E2E tenant row + both button locators. */
+    /** Navigate to admin tenants and return the E2E tenant card + both button locators. */
     async function getTenantRow(page: import("@playwright/test").Page) {
       await page.goto("/admin/tenants");
-      const row = page.getByRole("row").filter({ hasText: "E2E Test Tenant" });
-      const pinBtn = row.getByRole("button", { name: /^épingler$/i });
-      const unpinBtn = row.getByRole("button", { name: /^désépingler$/i });
+      const card = page.locator("[class*=card]").filter({ hasText: "E2E Test Tenant" });
+      const pinBtn = card.getByRole("button", { name: /^épingler$/i });
+      const unpinBtn = card.getByRole("button", { name: /^désépingler$/i });
       // Wait for either button to appear (handles SSR streaming)
       await expect(pinBtn.or(unpinBtn)).toBeVisible();
-      return { row, pinBtn, unpinBtn };
+      return { row: card, pinBtn, unpinBtn };
     }
 
     /** Ensure the tenant is unpinned (idempotent). */
