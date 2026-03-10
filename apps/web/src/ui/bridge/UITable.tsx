@@ -2,8 +2,6 @@
 
 import { cn, Table as ShadcnTable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@kokatsuna/ui";
 
-import { useUI } from "@/ui";
-
 export type UITableHeader = Array<{
   children: React.ReactNode;
   className?: string;
@@ -21,16 +19,8 @@ export type UITableProps = {
   header: UITableHeader;
 };
 
+// Note: UITable renders shadcn Table in both themes. DSFR-zone callers should use TableCustom directly.
 export const UITable = ({ header, body, className }: UITableProps) => {
-  const theme = useUI();
-
-  if (theme === "Dsfr") {
-    // Dynamically import TableCustom to avoid bundling DSFR in Default-only contexts
-    // For now, render the same shadcn table — callers in DSFR zones should use
-    // TableCustom directly. This bridge is mainly for shared admin components.
-    // Falls through to Default rendering.
-  }
-
   return (
     <ShadcnTable className={className}>
       <TableHeader>

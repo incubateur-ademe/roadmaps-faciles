@@ -1,27 +1,23 @@
 "use client";
 
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { type UIModalProps } from "./UIModal";
 
-let counter = 0;
-
 export const UIModalDsfr = ({ open, onClose, title, children, footer }: UIModalProps) => {
-  const [id] = useState(() => `ui-modal-bridge-${++counter}`);
-  const modalRef = useRef<null | ReturnType<typeof createModal>>(null);
-
-  if (!modalRef.current) {
-    modalRef.current = createModal({ id, isOpenedByDefault: false });
-  }
-
-  const modal = modalRef.current;
+  const reactId = useId();
+  const id = `ui-modal-bridge-${reactId.replace(/:/g, "")}`;
+  const [modal] = useState(() => createModal({ id, isOpenedByDefault: false }));
+  const hasBeenOpenedRef = useRef(false);
 
   // Sync open prop → DSFR modal (disclose / conceal)
   useEffect(() => {
     if (open) {
+      hasBeenOpenedRef.current = true;
       modal.open();
-    } else {
+    } else if (hasBeenOpenedRef.current) {
+      // Only close when transitioning from open → closed, not on initial mount
       modal.close();
     }
   }, [open, modal]);

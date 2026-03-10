@@ -74,8 +74,8 @@ export const UICardDsfr = ({
             ) : (
               <TitleTag className="fr-card__title">{title}</TitleTag>
             )}
-            <div className="fr-card__desc">{description}</div>
             {subtitle && <p className="fr-card__detail">{subtitle}</p>}
+            <div className="fr-card__desc">{description}</div>
           </div>
           {footer && <div className="fr-card__end">{footer}</div>}
         </div>

@@ -77,7 +77,7 @@ export const UICard = ({
           <TitleTag className="m-0">{title}</TitleTag>
         </CardTitle>
       </CardHeader>
-      {(description || footer) && <CardContent className={cn(isSmall && "p-0 pt-1")}>{description}</CardContent>}
+      {description && <CardContent className={cn(isSmall && "p-0 pt-1")}>{description}</CardContent>}
       {footer && <CardFooter className={cn(isSmall && "p-0 pt-1")}>{footer}</CardFooter>}
     </ShadcnCard>
   );

@@ -111,16 +111,16 @@ const BoardPage = withValidation({
           <UIGridCol span={showSuggestionForm ? 9 : 12}>
             <UIGrid
               className={cn(
-                "sticky self-start top-0 z-501",
-                isDsfr ? style.header : "bg-background border-b shadow-sm",
+                "sticky self-start z-501",
+                isDsfr ? style.header : "top-0 bg-background border-b shadow-sm",
               )}
             >
               <UIGridCol span={8} className="pr-2">
                 <h1 className={isDsfr ? "fr-mb-1w fr-h3" : "mb-1 text-xl font-bold"}>{board.name}</h1>
                 {board.description && (
-                  <h2 className={cn(isDsfr ? "fr-text--md" : "max-w-none prose prose-sm", style.boardSubTiltle)}>
+                  <div className={cn(isDsfr ? "fr-text--md" : "max-w-none prose prose-sm", style.boardSubTiltle)}>
                     <MDXRemote source={board.description} />
-                  </h2>
+                  </div>
                 )}
               </UIGridCol>
               <UIGridCol span={4}>

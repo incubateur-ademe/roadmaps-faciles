@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
 import { auth } from "@/lib/next-auth/auth";
+import { DefaultThemeForcer } from "@/ui/DefaultThemeForcer";
 import { UIProvider } from "@/ui/UIContext";
 import { assertAdmin } from "@/utils/auth";
 
@@ -27,6 +28,7 @@ const AdminLayout = async ({ children }: LayoutProps<"/admin">) => {
 
   return (
     <UIProvider value="Default">
+      <DefaultThemeForcer />
       <SidebarProvider>
         <AdminSideMenu />
         <SidebarInset id="content" className="max-h-svh overflow-x-hidden overflow-y-auto">
