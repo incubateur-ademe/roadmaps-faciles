@@ -21,7 +21,8 @@ test.describe("Post Lifecycle", () => {
     await page.getByRole("link", { name: "Test Post" }).first().click();
     await expect(page).toHaveURL(/\/post\/\d+/);
 
-    await expect(page.getByRole("heading", { level: 2 })).toContainText("Test Post");
+    // Post title may render as h1 (full page) or h2 (intercepted modal)
+    await expect(page.getByRole("heading", { name: "Test Post" }).first()).toBeVisible();
     await expect(page.getByText("A test post for E2E tests").first()).toBeVisible();
   });
 
@@ -60,6 +61,7 @@ test.describe("Post Lifecycle", () => {
     await page.getByRole("link", { name: "Anonymous Post" }).first().click();
     await expect(page).toHaveURL(/\/post\/\d+/);
 
-    await expect(page.getByRole("heading", { level: 2 })).toContainText("Anonymous Post");
+    // Post title may render as h1 (full page) or h2 (intercepted modal)
+    await expect(page.getByRole("heading", { name: "Anonymous Post" }).first()).toBeVisible();
   });
 });

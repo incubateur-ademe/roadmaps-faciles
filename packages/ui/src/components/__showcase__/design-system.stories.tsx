@@ -16,8 +16,8 @@ import {
   SunIcon,
   UserIcon,
 } from "lucide-react";
-import { type Meta, type StoryObj } from "storybook";
 import { useState } from "react";
+import { type Meta, type StoryObj } from "storybook";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../accordion";
 import { Alert, AlertDescription, AlertTitle } from "../alert";
@@ -74,32 +74,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Progress } from "../progress";
 import { RadioGroup, RadioGroupItem } from "../radio-group";
 import { SegmentedControl, SegmentedControlItem } from "../segmented-control";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../select";
 import { Separator } from "../separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "../sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../sheet";
 import { Skeleton } from "../skeleton";
 import { Switch } from "../switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import { Textarea } from "../textarea";
 import {
@@ -166,7 +146,9 @@ export const Complete: Story = {
               <Button size="sm">Small</Button>
               <Button size="default">Default</Button>
               <Button size="lg">Large</Button>
-              <Button size="icon"><PlusIcon /></Button>
+              <Button size="icon">
+                <PlusIcon />
+              </Button>
             </Row>
           </Section>
 
@@ -219,7 +201,9 @@ export const Complete: Story = {
                 <AvatarFallback>ML</AvatarFallback>
               </Avatar>
               <Avatar>
-                <AvatarFallback><UserIcon className="size-4" /></AvatarFallback>
+                <AvatarFallback>
+                  <UserIcon className="size-4" />
+                </AvatarFallback>
               </Avatar>
             </Row>
           </Section>
@@ -351,9 +335,15 @@ export const Complete: Story = {
                 <TabsTrigger value="analytics">Analytique</TabsTrigger>
                 <TabsTrigger value="settings">Paramètres</TabsTrigger>
               </TabsList>
-              <TabsContent value="overview" className="text-sm">Contenu vue d'ensemble.</TabsContent>
-              <TabsContent value="analytics" className="text-sm">Contenu analytique.</TabsContent>
-              <TabsContent value="settings" className="text-sm">Contenu paramètres.</TabsContent>
+              <TabsContent value="overview" className="text-sm">
+                Contenu vue d'ensemble.
+              </TabsContent>
+              <TabsContent value="analytics" className="text-sm">
+                Contenu analytique.
+              </TabsContent>
+              <TabsContent value="settings" className="text-sm">
+                Contenu paramètres.
+              </TabsContent>
             </Tabs>
           </Section>
 
@@ -370,7 +360,9 @@ export const Complete: Story = {
               </AccordionItem>
               <AccordionItem value="item-3">
                 <AccordionTrigger>Comment suivre ma suggestion ?</AccordionTrigger>
-                <AccordionContent>Abonnez-vous aux notifications du post pour être alerté des changements.</AccordionContent>
+                <AccordionContent>
+                  Abonnez-vous aux notifications du post pour être alerté des changements.
+                </AccordionContent>
               </AccordionItem>
             </Accordion>
           </Section>
@@ -390,17 +382,23 @@ export const Complete: Story = {
                   <TableRow>
                     <TableCell className="font-medium">Jean Dupont</TableCell>
                     <TableCell>Admin</TableCell>
-                    <TableCell><Badge variant="success">Actif</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="success">Actif</Badge>
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Marie Martin</TableCell>
                     <TableCell>Modérateur</TableCell>
-                    <TableCell><Badge variant="success">Actif</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="success">Actif</Badge>
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Paul Leroy</TableCell>
                     <TableCell>Utilisateur</TableCell>
-                    <TableCell><Badge variant="secondary">Inactif</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">Inactif</Badge>
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -460,7 +458,9 @@ export const Complete: Story = {
                   <PaginationPrevious href="#" />
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationLink href="#" isActive>1</PaginationLink>
+                  <PaginationLink href="#" isActive>
+                    1
+                  </PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationLink href="#">2</PaginationLink>
@@ -555,14 +555,22 @@ export const Complete: Story = {
           <Section title="Dropdown Menu">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">Menu <ChevronRightIcon className="ml-2 size-4" /></Button>
+                <Button variant="outline">
+                  Menu <ChevronRightIcon className="ml-2 size-4" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem><UserIcon className="mr-2 size-4" /> Profil</DropdownMenuItem>
-                <DropdownMenuItem><SettingsIcon className="mr-2 size-4" /> Paramètres</DropdownMenuItem>
-                <DropdownMenuItem><MailIcon className="mr-2 size-4" /> Messages</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <UserIcon className="mr-2 size-4" /> Profil
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <SettingsIcon className="mr-2 size-4" /> Paramètres
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <MailIcon className="mr-2 size-4" /> Messages
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive">Déconnexion</DropdownMenuItem>
               </DropdownMenuContent>
@@ -573,7 +581,9 @@ export const Complete: Story = {
           <Section title="Popover">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline"><BellIcon className="mr-2 size-4" /> Notifications</Button>
+                <Button variant="outline">
+                  <BellIcon className="mr-2 size-4" /> Notifications
+                </Button>
               </PopoverTrigger>
               <PopoverContent className="w-64">
                 <div className="space-y-2">
@@ -590,19 +600,25 @@ export const Complete: Story = {
             <Row>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon"><SunIcon /></Button>
+                  <Button variant="outline" size="icon">
+                    <SunIcon />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Mode clair</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon"><MoonIcon /></Button>
+                  <Button variant="outline" size="icon">
+                    <MoonIcon />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Mode sombre</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon"><SearchIcon /></Button>
+                  <Button variant="outline" size="icon">
+                    <SearchIcon />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Rechercher</TooltipContent>
               </Tooltip>

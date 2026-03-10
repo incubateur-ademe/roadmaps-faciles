@@ -1,11 +1,4 @@
-import {
-  CheckIcon,
-  CircleAlertIcon,
-  CircleDotIcon,
-  MessageSquareIcon,
-  StarIcon,
-  ThumbsUpIcon,
-} from "lucide-react";
+import { CheckIcon, CircleAlertIcon, CircleDotIcon, MessageSquareIcon, StarIcon, ThumbsUpIcon } from "lucide-react";
 import { type Meta, type StoryObj } from "storybook";
 
 import { Avatar, AvatarFallback } from "./avatar";
@@ -118,7 +111,7 @@ export const Playground: Story = {
     connectorVariant: "connected",
     subIndent: "default",
   },
-  render: (args) => {
+  render: args => {
     const { dotVariant, dotSize, connectorVariant, subIndent } = args as unknown as {
       dotVariant: "default" | "destructive" | "muted" | "outline" | "success" | "warning";
       dotSize: "default" | "icon" | "lg" | "sm";
@@ -326,8 +319,12 @@ export const PostActivity: Story = {
                   <AvatarFallback>LS</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">Lilian Saget-Lethias</span>
-                <Badge variant="destructive" className="text-[10px]">Propriétaire</Badge>
-                <Badge variant="secondary" className="text-[10px]">Auteur</Badge>
+                <Badge variant="destructive" className="text-[10px]">
+                  Propriétaire
+                </Badge>
+                <Badge variant="secondary" className="text-[10px]">
+                  Auteur
+                </Badge>
               </div>
               <p className="mt-2 text-sm">Commentaire principal avec du contenu détaillé.</p>
               <div className="text-muted-foreground mt-2 flex items-center gap-3 text-xs">
@@ -359,7 +356,9 @@ export const PostActivity: Story = {
                       <AvatarFallback className="text-xs">LS</AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">Lilian Saget-Lethias</span>
-                    <Badge variant="secondary" className="text-[10px]">Auteur</Badge>
+                    <Badge variant="secondary" className="text-[10px]">
+                      Auteur
+                    </Badge>
                   </div>
                   <p className="mt-1.5 text-sm">Merci, je note ça pour la v2 !</p>
                 </CardContent>
