@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"],
-      "env": ["NEXT_PUBLIC_*", "SENTRY_*", "DATABASE_URL"]
+      "env": ["NEXT_PUBLIC_*", "SENTRY_*", "DATABASE_URL", "ESPACE_MEMBRE_API_KEY"]
     },
     "lint": {
       "inputs": [
