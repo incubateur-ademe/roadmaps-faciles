@@ -8,6 +8,8 @@
 ## Tooling & environment
 - `pnpm` is the package manager; lock file is `pnpm-lock.yaml`
 - Node 24 required (`engines` in package.json); `.nvmrc` locks the exact version (CI + local aligned)
+- `.nvmrc` and `.editorconfig` live at monorepo root (not in `apps/web/`)
+- Shared devDependencies (vitest, typescript, eslint, tailwind, postcss, tw-animate-css, etc.) hoisted to root `package.json` — workspace packages inherit via pnpm resolution
 - Next.js 16 App Router, standalone output, React Compiler enabled
 - Prisma 7 — client is auto-generated into `src/generated/prisma/`; never edit manually
   - NEVER use `prisma db push` — always use `prisma migrate dev --name <name>` to create proper migration files (CI uses `prisma migrate deploy` which only applies committed migrations)
@@ -35,7 +37,11 @@
 - Environment variables: see `.env.development` for all required vars with documentation
 
 ## Code conventions
-- ESLint 9 flat config (`eslint.config.ts`) — strict rules enforced:
+- ESLint 9 flat config — monorepo setup:
+  - Root `eslint.config.ts` : base partagée (`export const base`) + default export (héritage naturel pour packages sans config)
+  - `apps/web/eslint.config.ts` : importe `base` du root + ajoute `eslint-config-next`, lodash, tests/scripts overrides
+  - `packages/ui/` : pas de config locale → hérite du root automatiquement (ESLint remonte au root)
+  - Plugins `import` et `react` : enregistrés dans le root default export (pas dans `base`) pour éviter "Cannot redefine plugin" avec `nextConfig` qui bundle ses propres instances
   - No default exports except Next.js special files (page, layout, error, loading, template, route, metadata)
   - Imports must be sorted (perfectionist plugin) — group external/internal with blank line between
   - Array types: use `Array<{...}>` for complex types, not `T[]`
@@ -55,21 +61,42 @@
   - react-dsfr `Pagination`: `defaultPage` is actually controlled (no internal state) — no `key` hack needed to sync
   - react-dsfr `ButtonsGroup`: `buttons` prop is typed as `[ButtonProps, ...ButtonProps[]]` tuple — conditional spreads break TypeScript; use separate renders for different button sets
   - react-dsfr `createModal`: use `createModal({ id, isOpenedByDefault: false })` at module level for DSFR-compliant modals; call `.open()` imperatively, render `<modal.Component>`
+- UI Bridge components (`src/ui/bridge/`): dual-theme abstraction layer — each bridge renders shadcn (Default) or DSFR (Dsfr) based on `useUI()` context
+  - Pattern: `UIFoo.tsx` (public API, `React.lazy()` for DSFR branch) + `UIFooDsfr.tsx` (DSFR-specific, static DSFR import)
+  - DSFR variants are lazy-loaded via `React.lazy()` + `<Suspense>` to prevent DSFR CSS from leaking into Default theme pages
+  - Bridges: `UIAlert`, `UIBadge`, `UIButton`, `UIButtonsGroup`, `UICard`, `UIInput`, `UILabel`, `UIMarkdownEditor`, `UIModal`, `UISeparator`, `UISkeleton`, `UISwitch`, `UITable`, `UITag`, `UITooltip`
+  - `UIModal` wraps `createModal()` in a declarative API (`open`/`onClose` props) — DSFR variant syncs via `useEffect` + `dsfr.conceal` event
+  - `UITable` and `UISkeleton` are Default-only (no DSFR variant)
+  - Theme context: `UIProvider` / `useUI()` from `@/ui` — `UiTheme = "Default" | "Dsfr"`, resolved server-side by `getTheme()` from `@/ui/server` (reads `ui-theme-dev` cookie)
+  - Default-only sections (admin, moderation): wrap in `<UIProvider value="Default">` + `<DefaultThemeForcer />` — the forcer handles soft nav from DSFR pages (disables DSFR stylesheets, forces `data-ui-theme="Default"`, restores on unmount)
+  - Showcase: `/showcase` page renders all bridges with theme toggle + dark mode toggle — use for visual regression testing
+- Dual-component pattern (non-bridge): when DSFR and Default designs diverge too much for a shared bridge API, use two separate components (`FooDsfr.tsx` / `FooDefault.tsx`) switched by theme in the parent — used for tenant login (`TenantLoginDefault`/`TenantLoginDsfr`) and tenant header (`DsfrHeader`/`ShadcnHeader`)
+- Admin page wrapper: `AdminPageHeader` component (`src/ui/AdminPageHeader.tsx`) — title + description + actions slot, reused on all admin pages
 - Styles: Tailwind CSS 4 + SCSS (`globals.scss`)
   - Class composition: use `cx(fr.cx("dsfr-class"), "tw-class")` from `@codegouvfr/react-dsfr/tools/cx` — never template literals for mixing DSFR + Tailwind
 - Styling preference: Tailwind for simple, SCSS modules for complex — never inline styles (`style={{...}}`)
 - TypeScript: `ServerActionResponse<T>` requires explicit `!result.ok` check in else blocks for type narrowing
 
 ## Architecture
+- Monorepo pnpm workspaces + Turborepo:
+  - `apps/web/` — Next.js 16 app (multi-tenant, DSFR + shadcn)
+  - `packages/ui/` — `@kokatsuna/ui` : 30 composants shadcn/Radix UI, design tokens French Blue (oklch), utilitaire `cn()`, hook `useIsMobile()`
+    - Composants : accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, dialog, dropdown-menu, hint, input, label, navigation-menu, pagination, popover, progress, radio-group, segmented-control, select, separator, sheet, sidebar, skeleton, sonner, switch, table, tabs, textarea, tooltip
+    - Imports : `@kokatsuna/ui` (barrel), `@kokatsuna/ui/components/*` (direct), `@kokatsuna/ui/lib/cn`, `@kokatsuna/ui/tokens/theme.css`
+    - Design tokens : scopés à `[data-ui-theme="Default"]`, light + dark (`.dark[data-ui-theme="Default"]`)
+    - Storybook 10 : `.storybook/` in packages/ui, dark mode toggle (`@vueless/storybook-dark-mode`), addon-a11y, addon-vitest (browser tests in Chromium)
+    - Tests : Vitest unit tests (happy-dom) + Storybook browser tests (Playwright) — `vitest.config.unit.ts` + `vitest.config.storybook.ts`
+    - Pas de `eslint.config.ts` local — hérite du root (ESLint 9 flat config walk-up)
 - Multi-tenant: domain-based routing via `src/app/[domain]/`
   - Tenant utils: `src/lib/utils/tenant.ts` — `getDomainFromHost()`, `getTenantFromDomain()`, `getTenantSubdomain()`
   - Server actions resolve domain internally via `getDomainFromHost()` (reads `x-forwarded-host`/`host` headers) — no `domain` param needed
-  - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(domain)/layout.tsx`
-  - `DomainPageHOP` in `src/app/[domain]/(domain)/DomainPage.tsx` wraps pages with tenant/settings
+  - `DomainParams`/`DomainProps` types exported from `src/app/[domain]/(default)/layout.tsx`
+  - `DomainPageHOP` in `src/app/[domain]/(default)/DomainPage.tsx` wraps pages with tenant/settings
   - `EmptyObject` type: import from `@/utils/types` (not `react-hook-form`)
   - Auth: `assertTenantAdmin(domain)` takes domain explicitly — type `TenantAccessCheck = { domain: string } & AccessCheck` in `src/lib/utils/auth.ts`
   - Auth: `assertTenantModerator(domain)` — same pattern, min role MODERATOR. Used by `/moderation` section (separate from `/admin`)
   - Auth: `checkTenantUser()` has defense-in-depth super admin bypass — `isSuperAdmin` users skip tenant membership check (primary bypass is in `assertSession()`)
+  - Session role helpers: `isSessionAdmin()`/`isSessionModerator()` in `src/lib/utils/sessionRoles.ts` — shared between `ShadcnUserHeaderItem` and `AuthHeaderItems` (DSFR), avoids drift
   - Seed context: `setSeedTenant()`/`getSeedTenant()` in `src/lib/seedContext.ts` — for seed scripts only
 - Auth: NextAuth v5 beta (`src/lib/next-auth/`), Espace Membre provider
   - SSO Bridge: `src/lib/authBridge.ts` — HMAC token transfer from root session to tenant via Credentials provider `"bridge"`
@@ -147,7 +174,7 @@
   - App: `src/app/doc/` — layout, MDX component registration, DSFR theme bridge
   - Custom MDX components: registered in `src/app/doc/mdx-components.ts` via `getDocMDXComponents()`
   - `ImageWithTheme`: client component for theme-aware screenshots (crossfade toggle, IntersectionObserver preload)
-  - DSFR theme bridge: `src/app/doc/dsfr-theme.css` maps DSFR tokens → Fumadocs CSS variables, handles `data-fr-theme` dark mode
+  - Theme bridge: `src/app/doc/theme.css` maps design tokens → Fumadocs CSS variables, handles `.dark` class dark mode
 - Legal pages: `@incubateur-ademe/legal-pages-react` (LegalNotice, PrivacyPolicy) — routes `/mentions-legales`, `/politique-de-confidentialite`, `/accessibilite`, `/cgu`
 - Caching: Redis via ioredis + unstorage
 - Email: react-email templates (`src/emails/`) + Nodemailer (`src/lib/mailer.ts` — shared `sendEmail()`, maildev in dev)
@@ -246,6 +273,8 @@
   - Safety net: on `push` to main/dev, all jobs always run regardless of path filters
   - Unit tests on PRs: `vitest --changed <base_sha>` runs only tests whose import graph touches changed files
   - Edit `.github/filters.yml` to add/modify path rules (shared across all workflows)
+- Deployment (Scalingo): `Procfile`, `scalingo.json`, `.slugignore` live at monorepo root — standalone build path is `apps/web/.next/standalone/apps/web/server.js`
+- release-please: configs (`release-please-config.*.json`, `.release-please-manifest.json`) at monorepo root — `packages` key is `"apps/web"`, `exclude-paths` must be repo-root-relative (release-please blocks `../../` path traversal)
 - Vitest alias `@/dsfr` resolves to `src/dsfr/server.ts` barrel — deep client imports fail in tests; use relative paths for non-barrel modules
 - `vi.doMock()` + dynamic `await import()` required for testing modules with module-level singleton state (e.g., `getStorageProvider()` factory)
 
@@ -256,45 +285,11 @@
 - Tenant-level roles come from tenant membership, NOT from the global user role — always check the correct scope
 - Server-derived data (e.g., `creatorId`) must NOT appear in public Zod schemas — use a separate interface/type that extends the Zod inferred type
 
+## ADR / DDR
+- **Immutabilité** : un ADR/DDR accepté ne doit JAMAIS être modifié (sauf changement de statut vers `Superseded`)
+- **Annexes** : pour compléter un ADR/DDR existant, créer une annexe `XXXX-N-<titre>.md` (ex: `0025-1-css-isolation.md`) et la référencer dans `## Annexes` du document parent
+- Templates : `docs/adr/0000-template.md`, `docs/adr/0000-0-template-annexe.md`, `docs/ddr/0000-template.md`, `docs/ddr/0000-0-template-annexe.md`
+
 ## Gotchas
-- React 19 / Next.js 16: ne JAMAIS exporter `Context.Provider` directement (`export const Provider = MyContext.Provider`) — ça crash en RSC ("Received a promise that resolves to: Context"). Toujours wrapper dans un vrai composant client (`export const Provider = ({ children, value }) => <MyContext value={value}>{children}</MyContext>`)
-- **NEVER use `prisma db push`** — it applies schema changes directly without creating a migration, causing drift between the migration history and the actual database. Always use `prisma migrate dev --name <name>` to create migrations. If you need to add enum values, create the migration SQL manually (`ALTER TYPE ... ADD VALUE`) and use `prisma migrate dev` to apply it. The only exception is `scripts/worktree-new.sh --db` which uses `db push` for ephemeral worktree DBs.
-- `config.rootDomain` includes the port (only strips protocol + `www.`) — domain/DNS providers must strip port with `.replace(/:\d+$/, "")` themselves
-- DNS CNAME trailing dot: resolvers may return `"target.io."` — always normalize with `.replace(/\.$/, "")` before comparing
-- `src/generated/` is gitignored (except `.gitattributes`) — run `pnpm prisma generate` if client is missing
-- Zod 4 is used (not v3) — API differs slightly; docs available via MCP: `https://mcp.inkeep.com/zod/mcp`
-- Next.js 16 `cacheComponents: true` is incompatible with route config exports (`dynamic`, `revalidate`, etc.) — use `await connection()` from `next/server` in pages instead
-- Circular Zod schemas: use `z.lazy(() => Schema)` to avoid initialization errors
-- Multi-tenant pages under `[domain]`: wrap children in `<Suspense>` + use `await connection()` to force dynamic rendering
-- DSFR `fr-container--fluid` has `overflow: hidden` — override with `!overflow-visible` (Tailwind `!important`) when content needs to scroll/overflow
-- DSFR `.fr-select-group:not(:last-child)` adds `margin-bottom: 1.5rem` — counter with `[&_.fr-select-group]:!mb-0` when using inline Select groups
-- NextAuth `signIn()` uses `cookies().set()` internally — cannot be called during RSC render (read-only). Use a Server Action (form auto-submit pattern) instead
-- Route Handlers: use `NextResponse.redirect()`, not `redirect()` from `next/navigation` (which throws and is for RSC/Server Actions only)
-- Multi-tenant Route Handlers: never use `request.url` as base for root URLs — use `config.host` directly (request may reflect tenant domain)
-- `DomainPageHOP` generic param is for route Params only, not page props — access `searchParams` via cast: `(props as unknown as { searchParams: Promise<...> }).searchParams`
-- Workflow: always run `pnpm lint --fix` before manually fixing ESLint diagnostics (import sorting, formatting, etc.)
-- `pino` and `pino-pretty` must be in `serverExternalPackages` in `next.config.ts` — Turbopack cannot bundle them
-- `@sentry/nextjs` v10: use `webpack.autoInstrumentServerFunctions`, `webpack.treeshake.removeDebugLogging` (top-level equivalents are deprecated)
-- Next.js 16 uses `src/proxy.ts` (not `middleware.ts`) — correlation ID, rewrites, and request header injection all happen there
-- Canonical redirect: `PLATFORM_DOMAIN` env var (e.g. `scalingo.io`) — proxy 301-redirects platform default domain to `NEXT_PUBLIC_SITE_URL`; skips `/api/` routes and review apps where rootDomain IS the platform domain; empty = disabled
-- DSFR `Alert` with `small` prop requires `description` (even `description=""`) — TypeScript discriminated union requires it
-- Prisma 7 enums are PascalCase (`IntegrationType`, `SyncDirection`, `SyncLogStatus`) — NOT SCREAMING_SNAKE (`INTEGRATION_TYPE`, `SYNC_DIRECTION`)
-- Prisma JSON fields: `Record<string, unknown>` is not assignable to `Prisma.InputJsonValue` — use `as unknown as Prisma.InputJsonValue` explicit cast
-- Prisma enum values: always use model constants (`POST_APPROVAL_STATUS.APPROVED`) instead of string literals (`"APPROVED"`) in queries and use cases
-- Board pagination: `handleLoadMore` must compute `nextPage = page + 1` BEFORE fetching — fetching with current `page` then incrementing causes duplicate data on first load
-- Email templates (`src/emails/`): inline `style={{...}}` is required — email clients don't support external CSS/Tailwind; this is the exception to the "no inline styles" rule
-- Out-of-scope bugs: when spotting bugs or issues outside the current feature scope, propose corrections rather than ignoring them
-- `@auth/core` provider merge: `Nodemailer()` stores user config in `options` field; `parseProviders()` does `merge(defaults, userOptions)` which overrides top-level keys with `options.*` — the espace-membre-provider wrapper must flatten `options` into the base config (fixed in v0.3.3)
-- OAuth env vars use `OAUTH_` prefix (`OAUTH_GITHUB_CLIENT_ID`, etc.) — only `src/config.ts` reads `process.env.*`, rest uses `config.oauth.*`
-- Next.js `headers()` in `next.config.ts`: ALL matching rules are applied (not first-match). For duplicate header keys, the **last** matching entry in the array wins — put overrides AFTER the catch-all, not before
-- `NODE_ENV` must NEVER be set in `.env` files or shell environment — Next.js manages it internally (`production` for build, `development` for dev). A stale `NODE_ENV=development` in the shell causes RSC prerender crashes during `next build` (React flight protocol gets `undefined` stack). The `build` script includes `unset NODE_ENV` as safety net
-- DSFR theme persistence: stored in localStorage key `"scheme"` + `data-fr-scheme`/`data-fr-theme` attrs on `<html>` — persists across navigations, must be explicitly forced in Playwright/automation scripts
-- Playwright soft navigation: during Next.js client navigation, old + new DOM elements coexist briefly — use specific selectors (`name` filter) instead of generic ones (`level` only) for headings to avoid strict mode violations
-- release-please: editing PR title/body doesn't change the release version — must edit files in the release branch (manifest `.release-please-manifest.json`, `package.json`); title mismatch causes "Duplicate release tag" errors
-- GitHub Environment branch policies: tags must be explicitly allowed (e.g. pattern `v*`) for `release: published` deploys to work on production environment
-- File upload MIME type: `file.type` from `FormData` is client-controlled — server validates against `ALLOWED_TYPES` set but does NOT check magic bytes. A `file-type` npm package could be added for magic bytes validation if stricter security is needed
-- Ne jamais utiliser le mcp github si possible, le binaire `gh`, quand disponible, fait largement le job et est plus rapide que les appels API du mcp (ex: `gh pr view <pr> --json body` pour récupérer la description d'une PR)
-- Tracking provider `factory.ts` uses CJS `require()` to avoid pulling server code into client bundle — cannot be unit-tested with vitest ESM mocking; test providers directly instead
-- Server tracking: always prefix `trackServerEvent()` with `void` — it returns `Promise<void>` and ESLint `no-floating-promises` will flag unhandled promises
-- Tracking barrel `index.ts` is client-safe only — never import `getServerTrackingProvider` or `serverTracking` from it; use direct path imports for server code
-- Zustand store `reset()` before `router.push()` causes UI flash (synchronous re-render before async navigation) — reset on mount with `useEffect` instead, and keep `submitting=true` on success path to prevent re-render
+
+@docs/gotchas.md

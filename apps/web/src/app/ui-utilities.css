@@ -1,0 +1,5 @@
+@reference "tailwindcss";
+@reference "tw-animate-css";
+@reference "@kokatsuna/ui/tokens/tailwind-theme.css";
+
+@import "@kokatsuna/ui/tokens/utilities.css";

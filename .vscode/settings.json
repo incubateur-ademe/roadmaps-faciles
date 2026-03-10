@@ -26,5 +26,16 @@
   ],
   "json.format.keepLines": true,
   "loccy.annotations.previewLocale": "fr",
-  "loccy.sourceLocale": "fr"
+  "loccy.sourceLocale": "fr",
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+  ],
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "tailwindCSS.experimental.configFile": {
+    "apps/web/tailwind.css": "apps/web/src/**",
+    "packages/ui/.storybook/storybook.css": "packages/ui/src/**"
+  },
+  "tailwindCSS.classFunctions": ["cva", "cn", "clsx"]
 }
