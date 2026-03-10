@@ -1,0 +1,1 @@
+import{r,a as c,j as m}from"./iframe-B2FihN7C.js";import{P as u}from"./index-DfGb4vk9.js";import{u as l}from"./index-cnXatIDB.js";var p="Portal",f=r.forwardRef((o,a)=>{const{container:e,...s}=o,[n,i]=r.useState(!1);l(()=>i(!0),[]);const t=e||n&&globalThis?.document?.body;return t?c.createPortal(m.jsx(u.div,{...s,ref:a}),t):null});f.displayName=p;export{f as P};
