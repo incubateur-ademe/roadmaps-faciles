@@ -1,25 +1,30 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import Image from "next/image";
 import { type ReactNode } from "react";
 
 import { docsSource } from "@/lib/source";
 
-import { DefaultFooter } from "../(default)/DefaultFooter";
-import { DefaultHeader } from "../(default)/DefaultHeader";
 import "./docs.css";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <RootProvider
-      theme={{
-        enabled: false,
-      }}
-    >
-      <DefaultHeader />
-      <DocsLayout tree={docsSource.pageTree} nav={{ enabled: false }} sidebar={{ collapsible: true }}>
+    <RootProvider>
+      <DocsLayout
+        tree={docsSource.pageTree}
+        nav={{
+          title: (
+            <>
+              <Image src="/img/roadmaps-faciles.png" alt="" width={24} height={24} className="shrink-0" />
+              <span className="font-semibold">Roadmaps Faciles</span>
+            </>
+          ),
+          url: "/",
+        }}
+        sidebar={{ collapsible: true }}
+      >
         {children}
       </DocsLayout>
-      <DefaultFooter id="footer" />
     </RootProvider>
   );
 };
