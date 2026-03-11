@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "iconLibrary": "lucide",
+  "tailwind": {
+    "config": "",
+    "css": "src/tokens/utilities.css",
+    "baseColor": "zinc",
+    "cssVariables": true
+  },
+  "aliases": {
+    "utils": "@kokatsuna/ui/lib/cn",
+    "components": "@kokatsuna/ui/components",
+    "ui": "@kokatsuna/ui/components",
+    "hooks": "@kokatsuna/ui/hooks",
+    "lib": "@kokatsuna/ui/lib"
+  }
+}
