@@ -14,7 +14,7 @@
     "utils": "@kokatsuna/ui/lib/cn",
     "components": "@kokatsuna/ui/components",
     "ui": "@kokatsuna/ui/components",
-    "hooks": "@kokatsuna/ui/hooks",
+    "hooks": "@kokatsuna/ui/lib",
     "lib": "@kokatsuna/ui/lib"
   }
 }
