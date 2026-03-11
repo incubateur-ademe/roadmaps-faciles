@@ -283,6 +283,28 @@ export default [
     },
   },
 
+  // .github/scripts/*.js — CJS (module.exports) pour actions/github-script, pas de tsconfig
+  {
+    files: [".github/scripts/**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      "import/no-default-export": "off",
+    },
+  },
+  {
+    files: [".github/scripts/**/*.js"],
+    languageOptions: {
+      globals: {
+        module: "readonly",
+        require: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        console: "readonly",
+      },
+    },
+  },
+
   // Stories, tests et configs : autorise le default export + relax des règles type-checked
   {
     files: [
